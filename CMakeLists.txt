@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
 # find_package(Boost REQUIRED COMPONENTS system)
 
 
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
@@ -48,16 +49,23 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Generate messages in the 'msg' folder
 add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
+   FILES
+	acc.msg
+	gimbal.msg
+	local_position.msg
+	velocity.msg
+	attitude_quad.msg
+	global_position.msg
+	rc_channels.msg
 )
 
 ## Generate services in the 'srv' folder
 add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
+   FILES
+	action.srv
+	attitude.srv
+	gimbal_angle.srv
+	gimbal_speed.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -107,16 +115,16 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-# add_executable(dji_ros_node src/dji_ros_node.cpp)
+add_executable(dji_ros src/djiMain.cpp include/DJI_LIB/DJI_Pro_App.cpp include/DJI_LIB/DJI_Pro_Codec.cpp include/DJI_LIB/DJI_Pro_Hw.cpp include/DJI_LIB/DJI_Pro_Link.cpp include/DJI_LIB/DJI_Pro_Rmu.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(dji_ros_node dji_ros_generate_messages_cpp)
+add_dependencies(dji_ros dji_ros_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(dji_ros_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(dji_ros
+   ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
