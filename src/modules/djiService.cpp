@@ -52,7 +52,7 @@ namespace service_handler
 		return true;
 	}
 
-	
+
 
 	bool gimbal_angle_callback(
 			dji_ros::gimbal_angle::Request& request,
@@ -60,9 +60,9 @@ namespace service_handler
 			)
 	{
 		uint8_t flag =request.flag;
-		uint16_t x = request.x;
-		uint16_t y = request.y;
-		uint16_t yaw = request.yaw;
+		int16_t x = request.x;
+		int16_t y = request.y;
+		int16_t yaw = request.yaw;
 		uint8_t duration = duration;
 
 		DJI_Sample_Gimbal_AngleCtrl(yaw, x, y, flag, duration);
@@ -75,9 +75,9 @@ namespace service_handler
 			dji_ros::gimbal_speed::Response& response
 			)
 	{
-		uint8_t yaw_rate = request.yaw_rate;
-		uint8_t x_rate = request.x_rate;
-		uint8_t y_rate = request.y_rate;
+		int8_t yaw_rate = request.yaw_rate;
+		int8_t x_rate = request.x_rate;
+		int8_t y_rate = request.y_rate;
 
 		DJI_Sample_Gimbal_SpeedCtrl(yaw_rate, x_rate, y_rate);
 
@@ -99,7 +99,7 @@ namespace service_handler
 		user_ctrl_data.yaw = request.yaw;
 
 		DJI_Pro_Attitude_Control(&user_ctrl_data);
-		
+
 		response.result = true;
 		return true;
 
@@ -110,7 +110,7 @@ namespace service_handler
 	{
 		control_service = n.advertiseService(
 				"DJI_ROS/obtain_release_control",
-				control_callback	
+				control_callback
 				);
 
 		action_service =n.advertiseService(
@@ -125,12 +125,12 @@ namespace service_handler
 
 		gimbal_speed_service = n.advertiseService(
 				"DJI_ROS/gimbal_speed_control",
-				gimbal_speed_callback	
+				gimbal_speed_callback
 				);
 
 		attitude_service = n.advertiseService(
 				"DJI_ROS/drone_attitude_control",
-				attitude_callback	
+				attitude_callback
 				);
 
 		ROS_INFO("Init services\n");

@@ -130,7 +130,11 @@ target_link_libraries(dji_ros
 #############
 ## Install ##
 #############
-
+add_executable(dji_ros_client src/client.cpp  src/modules/djiVariable.cpp src/modules/djiPublisher.cpp src/modules/djiService.cpp include/DJI_LIB/DJI_Pro_App.cpp include/DJI_LIB/DJI_Pro_Codec.cpp include/DJI_LIB/DJI_Pro_Hw.cpp include/DJI_LIB/DJI_Pro_Link.cpp include/DJI_LIB/DJI_Pro_Rmu.cpp)
+target_link_libraries(dji_ros_client
+   ${catkin_LIBRARIES}
+)
+add_dependencies(dji_ros_client dji_ros_generate_messages_cpp)
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
