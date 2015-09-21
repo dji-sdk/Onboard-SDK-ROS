@@ -62,6 +62,7 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
    FILES
+	control_manager.srv
 	action.srv
 	attitude.srv
 	gimbal_angle.srv
@@ -115,7 +116,7 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(dji_ros src/djiMain.cpp include/DJI_LIB/DJI_Pro_App.cpp include/DJI_LIB/DJI_Pro_Codec.cpp include/DJI_LIB/DJI_Pro_Hw.cpp include/DJI_LIB/DJI_Pro_Link.cpp include/DJI_LIB/DJI_Pro_Rmu.cpp)
+add_executable(dji_ros src/djiMain.cpp src/modules/djiVariable.cpp src/modules/djiPublisher.cpp src/modules/djiService.cpp include/DJI_LIB/DJI_Pro_App.cpp include/DJI_LIB/DJI_Pro_Codec.cpp include/DJI_LIB/DJI_Pro_Hw.cpp include/DJI_LIB/DJI_Pro_Link.cpp include/DJI_LIB/DJI_Pro_Rmu.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

@@ -1,5 +1,4 @@
 uint8 flag
-uint16 n
 float32 x
 float32 y
 float32 z

@@ -1,19 +1,10 @@
 #ifndef __DJI_SDK_NODE_H__
 #define __DJI_SDK_NODE_H__
-#include "DJI_LIB/DJI_Pro_App.h"
-#include "DJI_LIB/DJI_Pro_Codec.h"
-#include "DJI_LIB/DJI_Pro_Config.h"
-#include "DJI_LIB/DJI_Pro_Hw.h"
-#include "DJI_LIB/DJI_Pro_Link.h"
-#include "DJI_LIB/DJI_Pro_Rmu.h"
-
-#include <dji_ros/acc.h>
-#include <dji_ros/attitude_quad.h>
-#include <dji_ros/gimbal.h>
-#include <dji_ros/global_position.h>
-#include <dji_ros/local_position.h>
-#include <dji_ros/rc_channels.h>
-#include <dji_ros/velocity.h>
+#include <ros/ros.h>
+#include "SDK.h"
+#include "djiVariable.h"
+#include "djiPublisher.h"
+#include "djiService.h"
 
 std::string serial_name;
 int	baud_rate;
@@ -23,7 +14,11 @@ int	app_version;
 std::string app_bundle_id;
 std::string enc_key;
 
-activate_data_t user_act_data;
+static activate_data_t user_act_data;
+static sdk_std_msg_t recv_sdk_std_msgs;
+static req_id_t nav_force_close_req_id;
 
-int DJI_Setup(std::string serial_port, int baudrate);
+
+void update_ros_vars();
+int DJI_Setup(std::string, int );
 #endif
