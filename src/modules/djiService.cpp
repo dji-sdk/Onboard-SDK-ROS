@@ -8,12 +8,12 @@ namespace service_handler
 			dji_ros::control_manager::Response& response
 			)
 	{
-		if (request.action == 1) {
+		if (request.control_ability== 1) {
 			printf("Request Control");
 			DJI_Pro_Control_Management(1,NULL);
 			response.result= true;
 		}
-		else if (request.action == 0) {
+		else if (request.control_ability== 0) {
 			printf("Response Control");
 			DJI_Pro_Control_Management(0,NULL);
 			response.result = true;
@@ -52,7 +52,29 @@ namespace service_handler
 		return true;
 	}
 
+	bool camera_action_callback(
+			dji_ros::camera_action::Request& request,
+			dji_ros::camera_action::Response& response
+			)
+	{
+		if (request.camera_action == 0){
+			DJI_Pro_Camera_Control(API_CAMERA_SHOT);
+			response.result = true;
+		}
+		else if (request.camera_action == 1){
+			DJI_Pro_Camera_Control(API_CAMERA_VIDEO_START);
+			response.result = true;
+		}
+		else if (request.camera_action == 2){
+			DJI_Pro_Camera_Control(API_CAMERA_VIDEO_STOP);
+			response.result = true;
+		}
+		else
+			response.result = false;
+		return true;
 
+	}
+		
 
 	bool gimbal_angle_callback(
 			dji_ros::gimbal_angle::Request& request,
@@ -105,7 +127,7 @@ namespace service_handler
 
 	}
 
-	ros::ServiceServer control_service, action_service, gimbal_angle_service, gimbal_speed_service, attitude_service;
+	ros::ServiceServer control_service, action_service, camera_service, gimbal_angle_service, gimbal_speed_service, attitude_service;
 	int init_services(ros::NodeHandle & n)
 	{
 		control_service = n.advertiseService(
@@ -116,6 +138,11 @@ namespace service_handler
 		action_service =n.advertiseService(
 				"DJI_ROS/drone_action_control",
 				action_callback
+				);
+
+		camera_service =n.advertiseService(
+				"DJI_ROS/camera_action_service",
+				camera_action_callback
 				);
 
 		gimbal_angle_service = n.advertiseService(

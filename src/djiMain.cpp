@@ -124,10 +124,6 @@ void spin_callback(const ros::TimerEvent &)
 	if (count % 50 == 0) {
 		std_msgs::Float32 msg;
 		unsigned char bat = 0;
-
-//TODO:
-// update & publish all variables here
-// format == /publisher/+/update_ros_variable()/+/API in LIB/
 		
 		msg.data = (float) recv_sdk_std_msgs.status;
 		publishers::flight_status_pub.publish(msg);

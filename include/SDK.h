@@ -17,9 +17,10 @@
 
 //srvs
 #include <dji_ros/action.h>
+#include <dji_ros/attitude.h>
+#include <dji_ros/camera_action.h>
 #include <dji_ros/control_manager.h>
 #include <dji_ros/gimbal_speed.h>
-#include <dji_ros/attitude.h>
 #include <dji_ros/gimbal_angle.h>
 
 

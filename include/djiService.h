@@ -19,8 +19,7 @@ namespace service_handler
 		gimbal_speed.ctrl_byte.ctrl_switch = 1;
 		ROS_DEBUG("yaw: %d, roll: %d, pitch: %d \n",yaw_angle_rate, roll_angle_rate, pitch_angle_rate);
 		DJI_Pro_App_Send_Data(0,
-				1,
-				MY_CTRL_CMD_SET,
+				1, MY_CTRL_CMD_SET,
 				API_GIMBAL_CTRL_SPEED_REQUEST,
 				(uint8_t*)&gimbal_speed,
 				sizeof(gimbal_speed),
@@ -56,5 +55,6 @@ namespace service_handler
 				0
 				);
 	}
+
 };
 #endif 
