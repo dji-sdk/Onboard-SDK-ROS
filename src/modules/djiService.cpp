@@ -63,7 +63,7 @@ namespace service_handler
 		int16_t x = request.x;
 		int16_t y = request.y;
 		int16_t yaw = request.yaw;
-		uint8_t duration = duration;
+		uint8_t duration = request.duration;
 
 		DJI_Sample_Gimbal_AngleCtrl(yaw, x, y, flag, duration);
 		response.result = true;
@@ -75,9 +75,9 @@ namespace service_handler
 			dji_ros::gimbal_speed::Response& response
 			)
 	{
-		int8_t yaw_rate = request.yaw_rate;
-		int8_t x_rate = request.x_rate;
-		int8_t y_rate = request.y_rate;
+		signed short yaw_rate = request.yaw_rate;
+		signed short x_rate = request.x_rate;
+		signed short y_rate = request.y_rate;
 
 		DJI_Sample_Gimbal_SpeedCtrl(yaw_rate, x_rate, y_rate);
 

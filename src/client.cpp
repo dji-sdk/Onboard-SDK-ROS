@@ -13,6 +13,7 @@ static void Display_Main_Menu(void)
 	printf("[e] Go home\n");
 	printf("[f] Attitude control sample\n");
 	printf("[g] Gimbal control sample\n");
+	printf("[h] Exit\n");
 	printf("\ninput a/b/c etc..then press enter key\r\n");
 	printf("----------------------------------------\r\n");
 	printf("input: ");
@@ -93,104 +94,104 @@ int main(int argc, char **argv)
 			case 'f':
 				/* attitude control sample*/
 				srv_action.request.action=4;
-                drone_action_client.call(srv_action);
-                sleep(8);
+				drone_action_client.call(srv_action);
+				sleep(8);
 
-                srv_attitude.request.flag = 0x0A;
-                srv_attitude.request.x = 0;
-                srv_attitude.request.y = 0;
-                srv_attitude.request.z = 1.5;
-                srv_attitude.request.yaw = 0;
-                for(int i = 0; i < 10; i ++)
-                {
-                    drone_attitude_client.call(srv_attitude);
-                    usleep(200000);
-                }
-                sleep(1);
-                /* sample 1:ground frame*/
-                srv_attitude.request.flag = 0x0A;
-                srv_attitude.request.x = 2;
-                srv_attitude.request.y = 0;
-                srv_attitude.request.z = 0;
-                srv_attitude.request.yaw = 0;
-                for(int i = 0; i < 20; i ++)
-                {
-                    drone_attitude_client.call(srv_attitude);
-                    usleep(200000);
-                }
-                sleep(1);
-                srv_attitude.request.flag = 0x0A;
-                srv_attitude.request.x = -2;
-                srv_attitude.request.y = 0;
-                srv_attitude.request.z = 0;
-                srv_attitude.request.yaw = 0;
-                for(int i = 0; i < 20; i ++)
-                {
-                    drone_attitude_client.call(srv_attitude);
-                    usleep(200000);
-                }
-                sleep(1);
-                srv_attitude.request.flag = 0x0A;
-                srv_attitude.request.x = 0;
-                srv_attitude.request.y = 2;
-                srv_attitude.request.z = 0;
-                srv_attitude.request.yaw = 0;
-                for(int i = 0; i < 20; i ++)
-                {
-                    drone_attitude_client.call(srv_attitude);
-                    usleep(200000);
-                }
-                sleep(1);
-                srv_attitude.request.flag = 0x0A;
-                srv_attitude.request.x = 0;
-                srv_attitude.request.y = -2;
-                srv_attitude.request.z = 0;
-                srv_attitude.request.yaw = 0;
-                for(int i = 0; i < 20; i ++)
-                {
-                    drone_attitude_client.call(srv_attitude);
-                    usleep(200000);
-                }
-                sleep(1);
-                srv_attitude.request.flag = 0x0A;
-                srv_attitude.request.x = 0;
-                srv_attitude.request.y = 0;
-                srv_attitude.request.z = 0.5;
-                srv_attitude.request.yaw = 0;
-                for(int i = 0; i < 20; i ++)
-                {
-                    drone_attitude_client.call(srv_attitude);
-                    usleep(200000);
-                }
-                sleep(1);
-                srv_attitude.request.flag = 0x0A;
-                srv_attitude.request.x = 0;
-                srv_attitude.request.y = 0;
-                srv_attitude.request.z = -0.5;
-                srv_attitude.request.yaw = 0;
-                for(int i = 0; i < 20; i ++)
-                {
-                    drone_attitude_client.call(srv_attitude);
-                    usleep(200000);
-                }
-                sleep(1);
-                srv_attitude.request.flag = 0x0A;
-                srv_attitude.request.x = 0;
-                srv_attitude.request.y = 0;
-                srv_attitude.request.z = 0;
-                srv_attitude.request.yaw = 90;
-                for(int i = 0; i < 20; i ++)
-                {
-                    drone_attitude_client.call(srv_attitude);
-                    usleep(200000);
-                }
-                sleep(1);
-                srv_attitude.request.flag = 0x0A;
-                srv_attitude.request.x = 0;
-                srv_attitude.request.y = 0;
-                srv_attitude.request.z = 0;
-                srv_attitude.request.yaw = -90;
-                for(int i = 0; i < 20; i ++)
+				srv_attitude.request.flag = 0x0A;
+				srv_attitude.request.x = 0;
+				srv_attitude.request.y = 0;
+				srv_attitude.request.z = 1.5;
+				srv_attitude.request.yaw = 0;
+				for(int i = 0; i < 10; i ++)
+				{
+					drone_attitude_client.call(srv_attitude);
+					usleep(200000);
+				}
+				sleep(1);
+				/* sample 1:ground frame*/
+				srv_attitude.request.flag = 0x0A;
+				srv_attitude.request.x = 2;
+				srv_attitude.request.y = 0;
+				srv_attitude.request.z = 0;
+				srv_attitude.request.yaw = 0;
+				for(int i = 0; i < 20; i ++)
+				{
+					drone_attitude_client.call(srv_attitude);
+					usleep(200000);
+				}
+				sleep(1);
+				srv_attitude.request.flag = 0x0A;
+				srv_attitude.request.x = -2;
+				srv_attitude.request.y = 0;
+				srv_attitude.request.z = 0;
+				srv_attitude.request.yaw = 0;
+				for(int i = 0; i < 20; i ++)
+				{
+					drone_attitude_client.call(srv_attitude);
+					usleep(200000);
+				}
+				sleep(1);
+				srv_attitude.request.flag = 0x0A;
+				srv_attitude.request.x = 0;
+				srv_attitude.request.y = 2;
+				srv_attitude.request.z = 0;
+				srv_attitude.request.yaw = 0;
+				for(int i = 0; i < 20; i ++)
+				{
+					drone_attitude_client.call(srv_attitude);
+					usleep(200000);
+				}
+				sleep(1);
+				srv_attitude.request.flag = 0x0A;
+				srv_attitude.request.x = 0;
+				srv_attitude.request.y = -2;
+				srv_attitude.request.z = 0;
+				srv_attitude.request.yaw = 0;
+				for(int i = 0; i < 20; i ++)
+				{
+					drone_attitude_client.call(srv_attitude);
+					usleep(200000);
+				}
+				sleep(1);
+				srv_attitude.request.flag = 0x0A;
+				srv_attitude.request.x = 0;
+				srv_attitude.request.y = 0;
+				srv_attitude.request.z = 0.5;
+				srv_attitude.request.yaw = 0;
+				for(int i = 0; i < 20; i ++)
+				{
+					drone_attitude_client.call(srv_attitude);
+					usleep(200000);
+				}
+				sleep(1);
+				srv_attitude.request.flag = 0x0A;
+				srv_attitude.request.x = 0;
+				srv_attitude.request.y = 0;
+				srv_attitude.request.z = -0.5;
+				srv_attitude.request.yaw = 0;
+				for(int i = 0; i < 20; i ++)
+				{
+					drone_attitude_client.call(srv_attitude);
+					usleep(200000);
+				}
+				sleep(1);
+				srv_attitude.request.flag = 0x0A;
+				srv_attitude.request.x = 0;
+				srv_attitude.request.y = 0;
+				srv_attitude.request.z = 0;
+				srv_attitude.request.yaw = 90;
+				for(int i = 0; i < 20; i ++)
+				{
+					drone_attitude_client.call(srv_attitude);
+					usleep(200000);
+				}
+				sleep(1);
+				srv_attitude.request.flag = 0x0A;
+				srv_attitude.request.x = 0;
+				srv_attitude.request.y = 0;
+				srv_attitude.request.z = 0;
+				srv_attitude.request.yaw = -90;
+				for(int i = 0; i < 20; i ++)
                 {
                     drone_attitude_client.call(srv_attitude);
                     usleep(200000);
@@ -199,137 +200,132 @@ int main(int argc, char **argv)
 
 				srv_action.request.action=1;
 				drone_action_client.call(srv_action);
+				break;
 
-                break;
-            case 'g':
-                /* gimbal control sample
-                   srv_tgc.request.flag=2;
-                   srv_tgc.request.yaw=0;
-                   srv_tgc.request.x=0;
-                   srv_tgc.request.y=-1000;
-                   test_gimbal_control_client.call(srv_tgc);
-                   */
-                srv_gimbal_angle.request.flag = 0;
-                srv_gimbal_angle.request.yaw = 1800;
-                srv_gimbal_angle.request.x = 0;
-                srv_gimbal_angle.request.y = 0;
-                srv_gimbal_angle.request.duration = 20;
-                gimbal_angle_client.call(srv_gimbal_angle);
-                sleep(2);
-                usleep(100000);
+			case 'g':
+				srv_gimbal_angle.request.flag = 0;
+				srv_gimbal_angle.request.yaw = 1800;
+				srv_gimbal_angle.request.x = 0;
+				srv_gimbal_angle.request.y = 0;
+				srv_gimbal_angle.request.duration = 20;
+				gimbal_angle_client.call(srv_gimbal_angle);
+				sleep(2);
+				usleep(100000);
 
-                srv_gimbal_angle.request.flag = 0;
-                srv_gimbal_angle.request.yaw = -1800;
-                srv_gimbal_angle.request.x = 0;
-                srv_gimbal_angle.request.y = 0;
-                srv_gimbal_angle.request.duration = 20;
-                gimbal_angle_client.call(srv_gimbal_angle);
-                sleep(2);
-                usleep(100000);
+				srv_gimbal_angle.request.flag = 0;
+				srv_gimbal_angle.request.yaw = -1800;
+				srv_gimbal_angle.request.x = 0;
+				srv_gimbal_angle.request.y = 0;
+				srv_gimbal_angle.request.duration = 20;
+				gimbal_angle_client.call(srv_gimbal_angle);
+				sleep(2);
+				usleep(100000);
 
-                srv_gimbal_angle.request.flag = 0;
-                srv_gimbal_angle.request.yaw = 0;
-                srv_gimbal_angle.request.x = 300;
-                srv_gimbal_angle.request.y = 0;
-                srv_gimbal_angle.request.duration = 20;
-                gimbal_angle_client.call(srv_gimbal_angle);
-                sleep(2);
-                usleep(100000);
+				srv_gimbal_angle.request.flag = 0;
+				srv_gimbal_angle.request.yaw = 0;
+				srv_gimbal_angle.request.x = 300;
+				srv_gimbal_angle.request.y = 0;
+				srv_gimbal_angle.request.duration = 20;
+				gimbal_angle_client.call(srv_gimbal_angle);
+				sleep(2);
+				usleep(100000);
 
-                srv_gimbal_angle.request.flag = 0;
-                srv_gimbal_angle.request.yaw = 0;
-                srv_gimbal_angle.request.x = -300;
-                srv_gimbal_angle.request.y = 0;
-                srv_gimbal_angle.request.duration = 20;
-                gimbal_angle_client.call(srv_gimbal_angle);
-                sleep(2);
-                usleep(100000);
+				srv_gimbal_angle.request.flag = 0;
+				srv_gimbal_angle.request.yaw = 0;
+				srv_gimbal_angle.request.x = -300;
+				srv_gimbal_angle.request.y = 0;
+				srv_gimbal_angle.request.duration = 20;
+				gimbal_angle_client.call(srv_gimbal_angle);
+				sleep(2);
+				usleep(100000);
 
-                srv_gimbal_angle.request.flag = 0;
-                srv_gimbal_angle.request.yaw = 0;
-                srv_gimbal_angle.request.x = 0;
-                srv_gimbal_angle.request.y = 300;
-                srv_gimbal_angle.request.duration = 20;
-                gimbal_angle_client.call(srv_gimbal_angle);
-                sleep(2);
-                usleep(100000);
+				srv_gimbal_angle.request.flag = 0;
+				srv_gimbal_angle.request.yaw = 0;
+				srv_gimbal_angle.request.x = 0;
+				srv_gimbal_angle.request.y = 300;
+				srv_gimbal_angle.request.duration = 20;
+				gimbal_angle_client.call(srv_gimbal_angle);
+				sleep(2);
+				usleep(100000);
 
-                srv_gimbal_angle.request.flag = 0;
-                srv_gimbal_angle.request.yaw = 0;
-                srv_gimbal_angle.request.x = 0;
-                srv_gimbal_angle.request.y = -300;
-                srv_gimbal_angle.request.duration = 20;
-                gimbal_angle_client.call(srv_gimbal_angle);
-                sleep(2);
-                usleep(100000);
+				srv_gimbal_angle.request.flag = 0;
+				srv_gimbal_angle.request.yaw = 0;
+				srv_gimbal_angle.request.x = 0;
+				srv_gimbal_angle.request.y = -300;
+				srv_gimbal_angle.request.duration = 20;
+				gimbal_angle_client.call(srv_gimbal_angle);
+				sleep(2);
+				usleep(100000);
 
-                srv_gimbal_speed.request.yaw_rate = 200;
-                srv_gimbal_speed.request.x_rate = 0;
-                srv_gimbal_speed.request.y_rate = 0;
-                for(int i = 0; i < 20; i++)
-                {
-                    //gimbal_speed_client.call(srv_gimbal_speed);
-                    usleep(100000);
-                }
+				srv_gimbal_speed.request.yaw_rate = 200;
+				srv_gimbal_speed.request.x_rate = 0;
+				srv_gimbal_speed.request.y_rate = 0;
+				for(int i = 0; i < 20; i++)
+				{
+					gimbal_speed_client.call(srv_gimbal_speed);
+					usleep(100000);
+				}
 
-                srv_gimbal_speed.request.yaw_rate = -200;
-                srv_gimbal_speed.request.x_rate = 0;
-                srv_gimbal_speed.request.y_rate = 0;
-                for(int i = 0; i < 20; i++)
-                {
-                    //gimbal_speed_client.call(srv_gimbal_speed);
-                    usleep(100000);
-                }
+				srv_gimbal_speed.request.yaw_rate = -200;
+				srv_gimbal_speed.request.x_rate = 0;
+				srv_gimbal_speed.request.y_rate = 0;
+				for(int i = 0; i < 20; i++)
+				{
+					gimbal_speed_client.call(srv_gimbal_speed);
+					usleep(100000);
+				}
 
-                srv_gimbal_speed.request.yaw_rate = 0;
-                srv_gimbal_speed.request.x_rate = 200;
-                srv_gimbal_speed.request.y_rate = 0;
-                for(int i = 0; i < 20; i++)
-                {
-                    //gimbal_speed_client.call(srv_gimbal_speed);
-                    usleep(100000);
-                }
+				srv_gimbal_speed.request.yaw_rate = 0;
+				srv_gimbal_speed.request.x_rate = 200;
+				srv_gimbal_speed.request.y_rate = 0;
+				for(int i = 0; i < 20; i++)
+				{
+					gimbal_speed_client.call(srv_gimbal_speed);
+					usleep(100000);
+				}
 
-                srv_gimbal_speed.request.yaw_rate = 0;
-                srv_gimbal_speed.request.x_rate = -200;
-                srv_gimbal_speed.request.y_rate = 0;
-                for(int i = 0; i < 20; i++)
-                {
-                    //gimbal_speed_client.call(srv_gimbal_speed);
-                    usleep(100000);
-                }
+				srv_gimbal_speed.request.yaw_rate = 0;
+				srv_gimbal_speed.request.x_rate = -200;
+				srv_gimbal_speed.request.y_rate = 0;
+				for(int i = 0; i < 20; i++)
+				{
+					gimbal_speed_client.call(srv_gimbal_speed);
+					usleep(100000);
+				}
 
-                srv_gimbal_speed.request.yaw_rate = 0;
-                srv_gimbal_speed.request.x_rate = 0;
-                srv_gimbal_speed.request.y_rate = 200;
-                for(int i = 0; i < 20; i++)
-                {
-                    //gimbal_speed_client.call(srv_gimbal_speed);
-                    usleep(100000);
-                }
+				srv_gimbal_speed.request.yaw_rate = 0;
+				srv_gimbal_speed.request.x_rate = 0;
+				srv_gimbal_speed.request.y_rate = 200;
+				for(int i = 0; i < 20; i++)
+				{
+					gimbal_speed_client.call(srv_gimbal_speed);
+					usleep(100000);
+				}
 
-                srv_gimbal_speed.request.yaw_rate = 0;
-                srv_gimbal_speed.request.x_rate = 0;
-                srv_gimbal_speed.request.y_rate = -200;
-                for(int i = 0; i < 20; i++)
-                {
-                    //gimbal_speed_client.call(srv_gimbal_speed);
-                    usleep(100000);
-                }
+				srv_gimbal_speed.request.yaw_rate = 0;
+				srv_gimbal_speed.request.x_rate = 0;
+				srv_gimbal_speed.request.y_rate = -200;
+				for(int i = 0; i < 20; i++)
+				{
+					gimbal_speed_client.call(srv_gimbal_speed);
+					usleep(100000);
+				}
 
-                srv_gimbal_angle.request.flag = 0;
-                srv_gimbal_angle.request.yaw = 0;
-                srv_gimbal_angle.request.x = 0;
-                srv_gimbal_angle.request.y = 0;
-                srv_gimbal_angle.request.duration = 10;
-                gimbal_angle_client.call(srv_gimbal_angle);
-                break;
-            default:
-                break;
-        }
-        main_operate_code = -1;
-        err_flag = valid_flag = false;
-        Display_Main_Menu();
-    }
-    return 0;
+				srv_gimbal_angle.request.flag = 0;
+				srv_gimbal_angle.request.yaw = 0;
+				srv_gimbal_angle.request.x = 0;
+				srv_gimbal_angle.request.y = 0;
+				srv_gimbal_angle.request.duration = 10;
+				gimbal_angle_client.call(srv_gimbal_angle);
+				break;
+			case 'h':
+				return 0;
+			default:
+				break;
+		}
+		main_operate_code = -1;
+		err_flag = valid_flag = false;
+		Display_Main_Menu();
+	}
+	return 0;
 }
