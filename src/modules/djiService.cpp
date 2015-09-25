@@ -1,17 +1,15 @@
 #include "djiService.h"
 
-
 namespace service_handler
 {
+
 	bool control_callback(
 			dji_ros::control_manager::Request& request,
 			dji_ros::control_manager::Response& response
 			)
 	{
 		if (request.control_ability== 1) {
-			printf("Request Control");
-			DJI_Pro_Control_Management(1,NULL);
-			response.result= true;
+			printf("Request Control"); DJI_Pro_Control_Management(1,NULL); response.result= true;
 		}
 		else if (request.control_ability== 0) {
 			printf("Response Control");
@@ -133,15 +131,27 @@ namespace service_handler
 			)
 	{
 		//actually, this is the same as attitude service, but with HORI_POS and VERT_POS in ground frame i.e. 0b1001x00x
-		attitude_data_t user_ctrl_data;
+		float dst_x = request.x;
+		float dst_y = request.y;
+		float dst_z = request.z;
 
+		attitude_data_t user_ctrl_data;
 		user_ctrl_data.ctrl_flag = 0x90;
-		user_ctrl_data.roll_or_x = request.x;
-		user_ctrl_data.pitch_or_y = request.y;
-		user_ctrl_data.thr_z = request.z;
+		user_ctrl_data.thr_z = dst_z;
 		user_ctrl_data.yaw = 0;
 
-		DJI_Pro_Attitude_Control(&user_ctrl_data);
+
+		//TODO
+		//while (sqrt(pow(dst_x - dji_variable::local_position.x,2) + pow(dst_y - dji_variable::local_position.y,2) + pow(dst_z - dji_variable::local_position.height,2)) > 2) {
+
+			user_ctrl_data.roll_or_x = dst_x - dji_variable::local_position.x;
+			user_ctrl_data.pitch_or_y = dst_y - dji_variable::local_position.y;
+
+			DJI_Pro_Attitude_Control(&user_ctrl_data);
+			usleep(20000);
+
+		//TODO
+		//}
 
 		response.result = true;
 		return true;

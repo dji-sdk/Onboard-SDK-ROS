@@ -8,6 +8,8 @@ namespace service_handler
 {
 	int init_services(ros::NodeHandle & n);
 
+	extern dji_ros::local_position local_position;
+
 	static void DJI_Sample_Gimbal_SpeedCtrl(signed short yaw_angle_rate,
 			signed short roll_angle_rate,
 			signed short pitch_angle_rate)
