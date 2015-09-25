@@ -14,6 +14,10 @@
 #include <dji_ros/local_position.h>
 #include <dji_ros/rc_channels.h>
 #include <dji_ros/velocity.h>
+#include <dji_ros/compass.h>
+#include <dji_ros/ctrl_info.h>
+#include <dji_ros/waypoint.h>
+#include <dji_ros/waypointList.h>
 
 //srvs
 #include <dji_ros/action.h>
@@ -22,5 +26,8 @@
 #include <dji_ros/control_manager.h>
 #include <dji_ros/gimbal_speed.h>
 #include <dji_ros/gimbal_angle.h>
+#include <dji_ros/local_navigation.h>
+#include <dji_ros/gps_navigation.h>
+#include <dji_ros/waypoints_navigation.h>
 
 

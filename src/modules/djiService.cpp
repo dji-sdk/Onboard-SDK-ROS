@@ -127,7 +127,56 @@ namespace service_handler
 
 	}
 
-	ros::ServiceServer control_service, action_service, camera_service, gimbal_angle_service, gimbal_speed_service, attitude_service;
+	bool local_navigation_callback(
+			dji_ros::local_navigation::Request& request,
+			dji_ros::local_navigation::Response& response
+			)
+	{
+		//actually, this is the same as attitude service, but with HORI_POS and VERT_POS in ground frame i.e. 0b1001x00x
+		attitude_data_t user_ctrl_data;
+
+		user_ctrl_data.ctrl_flag = 0x90;
+		user_ctrl_data.roll_or_x = request.x;
+		user_ctrl_data.pitch_or_y = request.y;
+		user_ctrl_data.thr_z = request.z;
+		user_ctrl_data.yaw = 0;
+
+		DJI_Pro_Attitude_Control(&user_ctrl_data);
+
+		response.result = true;
+		return true;
+	}
+
+	bool gps_navigation_callback(
+			dji_ros::gps_navigation::Request& request,
+			dji_ros::gps_navigation::Response& response
+			)
+	{
+		//after convert det(GPS) into distance, this is the same as local_navigation
+			
+		return true;
+	}
+
+
+	bool waypoints_callback(
+			dji_ros::waypoints_navigation::Request& request,
+			dji_ros::waypoints_navigation::Response& response
+			)
+	{
+		//waypointList[] waypoints;
+		//an example(not sure correct or not) of using an msg, which contains an array of another custom msgs as a custom srv request
+		/*
+		 *for (int i = 0; i < waypointList -> size; i++):
+		 *		dji_ros::waypoint wpData = waypointList -> waypoint [i]
+		 */
+		//separate out each waypoint, then work is the same as gps_navigation 
+		//however, extra functions are necessary to handle stay time 
+		//as for yaw, 0x90 has already been the YAW_ANG mode(0bxxxx0xx0), just set (-180,180) is okay
+
+		return true;
+	}
+
+	ros::ServiceServer control_service, action_service, camera_service, gimbal_angle_service, gimbal_speed_service, attitude_service, local_navigation_service, gps_navigation_service, waypoints_navigation_service;
 	int init_services(ros::NodeHandle & n)
 	{
 		control_service = n.advertiseService(
@@ -160,6 +209,22 @@ namespace service_handler
 				attitude_callback
 				);
 
+		local_navigation_service = n.advertiseService(
+				"DJI_ROS/local_navigation_service",
+				local_navigation_callback
+				);
+
+		gps_navigation_service = n.advertiseService(
+				"DJI_ROS/gps_navigation_service",
+				gps_navigation_callback
+				);
+		
+		waypoints_navigation_service = n.advertiseService(
+				"DJI_ROS/waypoints_service",
+				waypoints_callback
+				);
+
+		
 		ROS_INFO("Init services\n");
 		return 0;
 	}

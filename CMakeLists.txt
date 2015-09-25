@@ -51,12 +51,16 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 add_message_files(
    FILES
 	acc.msg
+	attitude_quad.msg
+	compass.msg
+	ctrl_info.msg
 	gimbal.msg
+	global_position.msg
 	local_position.msg
 	velocity.msg
-	attitude_quad.msg
-	global_position.msg
 	rc_channels.msg
+	waypoint.msg
+	waypointList.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -68,6 +72,9 @@ add_service_files(
 	camera_action.srv
 	gimbal_angle.srv
 	gimbal_speed.srv
+	local_navigation.srv
+	gps_navigation.srv
+	waypoints_navigation.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -79,8 +86,8 @@ add_service_files(
 
 ## Generate added messages and services with any dependencies listed here
 generate_messages(
-#   DEPENDENCIES
-#   geometry_msgs#   nav_msgs#   std_msgs
+   DEPENDENCIES
+   geometry_msgs   nav_msgs   std_msgs
 )
 
 ###################################
@@ -136,6 +143,12 @@ target_link_libraries(dji_ros_client
    ${catkin_LIBRARIES}
 )
 add_dependencies(dji_ros_client dji_ros_generate_messages_cpp)
+
+add_executable(dji_ros_wp_client src/wp_client.cpp)
+target_link_libraries(dji_ros_wp_client
+   ${catkin_LIBRARIES}
+)
+add_dependencies(dji_ros_wp_client dji_ros_generate_messages_cpp)
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
