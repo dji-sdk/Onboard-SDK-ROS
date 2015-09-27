@@ -164,17 +164,16 @@ void spin_callback(const ros::TimerEvent &)
 	static unsigned int count = 0;
 	count++;
 	if (count % 50 == 0) {
-		std_msgs::Float32 msg;
-		unsigned char bat = 0;
-		
+		std_msgs::UInt8 msg;
+		//unsigned char bat = 0;
 		
 		//update flight_status 
-		msg.data = (float) recv_sdk_std_msgs.status;
+		msg.data = recv_sdk_std_msgs.status;
 		publishers::flight_status_pub.publish(msg);
 
 		//update battery msg
-		DJI_Pro_Get_Bat_Capacity(&bat);
-		msg.data = (float)bat;
+		//DJI_Pro_Get_Bat_Capacity(&bat);
+		msg.data = recv_sdk_std_msgs.battery_remaining_capacity;
 		publishers::battery_pub.publish(msg);
 
 		//update ctrl_info
