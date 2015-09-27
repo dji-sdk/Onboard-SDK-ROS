@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <thread>
+#include <DJI_LIB/DJI_Pro_App.h>
 #include "djiMain.h"
 
 
@@ -180,6 +181,11 @@ void spin_callback(const ros::TimerEvent &)
 		ctrl_info.cur_ctrl_dev_in_navi_mode = recv_sdk_std_msgs.ctrl_info.cur_ctrl_dev_in_navi_mode;
 		ctrl_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
 		publishers::ctrl_info_pub.publish(ctrl_info);
+
+		//update obtaincontrol
+		msg.data = recv_sdk_std_msgs.ObtainedControl;
+		publishers::control_publisher.publish(msg);
+		printf("\nup 0.5 %p\n",&recv_sdk_std_msgs);
 	}
 }
 
