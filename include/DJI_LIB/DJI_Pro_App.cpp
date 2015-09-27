@@ -15,6 +15,7 @@
 
 static unsigned char Pro_Encode_Data[1024];
 static unsigned char Pro_Encode_ACK[10];
+static sdk_std_msg_t std_broadcast_data;
 
 void DJI_Pro_App_Send_Data(unsigned char session_mode, unsigned char is_enc, unsigned char  cmd_set, unsigned char cmd_id,
                    unsigned char *pdata,int len,ACK_Callback_Func ack_callback, int timeout ,int retry_time)
@@ -479,15 +480,19 @@ static void DJI_Pro_Control_Management_CallBack(ProHeader *header)
     {
     case 0x0001:
         printf("%s,line %d, release control successfully\n",__func__,__LINE__);
+            std_broadcast_data.ObtainedControl = 0;
         break;
     case 0x0002:
         printf("%s,line %d, obtain control successfully\n",__func__,__LINE__);
+            std_broadcast_data.ObtainedControl = 1;
         break;
     case 0x0003:
         printf("%s,line %d, obtain control failed\n",__func__,__LINE__);
+            std_broadcast_data.ObtainedControl = 2;
         break;
     default:
         printf("%s,line %d, there is unkown error,ack=0x%X\n",__func__,__LINE__,ack_data);
+           std_broadcast_data.ObtainedControl = 3;
         break;
     }
 }
@@ -577,7 +582,6 @@ unsigned char DJI_Pro_Get_CmdCode_Id(ProHeader *header)
     return *ptemp;
 }
 
-static sdk_std_msg_t std_broadcast_data;
 static pthread_mutex_t std_msg_lock = PTHREAD_MUTEX_INITIALIZER;
 static unsigned short std_msg_flag = 0;
 
