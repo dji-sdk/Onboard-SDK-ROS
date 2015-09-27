@@ -459,6 +459,8 @@ int DJI_Pro_Send_To_Mobile_Device(unsigned char *data,unsigned char len,
 
 static Command_Result_Notify p_control_management_interface = 0;
 
+extern sdk_std_msg_t recv_sdk_std_msgs;
+
 static void DJI_Pro_Control_Management_CallBack(ProHeader *header)
 {
     unsigned short ack_data = 0xFFFF;
@@ -479,15 +481,19 @@ static void DJI_Pro_Control_Management_CallBack(ProHeader *header)
     {
     case 0x0001:
         printf("%s,line %d, release control successfully\n",__func__,__LINE__);
+            recv_sdk_std_msgs.ObtainedControl = 0;
         break;
     case 0x0002:
         printf("%s,line %d, obtain control successfully\n",__func__,__LINE__);
+            recv_sdk_std_msgs.ObtainedControl = 1;
         break;
     case 0x0003:
         printf("%s,line %d, obtain control failed\n",__func__,__LINE__);
+            recv_sdk_std_msgs.ObtainedControl = 0;
         break;
     default:
         printf("%s,line %d, there is unkown error,ack=0x%X\n",__func__,__LINE__,ack_data);
+            recv_sdk_std_msgs.ObtainedControl = 0;
         break;
     }
 }

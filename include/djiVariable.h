@@ -26,6 +26,7 @@ namespace dji_variable
 	extern dji_ros::global_position global_position_degree;
 	extern dji_ros::local_position local_position;
 	extern dji_ros::compass compass_info;
+    extern std_msgs::UInt8 ObtainedControl;
 	extern dji_ros::gimbal gimbal_info;
 	extern float battery;
 	extern uint8_t flight_status;

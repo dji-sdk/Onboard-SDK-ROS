@@ -201,6 +201,7 @@ typedef struct
     unsigned char status;
     unsigned char battery_remaining_capacity;
     api_ctrl_info_data_t ctrl_info;
+    uint8_t ObtainedControl = 0;
 }sdk_std_msg_t;
 
 #pragma  pack()

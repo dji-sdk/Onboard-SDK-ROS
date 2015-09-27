@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <thread>
+#include <DJI_LIB/DJI_Pro_App.h>
 #include "djiMain.h"
 
 
@@ -149,7 +150,8 @@ void update_ros_vars() {
 	compass_info.y = recv_sdk_std_msgs.mag.y;
 	compass_info.z = recv_sdk_std_msgs.mag.z;
 	publishers::compass_pub.publish(compass_info);
-
+    ObtainedControl.data = recv_sdk_std_msgs.ObtainedControl;
+    publishers::control_publisher.publish(ObtainedControl);
 
 }
 //----------------------------------------------------------

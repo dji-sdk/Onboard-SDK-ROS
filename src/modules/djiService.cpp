@@ -2,14 +2,15 @@
 
 namespace service_handler
 {
-
-	bool control_callback(
+    bool control_callback(
 			dji_ros::control_manager::Request& request,
 			dji_ros::control_manager::Response& response
 			)
 	{
 		if (request.control_ability== 1) {
-			printf("Request Control"); DJI_Pro_Control_Management(1,NULL); response.result= true;
+			printf("Request Control");
+            DJI_Pro_Control_Management(1,NULL);
+            response.result= true;
 		}
 		else if (request.control_ability== 0) {
 			printf("Response Control");

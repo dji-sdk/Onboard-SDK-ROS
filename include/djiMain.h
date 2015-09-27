@@ -15,7 +15,7 @@ std::string app_bundle_id;
 std::string enc_key;
 
 static activate_data_t user_act_data;
-static sdk_std_msg_t recv_sdk_std_msgs;
+sdk_std_msg_t recv_sdk_std_msgs;
 static req_id_t nav_force_close_req_id;
 
 
