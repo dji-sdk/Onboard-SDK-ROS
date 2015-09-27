@@ -142,7 +142,7 @@ namespace service_handler
 
 
 		//TODO
-		//while (sqrt(pow(dst_x - dji_variable::local_position.x,2) + pow(dst_y - dji_variable::local_position.y,2) + pow(dst_z - dji_variable::local_position.height,2)) > 2) {
+		while (sqrt(pow(dst_x - dji_variable::local_position.x,2) + pow(dst_y - dji_variable::local_position.y,2) + pow(dst_z - dji_variable::local_position.height,2)) > 0.5) {
 
 			user_ctrl_data.roll_or_x = dst_x - dji_variable::local_position.x;
 			user_ctrl_data.pitch_or_y = dst_y - dji_variable::local_position.y;
@@ -151,7 +151,7 @@ namespace service_handler
 			usleep(20000);
 
 		//TODO
-		//}
+		}
 
 		response.result = true;
 		return true;

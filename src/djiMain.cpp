@@ -232,6 +232,8 @@ int main(int argc,char **argv) {
 //just init the service here
 //create client in another file
 
-	ros::spin();
+	ros::AsyncSpinner spinner(4); // Use 4 threads
+	spinner.start();
+	ros::waitForShutdown();
 	return 0;
 }

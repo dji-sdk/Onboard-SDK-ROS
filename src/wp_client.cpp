@@ -98,7 +98,6 @@ int main(int argc, char **argv)
 				srv_local_nav.request.z = 10;
 				local_navigation_client.call(srv_local_nav);
 				break;
-
 			case 'g':
 				return 0;
 
