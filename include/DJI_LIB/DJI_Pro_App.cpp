@@ -484,7 +484,6 @@ static void DJI_Pro_Control_Management_CallBack(ProHeader *header)
         break;
     case 0x0002:
         printf("%s,line %d, obtain control successfully\n",__func__,__LINE__);
-		printf("ss -- %p",&recv_sdk_std_msgs);
             std_broadcast_data.ObtainedControl = 1;
         break;
     case 0x0003:

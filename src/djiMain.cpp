@@ -185,7 +185,6 @@ void spin_callback(const ros::TimerEvent &)
 		//update obtaincontrol
 		msg.data = recv_sdk_std_msgs.ObtainedControl;
 		publishers::control_publisher.publish(msg);
-		printf("\nup 0.5 %p\n",&recv_sdk_std_msgs);
 	}
 }
 
