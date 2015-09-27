@@ -1,5 +1,5 @@
 #include "djiPublisher.h"
-#include "std_msgs/Float32.h"
+#include "std_msgs/UInt8.h"
 #include <dji_ros/attitude_quad.h>
 #include <dji_ros/global_position.h>
 #include <dji_ros/local_position.h>
@@ -20,9 +20,9 @@ namespace publishers
 		// start ros publisher
 		publishers::acc_pub = nh.advertise<dji_ros::acc>("DJI_ROS/acceleration", 10);
 		publishers::att_quad_pub = nh.advertise<dji_ros::attitude_quad>("DJI_ROS/attitude_quad", 10);
-		publishers::battery_pub = nh.advertise<std_msgs::Float32>("DJI_ROS/battery_status", 10);
+		publishers::battery_pub = nh.advertise<std_msgs::UInt8>("DJI_ROS/battery_status", 10);
 		publishers::gimbal_info_pub = nh.advertise<dji_ros::gimbal>("DJI_ROS/gimbal_info", 10);
-		publishers::flight_status_pub = nh.advertise<std_msgs::Float32>("DJI_ROS/flight_status", 10);
+		publishers::flight_status_pub = nh.advertise<std_msgs::UInt8>("DJI_ROS/flight_status", 10);
 		publishers::gps_pub = nh.advertise<dji_ros::global_position>("DJI_ROS/global_position", 10);
 		publishers::local_pos_pub = nh.advertise<dji_ros::local_position>("DJI_ROS/local_position", 10);
 		publishers::odem_publisher = nh.advertise<nav_msgs::Odometry>("DJI_ROS/odom",10);
