@@ -150,8 +150,7 @@ void update_ros_vars() {
 	compass_info.y = recv_sdk_std_msgs.mag.y;
 	compass_info.z = recv_sdk_std_msgs.mag.z;
 	publishers::compass_pub.publish(compass_info);
-    ObtainedControl.data = recv_sdk_std_msgs.ObtainedControl;
-    publishers::control_publisher.publish(ObtainedControl);
+
 
 }
 //----------------------------------------------------------
@@ -182,6 +181,11 @@ void spin_callback(const ros::TimerEvent &)
 		ctrl_info.cur_ctrl_dev_in_navi_mode = recv_sdk_std_msgs.ctrl_info.cur_ctrl_dev_in_navi_mode;
 		ctrl_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
 		publishers::ctrl_info_pub.publish(ctrl_info);
+
+		//update obtaincontrol
+		msg.data = recv_sdk_std_msgs.ObtainedControl;
+		publishers::control_publisher.publish(msg);
+		printf("\nup 0.5 %p\n",&recv_sdk_std_msgs);
 	}
 }
 

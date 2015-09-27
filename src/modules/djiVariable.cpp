@@ -17,7 +17,6 @@ namespace dji_variable
 	dji_ros::local_position local_position;
 	dji_ros::compass compass_info;
 	dji_ros::gimbal gimbal_info;
-    std_msgs::UInt8 ObtainedControl;
 	nav_msgs::Odometry odem;
 	uint8_t flight_status;
 	dji_ros::ctrl_info ctrl_info;
