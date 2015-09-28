@@ -182,9 +182,13 @@ void spin_callback(const ros::TimerEvent &)
 		ctrl_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
 		publishers::ctrl_info_pub.publish(ctrl_info);
 
-		//update obtaincontrol
-		msg.data = recv_sdk_std_msgs.ObtainedControl;
+		//update obtaincontrol msg
+		msg.data = recv_sdk_std_msgs.obtained_control;
 		publishers::control_publisher.publish(msg);
+
+		//update activation msg
+		msg.data = recv_sdk_std_msgs.activation;
+		publishers::activation_publisher.publish(msg);
 	}
 }
 
