@@ -1,5 +1,0 @@
-int16 latitude
-int16 longitude
-int16 altitude
----
-bool result

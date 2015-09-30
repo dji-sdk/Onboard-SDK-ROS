@@ -49,7 +49,7 @@ namespace dji_variable
 				global_position_ref.longitude,
 				global_position_ref.latitude
 				);
-		local.height = global_position.height;
+		local.z = global_position.height;
 		return local;
 	}
 };

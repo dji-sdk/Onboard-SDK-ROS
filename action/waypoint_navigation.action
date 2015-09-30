@@ -1,0 +1,6 @@
+waypointList waypointList
+---
+bool result
+---
+uint8 current_progress
+uint8 overall_progress

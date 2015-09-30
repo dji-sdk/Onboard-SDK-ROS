@@ -1,6 +1,8 @@
 #include <ros/ros.h>
 #include "SDK.h"
 #include <cstdlib>
+#include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/terminal_state.h>
 
 static void Display_Main_Menu(void)
 {
@@ -25,18 +27,18 @@ int main(int argc, char **argv)
 	bool valid_flag = false;
 	bool err_flag = false;
 
-	ros::init(argc, argv, "sdk_client");
-	ROS_INFO("sdk_service_client_test");
+	ros::init(argc, argv, "sdk_wp_client");
 
 	ros::NodeHandle n;
 
 	ros::ServiceClient drone_control_manager = n.serviceClient<dji_ros::control_manager>("DJI_ROS/obtain_release_control");
 	ros::ServiceClient drone_action_client = n.serviceClient<dji_ros::action>("DJI_ROS/drone_action_control");
-	ros::ServiceClient local_navigation_client = n.serviceClient<dji_ros::local_navigation>("DJI_ROS/local_navigation_service");
+
+	actionlib::SimpleActionClient<dji_ros::local_navigationAction> local_navigation_action_client("DJI_ROS/local_navigation_action", true);
 
 	dji_ros::control_manager 	srv_control;
 	dji_ros::action 				srv_action;
-	dji_ros::local_navigation 	srv_local_nav;
+	dji_ros::local_navigationGoal goal;
 
 	Display_Main_Menu();
 	while(1)
@@ -49,8 +51,7 @@ int main(int argc, char **argv)
 				main_operate_code = temp32;
 				valid_flag = true;
 			}
-			else
-			{
+			else {
 				err_flag = true;
 			}
 			continue;
@@ -93,13 +94,30 @@ int main(int argc, char **argv)
 				drone_action_client.call(srv_action);
 				break;
 			case 'f':
-				srv_local_nav.request.x = 10;
-				srv_local_nav.request.y = 10;
-				srv_local_nav.request.z = 10;
-				local_navigation_client.call(srv_local_nav);
+				local_navigation_action_client.waitForServer();
+				printf("waited");
+				goal.x = 100;
+				goal.y = 100;
+				goal.z = 100;
+				local_navigation_action_client.sendGoal(goal);
+
+				bool finished_before_timeout;
+				finished_before_timeout = local_navigation_action_client.waitForResult(ros::Duration(300.0));
+
+				if (finished_before_timeout)
+				{
+					actionlib::SimpleClientGoalState state = local_navigation_action_client.getState();
+					ROS_INFO("Action finished: %s",state.toString().c_str());
+				}
+				else {
+					ROS_INFO("Action did not finish before the time out.");
+				}
+
 				break;
+
 			case 'g':
 				return 0;
+				break;
 
 			default:
 				break;

@@ -107,7 +107,7 @@ void update_ros_vars() {
 			dji_variable::global_position_ref.longitude,
 			dji_variable::global_position_ref.latitude
 			);
-	local_position.height = global_position.height;
+	local_position.z = global_position.height;
 	local_position.ts = global_position.ts;
 	dji_variable::local_position_ref = local_position;
 	publishers::local_pos_pub.publish(local_position);
@@ -117,7 +117,7 @@ void update_ros_vars() {
 	odem.header.stamp = current_time;
 	odem.pose.pose.position.x = local_position.x;
 	odem.pose.pose.position.y = local_position.y;
-	odem.pose.pose.position.z = local_position.height;
+	odem.pose.pose.position.z = local_position.z;
 	odem.pose.pose.orientation.w = attitude_quad.q0;
 	odem.pose.pose.orientation.x = attitude_quad.q1;
 	odem.pose.pose.orientation.y = attitude_quad.q2;
@@ -169,7 +169,8 @@ void spin_callback(const ros::TimerEvent &)
 		//unsigned char bat = 0;
 		
 		//update flight_status 
-		msg.data = recv_sdk_std_msgs.status;
+		flight_status = recv_sdk_std_msgs.status;
+		msg.data = flight_status;
 		publishers::flight_status_pub.publish(msg);
 
 		//update battery msg
@@ -202,6 +203,7 @@ int main(int argc,char **argv) {
 	
 	publishers::init_publishers(nh);
 	service_handler::init_services(nh);
+	action_handler::init_actions(nh);
 
 	nh_private.param("serial_name", serial_name, std::string("/dev/ttyTHS1"));
 	nh_private.param("baud_rate", baud_rate, 230400);
@@ -237,9 +239,7 @@ int main(int argc,char **argv) {
 	DJI_Pro_Activate_API(&user_act_data,NULL);
 	ros::Timer simple_task_timer = nh.createTimer(ros::Duration(1.0 / 50.0),  spin_callback);
 
-//just init the service here
-//create client in another file
-
+	action_handler::local_navigation_action_ptr->start();
 	ros::AsyncSpinner spinner(4); // Use 4 threads
 	spinner.start();
 	ros::waitForShutdown();

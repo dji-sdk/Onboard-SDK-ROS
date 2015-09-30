@@ -56,5 +56,5 @@ namespace service_handler
 				);
 	}
 
-};
+}
 #endif 

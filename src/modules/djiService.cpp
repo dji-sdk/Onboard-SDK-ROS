@@ -126,6 +126,7 @@ namespace service_handler
 
 	}
 
+/*
 	bool local_navigation_callback(
 			dji_ros::local_navigation::Request& request,
 			dji_ros::local_navigation::Response& response
@@ -142,7 +143,6 @@ namespace service_handler
 		user_ctrl_data.yaw = 0;
 
 
-		//TODO
 		while (sqrt(pow(dst_x - dji_variable::local_position.x,2) + pow(dst_y - dji_variable::local_position.y,2) + pow(dst_z - dji_variable::local_position.height,2)) > 0.5) {
 
 			user_ctrl_data.roll_or_x = dst_x - dji_variable::local_position.x;
@@ -151,7 +151,6 @@ namespace service_handler
 			DJI_Pro_Attitude_Control(&user_ctrl_data);
 			usleep(20000);
 
-		//TODO
 		}
 
 		response.result = true;
@@ -176,18 +175,19 @@ namespace service_handler
 	{
 		//waypointList[] waypoints;
 		//an example(not sure correct or not) of using an msg, which contains an array of another custom msgs as a custom srv request
-		/*
+		 *
 		 *for (int i = 0; i < waypointList -> size; i++):
 		 *		dji_ros::waypoint wpData = waypointList -> waypoint [i]
-		 */
+		 *
 		//separate out each waypoint, then work is the same as gps_navigation 
 		//however, extra functions are necessary to handle stay time 
 		//as for yaw, 0x90 has already been the YAW_ANG mode(0bxxxx0xx0), just set (-180,180) is okay
 
 		return true;
 	}
+*/
 
-	ros::ServiceServer control_service, action_service, camera_service, gimbal_angle_service, gimbal_speed_service, attitude_service, local_navigation_service, gps_navigation_service, waypoints_navigation_service;
+	ros::ServiceServer control_service, camera_service, gimbal_angle_service, gimbal_speed_service, attitude_service, action_service;
 	int init_services(ros::NodeHandle & n)
 	{
 		control_service = n.advertiseService(
@@ -220,6 +220,7 @@ namespace service_handler
 				attitude_callback
 				);
 
+		/*
 		local_navigation_service = n.advertiseService(
 				"DJI_ROS/local_navigation_service",
 				local_navigation_callback
@@ -234,6 +235,7 @@ namespace service_handler
 				"DJI_ROS/waypoints_service",
 				waypoints_callback
 				);
+		*/
 
 		
 		ROS_INFO("Init services\n");

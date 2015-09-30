@@ -3,3 +3,5 @@ float32 y
 float32 z
 ---
 bool result
+---
+uint8 progress 
