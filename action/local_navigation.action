@@ -4,4 +4,6 @@ float32 z
 ---
 bool result
 ---
-uint8 progress 
+uint8 x_progress 
+uint8 y_progress 
+uint8 z_progress 

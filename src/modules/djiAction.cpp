@@ -3,6 +3,7 @@
 
 namespace action_handler
 {
+	
 	task_action_type* task_action_ptr;
    local_navigation_action_type* local_navigation_action_ptr;
    gps_navigation_action_type* gps_navigation_action_ptr;
@@ -16,8 +17,7 @@ namespace action_handler
 	dji_ros::local_navigationResult local_navigation_result;
 
 	dji_ros::gps_navigationFeedback gps_navigation_feedback;
-	dji_ros::gps_navigationResult gps_navigation_result;
-
+	dji_ros::gps_navigationResult gps_navigation_result; 
 	dji_ros::waypoint_navigationFeedback waypoint_navigation_feedback;
 	dji_ros::waypoint_navigationResult waypoint_navigation_result;
 
@@ -43,8 +43,8 @@ namespace action_handler
 		}
 
 		task_action_feedback.progress = 1;
-		task_action->publishFeedback(task_action_feedback);
-		task_action->setSucceeded();
+		task_action_ptr->publishFeedback(task_action_feedback);
+		task_action_ptr->setSucceeded();
 		
 
 		return true;
@@ -53,7 +53,17 @@ namespace action_handler
 
 	bool local_navigation_action_callback(const dji_ros::local_navigationGoalConstPtr& goal, local_navigation_action_type* local_navigation_action)
 	{
-		printf("in");
+		/*IMPORTAN*/
+		/*
+			Although there has declared a pointer local_navigation_action as function parameter,
+			it is the local_navigation_action_ptr that we should use.
+			If local_navigation_action is used instead, there will be a runtime sengmentation fault.
+			I tried to find a way to fix it / make it better,
+			but I can neither remove the function parameter declaration nor use it.
+
+			so interesting
+		*/
+
 		float dst_x = goal->x;
 		float dst_y = goal->y;
 		float dst_z = goal->z;
@@ -64,8 +74,7 @@ namespace action_handler
 
 		float dis_x = dst_x - org_x;
 		float dis_y = dst_y - org_y;
-		float dis_z = dst_z - org_z;
-
+		float dis_z = dst_z - org_z; 
 		float det_x,det_y,det_z;
 
 		attitude_data_t user_ctrl_data;
@@ -73,29 +82,34 @@ namespace action_handler
       user_ctrl_data.thr_z = dst_z;
       user_ctrl_data.yaw = 0;
 
-		int process = 0;
-
-		while (process < 100) {
+		int x_progress = 0; 
+		int y_progress = 0; 
+		int z_progress = 0; 
+		while (x_progress < 100 || y_progress < 100 || z_progress <100) {
 
          user_ctrl_data.roll_or_x = dst_x - dji_variable::local_position.x;
          user_ctrl_data.pitch_or_y = dst_y - dji_variable::local_position.y;
 
          DJI_Pro_Attitude_Control(&user_ctrl_data);
 
-			det_x = 100* (dst_x - dji_variable::local_position.x)/dis_x;
-			det_y = 100* (dst_y - dji_variable::local_position.y)/dis_y;
-			det_z = 100* (dst_z - dji_variable::local_position.z)/dis_z;
+			det_x = (100* (dst_x - dji_variable::local_position.x))/dis_x;
+			det_y = (100* (dst_y - dji_variable::local_position.y))/dis_y;
+			det_z = (100* (dst_z - dji_variable::local_position.z))/dis_z;
 
-			process = 100 - (int)(det_x + det_y + det_z) /3;
+			x_progress = 100 - (int)det_x;
+			y_progress = 100 - (int)det_y;
+			z_progress = 100 - (int)det_z;
 
-			local_navigation_feedback.progress = process;
-			local_navigation_action->publishFeedback(local_navigation_feedback);
+			local_navigation_feedback.x_progress = x_progress;
+			local_navigation_feedback.y_progress = y_progress;
+			local_navigation_feedback.z_progress = z_progress;
+			local_navigation_action_ptr->publishFeedback(local_navigation_feedback);
 
          usleep(20000);
 
       }
 
-		local_navigation_action->setSucceeded();
+		local_navigation_action_ptr->setSucceeded();
 
 	return true;
 	}
@@ -113,19 +127,17 @@ namespace action_handler
 
 	int init_actions(ros::NodeHandle &n)
 	{
-		task_action_type task_action(n, "DJI_ROS/task_action",boost::bind(&task_action_callback, _1, &task_action), false);
-		
+		task_action_ptr = new task_action_type(n, "DJI_ROS/task_action",boost::bind(&task_action_callback, _1, task_action_ptr), false);
+		//task_action_ptr->start();
 
-		local_navigation_action_type local_navigation_action(n,"DJI_ROS/local_navigation_action", boost::bind(&local_navigation_action_callback, _1, &local_navigation_action), false );
-
-		local_navigation_action_ptr = (local_navigation_action_type*)malloc(sizeof(local_navigation_action_type));
-		memcpy(local_navigation_action_ptr, &(local_navigation_action), sizeof(local_navigation_action_type));
-
+		local_navigation_action_ptr = new local_navigation_action_type(n,"DJI_ROS/local_navigation_action", boost::bind(&local_navigation_action_callback, _1, local_navigation_action_ptr), false );
 		local_navigation_action_ptr->start();
 
-		gps_navigation_action_type gps_navigation_action(n,"DJI_ROS/gps_navigation_action", boost::bind(&gps_navigation_action_callback, _1, &gps_navigation_action), false );
+		gps_navigation_action_ptr = new gps_navigation_action_type(n,"DJI_ROS/gps_navigation_action", boost::bind(&gps_navigation_action_callback, _1, gps_navigation_action_ptr), false );
+		gps_navigation_action_ptr->start();
 
-		waypoint_navigation_action_type waypoint_navigation_action(n,"DJI_ROS/waypoint_navigation_action", boost::bind(&waypoint_navigation_action_callback, _1, &waypoint_navigation_action), false );
+		waypoint_navigation_action_ptr = new waypoint_navigation_action_type(n,"DJI_ROS/waypoint_navigation_action", boost::bind(&waypoint_navigation_action_callback, _1, waypoint_navigation_action_ptr), false );
+		waypoint_navigation_action_ptr->start();
 
 		return 0;
 	}

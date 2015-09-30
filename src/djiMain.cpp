@@ -196,8 +196,8 @@ void spin_callback(const ros::TimerEvent &)
 int main(int argc,char **argv) {
 
 	char temp_buf[65];
-
 	ros::init(argc, argv, "DJI_ROS");
+
 	ros::NodeHandle nh;
 	ros::NodeHandle nh_private("~");
 	
@@ -239,7 +239,6 @@ int main(int argc,char **argv) {
 	DJI_Pro_Activate_API(&user_act_data,NULL);
 	ros::Timer simple_task_timer = nh.createTimer(ros::Duration(1.0 / 50.0),  spin_callback);
 
-	action_handler::local_navigation_action_ptr->start();
 	ros::AsyncSpinner spinner(4); // Use 4 threads
 	spinner.start();
 	ros::waitForShutdown();

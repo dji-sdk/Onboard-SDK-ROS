@@ -238,7 +238,6 @@ namespace service_handler
 		*/
 
 		
-		ROS_INFO("Init services\n");
 		return 0;
 	}
 }
