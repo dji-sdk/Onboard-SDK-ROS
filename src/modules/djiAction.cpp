@@ -1,5 +1,6 @@
 #include "djiAction.h"
-
+#define C_EARTH (double) 6378137.0
+#define C_PI (double) 3.141592653589793
 
 namespace action_handler
 {
@@ -14,10 +15,10 @@ namespace action_handler
 	dji_ros::taskResult  task_action_result; 
 
 	dji_ros::local_navigationFeedback local_navigation_feedback;
-	dji_ros::local_navigationResult local_navigation_result;
-
+	dji_ros::local_navigationResult local_navigation_result; 
 	dji_ros::gps_navigationFeedback gps_navigation_feedback;
 	dji_ros::gps_navigationResult gps_navigation_result; 
+
 	dji_ros::waypoint_navigationFeedback waypoint_navigation_feedback;
 	dji_ros::waypoint_navigationResult waypoint_navigation_result;
 
@@ -73,6 +74,7 @@ namespace action_handler
 		float dis_x = dst_x - org_x;
 		float dis_y = dst_y - org_y;
 		float dis_z = dst_z - org_z; 
+
 		float det_x,det_y,det_z;
 
 		attitude_data_t user_ctrl_data;
@@ -107,15 +109,68 @@ namespace action_handler
 
       }
 
-		local_navigation_action_ptr->setSucceeded();
+		local_navigation_result.result = true;
+		local_navigation_action_ptr->setSucceeded(local_navigation_result);
 
-	return true;
+		return true;
 	}
 
 	bool gps_navigation_action_callback(const dji_ros::gps_navigationGoalConstPtr& goal, gps_navigation_action_type* gps_navigation_action)
 	{
+		float dst_latitude = goal->latitude*C_PI/180;
+		float dst_longitude = goal->longitude*C_PI/180;
+		float dst_altitude = goal->altitude;
+		
+		float org_latitude = dji_variable::global_position.latitude;
+		float org_longitude = dji_variable::global_position.longitude;
+		float org_altitude = dji_variable::global_position.altitude;
 
-	return true;
+		float dis_x,dis_y,dis_z;
+		
+		dis_x = dst_latitude - org_latitude;
+		dis_y = dst_longitude - org_longitude;
+		dis_z = dst_altitude - org_altitude;
+
+		float det_x,det_y,det_z;
+
+		attitude_data_t user_ctrl_data;
+      user_ctrl_data.ctrl_flag = 0x90;
+      user_ctrl_data.thr_z = dst_altitude;
+      user_ctrl_data.yaw = 0;
+	
+		int latitude_progress = 0; 
+		int longitude_progress = 0; 
+		int altitude_progress = 0; 
+
+		while (latitude_progress < 100 || longitude_progress < 100 || altitude_progress <100) {
+
+			user_ctrl_data.roll_or_x = (dst_latitude - dji_variable::global_position.latitude)*C_EARTH;
+			user_ctrl_data.pitch_or_y = (dst_longitude - dji_variable::global_position.longitude)*C_EARTH*cos(dji_variable::global_position.latitude);
+
+         DJI_Pro_Attitude_Control(&user_ctrl_data);
+
+			det_x = (100* (dst_latitude - dji_variable::global_position.latitude))/dis_x;
+			det_y = (100* (dst_longitude - dji_variable::global_position.longitude))/dis_y;
+			det_z = (100* (dst_altitude - dji_variable::global_position.altitude))/dis_z;
+		
+
+			latitude_progress = 100 - (int)det_x;
+			longitude_progress = 100 - (int)det_y;
+			altitude_progress = 100 - (int)det_z;
+
+			gps_navigation_feedback.latitude_progress = latitude_progress;
+			gps_navigation_feedback.longitude_progress = longitude_progress;
+			gps_navigation_feedback.altitude_progress = altitude_progress;
+			gps_navigation_action_ptr->publishFeedback(gps_navigation_feedback);
+
+         usleep(20000);
+
+      }
+
+		gps_navigation_result.result = true;
+		gps_navigation_action_ptr->setSucceeded(gps_navigation_result);
+
+		return true;
 	}
 	bool waypoint_navigation_action_callback(const dji_ros::waypoint_navigationGoalConstPtr& goal, waypoint_navigation_action_type* waypoint_navigation_action)
 	{
