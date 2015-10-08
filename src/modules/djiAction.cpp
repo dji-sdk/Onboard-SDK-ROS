@@ -53,13 +53,11 @@ namespace action_handler
 
 	bool local_navigation_action_callback(const dji_ros::local_navigationGoalConstPtr& goal, local_navigation_action_type* local_navigation_action)
 	{
-		/*IMPORTAN*/
+		/*IMPORTANT*/
 		/*
-			Although there has declared a pointer local_navigation_action as function parameter,
-			it is the local_navigation_action_ptr that we should use.
-			If local_navigation_action is used instead, there will be a runtime sengmentation fault.
-			I tried to find a way to fix it / make it better,
-			but I can neither remove the function parameter declaration nor use it.
+			There has been declared a pointer `local_navigation_action` as the function parameter,
+			However, it is the `local_navigation_action_ptr` that we should use.
+			If `local_navigation_action` is used instead, there will be a runtime sengmentation fault.
 
 			so interesting
 		*/
