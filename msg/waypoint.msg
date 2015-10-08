@@ -1,5 +1,8 @@
-int16 latitude
-int16 longitude
-uint16 altitude
+#latitude/longitude are in degree
+float64 latitude
+float64 longitude
+float32 altitude
+#heading is in [-180,180]
 int16 heading 
-int16 staytime
+#stay time is in second
+uint16 staytime

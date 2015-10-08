@@ -15,7 +15,8 @@ static void Display_Main_Menu(void)
 	printf("[e] Go home\n");
 	printf("[f] Local Navi Test\n");
 	printf("[g] GPS Navi Test\n");
-	printf("[h] Exit\n");
+	printf("[h] Waypoint List Test\n");
+	printf("[i] Exit\n");
 	printf("\ninput a/b/c etc..then press enter key\r\n");
 	printf("\nuse `rostopic echo` to query drone status\r\n");
 	printf("----------------------------------------\r\n");
@@ -38,11 +39,20 @@ int main(int argc, char **argv)
 
 	actionlib::SimpleActionClient<dji_ros::local_navigationAction> local_navigation_action_client("DJI_ROS/local_navigation_action", true);
 	actionlib::SimpleActionClient<dji_ros::gps_navigationAction> gps_navigation_action_client("DJI_ROS/gps_navigation_action", true);
+	actionlib::SimpleActionClient<dji_ros::waypoint_navigationAction> waypoint_navigation_action_client("DJI_ROS/waypoint_navigation_action", true);
 
 	dji_ros::control_manager 	srv_control;
 	dji_ros::action 				srv_action;
 	dji_ros::local_navigationGoal goal_local;
 	dji_ros::gps_navigationGoal goal_gps;
+	dji_ros::waypoint_navigationGoal goal_waypoint;
+
+	dji_ros::waypointList newWaypointList;
+	dji_ros::waypoint waypoint0;
+	dji_ros::waypoint waypoint1;
+	dji_ros::waypoint waypoint2;
+	dji_ros::waypoint waypoint3;
+	dji_ros::waypoint waypoint4;
 
 	Display_Main_Menu();
 	while(1)
@@ -50,7 +60,7 @@ int main(int argc, char **argv)
 		temp32 = getchar();
 		if(temp32 != 10)
 		{
-			if(temp32 >= 'a' && temp32 <= 'h' && valid_flag == false)
+			if(temp32 >= 'a' && temp32 <= 'i' && valid_flag == false)
 			{
 				main_operate_code = temp32;
 				valid_flag = true;
@@ -137,6 +147,69 @@ int main(int argc, char **argv)
 				break;
 
 			case 'h':
+				{
+					waypoint0.latitude = 22.535;
+					waypoint0.longitude = 113.95;
+					waypoint0.altitude = 100;
+					waypoint0.staytime = 5;
+					waypoint0.heading = 0;
+				}
+				newWaypointList.waypointList.push_back(waypoint0);
+
+				{
+					waypoint1.latitude = 22.535;
+					waypoint1.longitude = 113.96;
+					waypoint1.altitude = 100;
+					waypoint1.staytime = 0;
+					waypoint1.heading = 90;
+				}
+				newWaypointList.waypointList.push_back(waypoint1);
+
+				{
+					waypoint2.latitude = 22.545;
+					waypoint2.longitude = 113.96;
+					waypoint2.altitude = 100;
+					waypoint2.staytime = 4;
+					waypoint2.heading = -90;
+				}
+				newWaypointList.waypointList.push_back(waypoint2);
+
+				{
+					waypoint3.latitude = 22.545;
+					waypoint3.longitude = 113.96;
+					waypoint3.altitude = 10;
+					waypoint3.staytime = 2;
+					waypoint3.heading = 180;
+				}
+				newWaypointList.waypointList.push_back(waypoint3);
+
+				{
+					waypoint4.latitude = 22.525;
+					waypoint4.longitude = 113.93;
+					waypoint4.altitude = 50;
+					waypoint4.staytime = 0;
+					waypoint4.heading = -180;
+				}
+				newWaypointList.waypointList.push_back(waypoint4);
+
+				waypoint_navigation_action_client.waitForServer();
+				goal_waypoint.waypointList = newWaypointList;
+				waypoint_navigation_action_client.sendGoal(goal_waypoint);
+
+				finished_before_timeout = waypoint_navigation_action_client.waitForResult(ros::Duration(300.0));
+
+				if (finished_before_timeout)
+				{
+					actionlib::SimpleClientGoalState state = waypoint_navigation_action_client.getState();
+					ROS_INFO("Action finished: %s",state.toString().c_str());
+				}
+				else {
+					ROS_INFO("Action did not finish before the time out.");
+				}
+
+				break;
+
+			case 'i':
 				return 0;
 				break;
 

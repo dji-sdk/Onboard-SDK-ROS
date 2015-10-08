@@ -14,8 +14,9 @@ namespace action_handler
 	dji_ros::taskFeedback  task_action_feedback;
 	dji_ros::taskResult  task_action_result; 
 
-	dji_ros::local_navigationFeedback local_navigation_feedback;
+	dji_ros::local_navigationFeedback local_navigation_feedback; 
 	dji_ros::local_navigationResult local_navigation_result; 
+
 	dji_ros::gps_navigationFeedback gps_navigation_feedback;
 	dji_ros::gps_navigationResult gps_navigation_result; 
 
@@ -117,21 +118,24 @@ namespace action_handler
 
 	bool gps_navigation_action_callback(const dji_ros::gps_navigationGoalConstPtr& goal, gps_navigation_action_type* gps_navigation_action)
 	{
-		float dst_latitude = goal->latitude*C_PI/180;
-		float dst_longitude = goal->longitude*C_PI/180;
+		//The GPS coordiante sendto/receivefrom M100 are both in radian.
+		double dst_latitude = goal->latitude*C_PI/180;
+		double dst_longitude = goal->longitude*C_PI/180;
 		float dst_altitude = goal->altitude;
 		
-		float org_latitude = dji_variable::global_position.latitude;
-		float org_longitude = dji_variable::global_position.longitude;
+		double org_latitude = dji_variable::global_position.latitude;
+		double org_longitude = dji_variable::global_position.longitude;
 		float org_altitude = dji_variable::global_position.altitude;
 
-		float dis_x,dis_y,dis_z;
+		double dis_x,dis_y;
+		float dis_z;
 		
 		dis_x = dst_latitude - org_latitude;
 		dis_y = dst_longitude - org_longitude;
 		dis_z = dst_altitude - org_altitude;
 
-		float det_x,det_y,det_z;
+		double det_x,det_y;
+		float det_z;
 
 		attitude_data_t user_ctrl_data;
       user_ctrl_data.ctrl_flag = 0x90;
@@ -158,6 +162,11 @@ namespace action_handler
 			longitude_progress = 100 - (int)det_y;
 			altitude_progress = 100 - (int)det_z;
 
+			//lazy evaluation
+			if (abs(dis_x) < 0.00001) latitude_progress = 100;
+			if (abs(dis_y) < 0.00001) longitude_progress = 100;
+			if (abs(dis_z) < 1) altitude_progress = 100;
+
 			gps_navigation_feedback.latitude_progress = latitude_progress;
 			gps_navigation_feedback.longitude_progress = longitude_progress;
 			gps_navigation_feedback.altitude_progress = altitude_progress;
@@ -172,10 +181,85 @@ namespace action_handler
 
 		return true;
 	}
+
 	bool waypoint_navigation_action_callback(const dji_ros::waypoint_navigationGoalConstPtr& goal, waypoint_navigation_action_type* waypoint_navigation_action)
 	{
+		dji_ros::waypointList newWaypointList;
+		newWaypointList = goal->waypointList;
 
-	return true;
+		for (int i = 0; i < newWaypointList.waypointList.size(); i++) {
+			const dji_ros::waypoint newWaypoint = newWaypointList.waypointList[i];	
+			waypoint_navigation_feedback.index_progress = i;
+			processWaypoint(newWaypoint);
+		}
+		
+		waypoint_navigation_result.result = true;
+		waypoint_navigation_action_ptr->setSucceeded(waypoint_navigation_result);
+
+		return true;
+	}
+
+	void processWaypoint(dji_ros::waypoint newWaypoint) {
+
+		double dst_latitude = newWaypoint.latitude*C_PI/180;
+		double dst_longitude = newWaypoint.longitude*C_PI/180;
+		float dst_altitude = newWaypoint.altitude;
+
+		double org_latitude = dji_variable::global_position.latitude;
+		double org_longitude = dji_variable::global_position.longitude;
+		float org_altitude = dji_variable::global_position.altitude;
+
+		double dis_x,dis_y;
+		float dis_z;
+
+		dis_x = dst_latitude - org_latitude;
+		dis_y = dst_longitude - org_longitude;
+		dis_z = dst_altitude - org_altitude;
+
+		double det_x,det_y;
+		float det_z;
+
+		attitude_data_t user_ctrl_data;
+      user_ctrl_data.ctrl_flag = 0x90;
+      user_ctrl_data.thr_z = dst_altitude;
+      user_ctrl_data.yaw = newWaypoint.heading;
+	
+		int latitude_progress = 0; 
+		int longitude_progress = 0; 
+		int altitude_progress = 0; 
+
+		while (latitude_progress < 100 || longitude_progress < 100 || altitude_progress <100) {
+
+			user_ctrl_data.roll_or_x = (dst_latitude - dji_variable::global_position.latitude)*C_EARTH;
+			user_ctrl_data.pitch_or_y = (dst_longitude - dji_variable::global_position.longitude)*C_EARTH*cos(dji_variable::global_position.latitude);
+
+         DJI_Pro_Attitude_Control(&user_ctrl_data);
+
+			det_x = (100* (dst_latitude - dji_variable::global_position.latitude))/dis_x;
+			det_y = (100* (dst_longitude - dji_variable::global_position.longitude))/dis_y;
+			det_z = (100* (dst_altitude - dji_variable::global_position.altitude))/dis_z;
+		
+
+			latitude_progress = 100 - abs((int)det_x);
+			longitude_progress = 100 - abs((int)det_y);
+			altitude_progress = 100 - abs((int)det_z);
+
+			//lazy evaluation when moving distance tooooooooooo small
+			//need to find a better way
+			if (fabs((dst_latitude - dji_variable::global_position.latitude)*180/C_PI) < 0.00001) latitude_progress = 100;
+			if (fabs((dst_longitude - dji_variable::global_position.longitude)*180/C_PI) < 0.00001) longitude_progress = 100;
+			if (fabsf(dst_altitude - dji_variable::global_position.altitude) < 0.1) altitude_progress = 100;
+
+			waypoint_navigation_feedback.latitude_progress = latitude_progress;
+			waypoint_navigation_feedback.longitude_progress = longitude_progress;
+			waypoint_navigation_feedback.altitude_progress = altitude_progress;
+			waypoint_navigation_action_ptr->publishFeedback(waypoint_navigation_feedback);
+
+         usleep(20000);
+
+      }
+		ros::Duration(newWaypoint.staytime).sleep();
+
 	}
 
 	int init_actions(ros::NodeHandle &n)
