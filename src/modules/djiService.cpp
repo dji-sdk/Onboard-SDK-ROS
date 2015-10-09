@@ -13,7 +13,7 @@ namespace service_handler
             response.result= true;
 		}
 		else if (request.control_ability== 0) {
-			printf("Response Control");
+			printf("Release Control");
 			DJI_Pro_Control_Management(0,NULL);
 			response.result = true;
 		}

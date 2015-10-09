@@ -1,5 +1,6 @@
-#latitude/longitude are in degree
+#latitude is in degree
 float64 latitude
+#longitude is in degree
 float64 longitude
 float32 altitude
 #heading is in [-180,180]

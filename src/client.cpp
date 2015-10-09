@@ -47,15 +47,13 @@ int main(int argc, char **argv)
 	ROS_INFO("sdk_service_client_test");
 	ros::NodeHandle n;
 	ros::ServiceClient drone_control_manager = n.serviceClient<dji_ros::control_manager>("DJI_ROS/obtain_release_control");
-	/*
 	ros::ServiceClient drone_action_client = n.serviceClient<dji_ros::action>("DJI_ROS/drone_action_control");
-*/
 	ros::ServiceClient drone_attitude_client= n.serviceClient<dji_ros::attitude>("DJI_ROS/drone_attitude_control");
 	ros::ServiceClient camera_action_client= n.serviceClient<dji_ros::camera_action>("DJI_ROS/camera_action_service");
 	ros::ServiceClient gimbal_angle_client= n.serviceClient<dji_ros::gimbal_angle>("DJI_ROS/gimbal_angle_control");
 	ros::ServiceClient gimbal_speed_client= n.serviceClient<dji_ros::gimbal_speed>("DJI_ROS/gimbal_speed_control");
 	dji_ros::control_manager 	srv_control;
-	//dji_ros::action 				srv_action;
+	dji_ros::action 				srv_action;
 	dji_ros::attitude 			srv_attitude;
 	dji_ros::camera_action		srv_camera;
 	dji_ros::gimbal_angle 		srv_gimbal_angle;
@@ -101,26 +99,20 @@ int main(int argc, char **argv)
 				break;
 			case 'c':
 				/* take off */
-				/*
 				srv_action.request.action=4;
 				drone_action_client.call(srv_action);
 				drone_action_client.call(srv_action);
-				*/
 				break;
 			case 'd':
 				/* landing*/
-				/*
 				srv_action.request.action=6;
 				drone_action_client.call(srv_action);
 				drone_action_client.call(srv_action);
-				*/
 				break;
 			case 'e':
 				/* go home*/
-				/*
 				srv_action.request.action=1;
 				drone_action_client.call(srv_action);
-				*/
 				break;
 			case 'f':
 				/*gimbal test*/
@@ -242,11 +234,9 @@ int main(int argc, char **argv)
 
 			case 'g':
 				/* attitude control sample*/
-				/*
 				srv_action.request.action=4;
 				drone_action_client.call(srv_action);
 				sleep(8);
-				*/
 
 				srv_attitude.request.flag = 0x40;
 				srv_attitude.request.x = 0;
@@ -384,10 +374,8 @@ int main(int argc, char **argv)
 				sleep(1);
 
 
-				/*
 				srv_action.request.action=1;
 				drone_action_client.call(srv_action);
-				*/
 				break;
 
 			case 'h':
