@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(dji_ros)
+project(dji_sdk)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -104,7 +104,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES dji_ros
+#  LIBRARIES dji_sdk
 #  CATKIN_DEPENDS geometry_msgs message_generation nav_msgs roscpp rospy std_msgs
 #  DEPENDS system_lib
 )
@@ -122,19 +122,19 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(dji_ros
-#   src/${PROJECT_NAME}/dji_ros.cpp
+# add_library(dji_sdk
+#   src/${PROJECT_NAME}/dji_sdk.cpp
 # )
 
 ## Declare a cpp executable
-add_executable(dji_ros src/djiMain.cpp src/modules/djiVariable.cpp src/modules/djiPublisher.cpp src/modules/djiService.cpp src/modules/djiAction.cpp include/DJI_LIB/DJI_Pro_App.cpp include/DJI_LIB/DJI_Pro_Codec.cpp include/DJI_LIB/DJI_Pro_Hw.cpp include/DJI_LIB/DJI_Pro_Link.cpp include/DJI_LIB/DJI_Pro_Rmu.cpp)
+add_executable(dji_sdk src/djiMain.cpp src/modules/djiVariable.cpp src/modules/djiPublisher.cpp src/modules/djiService.cpp src/modules/djiAction.cpp include/DJI_LIB/DJI_Pro_App.cpp include/DJI_LIB/DJI_Pro_Codec.cpp include/DJI_LIB/DJI_Pro_Hw.cpp include/DJI_LIB/DJI_Pro_Link.cpp include/DJI_LIB/DJI_Pro_Rmu.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(dji_ros dji_ros_generate_messages_cpp)
+add_dependencies(dji_sdk dji_sdk_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(dji_ros
+target_link_libraries(dji_sdk
    ${catkin_LIBRARIES}
 )
 
@@ -144,17 +144,17 @@ target_link_libraries(map_nav_srv ${catkin_LIBRARIES})
 #############
 ## Install ##
 #############
-add_executable(dji_ros_client src/client.cpp)
-target_link_libraries(dji_ros_client
+add_executable(dji_sdk_client src/client.cpp)
+target_link_libraries(dji_sdk_client
    ${catkin_LIBRARIES}
 )
-add_dependencies(dji_ros_client dji_ros_generate_messages_cpp)
+add_dependencies(dji_sdk_client dji_sdk_generate_messages_cpp)
 
-add_executable(dji_ros_wp_client src/wp_client.cpp)
-target_link_libraries(dji_ros_wp_client
+add_executable(dji_sdk_wp_client src/wp_client.cpp)
+target_link_libraries(dji_sdk_wp_client
    ${catkin_LIBRARIES}
 )
-add_dependencies(dji_ros_wp_client dji_ros_generate_messages_cpp)
+add_dependencies(dji_sdk_wp_client dji_sdk_generate_messages_cpp)
 # all install targets should use catkin DESTINATION variables
 # See http://ros.org/doc/api/catkin/html/adv_user_guide/variables.html
 
@@ -166,7 +166,7 @@ add_dependencies(dji_ros_wp_client dji_ros_generate_messages_cpp)
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS dji_ros dji_ros_node
+# install(TARGETS dji_sdk dji_sdk_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -191,7 +191,7 @@ add_dependencies(dji_ros_wp_client dji_ros_generate_messages_cpp)
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_dji_ros.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_dji_sdk.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

@@ -196,7 +196,7 @@ void spin_callback(const ros::TimerEvent &)
 int main(int argc,char **argv) {
 
 	char temp_buf[65];
-	ros::init(argc, argv, "DJI_ROS");
+	ros::init(argc, argv, "dji_sdk");
 
 	ros::NodeHandle nh;
 	ros::NodeHandle nh_private("~");

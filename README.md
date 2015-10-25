@@ -74,7 +74,7 @@ OR
 
 ~~~bash
 roscore
-rosrun dji_ros dji_ros
+rosrun dji_sdk dji_sdk
 ~~~
 
 Note: The above command selection depends on the way you store the activation infomation.
@@ -85,13 +85,13 @@ The ROS server node will first check your activation data. If the check of your 
 Please make sure you have started the server node and then run the example client node by entering the following command:
 
 ~~~bash
-rosrun dji_ros dji_ros_client
+rosrun dji_sdk dji_sdk_client
 ~~~
 
 also we have a navigation example client:
 
 ~~~bash
-rosrun dji_ros dji_ros_wp_client
+rosrun dji_sdk dji_sdk_wp_client
 ~~~
 
 The server node handles the communication between onboard device and N1. It processes the data broadcasted from N1, reorganized and published the received stream into different topics. The server node also holds `srv` and `action`, which can be used by other nodes to control the movement and action of M100. Also, the activation procedure is processed in the server node when start running.
@@ -126,162 +126,162 @@ ENJOY your flight!
 ####Topic list:
 
 ```xml
-/DJI_ROS/acceleration
+/dji_sdk/acceleration
 	info: acceleration data
-	type: dji_ros/acc
+	type: dji_sdk/acc
 
-/DJI_ROS/activation_result
+/dji_sdk/activation_result
 	info: acitvation result
 	type: std_msgs/UInt8
 
-/DJI_ROS/attitude_quad
+/dji_sdk/attitude_quad
 	info: quaternion data
-	type: dji_ros/attitude_quad
+	type: dji_sdk/attitude_quad
 
-/DJI_ROS/battery_status
+/dji_sdk/battery_status
 	info: remaining battery percent(s)
 	type: std_msgs/UInt8
 
-/DJI_ROS/compass_info
+/dji_sdk/compass_info
 	info: compass data
-	type: dji_ros/compass
+	type: dji_sdk/compass
 
-/DJI_ROS/ctrl_info
+/dji_sdk/ctrl_info
 	info: current control device of drone
-	type: dji_ros/ctrl_info
+	type: dji_sdk/ctrl_info
 
-/DJI_ROS/flight_status
+/dji_sdk/flight_status
 	info: current flight status (please check the document appendix for detailed meaning)
 	type: std_msgs/UInt8
 
-/DJI_ROS/gimbal_info
+/dji_sdk/gimbal_info
 	info: gimbal roll/yaw/pitch angle
-	type: dji_ros/gimbal
+	type: dji_sdk/gimbal
 
-/DJI_ROS/global_position
+/dji_sdk/global_position
 	info: current GPS coordinate 
-	type: dji_ros/global_position
+	type: dji_sdk/global_position
 
-/DJI_ROS/gps_navigation_action/cancel
+/dji_sdk/gps_navigation_action/cancel
 	info: gps_navigation_action action cancel 
 	type: actionlib_msgs/GoalID
 
-/DJI_ROS/gps_navigation_action/feedback
+/dji_sdk/gps_navigation_action/feedback
 	info: gps_navigation_action action progress
-	type: dji_ros/gps_navigationActionFeedback
+	type: dji_sdk/gps_navigationActionFeedback
 
-/DJI_ROS/gps_navigation_action/goal
+/dji_sdk/gps_navigation_action/goal
 	info: gps_navigation_action action goal
-	type: dji_ros/gps_navigationActionGoal
+	type: dji_sdk/gps_navigationActionGoal
 
-/DJI_ROS/gps_navigation_action/result
+/dji_sdk/gps_navigation_action/result
 	info: gps_navigation_action action result
-	type: dji_ros/gps_navigationActionResult
+	type: dji_sdk/gps_navigationActionResult
 
-/DJI_ROS/gps_navigation_action/status
+/dji_sdk/gps_navigation_action/status
 	info: gps_navigation_action action status
 	type: actionlib_msgs/GoalStatusArray
 
-/DJI_ROS/local_navigation_action/cancel
+/dji_sdk/local_navigation_action/cancel
 	info: local_navigation_action action cancel
 	type: actionlib_msgs/GoalID
 
-/DJI_ROS/local_navigation_action/feedback
+/dji_sdk/local_navigation_action/feedback
 	info: local_navigation_action action progress
-	type: dji_ros/local_navigationActionFeedback
+	type: dji_sdk/local_navigationActionFeedback
 
-/DJI_ROS/local_navigation_action/goal
+/dji_sdk/local_navigation_action/goal
 	info: local_navigation_action action goal
-	type: dji_ros/local_navigationActionGoal
+	type: dji_sdk/local_navigationActionGoal
 
-/DJI_ROS/local_navigation_action/result
+/dji_sdk/local_navigation_action/result
 	info: local_navigation_action action result
-	type: dji_ros/local_navigationActionResult
+	type: dji_sdk/local_navigationActionResult
 
-/DJI_ROS/local_navigation_action/status
+/dji_sdk/local_navigation_action/status
 	info: local_navigation_action action status
 	type: actionlib_msgs/GoalStatusArray
 
-/DJI_ROS/local_position
+/dji_sdk/local_position
 	info: current local position((X,Y,Z) coordinate, origin is the first recorded GPS point when server node start)
-	type: dji_ros/local_position
+	type: dji_sdk/local_position
 
-/DJI_ROS/obtained_control
+/dji_sdk/obtained_control
 	info: current onboard device control ability
 	type: std_msgs/UInt8
 
-/DJI_ROS/odom
+/dji_sdk/odom
 	info: current odometry data
 	type: nav_msgs/Odometry
 
-/DJI_ROS/rc_channels
+/dji_sdk/rc_channels
 	info: current channel values from RC controller
-	type: dji_ros/rc_channels
+	type: dji_sdk/rc_channels
 	
-/DJI_ROS/velocity
+/dji_sdk/velocity
 	info: current velocity
-	type: dji_ros/velocity
+	type: dji_sdk/velocity
 
-/DJI_ROS/waypoint_navigation_action/cancel
+/dji_sdk/waypoint_navigation_action/cancel
 	info: waypoint_navigation_action action cancel
 	type: actionlib_msgs/GoalID
 
-/DJI_ROS/waypoint_navigation_action/feedback
+/dji_sdk/waypoint_navigation_action/feedback
 	info: waypoint_navigation_action action progress
-	type: dji_ros/waypoint_navigationActionFeedback
+	type: dji_sdk/waypoint_navigationActionFeedback
 
-/DJI_ROS/waypoint_navigation_action/goal
+/dji_sdk/waypoint_navigation_action/goal
 	info: waypoint_navigation_action action goal
-	type: dji_ros/waypoint_navigationActionGoal
+	type: dji_sdk/waypoint_navigationActionGoal
 
-/DJI_ROS/waypoint_navigation_action/result
+/dji_sdk/waypoint_navigation_action/result
 	info: waypoint_navigation_action action result
-	type: dji_ros/waypoint_navigationActionResult
+	type: dji_sdk/waypoint_navigationActionResult
 
-/DJI_ROS/waypoint_navigation_action/status
+/dji_sdk/waypoint_navigation_action/status
 	info: waypoint_navigation_action action statsu
 	type: actionlib_msgs/GoalStatusArray
 ```
 
 ####Msg List
 ```xml
-dji_ros/gps_navigationAction
-dji_ros/gps_navigationActionFeedback
-dji_ros/gps_navigationActionGoal
-dji_ros/gps_navigationActionResult
-dji_ros/gps_navigationFeedback
-dji_ros/gps_navigationGoal
-dji_ros/gps_navigationResult
+dji_sdk/gps_navigationAction
+dji_sdk/gps_navigationActionFeedback
+dji_sdk/gps_navigationActionGoal
+dji_sdk/gps_navigationActionResult
+dji_sdk/gps_navigationFeedback
+dji_sdk/gps_navigationGoal
+dji_sdk/gps_navigationResult
 	auto generated by GPS navigation action
 
-dji_ros/local_navigationAction
-dji_ros/local_navigationActionFeedback
-dji_ros/local_navigationActionGoal
-dji_ros/local_navigationActionResult
-dji_ros/local_navigationFeedback
-dji_ros/local_navigationGoal
-dji_ros/local_navigationResult
+dji_sdk/local_navigationAction
+dji_sdk/local_navigationActionFeedback
+dji_sdk/local_navigationActionGoal
+dji_sdk/local_navigationActionResult
+dji_sdk/local_navigationFeedback
+dji_sdk/local_navigationGoal
+dji_sdk/local_navigationResult
 	auto generated by local navigation action
 
-dji_ros/taskAction
-dji_ros/taskActionFeedback
-dji_ros/taskActionGoal
-dji_ros/taskActionResult
-dji_ros/taskFeedback
-dji_ros/taskGoal
-dji_ros/taskResult
+dji_sdk/taskAction
+dji_sdk/taskActionFeedback
+dji_sdk/taskActionGoal
+dji_sdk/taskActionResult
+dji_sdk/taskFeedback
+dji_sdk/taskGoal
+dji_sdk/taskResult
 	auto generated by task action
 
-dji_ros/waypoint_navigationAction
-dji_ros/waypoint_navigationActionFeedback
-dji_ros/waypoint_navigationActionGoal
-dji_ros/waypoint_navigationActionResult
-dji_ros/waypoint_navigationFeedback
-dji_ros/waypoint_navigationGoal
-dji_ros/waypoint_navigationResult
+dji_sdk/waypoint_navigationAction
+dji_sdk/waypoint_navigationActionFeedback
+dji_sdk/waypoint_navigationActionGoal
+dji_sdk/waypoint_navigationActionResult
+dji_sdk/waypoint_navigationFeedback
+dji_sdk/waypoint_navigationGoal
+dji_sdk/waypoint_navigationResult
 	auto generate by waypoint navigation action
 
-dji_ros/acc
+dji_sdk/acc
 	std_msgs/Header header
 	  uint32 seq
 	  time stamp
@@ -291,7 +291,7 @@ dji_ros/acc
 	float32 ay
 	float32 az
 
-dji_ros/attitude_quad
+dji_sdk/attitude_quad
 	std_msgs/Header header
 	  uint32 seq
 	  time stamp
@@ -305,7 +305,7 @@ dji_ros/attitude_quad
 	float32 wy
 	float32 wz
 
-dji_ros/compass
+dji_sdk/compass
 	std_msgs/Header header
 	  uint32 seq
 	  time stamp
@@ -315,11 +315,11 @@ dji_ros/compass
 	int8 y
 	int8 z
 
-dji_ros/ctrl_info
+dji_sdk/ctrl_info
 	int8 cur_ctrl_dev_in_navi_mode
 	int8 serial_req_status
 
-dji_ros/gimbal
+dji_sdk/gimbal
 	std_msgs/Header header
 	  uint32 seq
 	  time stamp
@@ -329,7 +329,7 @@ dji_ros/gimbal
 	float32 yaw
 	float32 roll
 
-dji_ros/global_position
+dji_sdk/global_position
 	std_msgs/Header header
 	  uint32 seq
 	  time stamp
@@ -344,7 +344,7 @@ dji_ros/global_position
 	#reliablity [0,5]
 	int8 health
 
-dji_ros/local_position
+dji_sdk/local_position
 	#    North(x)
 	#   /
 	#  /
@@ -361,7 +361,7 @@ dji_ros/local_position
 	float32 y
 	float32 z
 
-dji_ros/rc_channels
+dji_sdk/rc_channels
 	# RC Map
 	#
 	#  mode:
@@ -391,7 +391,7 @@ dji_ros/rc_channels
 	float32 mode
 	float32 gear_up
 
-dji_ros/velocity
+dji_sdk/velocity
 	std_msgs/Header header
 	  uint32 seq
 	  time stamp
@@ -404,7 +404,7 @@ dji_ros/velocity
 	uint8 feedback_sensor_id
 
 
-dji_ros/waypoint
+dji_sdk/waypoint
 	#latitude is in degree
 	float64 latitude
 	#longitude is in degree
@@ -416,43 +416,43 @@ dji_ros/waypoint
 	uint16 staytime
 
 
-dji_ros/waypointList
-	dji_ros/waypoint[] waypointList
+dji_sdk/waypointList
+	dji_sdk/waypoint[] waypointList
 
 
 ```
 
 ####Service List
 ```xml
-/DJI_ROS/camera_action_service
+/dji_sdk/camera_action_service
 	info: camera action control service
-	type: dji_ros/camera_action
+	type: dji_sdk/camera_action
 
-/DJI_ROS/drone_action_control
+/dji_sdk/drone_action_control
 	info: drone action control service
-	type: dji_ros/action
+	type: dji_sdk/action
 
-/DJI_ROS/drone_attitude_control
+/dji_sdk/drone_attitude_control
 	info: drone attitude control service
-	type: dji_ros/attitude
+	type: dji_sdk/attitude
 
-/DJI_ROS/gimbal_angle_control
+/dji_sdk/gimbal_angle_control
 	info: gimbal angle control service
-	type: dji_ros/gimbal_angle
+	type: dji_sdk/gimbal_angle
 
-/DJI_ROS/gimbal_speed_control
+/dji_sdk/gimbal_speed_control
 	info: gimbal angular speed control service
-	type: dji_ros/gimbal_speed
+	type: dji_sdk/gimbal_speed
 
-/DJI_ROS/obtain_release_control
+/dji_sdk/obtain_release_control
 	info: obtain / release control abilitiy service
-	type: dji_ros/control_manager
+	type: dji_sdk/control_manager
 
 ```
 
 ####Srv List
 ```xml
-dji_ros/action
+dji_sdk/action
 	#takeoff: 4
 	#landing: 6
 	#gohome:  1
@@ -460,7 +460,7 @@ dji_ros/action
 	---
 	bool result
 
-dji_ros/attitude
+dji_sdk/attitude
 	uint8 flag
 	float32 x
 	float32 y
@@ -469,7 +469,7 @@ dji_ros/attitude
 	---
 	bool result 
 
-dji_ros/camera_action
+dji_sdk/camera_action
 	#takePicture: 0
 	#startRecord: 1
 	#stopRecord:  2
@@ -477,14 +477,14 @@ dji_ros/camera_action
 	---
 	bool result
 
-dji_ros/control_manager
+dji_sdk/control_manager
 	#requestControl: 1
 	#releaseControl: 0
 	uint8 control_ability 
 	---
 	bool result
 
-dji_ros/gimbal_angle
+dji_sdk/gimbal_angle
 	#moveByUnits: 0
 	#moveToUnits: 1
 	uint8 flag
@@ -495,7 +495,7 @@ dji_ros/gimbal_angle
 	---
 	bool result 
 
-dji_ros/gimbal_speed
+dji_sdk/gimbal_speed
 	int16 yaw_rate
 	int16 x_rate
 	int16 y_rate
@@ -506,21 +506,21 @@ dji_ros/gimbal_speed
 ####Action Server List
 ```xml
 
-DJI_ROS/gps_navigation_action
+dji_sdk/gps_navigation_action
 	info: gps navigation action
-	type: dji_ros/gps_navigation.action
+	type: dji_sdk/gps_navigation.action
 
-DJI_ROS/local_navigation_action
+dji_sdk/local_navigation_action
 	info: local navigation action
-	type: dji_ros/local_navigation.action
+	type: dji_sdk/local_navigation.action
 
-DJI_ROS/task_action [DEPRECATED]
+dji_sdk/task_action [DEPRECATED]
 	info: same to drone action control service
-	type: dji_ros/task.action
+	type: dji_sdk/task.action
 
-DJI_ROS/waypoint_navigation_action
+dji_sdk/waypoint_navigation_action
 	info: waypoint navigation action
-	type: dji_ros/waypoint_navigation.action
+	type: dji_sdk/waypoint_navigation.action
 ```
 
 ####Action File List
@@ -561,7 +561,7 @@ task.action
 	uint8 progress 
 
 waypoint_navigation.action
-	dji_ros/waypointList waypointList
+	dji_sdk/waypointList waypointList
 	---
 	bool result
 	---

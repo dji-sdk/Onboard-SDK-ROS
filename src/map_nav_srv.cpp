@@ -6,13 +6,13 @@
 
 using namespace actionlib;
 
-typedef dji_ros::web_waypoint_receiveAction Action_t;
-typedef dji_ros::web_waypoint_receiveGoal Goal_t;
-typedef dji_ros::web_waypoint_receiveGoalConstPtr GoalConstPtr_t;
-typedef dji_ros::web_waypoint_receiveFeedback Feedback_t;
-typedef dji_ros::web_waypoint_receiveResult Result_t;
+typedef dji_sdk::web_waypoint_receiveAction Action_t;
+typedef dji_sdk::web_waypoint_receiveGoal Goal_t;
+typedef dji_sdk::web_waypoint_receiveGoalConstPtr GoalConstPtr_t;
+typedef dji_sdk::web_waypoint_receiveFeedback Feedback_t;
+typedef dji_sdk::web_waypoint_receiveResult Result_t;
 
-typedef dji_ros::waypoint_navigationAction WPAction_t;
+typedef dji_sdk::waypoint_navigationAction WPAction_t;
 
 SimpleActionClient<WPAction_t>* wpClientPtr_;
 SimpleActionServer<Action_t>* asPtr_;
@@ -29,7 +29,7 @@ uint8_t alt_p_; //altitude_progress
 uint8_t idx_p_; //index_progress
 
 
-void wp_feedbackCB(const dji_ros::waypoint_navigationFeedbackConstPtr& fb) {
+void wp_feedbackCB(const dji_sdk::waypoint_navigationFeedbackConstPtr& fb) {
     lat_p_ = fb->latitude_progress;
     lon_p_ = fb->longitude_progress;
     alt_p_ = fb->altitude_progress;
@@ -69,7 +69,7 @@ void goalCB() {
     }
 
     tid_ = newGoal.tid;
-    dji_ros::waypointList wpl = newGoal.waypointList;
+    dji_sdk::waypointList wpl = newGoal.waypointList;
     stage_ = 1;
 
     while(ros::ok()) {
@@ -117,7 +117,7 @@ void goalCB() {
 
         bool isFinished; //flag for task result
         int cnt; //feedback count
-        dji_ros::waypoint_navigationGoal wpGoal; //to call waypoint action
+        dji_sdk::waypoint_navigationGoal wpGoal; //to call waypoint action
         switch(stage_) {
             case 0: //"0" for waiting for waypointList
                 rslt.result = false;
@@ -191,7 +191,7 @@ void preemptCB() {
     ROS_INFO("Hey! I got preempt!");
 }
 
-void cmdCB(const dji_ros::map_nav_srv_cmdConstPtr& msg) {
+void cmdCB(const dji_sdk::map_nav_srv_cmdConstPtr& msg) {
     ROS_INFO("Received command \"%c\" of tid %llu", msg->cmdCode, msg->tid);
     cmdCode_ = msg->cmdCode;
     cmdTid_ = msg->tid;
@@ -203,7 +203,7 @@ void ctrlCB(const std_msgs::Bool::ConstPtr& msg) {
         ROS_INFO("Request to obtain control");
     else
         ROS_INFO("Release control");
-    dji_ros::control_manager srv_ctrl;
+    dji_sdk::control_manager srv_ctrl;
 
     srv_ctrl.request.control_ability = msg->data;
     drone_ctrl_mgr_ptr->call(srv_ctrl);
@@ -214,27 +214,27 @@ int main(int argc, char* argv[]) {
     ros::NodeHandle nh;
 
     //drone control manager
-    ros::ServiceClient ctrl_mgr = nh.serviceClient<dji_ros::control_manager>(
-        "DJI_ROS/obtain_release_control"
+    ros::ServiceClient ctrl_mgr = nh.serviceClient<dji_sdk::control_manager>(
+        "dji_sdk/obtain_release_control"
     );
     drone_ctrl_mgr_ptr = &ctrl_mgr;
 
     //waypoint_navigation action server
     wpClientPtr_ = new SimpleActionClient<WPAction_t>(
-        "DJI_ROS/waypoint_navigation_action", 
+        "dji_sdk/waypoint_navigation_action", 
         true
     );
 
     //web_waypoint_receive action server
     asPtr_ = new SimpleActionServer<Action_t>(
         nh, 
-        "DJI_ROS/web_waypoint_receive_action", 
+        "dji_sdk/web_waypoint_receive_action", 
         false
     );
 
     //command subscribers
-    ros::Subscriber sub1 = nh.subscribe("/DJI_ROS/map_nav_srv/cmd", 1, cmdCB);
-    ros::Subscriber sub2 = nh.subscribe("/DJI_ROS/map_nav_srv/ctrl", 1, ctrlCB);
+    ros::Subscriber sub1 = nh.subscribe("/dji_sdk/map_nav_srv/cmd", 1, cmdCB);
+    ros::Subscriber sub2 = nh.subscribe("/dji_sdk/map_nav_srv/ctrl", 1, ctrlCB);
 
     asPtr_->registerGoalCallback(&goalCB);
     asPtr_->registerPreemptCallback(&preemptCB);

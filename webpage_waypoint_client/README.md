@@ -26,13 +26,13 @@ sudo apt-get install ros-indigo-rosbridge-server
 #####c) Launch Main SDK Monitor Program
 The main SDK monitor program provide some services interface to communicate with the flight controller layer. It is necessary for this demo:
 ```
-roslaunch dji_ros sdk_demo.launch
+roslaunch dji_sdk sdk_demo.launch
 ```
 
 #####d) Launch Demo
 Finally, launch the demo:
 ```
-roslaunch dji_ros map_nav_srv.launch
+roslaunch dji_sdk map_nav_srv.launch
 ```
 This launch file will fire up both rosbridge websocket server and the demo server. Default 19871 port is monitored by the websocket server. You can modify it in the launch file.
 

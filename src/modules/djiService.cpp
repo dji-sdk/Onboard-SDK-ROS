@@ -3,8 +3,8 @@
 namespace service_handler
 {
     bool control_callback(
-			dji_ros::control_manager::Request& request,
-			dji_ros::control_manager::Response& response
+			dji_sdk::control_manager::Request& request,
+			dji_sdk::control_manager::Response& response
 			)
 	{
 		if (request.control_ability== 1) {
@@ -24,8 +24,8 @@ namespace service_handler
 	}
 
 	bool action_callback(
-			dji_ros::action::Request& request,
-			dji_ros::action::Response& response
+			dji_sdk::action::Request& request,
+			dji_sdk::action::Response& response
 			)
 	{
 		if(request.action== 4)
@@ -52,8 +52,8 @@ namespace service_handler
 	}
 
 	bool camera_action_callback(
-			dji_ros::camera_action::Request& request,
-			dji_ros::camera_action::Response& response
+			dji_sdk::camera_action::Request& request,
+			dji_sdk::camera_action::Response& response
 			)
 	{
 		if (request.camera_action == 0){
@@ -76,8 +76,8 @@ namespace service_handler
 		
 
 	bool gimbal_angle_callback(
-			dji_ros::gimbal_angle::Request& request,
-			dji_ros::gimbal_angle::Response& response
+			dji_sdk::gimbal_angle::Request& request,
+			dji_sdk::gimbal_angle::Response& response
 			)
 	{
 		uint8_t flag =request.flag;
@@ -92,8 +92,8 @@ namespace service_handler
 	}
 
 	bool gimbal_speed_callback(
-			dji_ros::gimbal_speed::Request& request,
-			dji_ros::gimbal_speed::Response& response
+			dji_sdk::gimbal_speed::Request& request,
+			dji_sdk::gimbal_speed::Response& response
 			)
 	{
 		signed short yaw_rate = request.yaw_rate;
@@ -107,8 +107,8 @@ namespace service_handler
 	}
 
 	bool attitude_callback(
-			dji_ros::attitude::Request& request,
-			dji_ros::attitude::Response& response
+			dji_sdk::attitude::Request& request,
+			dji_sdk::attitude::Response& response
 			)
 	{
 		attitude_data_t user_ctrl_data;
@@ -128,8 +128,8 @@ namespace service_handler
 
 /*
 	bool local_navigation_callback(
-			dji_ros::local_navigation::Request& request,
-			dji_ros::local_navigation::Response& response
+			dji_sdk::local_navigation::Request& request,
+			dji_sdk::local_navigation::Response& response
 			)
 	{
 		//actually, this is the same as attitude service, but with HORI_POS and VERT_POS in ground frame i.e. 0b1001x00x
@@ -158,8 +158,8 @@ namespace service_handler
 	}
 
 	bool gps_navigation_callback(
-			dji_ros::gps_navigation::Request& request,
-			dji_ros::gps_navigation::Response& response
+			dji_sdk::gps_navigation::Request& request,
+			dji_sdk::gps_navigation::Response& response
 			)
 	{
 		//after convert det(GPS) into distance, this is the same as local_navigation
@@ -169,15 +169,15 @@ namespace service_handler
 
 
 	bool waypoints_callback(
-			dji_ros::waypoints_navigation::Request& request,
-			dji_ros::waypoints_navigation::Response& response
+			dji_sdk::waypoints_navigation::Request& request,
+			dji_sdk::waypoints_navigation::Response& response
 			)
 	{
 		//waypointList[] waypoints;
 		//an example(not sure correct or not) of using an msg, which contains an array of another custom msgs as a custom srv request
 		 *
 		 *for (int i = 0; i < waypointList -> size; i++):
-		 *		dji_ros::waypoint wpData = waypointList -> waypoint [i]
+		 *		dji_sdk::waypoint wpData = waypointList -> waypoint [i]
 		 *
 		//separate out each waypoint, then work is the same as gps_navigation 
 		//however, extra functions are necessary to handle stay time 
@@ -191,48 +191,48 @@ namespace service_handler
 	int init_services(ros::NodeHandle & n)
 	{
 		control_service = n.advertiseService(
-				"DJI_ROS/obtain_release_control",
+				"dji_sdk/obtain_release_control",
 				control_callback
 				);
 
 		action_service =n.advertiseService(
-				"DJI_ROS/drone_action_control",
+				"dji_sdk/drone_action_control",
 				action_callback
 				);
 
 		camera_service =n.advertiseService(
-				"DJI_ROS/camera_action_service",
+				"dji_sdk/camera_action_service",
 				camera_action_callback
 				);
 
 		gimbal_angle_service = n.advertiseService(
-				"DJI_ROS/gimbal_angle_control",
+				"dji_sdk/gimbal_angle_control",
 				gimbal_angle_callback
 				);
 
 		gimbal_speed_service = n.advertiseService(
-				"DJI_ROS/gimbal_speed_control",
+				"dji_sdk/gimbal_speed_control",
 				gimbal_speed_callback
 				);
 
 		attitude_service = n.advertiseService(
-				"DJI_ROS/drone_attitude_control",
+				"dji_sdk/drone_attitude_control",
 				attitude_callback
 				);
 
 		/*
 		local_navigation_service = n.advertiseService(
-				"DJI_ROS/local_navigation_service",
+				"dji_sdk/local_navigation_service",
 				local_navigation_callback
 				);
 
 		gps_navigation_service = n.advertiseService(
-				"DJI_ROS/gps_navigation_service",
+				"dji_sdk/gps_navigation_service",
 				gps_navigation_callback
 				);
 		
 		waypoints_navigation_service = n.advertiseService(
-				"DJI_ROS/waypoints_service",
+				"dji_sdk/waypoints_service",
 				waypoints_callback
 				);
 		*/

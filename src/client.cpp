@@ -46,18 +46,18 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "sdk_client");
 	ROS_INFO("sdk_service_client_test");
 	ros::NodeHandle n;
-	ros::ServiceClient drone_control_manager = n.serviceClient<dji_ros::control_manager>("DJI_ROS/obtain_release_control");
-	ros::ServiceClient drone_action_client = n.serviceClient<dji_ros::action>("DJI_ROS/drone_action_control");
-	ros::ServiceClient drone_attitude_client= n.serviceClient<dji_ros::attitude>("DJI_ROS/drone_attitude_control");
-	ros::ServiceClient camera_action_client= n.serviceClient<dji_ros::camera_action>("DJI_ROS/camera_action_service");
-	ros::ServiceClient gimbal_angle_client= n.serviceClient<dji_ros::gimbal_angle>("DJI_ROS/gimbal_angle_control");
-	ros::ServiceClient gimbal_speed_client= n.serviceClient<dji_ros::gimbal_speed>("DJI_ROS/gimbal_speed_control");
-	dji_ros::control_manager 	srv_control;
-	dji_ros::action 				srv_action;
-	dji_ros::attitude 			srv_attitude;
-	dji_ros::camera_action		srv_camera;
-	dji_ros::gimbal_angle 		srv_gimbal_angle;
-	dji_ros::gimbal_speed 		srv_gimbal_speed;
+	ros::ServiceClient drone_control_manager = n.serviceClient<dji_sdk::control_manager>("dji_sdk/obtain_release_control");
+	ros::ServiceClient drone_action_client = n.serviceClient<dji_sdk::action>("dji_sdk/drone_action_control");
+	ros::ServiceClient drone_attitude_client= n.serviceClient<dji_sdk::attitude>("dji_sdk/drone_attitude_control");
+	ros::ServiceClient camera_action_client= n.serviceClient<dji_sdk::camera_action>("dji_sdk/camera_action_service");
+	ros::ServiceClient gimbal_angle_client= n.serviceClient<dji_sdk::gimbal_angle>("dji_sdk/gimbal_angle_control");
+	ros::ServiceClient gimbal_speed_client= n.serviceClient<dji_sdk::gimbal_speed>("dji_sdk/gimbal_speed_control");
+	dji_sdk::control_manager 	srv_control;
+	dji_sdk::action 				srv_action;
+	dji_sdk::attitude 			srv_attitude;
+	dji_sdk::camera_action		srv_camera;
+	dji_sdk::gimbal_angle 		srv_gimbal_angle;
+	dji_sdk::gimbal_speed 		srv_gimbal_speed;
 	Display_Main_Menu();
 	while(1)
 	{

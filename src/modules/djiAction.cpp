@@ -11,20 +11,20 @@ namespace action_handler
 	waypoint_navigation_action_type* waypoint_navigation_action_ptr; 
 	
 
-	dji_ros::taskFeedback  task_action_feedback;
-	dji_ros::taskResult  task_action_result; 
+	dji_sdk::taskFeedback  task_action_feedback;
+	dji_sdk::taskResult  task_action_result; 
 
-	dji_ros::local_navigationFeedback local_navigation_feedback; 
-	dji_ros::local_navigationResult local_navigation_result; 
+	dji_sdk::local_navigationFeedback local_navigation_feedback; 
+	dji_sdk::local_navigationResult local_navigation_result; 
 
-	dji_ros::gps_navigationFeedback gps_navigation_feedback;
-	dji_ros::gps_navigationResult gps_navigation_result; 
+	dji_sdk::gps_navigationFeedback gps_navigation_feedback;
+	dji_sdk::gps_navigationResult gps_navigation_result; 
 
-	dji_ros::waypoint_navigationFeedback waypoint_navigation_feedback;
-	dji_ros::waypoint_navigationResult waypoint_navigation_result;
+	dji_sdk::waypoint_navigationFeedback waypoint_navigation_feedback;
+	dji_sdk::waypoint_navigationResult waypoint_navigation_result;
 
 
-	bool task_action_callback(const dji_ros::taskGoalConstPtr& goal, task_action_type* task_action)
+	bool task_action_callback(const dji_sdk::taskGoalConstPtr& goal, task_action_type* task_action)
 	{
 		uint8_t request_action = goal->task;
 
@@ -53,7 +53,7 @@ namespace action_handler
 
 	}
 
-	bool local_navigation_action_callback(const dji_ros::local_navigationGoalConstPtr& goal, local_navigation_action_type* local_navigation_action)
+	bool local_navigation_action_callback(const dji_sdk::local_navigationGoalConstPtr& goal, local_navigation_action_type* local_navigation_action)
 	{
 		/*IMPORTANT*/
 		/*
@@ -121,7 +121,7 @@ namespace action_handler
 		return true;
 	}
 
-	bool gps_navigation_action_callback(const dji_ros::gps_navigationGoalConstPtr& goal, gps_navigation_action_type* gps_navigation_action)
+	bool gps_navigation_action_callback(const dji_sdk::gps_navigationGoalConstPtr& goal, gps_navigation_action_type* gps_navigation_action)
 	{
 		//The GPS coordiante sendto/receivefrom M100 are both in radian.
 		double dst_latitude = goal->latitude*C_PI/180;
@@ -188,14 +188,14 @@ namespace action_handler
 		return true;
 	}
 
-	bool waypoint_navigation_action_callback(const dji_ros::waypoint_navigationGoalConstPtr& goal, waypoint_navigation_action_type* waypoint_navigation_action)
+	bool waypoint_navigation_action_callback(const dji_sdk::waypoint_navigationGoalConstPtr& goal, waypoint_navigation_action_type* waypoint_navigation_action)
 	{
-		dji_ros::waypointList newWaypointList;
+		dji_sdk::waypointList newWaypointList;
 		newWaypointList = goal->waypointList;
 
 		bool isSucceeded;
 		for (int i = 0; i < newWaypointList.waypointList.size(); i++) {
-			const dji_ros::waypoint newWaypoint = newWaypointList.waypointList[i];	
+			const dji_sdk::waypoint newWaypoint = newWaypointList.waypointList[i];	
 			waypoint_navigation_feedback.index_progress = i;
 			isSucceeded = processWaypoint(newWaypoint);
 			if(!isSucceeded) {
@@ -211,7 +211,7 @@ namespace action_handler
 		return true;
 	}
 
-	bool processWaypoint(dji_ros::waypoint newWaypoint) {
+	bool processWaypoint(dji_sdk::waypoint newWaypoint) {
 
 		double dst_latitude = newWaypoint.latitude*C_PI/180;
 		double dst_longitude = newWaypoint.longitude*C_PI/180;
@@ -280,16 +280,16 @@ namespace action_handler
 
 	int init_actions(ros::NodeHandle &n)
 	{
-		task_action_ptr = new task_action_type(n, "DJI_ROS/task_action",boost::bind(&task_action_callback, _1, task_action_ptr), false);
+		task_action_ptr = new task_action_type(n, "dji_sdk/task_action",boost::bind(&task_action_callback, _1, task_action_ptr), false);
 		//task_action_ptr->start();
 
-		local_navigation_action_ptr = new local_navigation_action_type(n,"DJI_ROS/local_navigation_action", boost::bind(&local_navigation_action_callback, _1, local_navigation_action_ptr), false );
+		local_navigation_action_ptr = new local_navigation_action_type(n,"dji_sdk/local_navigation_action", boost::bind(&local_navigation_action_callback, _1, local_navigation_action_ptr), false );
 		local_navigation_action_ptr->start();
 
-		gps_navigation_action_ptr = new gps_navigation_action_type(n,"DJI_ROS/gps_navigation_action", boost::bind(&gps_navigation_action_callback, _1, gps_navigation_action_ptr), false );
+		gps_navigation_action_ptr = new gps_navigation_action_type(n,"dji_sdk/gps_navigation_action", boost::bind(&gps_navigation_action_callback, _1, gps_navigation_action_ptr), false );
 		gps_navigation_action_ptr->start();
 
-		waypoint_navigation_action_ptr = new waypoint_navigation_action_type(n,"DJI_ROS/waypoint_navigation_action", boost::bind(&waypoint_navigation_action_callback, _1, waypoint_navigation_action_ptr), false );
+		waypoint_navigation_action_ptr = new waypoint_navigation_action_type(n,"dji_sdk/waypoint_navigation_action", boost::bind(&waypoint_navigation_action_callback, _1, waypoint_navigation_action_ptr), false );
 		waypoint_navigation_action_ptr->start();
 
 		return 0;

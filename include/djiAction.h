@@ -6,10 +6,10 @@
 #include "djiVariable.h"
 #include <actionlib/server/simple_action_server.h>
 
-typedef actionlib::SimpleActionServer<dji_ros::taskAction> task_action_type;
-typedef actionlib::SimpleActionServer<dji_ros::local_navigationAction> local_navigation_action_type;
-typedef actionlib::SimpleActionServer<dji_ros::gps_navigationAction> gps_navigation_action_type;
-typedef actionlib::SimpleActionServer<dji_ros::waypoint_navigationAction> waypoint_navigation_action_type;
+typedef actionlib::SimpleActionServer<dji_sdk::taskAction> task_action_type;
+typedef actionlib::SimpleActionServer<dji_sdk::local_navigationAction> local_navigation_action_type;
+typedef actionlib::SimpleActionServer<dji_sdk::gps_navigationAction> gps_navigation_action_type;
+typedef actionlib::SimpleActionServer<dji_sdk::waypoint_navigationAction> waypoint_navigation_action_type;
 
 namespace action_handler
 {
@@ -19,7 +19,7 @@ namespace action_handler
 	extern gps_navigation_action_type* gps_navigation_action_ptr;
 	extern waypoint_navigation_action_type* waypoint_navigation_action_ptr;
 
-	bool processWaypoint(dji_ros::waypoint newWaypoint);
+	bool processWaypoint(dji_sdk::waypoint newWaypoint);
 	int init_actions(ros::NodeHandle &n);
 }
 #endif
