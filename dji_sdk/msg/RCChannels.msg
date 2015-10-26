@@ -9,7 +9,7 @@
 #             ^                            ^
 #             |                            |                  / -10000
 #  CH2(yaw)   |                CH0(roll)   |                 /
-# -10000 <-----------> +10000 -10000 <-----------> +10000   H(gear_up)
+# -10000 <-----------> +10000 -10000 <-----------> +10000   H(gear)
 #             |                            |                 \
 #             |                            |                  \ -4545
 #             V                            V
@@ -22,4 +22,4 @@ float32 pitch
 float32 yaw
 float32 throttle
 float32 mode
-float32 gear_up
+float32 gear

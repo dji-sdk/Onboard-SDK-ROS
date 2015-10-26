@@ -1,4 +1,4 @@
-waypointList waypointList
+WaypointList waypoint_list
 ---
 bool result
 ---

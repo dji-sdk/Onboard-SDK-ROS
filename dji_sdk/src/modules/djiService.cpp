@@ -126,7 +126,6 @@ namespace service_handler
 
 	}
 
-/*
 	bool local_navigation_callback(
 			dji_sdk::local_navigation::Request& request,
 			dji_sdk::local_navigation::Response& response
@@ -139,19 +138,11 @@ namespace service_handler
 
 		attitude_data_t user_ctrl_data;
 		user_ctrl_data.ctrl_flag = 0x90;
+		user_ctrl_data.roll_or_x = dst_x - dji_variable::local_position.x;
+		user_ctrl_data.pitch_or_y = dst_y - dji_variable::local_position.y;
 		user_ctrl_data.thr_z = dst_z;
-		user_ctrl_data.yaw = 0;
-
-
-		while (sqrt(pow(dst_x - dji_variable::local_position.x,2) + pow(dst_y - dji_variable::local_position.y,2) + pow(dst_z - dji_variable::local_position.height,2)) > 0.5) {
-
-			user_ctrl_data.roll_or_x = dst_x - dji_variable::local_position.x;
-			user_ctrl_data.pitch_or_y = dst_y - dji_variable::local_position.y;
-
-			DJI_Pro_Attitude_Control(&user_ctrl_data);
-			usleep(20000);
-
-		}
+		user_ctrl_data.yaw = request.yaw;
+		DJI_Pro_Attitude_Control(&user_ctrl_data);
 
 		response.result = true;
 		return true;
@@ -162,7 +153,20 @@ namespace service_handler
 			dji_sdk::gps_navigation::Response& response
 			)
 	{
-		//after convert det(GPS) into distance, this is the same as local_navigation
+		float dst_x = request.x;
+		float dst_y = request.y;
+		float dst_z = request.z;
+
+		attitude_data_t user_ctrl_data;
+		user_ctrl_data.ctrl_flag = 0x90;
+		user_ctrl_data.roll_or_x = dst_x - dji_variable::local_position.x;
+		user_ctrl_data.pitch_or_y = dst_y - dji_variable::local_position.y;
+		user_ctrl_data.thr_z = dst_z;
+		user_ctrl_data.yaw = request.yaw;
+		DJI_Pro_Attitude_Control(&user_ctrl_data);
+
+		response.result = true;
+		return true;
 			
 		return true;
 	}
@@ -185,7 +189,6 @@ namespace service_handler
 
 		return true;
 	}
-*/
 
 	ros::ServiceServer control_service, camera_service, gimbal_angle_service, gimbal_speed_service, attitude_service, action_service;
 	int init_services(ros::NodeHandle & n)
@@ -195,13 +198,13 @@ namespace service_handler
 				control_callback
 				);
 
-		action_service =n.advertiseService(
+		action_service = n.advertiseService(
 				"dji_sdk/drone_action_control",
 				action_callback
 				);
 
-		camera_service =n.advertiseService(
-				"dji_sdk/camera_action_service",
+		camera_service = n.advertiseService(
+				"dji_sdk/camera_action_control",
 				camera_action_callback
 				);
 
@@ -220,23 +223,15 @@ namespace service_handler
 				attitude_callback
 				);
 
-		/*
 		local_navigation_service = n.advertiseService(
-				"dji_sdk/local_navigation_service",
+				"dji_sdk/local_navigation_control",
 				local_navigation_callback
 				);
 
 		gps_navigation_service = n.advertiseService(
-				"dji_sdk/gps_navigation_service",
+				"dji_sdk/gps_navigation_control",
 				gps_navigation_callback
 				);
-		
-		waypoints_navigation_service = n.advertiseService(
-				"dji_sdk/waypoints_service",
-				waypoints_callback
-				);
-		*/
-
 		
 		return 0;
 	}

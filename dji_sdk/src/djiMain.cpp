@@ -5,7 +5,6 @@
 #include <DJI_LIB/DJI_Pro_App.h>
 #include "djiMain.h"
 
-
 using namespace dji_variable;
 
 int DJI_Setup(std::string serial_port, int baudrate) {
@@ -17,7 +16,7 @@ int DJI_Setup(std::string serial_port, int baudrate) {
 	printf("=========================\n");
 	
 	//Serial Port Init
-	ret = Pro_Hw_Setup(uart_name,baudrate);
+	ret = Pro_Hw_Setup(uart_name, baudrate);
 	if(ret < 0)
 		return ret;
 
@@ -56,7 +55,7 @@ void update_ros_vars() {
 	global_position.altitude = recv_sdk_std_msgs.pos.alti;
 	global_position.health= recv_sdk_std_msgs.pos.health_flag;
 	global_position_degree = global_position;
-	global_position_degree.latitude = global_position.latitude * 180.0f /M_PI;
+	global_position_degree.latitude = global_position.latitude * 180.0f / M_PI;
 	global_position_degree.longitude = global_position.longitude * 180.0f /M_PI;
 	publishers::gps_pub.publish(global_position);
 
@@ -112,23 +111,23 @@ void update_ros_vars() {
 	dji_variable::local_position_ref = local_position;
 	publishers::local_pos_pub.publish(local_position);
 
-	//update odem msg
-	odem.header.frame_id = "/world";
-	odem.header.stamp = current_time;
-	odem.pose.pose.position.x = local_position.x;
-	odem.pose.pose.position.y = local_position.y;
-	odem.pose.pose.position.z = local_position.z;
-	odem.pose.pose.orientation.w = attitude_quad.q0;
-	odem.pose.pose.orientation.x = attitude_quad.q1;
-	odem.pose.pose.orientation.y = attitude_quad.q2;
-	odem.pose.pose.orientation.z = attitude_quad.q3;
-	odem.twist.twist.angular.x = attitude_quad.wx;
-	odem.twist.twist.angular.y = attitude_quad.wy;
-	odem.twist.twist.angular.z = attitude_quad.wz;
-	odem.twist.twist.linear.x = velocity.velx;
-	odem.twist.twist.linear.y = velocity.vely;
-	odem.twist.twist.linear.z = velocity.velz;
-	publishers::odem_publisher.publish(odem);
+	//update odom msg
+	odom.header.frame_id = "/world";
+	odom.header.stamp = current_time;
+	odom.pose.pose.position.x = local_position.x;
+	odom.pose.pose.position.y = local_position.y;
+	odom.pose.pose.position.z = local_position.z;
+	odom.pose.pose.orientation.w = attitude_quad.q0;
+	odom.pose.pose.orientation.x = attitude_quad.q1;
+	odom.pose.pose.orientation.y = attitude_quad.q2;
+	odom.pose.pose.orientation.z = attitude_quad.q3;
+	odom.twist.twist.angular.x = attitude_quad.wx;
+	odom.twist.twist.angular.y = attitude_quad.wy;
+	odom.twist.twist.angular.z = attitude_quad.wz;
+	odom.twist.twist.linear.x = velocity.velx;
+	odom.twist.twist.linear.y = velocity.vely;
+	odom.twist.twist.linear.z = velocity.velz;
+	odom_publisher.publish(odom);
 
 	//update rc_channel msg
 	rc_channels.header.frame_id = "/rc";
@@ -140,7 +139,7 @@ void update_ros_vars() {
 	rc_channels.gear_up = recv_sdk_std_msgs.rc.gear;
 	rc_channels.throttle = recv_sdk_std_msgs.rc.throttle;
 	rc_channels.yaw = recv_sdk_std_msgs.rc.yaw;
-	publishers::rc_channels_pub.publish(rc_channels);
+	rc_channels_pub.publish(rc_channels);
 
 	//update compass msg
 	compass_info.header.frame_id = "/world";
@@ -149,8 +148,7 @@ void update_ros_vars() {
 	compass_info.x = recv_sdk_std_msgs.mag.x;
 	compass_info.y = recv_sdk_std_msgs.mag.y;
 	compass_info.z = recv_sdk_std_msgs.mag.z;
-	publishers::compass_pub.publish(compass_info);
-
+	compass_pub.publish(compass_info);
 
 }
 //----------------------------------------------------------
@@ -171,39 +169,38 @@ void spin_callback(const ros::TimerEvent &)
 		//update flight_status 
 		flight_status = recv_sdk_std_msgs.status;
 		msg.data = flight_status;
-		publishers::flight_status_pub.publish(msg);
+		flight_status_pub.publish(msg);
 
 		//update battery msg
 		//DJI_Pro_Get_Bat_Capacity(&bat);
 		msg.data = recv_sdk_std_msgs.battery_remaining_capacity;
-		publishers::battery_pub.publish(msg);
+		battery_status_pub.publish(msg);
 
 		//update ctrl_info
 		ctrl_info.cur_ctrl_dev_in_navi_mode = recv_sdk_std_msgs.ctrl_info.cur_ctrl_dev_in_navi_mode;
 		ctrl_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
-		publishers::ctrl_info_pub.publish(ctrl_info);
+		ctrl_info_pub.publish(ctrl_info);
 
 		//update obtaincontrol msg
 		msg.data = recv_sdk_std_msgs.obtained_control;
-		publishers::control_publisher.publish(msg);
+		control_pub.publish(msg);
 
 		//update activation msg
 		msg.data = recv_sdk_std_msgs.activation;
-		publishers::activation_publisher.publish(msg);
+		activation_pub.publish(msg);
 	}
 }
 
 int main(int argc,char **argv) {
-
 	char temp_buf[65];
 	ros::init(argc, argv, "dji_sdk");
 
 	ros::NodeHandle nh;
 	ros::NodeHandle nh_private("~");
 	
-	publishers::init_publishers(nh);
-	service_handler::init_services(nh);
-	action_handler::init_actions(nh);
+	init_publishers(nh);
+	init_services(nh);
+	init_actions(nh);
 
 	nh_private.param("serial_name", serial_name, std::string("/dev/ttyTHS1"));
 	nh_private.param("baud_rate", baud_rate, 230400);
@@ -214,27 +211,25 @@ int main(int argc,char **argv) {
 	nh_private.param("enc_key", enc_key,
 			std::string("e7bad64696529559318bb35d0a8c6050d3b88e791e1808cfe8f7802150ee6f0d"));
 
-
 	user_act_data.app_id = app_id;
-	user_act_data.app_api_level =app_api_level;
+	user_act_data.app_api_level = app_api_level;
 	user_act_data.app_ver = SDK_VERSION;
-	strcpy((char*)user_act_data.app_bundle_id, app_bundle_id.c_str());
+	strcpy((char*) user_act_data.app_bundle_id, app_bundle_id.c_str());
 
 	user_act_data.app_key = temp_buf;
 	strcpy(user_act_data.app_key, enc_key.c_str());
 
-
 	printf("=================================================\n");
-	printf("app id: %d\n",user_act_data.app_id);
-	printf("api level: %d\n",user_act_data.app_api_level);
-	printf("app version: 0x0%X\n",user_act_data.app_ver);
-	printf("app key: %s\n",user_act_data.app_key);
+	printf("app id: %d\n", user_act_data.app_id);
+	printf("api level: %d\n", user_act_data.app_api_level);
+	printf("app version: 0x0%X\n", user_act_data.app_ver);
+	printf("app key: %s\n", user_act_data.app_key);
 	printf("=================================================\n");
 
-	if (DJI_Setup(serial_name.c_str(),baud_rate) < 0) {
+	if (DJI_Setup(serial_name.c_str(), baud_rate) < 0) {
 		printf("Serial Port Cannot Open\n");
 		return 0;
-	}	
+	}
 
 	DJI_Pro_Activate_API(&user_act_data,NULL);
 	ros::Timer simple_task_timer = nh.createTimer(ros::Duration(1.0 / 50.0),  spin_callback);

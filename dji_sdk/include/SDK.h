@@ -9,7 +9,7 @@
 #include "DJI_LIB/DJI_Pro_Rmu.h"
 
 //msgs
-#include <dji_sdk/acc.h>
+#include <dji_sdk/accel.h>
 #include <dji_sdk/attitude_quad.h>
 #include <dji_sdk/gimbal.h>
 #include <dji_sdk/global_position.h>

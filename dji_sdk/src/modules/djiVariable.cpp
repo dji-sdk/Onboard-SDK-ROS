@@ -3,6 +3,7 @@
 #include <dji_sdk/velocity.h>
 #define C_EARTH (double) 6378137.0
 #define C_PI (double) 3.141592653589793
+
 namespace dji_variable
 {
 	dji_sdk::local_position local_position_ref;
@@ -23,6 +24,7 @@ namespace dji_variable
 	float battery = 0;
 	bool opened = false;
 	bool activated = false;
+	
 	void gps_convert_ned(float &ned_x, float &ned_y,
 			double gps_t_lon,
 			double gps_t_lat,
@@ -36,6 +38,7 @@ namespace dji_variable
 		ned_y = d_lon * C_EARTH * cos((gps_t_lat));
 		return;
 	}
+
 	dji_sdk::local_position gps_convert_ned(dji_sdk::global_position loc)
 	{
 		dji_sdk::local_position local;

@@ -30,7 +30,7 @@ namespace dji_variable
 	extern float battery;
 	extern uint8_t flight_status;
 	extern dji_sdk::ctrl_info ctrl_info;
-	extern nav_msgs::Odometry odem;
+	extern nav_msgs::Odometry odom;
 	extern bool opened;
 	extern bool activated;
 	void gps_convert_ned(float &ned_x, float &ned_y,

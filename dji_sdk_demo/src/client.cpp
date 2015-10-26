@@ -48,8 +48,8 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 	ros::ServiceClient drone_control_manager = n.serviceClient<dji_sdk::control_manager>("dji_sdk/obtain_release_control");
 	ros::ServiceClient drone_action_client = n.serviceClient<dji_sdk::action>("dji_sdk/drone_action_control");
-	ros::ServiceClient drone_attitude_client= n.serviceClient<dji_sdk::attitude>("dji_sdk/drone_attitude_control");
-	ros::ServiceClient camera_action_client= n.serviceClient<dji_sdk::camera_action>("dji_sdk/camera_action_service");
+	ros::ServiceClient drone_attitude_client = n.serviceClient<dji_sdk::attitude>("dji_sdk/drone_attitude_control");
+	ros::ServiceClient camera_action_client = n.serviceClient<dji_sdk::camera_action>("dji_sdk/camera_action_service");
 	ros::ServiceClient gimbal_angle_client= n.serviceClient<dji_sdk::gimbal_angle>("dji_sdk/gimbal_angle_control");
 	ros::ServiceClient gimbal_speed_client= n.serviceClient<dji_sdk::gimbal_speed>("dji_sdk/gimbal_speed_control");
 	dji_sdk::control_manager 	srv_control;

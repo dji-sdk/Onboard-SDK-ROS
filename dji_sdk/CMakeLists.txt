@@ -52,18 +52,18 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## Generate messages in the 'msg' folder
 add_message_files(
    FILES
-	acc.msg
-	attitude_quad.msg
-	compass.msg
-	ctrl_info.msg
-	gimbal.msg
-	global_position.msg
-	local_position.msg
-	velocity.msg
-	rc_channels.msg
-	waypoint.msg
-	waypointList.msg
-	map_nav_srv_cmd.msg
+  Acceleration.msg
+  AttitudeQuaternion.msg
+  Compass.msg
+  FlightControlInfo.msg
+  Gimbal.msg
+  GlobalPosition.msg
+  LocalPosition.msg
+  PowerStatus.msg
+  RCChannels.msg
+  Velocity.msg
+  Waypoint.msg
+  WaypointList.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -80,11 +80,9 @@ add_service_files(
 ## Generate actions in the 'action' folder
 add_action_files(
    FILES
-	task.action
-	local_navigation.action
-	gps_navigation.action
-	waypoint_navigation.action
-	web_waypoint_receive.action
+  GlobalPositionNavigation.action
+  LocalPositionNavigation.action
+  WaypointNavigation.action
 )
 
 ## Generate added messages and services with any dependencies listed here
