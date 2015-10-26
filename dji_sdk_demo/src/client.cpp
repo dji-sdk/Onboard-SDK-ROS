@@ -45,19 +45,26 @@ int main(int argc, char **argv)
 	bool err_flag = false;
 	ros::init(argc, argv, "sdk_client");
 	ROS_INFO("sdk_service_client_test");
-	ros::NodeHandle n;
-	ros::ServiceClient drone_control_manager = n.serviceClient<dji_sdk::control_manager>("dji_sdk/obtain_release_control");
-	ros::ServiceClient drone_action_client = n.serviceClient<dji_sdk::action>("dji_sdk/drone_action_control");
-	ros::ServiceClient drone_attitude_client = n.serviceClient<dji_sdk::attitude>("dji_sdk/drone_attitude_control");
-	ros::ServiceClient camera_action_client = n.serviceClient<dji_sdk::camera_action>("dji_sdk/camera_action_service");
-	ros::ServiceClient gimbal_angle_client= n.serviceClient<dji_sdk::gimbal_angle>("dji_sdk/gimbal_angle_control");
-	ros::ServiceClient gimbal_speed_client= n.serviceClient<dji_sdk::gimbal_speed>("dji_sdk/gimbal_speed_control");
+	ros::NodeHandle nh;
+
+    ros::ServiceClient attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
+    ros::ServiceClient camera_action_control_service = nh.serviceClient<dji_sdk::CameraActionControl>("dji_sdk/camera_action_control");
+    ros::ServiceClient drone_task_control_service = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
+    ros::ServiceClient gimbal_angle_control_service = nh.serviceClient<dji_sdk::GimbalAngleControl>("dji_sdk/gimbal_angle_control");
+    ros::ServiceClient gimbal_speed_control_service = nh.serviceClient<dji_sdk::GimbalSpeedControl>("dji_sdk/gimbal_speed_control");
+    ros::ServiceClient global_position_control_service = nh.serviceClient<dji_sdk::GlobalPositionControl>("dji_sdk/global_position_control");
+    ros::ServiceClient local_position_control_service = nh.serviceClient<dji_sdk::LocalPositionControl>("dji_sdk/local_position_control");
+    ros::ServiceClient sdk_permission_control_service = nh.serviceClient<dji_sdk::SDKPermissionControl>("dji_sdk/sdk_permission_control");
+    ros::ServiceClient velocity_control_service = nh.serviceClient<dji_sdk::VelocityControl>("dji_sdk/velocity_control");
+
 	dji_sdk::control_manager 	srv_control;
-	dji_sdk::action 				srv_action;
+	dji_sdk::action 			srv_action;
 	dji_sdk::attitude 			srv_attitude;
 	dji_sdk::camera_action		srv_camera;
 	dji_sdk::gimbal_angle 		srv_gimbal_angle;
 	dji_sdk::gimbal_speed 		srv_gimbal_speed;
+
+
 	Display_Main_Menu();
 	while(1)
 	{
@@ -89,29 +96,27 @@ int main(int argc, char **argv)
 		{
 			case 'a':
 				/* request control ability*/
-				srv_control.request.control_ability=1;
+				srv_control.request.control_enable = 1;
 				drone_control_manager.call(srv_control);
 				break;
 			case 'b':
 				/* release control ability*/
-				srv_control.request.control_ability=0;
+				srv_control.request.control_ability = 0;
 				drone_control_manager.call(srv_control);
 				break;
 			case 'c':
 				/* take off */
-				srv_action.request.action=4;
-				drone_action_client.call(srv_action);
+				srv_action.request.action = 4;
 				drone_action_client.call(srv_action);
 				break;
 			case 'd':
 				/* landing*/
-				srv_action.request.action=6;
-				drone_action_client.call(srv_action);
+				srv_action.request.action = 6;
 				drone_action_client.call(srv_action);
 				break;
 			case 'e':
 				/* go home*/
-				srv_action.request.action=1;
+				srv_action.request.action = 1;
 				drone_action_client.call(srv_action);
 				break;
 			case 'f':

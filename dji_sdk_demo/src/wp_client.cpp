@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include "SDK.h"
+#include "dji_sdk.h"
 #include <cstdlib>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
@@ -37,24 +37,25 @@ int main(int argc, char **argv)
 	ros::ServiceClient drone_control_manager = n.serviceClient<dji_sdk::control_manager>("dji_sdk/obtain_release_control");
 	ros::ServiceClient drone_action_client = n.serviceClient<dji_sdk::action>("dji_sdk/drone_action_control");
 
-	actionlib::SimpleActionClient<dji_sdk::local_navigationAction> local_navigation_action_client("dji_sdk/local_navigation_action", true);
-	actionlib::SimpleActionClient<dji_sdk::gps_navigationAction> gps_navigation_action_client("dji_sdk/gps_navigation_action", true);
-	actionlib::SimpleActionClient<dji_sdk::waypoint_navigationAction> waypoint_navigation_action_client("dji_sdk/waypoint_navigation_action", true);
+	actionlib::SimpleActionClient<dji_sdk::LocalPositionNavigationAction> local_navigation_action_client("dji_sdk/local_navigation_action", true);
+	actionlib::SimpleActionClient<dji_sdk::GlobalPositionNavigationAction> gps_navigation_action_client("dji_sdk/gps_navigation_action", true);
+	actionlib::SimpleActionClient<dji_sdk::WaypointNavigationAction> waypoint_navigation_action_client("dji_sdk/waypoint_navigation_action", true);
 
-	dji_sdk::control_manager 	srv_control;
-	dji_sdk::action 				srv_action;
-	dji_sdk::local_navigationGoal goal_local;
-	dji_sdk::gps_navigationGoal goal_gps;
-	dji_sdk::waypoint_navigationGoal goal_waypoint;
+	dji_sdk::SDKPermissionControl 	sdk_permission_service;
+	dji_sdk::DroneTaskControl 		drone_task_service;
+	dji_sdk::LocalPositionNavigationGoal goal_local;
+	dji_sdk::GlobalPositionnavigationGoal goal_gps;
+	dji_sdk::Waypoint_navigationGoal goal_waypoint;
 
-	dji_sdk::waypointList newWaypointList;
-	dji_sdk::waypoint waypoint0;
-	dji_sdk::waypoint waypoint1;
-	dji_sdk::waypoint waypoint2;
-	dji_sdk::waypoint waypoint3;
-	dji_sdk::waypoint waypoint4;
+	dji_sdk::WaypointList newWaypointList;
+	dji_sdk::Waypoint waypoint0;
+	dji_sdk::Waypoint waypoint1;
+	dji_sdk::Waypoint waypoint2;
+	dji_sdk::Waypoint waypoint3;
+	dji_sdk::Waypoint waypoint4;
 
 	Display_Main_Menu();
+
 	while(1)
 	{
 		temp32 = getchar();

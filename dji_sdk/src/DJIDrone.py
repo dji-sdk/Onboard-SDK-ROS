@@ -10,7 +10,7 @@ import time
 import actionlib
 import roslib
 
-class DJISDKConnector:
+class DJISDKConnection:
     def handle_acceleration(self, data):
         self.acceleration = data 
 
@@ -54,10 +54,10 @@ class DJISDKConnector:
         self.compass_info = data
 
     def init_subscribers(self):
-        self.acc_sub = rospy.Subscriber(self.ns + "/dji_sdk/acceleration", dji_sdk.msg.acc, self.handle_acceleration)
-        self.att_quad_sub = rospy.Subscriber(self.ns + "/dji_sdk/attitude_quad", dji_sdk.msg.attitude_quad, self.handle_attitude_quad)
-        self.battery_sub = rospy.Subscriber(self.ns + "/dji_sdk/battery_status", std_msgs.msg.UInt8, self.handle_battery_status)
-        self.gimbal_info_sub = rospy.Subscriber(self.ns + "/dji_sdk/gimbal_info", dji_sdk.msg.gimbal, self.handle_gimbal_info)
+        self.acceleration_sub = rospy.Subscriber(self.ns + "/dji_sdk/acceleration", dji_sdk.msg.acc, self.handle_acceleration)
+        self.attitude_quaternion_sub = rospy.Subscriber(self.ns + "/dji_sdk/attitude_quad", dji_sdk.msg.attitude_quad, self.handle_attitude_quad)
+        self.power_status_sub = rospy.Subscriber(self.ns + "/dji_sdk/battery_status", std_msgs.msg.UInt8, self.handle_battery_status)
+        self.gimbal_sub = rospy.Subscriber(self.ns + "/dji_sdk/gimbal_info", dji_sdk.msg.gimbal, self.handle_gimbal_info)
         self.flight_status_sub = rospy.Subscriber(self.ns + "/dji_sdk/flight_status", std_msgs.msg.UInt8, self.handle_flight_status)
         self.global_position_sub = rospy.Subscriber(self.ns + "/dji_sdk/global_position", dji_sdk.msg.global_position, self.handle_global_position)
         self.local_position_sub = rospy.Subscriber(self.ns + "/dji_sdk/local_position", dji_sdk.msg.local_position, self.handle_local_position)
@@ -196,7 +196,7 @@ class DJISDKConnector:
             pass
 
 if __name__ == "__main__":
-    drone = DJISDKConnector('drone1')
+    drone = DJIDrone('drone1')
     drone.takeoff()
     for i in range(1000):
         drone.
