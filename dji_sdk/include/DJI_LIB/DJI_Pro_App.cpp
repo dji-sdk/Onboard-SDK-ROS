@@ -668,6 +668,10 @@ int DJI_Pro_Get_CtrlInfo(api_ctrl_info_data_t *p_user_buf)
 
 //.... TODO
 
+static User_Broadcast_Handler_Func p_user_broadcast_handler_func = 0;
+static User_Handler_Func p_user_handler_func = 0;
+static Transparent_Transmission_Func p_user_rec_func = 0;
+
 static void DJI_Pro_Parse_Broadcast_Data(ProHeader *header)
 {
     unsigned char *pdata = (unsigned char *)&header->magic;
@@ -689,14 +693,17 @@ static void DJI_Pro_Parse_Broadcast_Data(ProHeader *header)
     PARSE_STD_MSG( *msg_enable_flag, ENABLE_MSG_STATUS	,std_broadcast_data.status			, pdata, data_len);
     PARSE_STD_MSG( *msg_enable_flag, ENABLE_MSG_BATTERY ,std_broadcast_data.battery_remaining_capacity	, pdata, data_len);
     PARSE_STD_MSG( *msg_enable_flag, ENABLE_MSG_DEVICE	,std_broadcast_data.ctrl_info			, pdata, data_len);
+    
     pthread_mutex_unlock(&std_msg_lock);
+
+    if (p_user_broadcast_handler_func)
+        p_user_broadcast_handler_func();
 }
 
 /*
  * interface: protocol initialization
  */
-static User_Handler_Func p_user_handler_func = 0;
-static Transparent_Transmission_Func p_user_rec_func = 0;
+
 static void DJI_Pro_App_Recv_Req_Data(ProHeader *header)
 {
     unsigned char buf[100] = {0,0};
@@ -757,6 +764,12 @@ static void DJI_Pro_App_Recv_Req_Data(ProHeader *header)
 int DJI_Pro_Register_Transparent_Transmission_Callback(Transparent_Transmission_Func user_rec_handler_entrance)
 {
     p_user_rec_func = user_rec_handler_entrance;
+    return 0;
+}
+
+int DJI_Pro_Register_Broadcast_Callback(User_Broadcast_Handler_Func user_broadcast_handler_entrance)
+{
+    p_user_broadcast_handler_func = user_broadcast_handler_entrance;
     return 0;
 }
 

@@ -318,6 +318,7 @@ typedef struct
 typedef void (*Command_Result_Notify)(unsigned short result);
 typedef void (*Get_API_Version_Notify)(version_query_data_t *);
 typedef void (*User_Handler_Func)(ProHeader *pHeader);
+typedef void (*User_Broadcast_Handler_Func)(void);
 typedef void (*Transparent_Transmission_Func)(unsigned char *buf,unsigned char len);
 
 
@@ -347,6 +348,7 @@ int DJI_Pro_Get_GroundVo(api_vel_data_t *p_user_buf);
 int DJI_Pro_Get_CtrlInfo(api_ctrl_info_data_t *p_user_buf);
 //TODO...
 int DJI_Pro_Register_Transparent_Transmission_Callback(Transparent_Transmission_Func user_rec_handler_entrance);
+int DJI_Pro_Register_Broadcast_Callback(User_Broadcast_Handler_Func user_broadcast_handler_entrance);
 int DJI_Pro_Setup(User_Handler_Func user_cmd_handler_entrance);
 
 #endif

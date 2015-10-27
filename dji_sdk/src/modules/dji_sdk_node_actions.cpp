@@ -192,7 +192,7 @@ bool DJISDKNode::global_position_navigation_action_callback(const dji_sdk::Globa
     int longitude_progress = 0; 
     int altitude_progress = 0; 
 
-    while (latitude_progress < 100 || longitude_progress < 100 || altitude_progress <100) {
+    while (latitude_progress < 100 || longitude_progress < 100 || altitude_progress < 100) {
         gps_convert_ned(user_ctrl_data.roll_or_x, user_ctrl_data.pitch_or_y,
                  dst_longitude,  dst_latitude,
                  global_position.longitude,  global_position.latitude);

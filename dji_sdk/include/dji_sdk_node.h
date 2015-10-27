@@ -194,7 +194,7 @@ public:
 
 private:
     int init_parameters_and_activate();
-    void spin_callback(const ros::TimerEvent &);
+    void spin_callback();
 
     bool process_waypoint(dji_sdk::Waypoint new_waypoint);
 
