@@ -619,54 +619,14 @@ static unsigned short std_msg_flag = 0;
  * interface: get broadcast data
  */
 
-int DJI_Pro_Get_Broadcast_Data(sdk_std_msg_t *p_user_buf) {
+int DJI_Pro_Get_Broadcast_Data(sdk_std_msg_t *p_user_buf, unsigned char *msg_flags) {
 	pthread_mutex_lock(&std_msg_lock); 	
 	*p_user_buf = std_broadcast_data; 	
+	*msg_flags = std_msg_flag;
 	pthread_mutex_unlock(&std_msg_lock); 	
 	return 0; 	
 }
 
-int DJI_Pro_Get_Bat_Capacity(unsigned char *p_user_buf)
-{
-    pthread_mutex_lock(&std_msg_lock);
-    *p_user_buf = std_broadcast_data.battery_remaining_capacity;
-    pthread_mutex_unlock(&std_msg_lock);
-    return 0;
-}
-
-int DJI_Pro_Get_Quaternion(api_quaternion_data_t *p_user_buf)
-{
-    pthread_mutex_lock(&std_msg_lock);
-    *p_user_buf = std_broadcast_data.q;
-    pthread_mutex_unlock(&std_msg_lock);
-    return 0;
-}
-
-int DJI_Pro_Get_GroundAcc(api_common_data_t *p_user_buf)
-{
-    pthread_mutex_lock(&std_msg_lock);
-    *p_user_buf = std_broadcast_data.a;
-    pthread_mutex_unlock(&std_msg_lock);
-    return 0;
-}
-
-int DJI_Pro_Get_GroundVo(api_vel_data_t *p_user_buf)
-{
-    pthread_mutex_lock(&std_msg_lock);
-    *p_user_buf = std_broadcast_data.v;
-    pthread_mutex_unlock(&std_msg_lock);
-    return 0;
-}
-
-int DJI_Pro_Get_CtrlInfo(api_ctrl_info_data_t *p_user_buf)
-{
-    pthread_mutex_lock(&std_msg_lock);
-    *p_user_buf = std_broadcast_data.ctrl_info;
-    pthread_mutex_unlock(&std_msg_lock);
-    return 0;
-}
-
-//.... TODO
 
 static User_Broadcast_Handler_Func p_user_broadcast_handler_func = 0;
 static User_Handler_Func p_user_handler_func = 0;

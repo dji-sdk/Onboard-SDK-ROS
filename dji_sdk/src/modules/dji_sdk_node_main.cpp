@@ -7,7 +7,8 @@
 void DJISDKNode::broadcast_callback()
 {
 	sdk_std_msg_t recv_sdk_std_msgs;
-	DJI_Pro_Get_Broadcast_Data(&recv_sdk_std_msgs);
+	unsigned char msg_flags;
+	DJI_Pro_Get_Broadcast_Data(&recv_sdk_std_msgs, &msg_flags);
 
 	static int frame_id = 0;
 	frame_id ++;
@@ -15,138 +16,160 @@ void DJISDKNode::broadcast_callback()
 	auto current_time = ros::Time::now();
 
 	//update attitude msg
-	attitude_quaternion.header.frame_id = "/world";
-	attitude_quaternion.header.stamp = current_time;
-	attitude_quaternion.q0 = recv_sdk_std_msgs.q.q0;
-	attitude_quaternion.q1 = recv_sdk_std_msgs.q.q1;
-	attitude_quaternion.q2 = recv_sdk_std_msgs.q.q2;
-	attitude_quaternion.q3 = recv_sdk_std_msgs.q.q3;
-	attitude_quaternion.wx = recv_sdk_std_msgs.w.x;
-	attitude_quaternion.wy = recv_sdk_std_msgs.w.y;
-	attitude_quaternion.wz = recv_sdk_std_msgs.w.z;
-	attitude_quaternion.ts = recv_sdk_std_msgs.time_stamp;
-	attitude_quaternion_publisher.publish(attitude_quaternion);
-
-	//update global_position msg
-	global_position.header.frame_id = "/world";
-	global_position.header.stamp = current_time;
-	global_position.ts = recv_sdk_std_msgs.time_stamp;
-	global_position.latitude = recv_sdk_std_msgs.pos.lati * 180.0 / C_PI;
-	global_position.longitude = recv_sdk_std_msgs.pos.longti * 180.0 / C_PI;
-	global_position.height = recv_sdk_std_msgs.pos.height;
-	global_position.altitude = recv_sdk_std_msgs.pos.alti;
-	global_position.health = recv_sdk_std_msgs.pos.health_flag;
-	global_position_publisher.publish(global_position);
-
-	//TODO:
-	// FIX BUG about flying at lat = 0
-	if (global_position.ts != 0 && global_position_ref_seted == 0 && global_position.latitude != 0) {
-		global_position_ref = global_position;
-		global_position_ref_seted = 1;
+	if ((msg_flags & ENABLE_MSG_Q) && (msg_flags & ENABLE_MSG_W)){
+		attitude_quaternion.header.frame_id = "/world";
+		attitude_quaternion.header.stamp = current_time;
+		attitude_quaternion.q0 = recv_sdk_std_msgs.q.q0;
+		attitude_quaternion.q1 = recv_sdk_std_msgs.q.q1;
+		attitude_quaternion.q2 = recv_sdk_std_msgs.q.q2;
+		attitude_quaternion.q3 = recv_sdk_std_msgs.q.q3;
+		attitude_quaternion.wx = recv_sdk_std_msgs.w.x;
+		attitude_quaternion.wy = recv_sdk_std_msgs.w.y;
+		attitude_quaternion.wz = recv_sdk_std_msgs.w.z;
+		attitude_quaternion.ts = recv_sdk_std_msgs.time_stamp;
+		attitude_quaternion_publisher.publish(attitude_quaternion);
 	}
 
+	//update global_position msg
+	if ((msg_flags & ENABLE_MSG_POS)){
+		global_position.header.frame_id = "/world";
+		global_position.header.stamp = current_time;
+		global_position.ts = recv_sdk_std_msgs.time_stamp;
+		global_position.latitude = recv_sdk_std_msgs.pos.lati * 180.0 / C_PI;
+		global_position.longitude = recv_sdk_std_msgs.pos.longti * 180.0 / C_PI;
+		global_position.height = recv_sdk_std_msgs.pos.height;
+		global_position.altitude = recv_sdk_std_msgs.pos.alti;
+		global_position.health = recv_sdk_std_msgs.pos.health_flag;
+		global_position_publisher.publish(global_position);
+
+		//TODO:
+		// FIX BUG about flying at lat = 0
+		if (global_position.ts != 0 && global_position_ref_seted == 0 && global_position.latitude != 0) {
+			global_position_ref = global_position;
+			global_position_ref_seted = 1;
+		}
+
+		//update local_position msg
+		local_position.header.frame_id = "/world";
+		local_position.header.stamp = current_time;
+		gps_convert_ned(
+				local_position.x,
+				local_position.y,
+				global_position.longitude,
+				global_position.latitude,
+				global_position_ref.longitude,
+				global_position_ref.latitude
+				);
+		local_position.z = global_position.height;
+		local_position.ts = global_position.ts;
+		local_position_ref = local_position;
+		local_position_publisher.publish(local_position);
+	}
+
+
 	//update velocity msg
-	velocity.header.frame_id = "/world";
-	velocity.header.stamp = current_time;
-	velocity.ts = recv_sdk_std_msgs.time_stamp;
-	velocity.vx = recv_sdk_std_msgs.v.x;
-	velocity.vy = recv_sdk_std_msgs.v.y;
-	velocity.vz = recv_sdk_std_msgs.v.z;
-	velocity_publisher.publish(velocity);
+	if ((msg_flags & ENABLE_MSG_V)){
+		velocity.header.frame_id = "/world";
+		velocity.header.stamp = current_time;
+		velocity.ts = recv_sdk_std_msgs.time_stamp;
+		velocity.vx = recv_sdk_std_msgs.v.x;
+		velocity.vy = recv_sdk_std_msgs.v.y;
+		velocity.vz = recv_sdk_std_msgs.v.z;
+		velocity_publisher.publish(velocity);
+	}
 
 	//update acceleration msg
-	acceleration.header.frame_id = "/world";
-	acceleration.header.stamp = current_time;
-	acceleration.ts = recv_sdk_std_msgs.time_stamp;
-	acceleration.ax = recv_sdk_std_msgs.a.x;
-	acceleration.ay = recv_sdk_std_msgs.a.y;
-	acceleration.az = recv_sdk_std_msgs.a.z;
-	acceleration_publisher.publish(acceleration);
+	if((msg_flags & ENABLE_MSG_A)){
+		acceleration.header.frame_id = "/world";
+		acceleration.header.stamp = current_time;
+		acceleration.ts = recv_sdk_std_msgs.time_stamp;
+		acceleration.ax = recv_sdk_std_msgs.a.x;
+		acceleration.ay = recv_sdk_std_msgs.a.y;
+		acceleration.az = recv_sdk_std_msgs.a.z;
+		acceleration_publisher.publish(acceleration);
+	}
 
 	//update gimbal msg
-	gimbal.header.frame_id = "/gimbal";
-	gimbal.header.stamp= current_time;
-	gimbal.ts = recv_sdk_std_msgs.time_stamp;
-	gimbal.roll = recv_sdk_std_msgs.gimbal.x;
-	gimbal.pitch = recv_sdk_std_msgs.gimbal.y;
-	gimbal.yaw = recv_sdk_std_msgs.gimbal.z;
-	gimbal_publisher.publish(gimbal);
-
-	//update local_position msg
-	local_position.header.frame_id = "/world";
-	local_position.header.stamp = current_time;
-	gps_convert_ned(
-			local_position.x,
-			local_position.y,
-			global_position.longitude,
-			global_position.latitude,
-			global_position_ref.longitude,
-			global_position_ref.latitude
-	);
-	local_position.z = global_position.height;
-	local_position.ts = global_position.ts;
-	local_position_ref = local_position;
-	local_position_publisher.publish(local_position);
+	if((msg_flags & ENABLE_MSG_GIMBAL)){
+		gimbal.header.frame_id = "/gimbal";
+		gimbal.header.stamp= current_time;
+		gimbal.ts = recv_sdk_std_msgs.time_stamp;
+		gimbal.roll = recv_sdk_std_msgs.gimbal.x;
+		gimbal.pitch = recv_sdk_std_msgs.gimbal.y;
+		gimbal.yaw = recv_sdk_std_msgs.gimbal.z;
+		gimbal_publisher.publish(gimbal);
+	}
 
 	//update odom msg
-	odometry.header.frame_id = "/world";
-	odometry.header.stamp = current_time;
-	odometry.pose.pose.position.x = local_position.x;
-	odometry.pose.pose.position.y = local_position.y;
-	odometry.pose.pose.position.z = local_position.z;
-	odometry.pose.pose.orientation.w = attitude_quaternion.q0;
-	odometry.pose.pose.orientation.x = attitude_quaternion.q1;
-	odometry.pose.pose.orientation.y = attitude_quaternion.q2;
-	odometry.pose.pose.orientation.z = attitude_quaternion.q3;
-	odometry.twist.twist.angular.x = attitude_quaternion.wx;
-	odometry.twist.twist.angular.y = attitude_quaternion.wy;
-	odometry.twist.twist.angular.z = attitude_quaternion.wz;
-	odometry.twist.twist.linear.x = velocity.vx;
-	odometry.twist.twist.linear.y = velocity.vy;
-	odometry.twist.twist.linear.z = velocity.vz;
-	odometry_publisher.publish(odometry);
+	if((msg_flags & ENABLE_MSG_POS)&&(msg_flags & ENABLE_MSG_Q)&&(msg_flags & ENABLE_MSG_W)&&(msg_flags & ENABLE_MSG_V)){
+		odometry.header.frame_id = "/world";
+		odometry.header.stamp = current_time;
+		odometry.pose.pose.position.x = local_position.x;
+		odometry.pose.pose.position.y = local_position.y;
+		odometry.pose.pose.position.z = local_position.z;
+		odometry.pose.pose.orientation.w = attitude_quaternion.q0;
+		odometry.pose.pose.orientation.x = attitude_quaternion.q1;
+		odometry.pose.pose.orientation.y = attitude_quaternion.q2;
+		odometry.pose.pose.orientation.z = attitude_quaternion.q3;
+		odometry.twist.twist.angular.x = attitude_quaternion.wx;
+		odometry.twist.twist.angular.y = attitude_quaternion.wy;
+		odometry.twist.twist.angular.z = attitude_quaternion.wz;
+		odometry.twist.twist.linear.x = velocity.vx;
+		odometry.twist.twist.linear.y = velocity.vy;
+		odometry.twist.twist.linear.z = velocity.vz;
+		odometry_publisher.publish(odometry);
+	}
 
 	//update rc_channel msg
-	rc_channels.header.frame_id = "/rc";
-	rc_channels.header.stamp = current_time;
-	rc_channels.ts = recv_sdk_std_msgs.time_stamp;
-	rc_channels.pitch = recv_sdk_std_msgs.rc.pitch;
-	rc_channels.roll = recv_sdk_std_msgs.rc.roll;
-	rc_channels.mode = recv_sdk_std_msgs.rc.mode;
-	rc_channels.gear = recv_sdk_std_msgs.rc.gear;
-	rc_channels.throttle = recv_sdk_std_msgs.rc.throttle;
-	rc_channels.yaw = recv_sdk_std_msgs.rc.yaw;
-	rc_channels_publisher.publish(rc_channels);
+	if((msg_flags & ENABLE_MSG_RC)){
+		rc_channels.header.frame_id = "/rc";
+		rc_channels.header.stamp = current_time;
+		rc_channels.ts = recv_sdk_std_msgs.time_stamp;
+		rc_channels.pitch = recv_sdk_std_msgs.rc.pitch;
+		rc_channels.roll = recv_sdk_std_msgs.rc.roll;
+		rc_channels.mode = recv_sdk_std_msgs.rc.mode;
+		rc_channels.gear = recv_sdk_std_msgs.rc.gear;
+		rc_channels.throttle = recv_sdk_std_msgs.rc.throttle;
+		rc_channels.yaw = recv_sdk_std_msgs.rc.yaw;
+		rc_channels_publisher.publish(rc_channels);
+	}
 
 	//update compass msg
-	compass.header.frame_id = "/world";
-	compass.header.stamp = current_time;
-	compass.ts = recv_sdk_std_msgs.time_stamp;
-	compass.x = recv_sdk_std_msgs.mag.x;
-	compass.y = recv_sdk_std_msgs.mag.y;
-	compass.z = recv_sdk_std_msgs.mag.z;
-	compass_publisher.publish(compass);
+	if((msg_flags & ENABLE_MSG_MAG)){
+		compass.header.frame_id = "/world";
+		compass.header.stamp = current_time;
+		compass.ts = recv_sdk_std_msgs.time_stamp;
+		compass.x = recv_sdk_std_msgs.mag.x;
+		compass.y = recv_sdk_std_msgs.mag.y;
+		compass.z = recv_sdk_std_msgs.mag.z;
+		compass_publisher.publish(compass);
+	}
 
-	static unsigned int count = 0;
-	count++;
-	if (count % 50 == 0) {
-		
-		//update flight_status 
+
+	//update flight_status 
+	if((msg_flags & ENABLE_MSG_STATUS)){
 		std_msgs::UInt8 msg;
 		flight_status = recv_sdk_std_msgs.status;
 		msg.data = flight_status;
 		flight_status_publisher.publish(msg);
+	}
 
-		//update battery msg
+	//update battery msg
+	if((msg_flags & ENABLE_MSG_BATTERY)){
 		power_status.percentage = recv_sdk_std_msgs.battery_remaining_capacity;
-		power_status_publisher.publish(msg);
+		power_status_publisher.publish(power_status);
+	}
 
-		//update flight control info
+	//update flight control info
+	if((msg_flags & ENABLE_MSG_DEVICE)){
 		flight_control_info.cur_ctrl_dev_in_navi_mode = recv_sdk_std_msgs.ctrl_info.cur_ctrl_dev_in_navi_mode;
 		flight_control_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
 		flight_control_info_publisher.publish(flight_control_info);
+	}
 
-		//update obtaincontrol msg
+	//update obtaincontrol msg
+	if((msg_flags & ENABLE_MSG_TIME)) {
+		std_msgs::UInt8 msg;
 		sdk_permission_opened = recv_sdk_std_msgs.obtained_control;
 		msg.data = recv_sdk_std_msgs.obtained_control;
 		sdk_permission_publisher.publish(msg);
@@ -218,9 +241,13 @@ int DJISDKNode::init_parameters_and_activate()
 		printf("Serial Port Cannot Open\n");
 		return 0;
 	}
+
 	DJI_Pro_Activate_API(&user_act_data, NULL);
-	boost::function<void(void)> f = boost::bind(&DJISDKNode::broadcast_callback, this);
-	DJI_Pro_Register_Broadcast_Callback(*f.target<User_Broadcast_Handler_Func>());
+	auto f = [&](){broadcast_callback();};
+	//boost::function<void(void)> f = boost::bind(&DJISDKNode::broadcast_callback, this);
+	DJI_Pro_Register_Broadcast_Callback(f);
+
+
 
 	return 0;
 }

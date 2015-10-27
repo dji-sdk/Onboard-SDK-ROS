@@ -338,14 +338,9 @@ int DJI_Pro_Attitude_Control(attitude_data_t *p_user_data);
 int DJI_Pro_Gimbal_Angle_Control(gimbal_custom_control_angle_t *p_user_data);
 int DJI_Pro_Gimbal_Speed_Control(gimbal_custom_speed_t *p_user_data);
 int DJI_Pro_Camera_Control(unsigned char camera_cmd);
-int DJI_Pro_Get_Broadcast_Data(sdk_std_msg_t *p_user_buf);
+int DJI_Pro_Get_Broadcast_Data(sdk_std_msg_t *p_user_buf, unsigned char *msg_flags);
 unsigned char DJI_Pro_Get_CmdSet_Id(ProHeader *header);
 unsigned char DJI_Pro_Get_CmdCode_Id(ProHeader *header);
-int DJI_Pro_Get_Bat_Capacity(unsigned char *data);
-int DJI_Pro_Get_Quaternion(api_quaternion_data_t *p_user_buf);
-int DJI_Pro_Get_GroundAcc(api_common_data_t *p_user_buf);
-int DJI_Pro_Get_GroundVo(api_vel_data_t *p_user_buf);
-int DJI_Pro_Get_CtrlInfo(api_ctrl_info_data_t *p_user_buf);
 //TODO...
 int DJI_Pro_Register_Transparent_Transmission_Callback(Transparent_Transmission_Func user_rec_handler_entrance);
 int DJI_Pro_Register_Broadcast_Callback(User_Broadcast_Handler_Func user_broadcast_handler_entrance);
