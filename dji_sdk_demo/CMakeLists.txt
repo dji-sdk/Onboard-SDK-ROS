@@ -144,6 +144,11 @@ target_link_libraries(dji_sdk_client
 )
 add_dependencies(dji_sdk_client dji_sdk_generate_messages_cpp)
 
+add_executable(dji_sdk_wp_client src/wp_client.cpp)
+target_link_libraries(dji_sdk_wp_client
+  ${catkin_LIBRARIES}
+)
+add_dependencies(dji_sdk_wp_client dji_sdk_generate_messages_cpp)
 
 #############
 ## Install ##

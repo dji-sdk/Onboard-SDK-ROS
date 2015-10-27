@@ -1,5 +1,4 @@
 #include <ros/ros.h>
-#include <dji_sdk/dji_sdk.h>
 #include <dji_sdk/dji_drone.h>
 #include <cstdlib>
 
@@ -47,7 +46,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "sdk_client");
 	ROS_INFO("sdk_service_client_test");
 	
-	DJIDrone* drone = new DJIDrone("drone1");
+	DJIDrone* drone = new DJIDrone("drone_demo");
 
 	Display_Main_Menu();
 	while(1)

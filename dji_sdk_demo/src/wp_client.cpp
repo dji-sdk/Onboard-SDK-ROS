@@ -1,5 +1,5 @@
 #include <ros/ros.h>
-#include "dji_sdk.h"
+#include <dji_sdk/dji_drone.h>
 #include <cstdlib>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
@@ -32,20 +32,7 @@ int main(int argc, char **argv)
 
 	ros::init(argc, argv, "sdk_wp_client");
 
-	ros::NodeHandle n;
-
-	ros::ServiceClient drone_control_manager = n.serviceClient<dji_sdk::control_manager>("dji_sdk/obtain_release_control");
-	ros::ServiceClient drone_action_client = n.serviceClient<dji_sdk::action>("dji_sdk/drone_action_control");
-
-	actionlib::SimpleActionClient<dji_sdk::LocalPositionNavigationAction> local_navigation_action_client("dji_sdk/local_navigation_action", true);
-	actionlib::SimpleActionClient<dji_sdk::GlobalPositionNavigationAction> gps_navigation_action_client("dji_sdk/gps_navigation_action", true);
-	actionlib::SimpleActionClient<dji_sdk::WaypointNavigationAction> waypoint_navigation_action_client("dji_sdk/waypoint_navigation_action", true);
-
-	dji_sdk::SDKPermissionControl 	sdk_permission_service;
-	dji_sdk::DroneTaskControl 		drone_task_service;
-	dji_sdk::LocalPositionNavigationGoal goal_local;
-	dji_sdk::GlobalPositionnavigationGoal goal_gps;
-	dji_sdk::Waypoint_navigationGoal goal_waypoint;
+	DJIDrone* drone = new DJIDrone("drone_demo");
 
 	dji_sdk::WaypointList newWaypointList;
 	dji_sdk::Waypoint waypoint0;
@@ -85,128 +72,123 @@ int main(int argc, char **argv)
 		{
 			case 'a':
 				/* request control ability*/
-				srv_control.request.control_ability=1;
-				drone_control_manager.call(srv_control);
+				drone->request_sdk_permission_control();
 				break;
 			case 'b':
 				/* release control ability*/
-				srv_control.request.control_ability=0;
-				drone_control_manager.call(srv_control);
+				drone->release_sdk_permission_control();
 				break;
 			case 'c':
 				/* take off */
-				srv_action.request.action=4;
-				drone_action_client.call(srv_action);
+				drone->takeoff();
 				break;
 			case 'd':
 				/* landing*/
-				srv_action.request.action=6;
-				drone_action_client.call(srv_action);
+				drone->landing();
 				break;
 			case 'e':
 				/* go home*/
-				srv_action.request.action=1;
-				drone_action_client.call(srv_action);
+				drone->gohome();
 				break;
 			case 'f':
-				local_navigation_action_client.waitForServer();
-				goal_local.x = -100;
-				goal_local.y = -100;
-				goal_local.z = 100;
-				local_navigation_action_client.sendGoal(goal_local);
+				// local_navigation_action_client.waitForServer();
+				// goal_local.x = -100;
+				// goal_local.y = -100;
+				// goal_local.z = 100;
+				// local_navigation_action_client.sendGoal(goal_local);
 
-				finished_before_timeout = local_navigation_action_client.waitForResult(ros::Duration(300.0));
+				// finished_before_timeout = local_navigation_action_client.waitForResult(ros::Duration(300.0));
 
-				if (finished_before_timeout)
-				{
-					actionlib::SimpleClientGoalState state = local_navigation_action_client.getState();
-					ROS_INFO("Action finished: %s",state.toString().c_str());
-				}
-				else {
-					ROS_INFO("Action did not finish before the time out.");
-				}
+				// if (finished_before_timeout)
+				// {
+				// 	actionlib::SimpleClientGoalState state = local_navigation_action_client.getState();
+				// 	ROS_INFO("Action finished: %s",state.toString().c_str());
+				// }
+				// else {
+				// 	ROS_INFO("Action did not finish before the time out.");
+				// }
 
 				break;
 			case 'g':
-				gps_navigation_action_client.waitForServer();
-				goal_gps.latitude = 22.535;
-				goal_gps.longitude = 113.95;
-				goal_gps.altitude = 100;
-				gps_navigation_action_client.sendGoal(goal_gps);
+				// gps_navigation_action_client.waitForServer();
+				// goal_gps.latitude = 22.535;
+				// goal_gps.longitude = 113.95;
+				// goal_gps.altitude = 100;
+				// gps_navigation_action_client.sendGoal(goal_gps);
 
-				finished_before_timeout = gps_navigation_action_client.waitForResult(ros::Duration(300.0));
+				// finished_before_timeout = gps_navigation_action_client.waitForResult(ros::Duration(300.0));
 
-				if (finished_before_timeout)
-				{
-					actionlib::SimpleClientGoalState state = gps_navigation_action_client.getState();
-					ROS_INFO("Action finished: %s",state.toString().c_str());
-				}
-				else {
-					ROS_INFO("Action did not finish before the time out.");
-				}
+				// if (finished_before_timeout)
+				// {
+				// 	actionlib::SimpleClientGoalState state = gps_navigation_action_client.getState();
+				// 	ROS_INFO("Action finished: %s",state.toString().c_str());
+				// }
+				// else {
+				// 	ROS_INFO("Action did not finish before the time out.");
+				// }
 
 				break;
 
 			case 'h':
-				{
-					waypoint0.latitude = 22.535;
-					waypoint0.longitude = 113.95;
-					waypoint0.altitude = 100;
-					waypoint0.staytime = 5;
-					waypoint0.heading = 0;
-				}
-				newWaypointList.waypointList.push_back(waypoint0);
+				// {
+				// 	waypoint0.latitude = 22.535;
+				// 	waypoint0.longitude = 113.95;
+				// 	waypoint0.altitude = 100;
+				// 	waypoint0.staytime = 5;
+				// 	waypoint0.heading = 0;
+				// }
+				// newWaypointList.waypointList.push_back(waypoint0);
 
-				{
-					waypoint1.latitude = 22.535;
-					waypoint1.longitude = 113.96;
-					waypoint1.altitude = 100;
-					waypoint1.staytime = 0;
-					waypoint1.heading = 90;
-				}
-				newWaypointList.waypointList.push_back(waypoint1);
+				// {
+				// 	waypoint1.latitude = 22.535;
+				// 	waypoint1.longitude = 113.96;
+				// 	waypoint1.altitude = 100;
+				// 	waypoint1.staytime = 0;
+				// 	waypoint1.heading = 90;
+				// }
+				// newWaypointList.waypointList.push_back(waypoint1);
 
-				{
-					waypoint2.latitude = 22.545;
-					waypoint2.longitude = 113.96;
-					waypoint2.altitude = 100;
-					waypoint2.staytime = 4;
-					waypoint2.heading = -90;
-				}
-				newWaypointList.waypointList.push_back(waypoint2);
+				// {
+				// 	waypoint2.latitude = 22.545;
+				// 	waypoint2.longitude = 113.96;
+				// 	waypoint2.altitude = 100;
+				// 	waypoint2.staytime = 4;
+				// 	waypoint2.heading = -90;
+				// }
+				// newWaypointList.waypointList.push_back(waypoint2);
 
-				{
-					waypoint3.latitude = 22.545;
-					waypoint3.longitude = 113.96;
-					waypoint3.altitude = 10;
-					waypoint3.staytime = 2;
-					waypoint3.heading = 180;
-				}
-				newWaypointList.waypointList.push_back(waypoint3);
+				// {
+				// 	waypoint3.latitude = 22.545;
+				// 	waypoint3.longitude = 113.96;
+				// 	waypoint3.altitude = 10;
+				// 	waypoint3.staytime = 2;
+				// 	waypoint3.heading = 180;
+				// }
+				// newWaypointList.waypointList.push_back(waypoint3);
 
-				{
-					waypoint4.latitude = 22.525;
-					waypoint4.longitude = 113.93;
-					waypoint4.altitude = 50;
-					waypoint4.staytime = 0;
-					waypoint4.heading = -180;
-				}
-				newWaypointList.waypointList.push_back(waypoint4);
+				// {
+				// 	waypoint4.latitude = 22.525;
+				// 	waypoint4.longitude = 113.93;
+				// 	waypoint4.altitude = 50;
+				// 	waypoint4.staytime = 0;
+				// 	waypoint4.heading = -180;
+				// }
+				// newWaypointList.waypointList.push_back(waypoint4);
 
-				waypoint_navigation_action_client.waitForServer();
-				goal_waypoint.waypointList = newWaypointList;
-				waypoint_navigation_action_client.sendGoal(goal_waypoint);
+				// waypoint_navigation_action_client.waitForServer();
+				// goal_waypoint.waypointList = newWaypointList;
+				// waypoint_navigation_action_client.sendGoal(goal_waypoint);
 
-				finished_before_timeout = waypoint_navigation_action_client.waitForResult(ros::Duration(300.0));
+				// finished_before_timeout = waypoint_navigation_action_client.waitForResult(ros::Duration(300.0));
 
-				if (finished_before_timeout)
-				{
-					actionlib::SimpleClientGoalState state = waypoint_navigation_action_client.getState();
-					ROS_INFO("Action finished: %s",state.toString().c_str());
-				}
-				else {
-					ROS_INFO("Action did not finish before the time out.");
-				}
+				// if (finished_before_timeout)
+				// {
+				// 	actionlib::SimpleClientGoalState state = waypoint_navigation_action_client.getState();
+				// 	ROS_INFO("Action finished: %s",state.toString().c_str());
+				// }
+				// else {
+				// 	ROS_INFO("Action did not finish before the time out.");
+				// }
 
 				break;
 
