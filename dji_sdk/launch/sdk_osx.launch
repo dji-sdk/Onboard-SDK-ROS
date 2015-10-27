@@ -1,5 +1,5 @@
 <launch>
-	<node pkg="dji_sdk" type="dji_sdk" name="dji_sdk" output="screen" ns="drone1">
+	<node pkg="dji_sdk" type="dji_sdk" name="dji_sdk" output="screen" ns="drone_demo">
 		<!-- node parameters -->
 		<param name="serial_name" type="string" value="/dev/cu.usbserial-A603T4HK"/>
 		<param name="baud_rate" type="int" value="230400"/>

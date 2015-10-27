@@ -148,7 +148,6 @@ class DJIDrone
 		velocity_control.request.yawAngle = yaw;
 	
 		return velocity_control_service.call(velocity_control) && velocity_control.response.result;
-
 	}
 
 	bool local_position_control(float x, float y, float z, float yaw)

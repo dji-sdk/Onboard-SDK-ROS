@@ -319,9 +319,6 @@ typedef struct
 typedef void (*Command_Result_Notify)(unsigned short result);
 typedef void (*Get_API_Version_Notify)(version_query_data_t *);
 
-//typedef void (*User_Handler_Func)(ProHeader *pHeader);
-//typedef void (*User_Broadcast_Handler_Func)(void);
-//typedef void (*Transparent_Transmission_Func)(unsigned char *buf,unsigned char len);
 typedef std::function<void(ProHeader *)> User_Handler_Func;
 typedef std::function<void()> User_Broadcast_Handler_Func;
 typedef std::function<void(unsigned char *, unsigned char)> Transparent_Transmission_Func;
