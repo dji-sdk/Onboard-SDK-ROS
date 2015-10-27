@@ -85,14 +85,11 @@ class DJIDrone
 
 	}
 
-	bool gimbal_speed_control()
+	bool gimbal_angle_control()
 	{
 		
 	}
 
-	bool gimbal_speed_control()
-	{
-		
-	}
+	
 
 };

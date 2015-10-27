@@ -8,6 +8,7 @@
 #define __DJI_PRO_APP_H__
 
 #include <stdint.h>
+#include <functional>
 #include "DJI_Pro_Link.h"
 
 #define MY_DEV_ID               0x00
@@ -317,10 +318,13 @@ typedef struct
 
 typedef void (*Command_Result_Notify)(unsigned short result);
 typedef void (*Get_API_Version_Notify)(version_query_data_t *);
-typedef void (*User_Handler_Func)(ProHeader *pHeader);
-typedef void (*User_Broadcast_Handler_Func)(void);
-typedef void (*Transparent_Transmission_Func)(unsigned char *buf,unsigned char len);
 
+//typedef void (*User_Handler_Func)(ProHeader *pHeader);
+//typedef void (*User_Broadcast_Handler_Func)(void);
+//typedef void (*Transparent_Transmission_Func)(unsigned char *buf,unsigned char len);
+typedef std::function<void(ProHeader *)> User_Handler_Func;
+typedef std::function<void()> User_Broadcast_Handler_Func;
+typedef std::function<void(unsigned char *, unsigned char)> Transparent_Transmission_Func;
 
 void DJI_Pro_App_Send_Data(unsigned char session_mode, unsigned char is_enc, unsigned char  cmd_set, unsigned char cmd_id,
                    unsigned char *pdata,int len,ACK_Callback_Func ack_callback, int timeout, int retry_time);

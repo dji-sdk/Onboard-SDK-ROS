@@ -656,7 +656,7 @@ static void DJI_Pro_Parse_Broadcast_Data(ProHeader *header)
     
     pthread_mutex_unlock(&std_msg_lock);
 
-    if (p_user_broadcast_handler_func)
+    if (p_user_broadcast_handler_func) 
         p_user_broadcast_handler_func();
 }
 

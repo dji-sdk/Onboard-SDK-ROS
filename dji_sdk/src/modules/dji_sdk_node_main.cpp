@@ -1,5 +1,5 @@
 #include "dji_sdk_node.h"
-#include <boost/function.hpp>
+#include <functional>
 
 //----------------------------------------------------------
 // timer spin_function 50Hz
@@ -241,13 +241,9 @@ int DJISDKNode::init_parameters_and_activate()
 		printf("Serial Port Cannot Open\n");
 		return 0;
 	}
-
+	
 	DJI_Pro_Activate_API(&user_act_data, NULL);
-	auto f = [&](){broadcast_callback();};
-	//boost::function<void(void)> f = boost::bind(&DJISDKNode::broadcast_callback, this);
-	DJI_Pro_Register_Broadcast_Callback(f);
-
-
+    DJI_Pro_Register_Broadcast_Callback(std::bind(&DJISDKNode::broadcast_callback, this));
 
 	return 0;
 }
