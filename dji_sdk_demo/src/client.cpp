@@ -125,214 +125,145 @@ int main(int argc, char **argv)
 
 			case 'g':
 				/* attitude control sample*/
-				// srv_action.request.action=4;
-				// drone_action_client.call(srv_action);
-				// sleep(8);
-
-				// srv_attitude.request.flag = 0x40;
-				// srv_attitude.request.x = 0;
-				// srv_attitude.request.y = 0;
-				// srv_attitude.request.yaw = 0;
-				// for(int i = 0; i < 100; i ++)
-				// {
-				// 	if(i < 90)
-				// 		srv_attitude.request.z = 2.0;
-				// 	else
-				// 		srv_attitude.request.z = 0.0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// sleep(1);
-
-				// srv_attitude.request.flag = 0x40;
-				// srv_attitude.request.y = 0;
-				// srv_attitude.request.z = 0;
-				// srv_attitude.request.yaw = 0;
-				// for(int i = 0; i < 200; i ++)
-				// {
-				// 	if(i < 180)
-				// 		srv_attitude.request.x = 2;
-				// 	else
-				// 		srv_attitude.request.x = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// sleep(1);
-
-				// srv_attitude.request.flag = 0x40;
-				// srv_attitude.request.y = 0;
-				// srv_attitude.request.z = 0;
-				// srv_attitude.request.yaw = 0;
-				// for(int i = 0; i < 200; i ++)
-				// {
-				// 	if(i < 180)
-				// 		srv_attitude.request.x= -2;
-				// 	else
-				// 		srv_attitude.request.x= 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// sleep(1);
-
-				// srv_attitude.request.flag = 0x40;
-				// srv_attitude.request.x = 0;
-				// srv_attitude.request.z = 0;
-				// srv_attitude.request.yaw = 0;
-				// for(int i = 0; i < 200; i ++)
-				// {
-				// 	if(i < 180)
-				// 		srv_attitude.request.y = 2;
-				// 	else
-				// 		srv_attitude.request.y = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// sleep(1);
-
-				// srv_attitude.request.flag = 0x40;
-				// srv_attitude.request.x = 0;
-				// srv_attitude.request.z = 0;
-				// srv_attitude.request.yaw = 0;
-				// for(int i = 0; i < 200; i ++)
-				// {
-				// 	if(i < 180)
-				// 		srv_attitude.request.y = -2;
-				// 	else
-				// 		srv_attitude.request.y = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// sleep(1);
-
-				// srv_attitude.request.flag = 0x40;
-				// srv_attitude.request.x = 0;
-				// srv_attitude.request.y = 0;
-				// srv_attitude.request.yaw = 0;
-				// for(int i = 0; i < 200; i ++)
-				// {
-				// 	if(i < 180)
-				// 		srv_attitude.request.z = 0.5;
-				// 	else
-				// 		srv_attitude.request.z = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// sleep(1);
-
-				// srv_attitude.request.flag = 0x40;
-				// srv_attitude.request.x = 0;
-				// srv_attitude.request.y = 0;
-				// srv_attitude.request.yaw = 0;
-				// for(int i = 0; i < 200; i ++)
-				// {
-				// 	if(i < 180)
-				// 		srv_attitude.request.z = -0.5;
-				// 	else
-				// 		srv_attitude.request.z = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// sleep(1);
-
-				// srv_attitude.request.flag = 0xA;
-				// srv_attitude.request.x = 0;
-				// srv_attitude.request.y = 0;
-				// srv_attitude.request.z = 0;
-				// for(int i = 0; i < 200; i ++)
-				// {
-				// 	if(i < 180)
-				// 		srv_attitude.request.yaw = 90;
-				// 	else
-				// 		srv_attitude.request.yaw = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// sleep(1);
-
-				// srv_attitude.request.flag = 0xA;
-				// srv_attitude.request.x = 0;
-				// srv_attitude.request.y = 0;
-				// srv_attitude.request.z = 0;
-				// for(int i = 0; i < 200; i ++)
-				// {
-				// 	if(i < 180)
-				// 		srv_attitude.request.yaw = -90;
-				// 	else
-				// 		srv_attitude.request.yaw = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// sleep(1);
+				drone->takeoff();
+				sleep(8);
 
 
-				// srv_action.request.action=1;
-				// drone_action_client.call(srv_action);
+				for(int i = 0; i < 100; i ++)
+				{
+					if(i < 90)
+						drone->attitude_control(0x40, 0, 2, 0, 0);
+				 	else
+						drone->attitude_control(0x40, 0, 0, 0, 0);
+				 	usleep(20000);
+				}
+				sleep(1);
+
+				for(int i = 0; i < 200; i ++)
+				{
+					if(i < 180)
+						drone->attitude_control(0x40, 2, 0, 0, 0);
+					else
+						drone->attitude_control(0x40, 0, 0, 0, 0);
+					usleep(20000);
+				}
+				sleep(1);
+
+				for(int i = 0; i < 200; i ++)
+				{
+					if(i < 180)
+						drone->attitude_control(0x40, -2, 0, 0, 0);
+					else
+						drone->attitude_control(0x40, 0, 0, 0, 0);
+					usleep(20000);
+				}
+				sleep(1);
+
+				for(int i = 0; i < 200; i ++)
+				{
+					if(i < 180)
+						drone->attitude_control(0x40, 0, 2, 0, 0);
+					else
+						drone->attitude_control(0x40, 0, 0, 0, 0);
+					usleep(20000);
+				}
+				sleep(1);
+
+				for(int i = 0; i < 200; i ++)
+				{
+					if(i < 180)
+						drone->attitude_control(0x40, 0, -2, 0, 0);
+					else
+						drone->attitude_control(0x40, 0, 0, 0, 0);
+					usleep(20000);
+				}
+				sleep(1);
+
+				for(int i = 0; i < 200; i ++)
+				{
+					if(i < 180)
+						drone->attitude_control(0x40, 0, 0, 0.5, 0);
+					else
+						drone->attitude_control(0x40, 0, 0, 0, 0);
+					usleep(20000);
+				}
+				sleep(1);
+
+				for(int i = 0; i < 200; i ++)
+				{
+					if(i < 180)
+						drone->attitude_control(0x40, 0, 0, -0.5, 0);
+					else
+						drone->attitude_control(0x40, 0, 0, 0, 0);
+					usleep(20000);
+				}
+				sleep(1);
+
+				for(int i = 0; i < 200; i ++)
+				{
+					if(i < 180)
+						drone->attitude_control(0xA, 0, 0, 0, 90);
+					else
+						drone->attitude_control(0xA, 0, 0, 0, 0);
+					usleep(20000);
+				}
+				sleep(1);
+
+				for(int i = 0; i < 200; i ++)
+				{
+					if(i < 180)
+						drone->attitude_control(0xA, 0, 0, 0, -90);
+					else
+						drone->attitude_control(0xA, 0, 0, 0, 0);
+					usleep(20000);
+				}
+				sleep(1);
+
+				drone->landing();
+
 				break;
 
 			case 'h':
 				/*draw circle sample*/
-				// static float time = 0;
-				// static float R = 2;
-				// static float V = 2;
-				// static float vx;
-				// static float vy;
-				// /* start to draw circle */
-				// for(int i = 0; i < 300; i ++)
-				// {
-				// 	vx = V * sin((V/R)*time/50.0f);
-				// 	vy = V * cos((V/R)*time/50.0f);
-				// 	srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
-				// 	srv_attitude.request.x = vx;
-				// 	srv_attitude.request.y = vy;
-				// 	srv_attitude.request.z = 0;
-				// 	srv_attitude.request.yaw = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// 	time++;
-				// }
+				static float time = 0;
+				static float R = 2;
+				static float V = 2;
+				static float vx;
+				static float vy;
+				/* start to draw circle */
+				for(int i = 0; i < 300; i ++)
+				{
+					vx = V * sin((V/R)*time/50.0f);
+					vy = V * cos((V/R)*time/50.0f);
+		
+					drone->attitude_control(HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY, vx, vy, 0, 0);
+					usleep(20000);
+					time++;
+				}
 				break;
+
 			case 'i':
 				/*draw square sample*/
-				// for(int i = 0;i < 60;i++)
-				// {
-				// 	srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
-				// 	srv_attitude.request.x = 3;
-				// 	srv_attitude.request.y = 3;
-				// 	srv_attitude.request.z = 0;
-				// 	srv_attitude.request.yaw = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// for(int i = 0;i < 60;i++)
-				// {
-				// 	srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
-				// 	srv_attitude.request.x = -3;
-				// 	srv_attitude.request.y = 3;
-				// 	srv_attitude.request.z = 0;
-				// 	srv_attitude.request.yaw = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// for(int i = 0;i < 60;i++)
-				// {
-				// 	srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
-				// 	srv_attitude.request.x = -3;
-				// 	srv_attitude.request.y = -3;
-				// 	srv_attitude.request.z = 0;
-				// 	srv_attitude.request.yaw = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
-				// for(int i = 0;i < 60;i++)
-				// {
-				// 	srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
-				// 	srv_attitude.request.x = 3;
-				// 	srv_attitude.request.y = -3;
-				// 	srv_attitude.request.z = 0;
-				// 	srv_attitude.request.yaw = 0;
-				// 	drone_attitude_client.call(srv_attitude);
-				// 	usleep(20000);
-				// }
+				for(int i = 0;i < 60;i++)
+				{
+					drone->attitude_control(HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY, 3, 3, 0, 0);
+					usleep(20000);
+				}
+				for(int i = 0;i < 60;i++)
+				{
+					drone->attitude_control(HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY, -3, 3, 0, 0);
+					usleep(20000);
+				}
+				for(int i = 0;i < 60;i++)
+				{
+					drone->attitude_control(HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY, -3, -3, 0, 0);
+					usleep(20000);
+				}
+				for(int i = 0;i < 60;i++)
+				{
+					drone->attitude_control(HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY, 3, -3, 0, 0);
+					usleep(20000);
+				}
 				break;
 			case 'j':
 				/*take a picture*/

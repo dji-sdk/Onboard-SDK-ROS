@@ -98,7 +98,6 @@ class DJISDKConnection:
         waypoint_navigation_action_client.wait_for_result()
         return waypoint_navigation_action_client.get_result()
 
-    def 
     def request_control(self):
         self.control_service(control_ability=1)
 

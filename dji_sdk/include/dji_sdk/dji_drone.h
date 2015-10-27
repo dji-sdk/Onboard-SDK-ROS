@@ -176,6 +176,8 @@ public:
 
 	bool local_position_navigation(float x, float y, float z)
 	{
+		local_position_navigation_action_client.waitForServer();
+
 		dji_sdk::LocalPositionNavigationGoal local_position_navigation_goal;
 		local_position_navigation_goal.x = x;
 		local_position_navigation_goal.y = y;
@@ -187,22 +189,48 @@ public:
 
 	bool global_position_navigation(double latitude, double longitude, float altitude)
 	{
+		global_position_navigation_action_client.waitForServer();
+
 		dji_sdk::GlobalPositionNavigationGoal global_position_navigation_goal;
 		global_position_navigation_goal.latitude = latitude;
 		global_position_navigation_goal.longitude = longitude;
 		global_position_navigation_goal.altitude = altitude;
 		global_position_navigation_action_client.sendGoal(global_position_navigation_goal);
-		
-		return true;
+
+		bool finished_before_timeout = global_position_navigation_action_client.waitForResult(ros::Duration(300.0));
+		if (finished_before_timeout)
+		{
+			actionlib::SimpleClientGoalState state = global_position_navigation_action_client.getState();
+			ROS_INFO("Action finished: %s",state.toString().c_str());
+		}
+		else {
+			ROS_INFO("Action did not finish before the time out.");
+		}
+
+		return finished_before_timeout;//pls check Feedback topic for progress detail
+
 	}
 
 	bool waypoint_navigation(dji_sdk::WaypointList waypoint_data)
 	{
+		waypoint_navigation_action_client.waitForServer();
+
 		dji_sdk::WaypointNavigationGoal waypoint_navigation_goal;
 		waypoint_navigation_goal.waypoint_list = waypoint_data;
 		waypoint_navigation_action_client.sendGoal(waypoint_navigation_goal);
 
-		return true;
+		bool finished_before_timeout = waypoint_navigation_action_client.waitForResult(ros::Duration(300.0));
+		if (finished_before_timeout)
+		{
+			actionlib::SimpleClientGoalState state = waypoint_navigation_action_client.getState();
+			ROS_INFO("Action finished: %s",state.toString().c_str());
+		}
+		else {
+			ROS_INFO("Action did not finish before the time out.");
+		}
+
+		return finished_before_timeout;//pls check Feedback topic for progress detail
+
 	}
 
 };
