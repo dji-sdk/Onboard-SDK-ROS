@@ -4,7 +4,7 @@
 //----------------------------------------------------------
 // timer spin_function 50Hz
 //----------------------------------------------------------
-void DJISDKNode::spin_callback()
+void DJISDKNode::broadcast_callback()
 {
 	sdk_std_msg_t recv_sdk_std_msgs;
 	DJI_Pro_Get_Broadcast_Data(&recv_sdk_std_msgs);
@@ -219,7 +219,7 @@ int DJISDKNode::init_parameters_and_activate()
 		return 0;
 	}
 	DJI_Pro_Activate_API(&user_act_data, NULL);
-	boost::function<void(void)> f = boost::bind(&DJISDKNode::spin_callback, this);
+	boost::function<void(void)> f = boost::bind(&DJISDKNode::broadcast_callback, this);
 	DJI_Pro_Register_Broadcast_Callback(*f.target<User_Broadcast_Handler_Func>());
 
 	return 0;
