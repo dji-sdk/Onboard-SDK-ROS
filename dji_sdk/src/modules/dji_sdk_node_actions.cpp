@@ -50,7 +50,7 @@ bool DJISDKNode::process_waypoint(dji_sdk::Waypoint new_waypoint)
         longitude_progress = 100 - std::abs((int) det_y);
         altitude_progress = 100 - std::abs((int) det_z);
 
-     //lazy evaluation when moving distance tooooooooooo small
+     //lazy evaluation
      //need to find a better way
      if (std::abs(dst_latitude - global_position.latitude) < 0.00001) latitude_progress = 100;
      if (std::abs(dst_longitude - global_position.longitude) < 0.00001) longitude_progress = 100;

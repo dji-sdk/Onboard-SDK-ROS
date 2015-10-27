@@ -1,4 +1,8 @@
 #include "dji_sdk.h"
+#include <ros/ros.h>
+#include <actionlib/client/simple_action_client.h> 
+#include <actionlib/client/terminal_state.h> 
+
 
 class DJIDrone
 {
@@ -80,16 +84,110 @@ class DJIDrone
 		return camera_action_control_service.call(camera_action_control) && camera_action_control.response.result;
 	}
 
-	bool gimbal_speed_control()
+	bool gimbal_speed_control(int roll_rate, int pitch_rate, int yaw_rate)
 	{
+		dji_sdk::GimbalSpeedControl gimbal_speed_control;
+		gimbal_speed_control.request.roll_rate = roll_rate;
+		gimbal_speed_control.request.pitch_rate = pitch_rate;
+		gimbal_speed_control.request.yaw_rate = yaw_rate;
+		return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
 
 	}
 
-	bool gimbal_angle_control()
+	bool gimbal_angle_control(unsigned char ctrl_flag, int roll, int pitch, int yaw, int duration)
 	{
-		
-	}
+		dji_sdk::GimbalAngleControl gimbal_angle_control;
+		gimbal_angle_control.request.flag = ctrl_flag;
+		gimbal_angle_control.request.roll = roll;
+		gimbal_angle_control.request.pitch = pitch;
+		gimbal_angle_control.request.yaw = yaw;
+		gimbal_angle_control.request.duration= duration;
+		return gimbal_angle_control_service.call(gimbal_angle_control) && gimbal_angle_control.response.result;
 
+	}
 	
+	bool sdk_permission_control(unsigned char request)
+	{
+		dji_sdk::SDKPermissionControl sdk_permission_control;
+		sdk_permission_control.control_enable = request;
+		
+		return sdk_permission_control_service.call(sdk_permission_control) && sdk_permission_control.respoinse.result;
+
+	}
+	bool attitude_control(unsigned char ctrl_flag, float x, float y, float z, float yaw)
+	{
+		dji_sdk::AttitudeControl attitude_control;
+		attitude_control.request.flag = ctrl_flag;
+		attitude_control.request.x = x;
+		attitude_control.request.y = y;
+		attitude_control.request.z = z;
+		attitude_control.request.yaw = yaw;
+
+		return attitude_control_service.call(attitude_control) && attitude_control.response.result;
+	}
+
+<<<<<<< HEAD
+	
+=======
+	bool velocity_control(int frame, float x, float y, float z, float yaw)
+	{
+		dji_sdk::VelocityControl velocity_control;
+		velocity_control.request.frame = frame;
+		velocity_control.request.x = x;
+		velocity_control.request.y = y;
+		velocity_control.request.z = z;
+		velocity_control.request.yaw = yaw;
+	
+		return velocity_control_service.call(veloctiy_control) && velocity_control.response.result;
+
+	}
+
+	bool local_position_control(float x, float y, float z, float yaw)
+	{
+		dji_sdk::LocalPositionControl local_position_control;
+		local_position_control.request.x = x;
+		local_position_control.request.y = y;
+		local_position_control.request.z = z;
+		local_position_control.request.yaw = yaw;
+		
+		return local_position_control_service.call(local_position_control) && local_position_control.respoinse.result;
+
+	}
+>>>>>>> 58c115a... garbage
+
+	bool global_position_control(double latitude, double longitude, float altitude, float yaw)
+	{
+		dji_sdk::GlobalPositionControl global_position_control;
+		global_position_control.request.latitude = latitude;
+		global_position_control.request.longitude = longitude;
+		global_position_control.request.altitude = altitude;
+		global_position_control.request.yaw = yaw;
+
+		return global_position_control_service.call(global_position_control) && global_position_contrl.response.result;
+	}
+
+
+	bool local_position_navigation(float x, float y, float z)
+	{
+		dji_sdk::LocalPostionNavigationGoal local_position_navigation_goal;
+		local_position_navigation_goal.x = x;
+		local_position_navigation_goal.y = y;
+		local_position_navigation_goal.z = z;
+		local_position_navigation_action_client.sendGoal(local_position_navigation_goal);
+
+	}
+
+	bool global_position_navigation()
+	{
+
+	}
+
+	bool waypoint_navigation()
+	{
+
+	}
 
 };
+int main() {
+
+}

@@ -62,8 +62,8 @@ bool DJISDKNode::gimbal_angle_control_callback(dji_sdk::GimbalAngleControl::Requ
 {
     gimbal_custom_control_angle_t gimbal_angle = {0};
     gimbal_angle.yaw_angle = request.yaw;
-    gimbal_angle.roll_angle = request.x;
-    gimbal_angle.pitch_angle = request.y;
+    gimbal_angle.roll_angle = request.roll;
+    gimbal_angle.pitch_angle = request.pitch;
     gimbal_angle.ctrl_byte.base = request.flag;
     gimbal_angle.ctrl_byte.yaw_cmd_ignore = 0;
     gimbal_angle.ctrl_byte.roll_cmd_ignore = 0;
@@ -79,8 +79,8 @@ bool DJISDKNode::gimbal_speed_control_callback(dji_sdk::GimbalSpeedControl::Requ
 {
     gimbal_custom_speed_t gimbal_speed = {0};
     gimbal_speed.yaw_angle_rate = request.yaw_rate;
-    gimbal_speed.roll_angle_rate = request.x_rate;
-    gimbal_speed.pitch_angle_rate = request.y_rate;
+    gimbal_speed.roll_angle_rate = request.roll_rate;
+    gimbal_speed.pitch_angle_rate = request.pitch_rate;
     gimbal_speed.ctrl_byte.ctrl_switch = 1;
 
     DJI_Pro_Gimbal_Speed_Control(&gimbal_speed);
@@ -150,11 +150,16 @@ bool DJISDKNode::sdk_permission_control_callback(dji_sdk::SDKPermissionControl::
 bool DJISDKNode::velocity_control_callback(dji_sdk::VelocityControl::Request& request, dji_sdk::VelocityControl::Response& response)
 {
     attitude_data_t user_ctrl_data;
-    user_ctrl_data.ctrl_flag = 0x40;
+	if (request.frame)
+		//world frame 
+		user_ctrl_data.ctrl_flag = 0x40;
+	else
+		//body frame
+		user_ctrl_data.ctrl_flag = 0x42;
     user_ctrl_data.roll_or_x = request.vx;
     user_ctrl_data.pitch_or_y = request.vy;
     user_ctrl_data.thr_z = request.vz;
-    user_ctrl_data.yaw = request.yaw;
+    user_ctrl_data.yaw = request.yawAngle;
     DJI_Pro_Attitude_Control(&user_ctrl_data);
 
     response.result = true;

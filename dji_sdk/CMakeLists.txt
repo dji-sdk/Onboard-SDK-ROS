@@ -153,6 +153,15 @@ target_link_libraries(dji_sdk
   ${catkin_LIBRARIES}
 )
 
+add_executable(dji_sdk_client 
+	src/DJIDrone.cpp)
+
+add_dependencies(dji_sdk_client
+  dji_sdk_generate_messages_cpp)
+
+target_link_libraries(dji_sdk_client
+  ${catkin_LIBRARIES}
+)
 #############
 ## Install ##
 #############
