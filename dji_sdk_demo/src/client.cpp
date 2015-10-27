@@ -1,5 +1,6 @@
 #include <ros/ros.h>
-#include "SDK.h"
+#include <dji_sdk/dji_sdk.h>
+#include <dji_sdk/dji_drone.h>
 #include <cstdlib>
 
 #define HORIZ_ATT 0x00
@@ -45,25 +46,9 @@ int main(int argc, char **argv)
 	bool err_flag = false;
 	ros::init(argc, argv, "sdk_client");
 	ROS_INFO("sdk_service_client_test");
-	ros::NodeHandle nh;
-
-    ros::ServiceClient attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
-    ros::ServiceClient camera_action_control_service = nh.serviceClient<dji_sdk::CameraActionControl>("dji_sdk/camera_action_control");
-    ros::ServiceClient drone_task_control_service = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
-    ros::ServiceClient gimbal_angle_control_service = nh.serviceClient<dji_sdk::GimbalAngleControl>("dji_sdk/gimbal_angle_control");
-    ros::ServiceClient gimbal_speed_control_service = nh.serviceClient<dji_sdk::GimbalSpeedControl>("dji_sdk/gimbal_speed_control");
-    ros::ServiceClient global_position_control_service = nh.serviceClient<dji_sdk::GlobalPositionControl>("dji_sdk/global_position_control");
-    ros::ServiceClient local_position_control_service = nh.serviceClient<dji_sdk::LocalPositionControl>("dji_sdk/local_position_control");
-    ros::ServiceClient sdk_permission_control_service = nh.serviceClient<dji_sdk::SDKPermissionControl>("dji_sdk/sdk_permission_control");
-    ros::ServiceClient velocity_control_service = nh.serviceClient<dji_sdk::VelocityControl>("dji_sdk/velocity_control");
-
-	dji_sdk::control_manager 	srv_control;
-	dji_sdk::action 			srv_action;
-	dji_sdk::attitude 			srv_attitude;
-	dji_sdk::camera_action		srv_camera;
-	dji_sdk::gimbal_angle 		srv_gimbal_angle;
-	dji_sdk::gimbal_speed 		srv_gimbal_speed;
-
+	
+	DJIDrone("drone1")
+	
 
 	Display_Main_Menu();
 	while(1)

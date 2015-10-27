@@ -2,7 +2,7 @@
 #include <ros/ros.h>
 #include <actionlib/client/simple_action_client.h> 
 #include <actionlib/client/terminal_state.h> 
-
+#include <string>
 
 class DJIDrone
 {
@@ -24,13 +24,14 @@ class DJIDrone
     ros::ServiceClient sdk_permission_control_service;
     ros::ServiceClient velocity_control_service;
 
-	DJIDrone(std::string ns): ns(ns), nh(ns)
+	DJIDrone(std::string ns): 
+		ns(ns), 
+		nh(ns), 
+		drone_task_action_client(nh, "dji_sdk/drone_task_action", true),
+		local_position_navigation_action_client(nh, "dji_sdk/local_position_navigation_action", true),
+		global_position_navigation_action_client(nh, "dji_sdk/global_position_navigation_action", true),
+		waypoint_navigation_action_client(nh, "dji_sdk/waypoint_navigation_action", true)
 	{
-		drone_task_action_client = actionlib::SimpleActionClient<dji_sdk::DroneTaskAction>(nh, "dji_sdk/drone_task_action", true);
-		local_position_navigation_action_client = actionlib::SimpleActionClient<dji_sdk::LocalPositionNavigationAction>(nh, "dji_sdk/local_position_navigation_action", true);
-		global_position_navigation_action_client = actionlib::SimpleActionClient<dji_sdk::GlobalPositionNavigationAction>(nh, "dji_sdk/global_position_navigation_action", true);
-		waypoint_navigation_action_client = actionlib::SimpleActionClient<dji_sdk::WaypointNavigationAction>(nh, "dji_sdk/waypoint_navigation_action", true);
-
 	    attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
 	    camera_action_control_service = nh.serviceClient<dji_sdk::CameraActionControl>("dji_sdk/camera_action_control");
 	    drone_task_control_service = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
