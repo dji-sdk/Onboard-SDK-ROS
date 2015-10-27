@@ -66,21 +66,21 @@ class DJIDrone
 	bool take_picture()
 	{
 		dji_sdk::CameraActionControl camera_action_control;
-		camera_action_control.request.action = 0;
+		camera_action_control.request.camera_action = 0;
 		return camera_action_control_service.call(camera_action_control) && camera_action_control.response.result;
 	}
 
 	bool record_video()
 	{
 		dji_sdk::CameraActionControl camera_action_control;
-		camera_action_control.request.action = 1;
+		camera_action_control.request.camera_action = 1;
 		return camera_action_control_service.call(camera_action_control) && camera_action_control.response.result;
 	}
 	
 	bool stop_video()
 	{
 		dji_sdk::CameraActionControl camera_action_control;
-		camera_action_control.request.action = 2;
+		camera_action_control.request.camera_action = 2;
 		return camera_action_control_service.call(camera_action_control) && camera_action_control.response.result;
 	}
 
@@ -109,9 +109,9 @@ class DJIDrone
 	bool sdk_permission_control(unsigned char request)
 	{
 		dji_sdk::SDKPermissionControl sdk_permission_control;
-		sdk_permission_control.control_enable = request;
+		sdk_permission_control.request.control_enable = request;
 		
-		return sdk_permission_control_service.call(sdk_permission_control) && sdk_permission_control.respoinse.result;
+		return sdk_permission_control_service.call(sdk_permission_control) && sdk_permission_control.response.result;
 
 	}
 	bool attitude_control(unsigned char ctrl_flag, float x, float y, float z, float yaw)
@@ -130,12 +130,12 @@ class DJIDrone
 	{
 		dji_sdk::VelocityControl velocity_control;
 		velocity_control.request.frame = frame;
-		velocity_control.request.x = x;
-		velocity_control.request.y = y;
-		velocity_control.request.z = z;
-		velocity_control.request.yaw = yaw;
+		velocity_control.request.vx = x;
+		velocity_control.request.vy = y;
+		velocity_control.request.vz = z;
+		velocity_control.request.yawAngle = yaw;
 	
-		return velocity_control_service.call(veloctiy_control) && velocity_control.response.result;
+		return velocity_control_service.call(velocity_control) && velocity_control.response.result;
 
 	}
 
@@ -147,7 +147,7 @@ class DJIDrone
 		local_position_control.request.z = z;
 		local_position_control.request.yaw = yaw;
 		
-		return local_position_control_service.call(local_position_control) && local_position_control.respoinse.result;
+		return local_position_control_service.call(local_position_control) && local_position_control.response.result;
 
 	}
 
@@ -159,13 +159,13 @@ class DJIDrone
 		global_position_control.request.altitude = altitude;
 		global_position_control.request.yaw = yaw;
 
-		return global_position_control_service.call(global_position_control) && global_position_contrl.response.result;
+		return global_position_control_service.call(global_position_control) && global_position_control.response.result;
 	}
 
 
 	bool local_position_navigation(float x, float y, float z)
 	{
-		dji_sdk::LocalPostionNavigationGoal local_position_navigation_goal;
+		dji_sdk::LocalPositionNavigationGoal local_position_navigation_goal;
 		local_position_navigation_goal.x = x;
 		local_position_navigation_goal.y = y;
 		local_position_navigation_goal.z = z;
@@ -185,5 +185,6 @@ class DJIDrone
 
 };
 int main() {
+	return 0;
 
 }
