@@ -24,7 +24,7 @@ class DJIDrone
     ros::ServiceClient sdk_permission_control_service;
     ros::ServiceClient velocity_control_service;
 
-	DJIDrone(std::string ns): 
+	DJIDrone(std::string ns = ""): 
 		ns(ns), 
 		nh(ns), 
 		drone_task_action_client(nh, "dji_sdk/drone_task_action", true),
@@ -50,7 +50,7 @@ class DJIDrone
 		return drone_task_control_service.call(drone_task_control) && drone_task_control.response.result;
 	}
 
-	bool land()
+	bool landing()
 	{
 		dji_sdk::DroneTaskControl drone_task_control;
 		drone_task_control.request.task = 6;
@@ -107,6 +107,16 @@ class DJIDrone
 
 	}
 	
+	bool request_sdk_permission_control()
+	{
+		return sdk_permission_control(1);
+	}
+
+	bool release_sdk_permission_control()
+	{
+		return sdk_permission_control(0);
+	}
+
 	bool sdk_permission_control(unsigned char request)
 	{
 		dji_sdk::SDKPermissionControl sdk_permission_control;
@@ -115,6 +125,7 @@ class DJIDrone
 		return sdk_permission_control_service.call(sdk_permission_control) && sdk_permission_control.response.result;
 
 	}
+
 	bool attitude_control(unsigned char ctrl_flag, float x, float y, float z, float yaw)
 	{
 		dji_sdk::AttitudeControl attitude_control;
@@ -196,6 +207,7 @@ class DJIDrone
 	}
 
 };
+
 int main() {
 	return 0;
 

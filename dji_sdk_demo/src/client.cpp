@@ -47,8 +47,7 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "sdk_client");
 	ROS_INFO("sdk_service_client_test");
 	
-	DJIDrone("drone1")
-	
+	DJIDrone* drone = new DJIDrone("drone1");
 
 	Display_Main_Menu();
 	while(1)
@@ -81,372 +80,272 @@ int main(int argc, char **argv)
 		{
 			case 'a':
 				/* request control ability*/
-				srv_control.request.control_enable = 1;
-				drone_control_manager.call(srv_control);
+				drone->request_sdk_permission_control();
 				break;
 			case 'b':
 				/* release control ability*/
-				srv_control.request.control_ability = 0;
-				drone_control_manager.call(srv_control);
+				drone->release_sdk_permission_control();
 				break;
 			case 'c':
 				/* take off */
-				srv_action.request.action = 4;
-				drone_action_client.call(srv_action);
+				drone->takeoff();
 				break;
 			case 'd':
 				/* landing*/
-				srv_action.request.action = 6;
-				drone_action_client.call(srv_action);
+				drone->landing();
 				break;
 			case 'e':
 				/* go home*/
-				srv_action.request.action = 1;
-				drone_action_client.call(srv_action);
+				drone->gohome();
 				break;
 			case 'f':
 				/*gimbal test*/
-				srv_gimbal_angle.request.flag = 0;
-				srv_gimbal_angle.request.yaw = 1800;
-				srv_gimbal_angle.request.x = 0;
-				srv_gimbal_angle.request.y = 0;
-				srv_gimbal_angle.request.duration = 20;
-				gimbal_angle_client.call(srv_gimbal_angle);
+
+				drone->gimbal_angle_control(0, 0, 0, 1800, 20);
 				sleep(2);
-				usleep(100000);
-
-				srv_gimbal_angle.request.flag = 0;
-				srv_gimbal_angle.request.yaw = -1800;
-				srv_gimbal_angle.request.x = 0;
-				srv_gimbal_angle.request.y = 0;
-				srv_gimbal_angle.request.duration = 20;
-				gimbal_angle_client.call(srv_gimbal_angle);
+				drone->gimbal_angle_control(0, 0, 0, -1800, 20);
 				sleep(2);
-				usleep(100000);
-
-				srv_gimbal_angle.request.flag = 0;
-				srv_gimbal_angle.request.yaw = 0;
-				srv_gimbal_angle.request.x = 300;
-				srv_gimbal_angle.request.y = 0;
-				srv_gimbal_angle.request.duration = 20;
-				gimbal_angle_client.call(srv_gimbal_angle);
+				drone->gimbal_angle_control(0, 300, 0, 0, 20);
 				sleep(2);
-				usleep(100000);
-
-				srv_gimbal_angle.request.flag = 0;
-				srv_gimbal_angle.request.yaw = 0;
-				srv_gimbal_angle.request.x = -300;
-				srv_gimbal_angle.request.y = 0;
-				srv_gimbal_angle.request.duration = 20;
-				gimbal_angle_client.call(srv_gimbal_angle);
+				drone->gimbal_angle_control(0, -300, 0, 0, 20);
 				sleep(2);
-				usleep(100000);
-
-				srv_gimbal_angle.request.flag = 0;
-				srv_gimbal_angle.request.yaw = 0;
-				srv_gimbal_angle.request.x = 0;
-				srv_gimbal_angle.request.y = 300;
-				srv_gimbal_angle.request.duration = 20;
-				gimbal_angle_client.call(srv_gimbal_angle);
+				drone->gimbal_angle_control(0, 0, 300, 0, 20);
 				sleep(2);
-				usleep(100000);
-
-				srv_gimbal_angle.request.flag = 0;
-				srv_gimbal_angle.request.yaw = 0;
-				srv_gimbal_angle.request.x = 0;
-				srv_gimbal_angle.request.y = -300;
-				srv_gimbal_angle.request.duration = 20;
-				gimbal_angle_client.call(srv_gimbal_angle);
+				drone->gimbal_angle_control(0, 0, -300, 0, 20);
 				sleep(2);
-				usleep(100000);
-
-				srv_gimbal_speed.request.yaw_rate = 200;
-				srv_gimbal_speed.request.x_rate = 0;
-				srv_gimbal_speed.request.y_rate = 0;
-				for(int i = 0; i < 20; i++)
-				{
-					gimbal_speed_client.call(srv_gimbal_speed);
-					usleep(100000);
-				}
-
-				srv_gimbal_speed.request.yaw_rate = -200;
-				srv_gimbal_speed.request.x_rate = 0;
-				srv_gimbal_speed.request.y_rate = 0;
-				for(int i = 0; i < 20; i++)
-				{
-					gimbal_speed_client.call(srv_gimbal_speed);
-					usleep(100000);
-				}
-
-				srv_gimbal_speed.request.yaw_rate = 0;
-				srv_gimbal_speed.request.x_rate = 200;
-				srv_gimbal_speed.request.y_rate = 0;
-				for(int i = 0; i < 20; i++)
-				{
-					gimbal_speed_client.call(srv_gimbal_speed);
-					usleep(100000);
-				}
-
-				srv_gimbal_speed.request.yaw_rate = 0;
-				srv_gimbal_speed.request.x_rate = -200;
-				srv_gimbal_speed.request.y_rate = 0;
-				for(int i = 0; i < 20; i++)
-				{
-					gimbal_speed_client.call(srv_gimbal_speed);
-					usleep(100000);
-				}
-
-				srv_gimbal_speed.request.yaw_rate = 0;
-				srv_gimbal_speed.request.x_rate = 0;
-				srv_gimbal_speed.request.y_rate = 200;
-				for(int i = 0; i < 20; i++)
-				{
-					gimbal_speed_client.call(srv_gimbal_speed);
-					usleep(100000);
-				}
-
-				srv_gimbal_speed.request.yaw_rate = 0;
-				srv_gimbal_speed.request.x_rate = 0;
-				srv_gimbal_speed.request.y_rate = -200;
-				for(int i = 0; i < 20; i++)
-				{
-					gimbal_speed_client.call(srv_gimbal_speed);
-					usleep(100000);
-				}
-
-				srv_gimbal_angle.request.flag = 0;
-				srv_gimbal_angle.request.yaw = 0;
-				srv_gimbal_angle.request.x = 0;
-				srv_gimbal_angle.request.y = 0;
-				srv_gimbal_angle.request.duration = 10;
-				gimbal_angle_client.call(srv_gimbal_angle);
+				drone->gimbal_speed_control(0, 0, 200);
+				sleep(2);
+				drone->gimbal_speed_control(0, 0, -200);
+				sleep(2);
+				drone->gimbal_speed_control(0, 200, 0);
+				sleep(2);
+				drone->gimbal_speed_control(0, -200, 0);
+				sleep(2);
+				drone->gimbal_angle_control(0, 0, 0, 0, 20);
 				break;
 
 			case 'g':
 				/* attitude control sample*/
-				srv_action.request.action=4;
-				drone_action_client.call(srv_action);
-				sleep(8);
+				// srv_action.request.action=4;
+				// drone_action_client.call(srv_action);
+				// sleep(8);
 
-				srv_attitude.request.flag = 0x40;
-				srv_attitude.request.x = 0;
-				srv_attitude.request.y = 0;
-				srv_attitude.request.yaw = 0;
-				for(int i = 0; i < 100; i ++)
-				{
-					if(i < 90)
-						srv_attitude.request.z = 2.0;
-					else
-						srv_attitude.request.z = 0.0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				sleep(1);
+				// srv_attitude.request.flag = 0x40;
+				// srv_attitude.request.x = 0;
+				// srv_attitude.request.y = 0;
+				// srv_attitude.request.yaw = 0;
+				// for(int i = 0; i < 100; i ++)
+				// {
+				// 	if(i < 90)
+				// 		srv_attitude.request.z = 2.0;
+				// 	else
+				// 		srv_attitude.request.z = 0.0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// sleep(1);
 
-				srv_attitude.request.flag = 0x40;
-				srv_attitude.request.y = 0;
-				srv_attitude.request.z = 0;
-				srv_attitude.request.yaw = 0;
-				for(int i = 0; i < 200; i ++)
-				{
-					if(i < 180)
-						srv_attitude.request.x = 2;
-					else
-						srv_attitude.request.x = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				sleep(1);
+				// srv_attitude.request.flag = 0x40;
+				// srv_attitude.request.y = 0;
+				// srv_attitude.request.z = 0;
+				// srv_attitude.request.yaw = 0;
+				// for(int i = 0; i < 200; i ++)
+				// {
+				// 	if(i < 180)
+				// 		srv_attitude.request.x = 2;
+				// 	else
+				// 		srv_attitude.request.x = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// sleep(1);
 
-				srv_attitude.request.flag = 0x40;
-				srv_attitude.request.y = 0;
-				srv_attitude.request.z = 0;
-				srv_attitude.request.yaw = 0;
-				for(int i = 0; i < 200; i ++)
-				{
-					if(i < 180)
-						srv_attitude.request.x= -2;
-					else
-						srv_attitude.request.x= 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				sleep(1);
+				// srv_attitude.request.flag = 0x40;
+				// srv_attitude.request.y = 0;
+				// srv_attitude.request.z = 0;
+				// srv_attitude.request.yaw = 0;
+				// for(int i = 0; i < 200; i ++)
+				// {
+				// 	if(i < 180)
+				// 		srv_attitude.request.x= -2;
+				// 	else
+				// 		srv_attitude.request.x= 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// sleep(1);
 
-				srv_attitude.request.flag = 0x40;
-				srv_attitude.request.x = 0;
-				srv_attitude.request.z = 0;
-				srv_attitude.request.yaw = 0;
-				for(int i = 0; i < 200; i ++)
-				{
-					if(i < 180)
-						srv_attitude.request.y = 2;
-					else
-						srv_attitude.request.y = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				sleep(1);
+				// srv_attitude.request.flag = 0x40;
+				// srv_attitude.request.x = 0;
+				// srv_attitude.request.z = 0;
+				// srv_attitude.request.yaw = 0;
+				// for(int i = 0; i < 200; i ++)
+				// {
+				// 	if(i < 180)
+				// 		srv_attitude.request.y = 2;
+				// 	else
+				// 		srv_attitude.request.y = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// sleep(1);
 
-				srv_attitude.request.flag = 0x40;
-				srv_attitude.request.x = 0;
-				srv_attitude.request.z = 0;
-				srv_attitude.request.yaw = 0;
-				for(int i = 0; i < 200; i ++)
-				{
-					if(i < 180)
-						srv_attitude.request.y = -2;
-					else
-						srv_attitude.request.y = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				sleep(1);
+				// srv_attitude.request.flag = 0x40;
+				// srv_attitude.request.x = 0;
+				// srv_attitude.request.z = 0;
+				// srv_attitude.request.yaw = 0;
+				// for(int i = 0; i < 200; i ++)
+				// {
+				// 	if(i < 180)
+				// 		srv_attitude.request.y = -2;
+				// 	else
+				// 		srv_attitude.request.y = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// sleep(1);
 
-				srv_attitude.request.flag = 0x40;
-				srv_attitude.request.x = 0;
-				srv_attitude.request.y = 0;
-				srv_attitude.request.yaw = 0;
-				for(int i = 0; i < 200; i ++)
-				{
-					if(i < 180)
-						srv_attitude.request.z = 0.5;
-					else
-						srv_attitude.request.z = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				sleep(1);
+				// srv_attitude.request.flag = 0x40;
+				// srv_attitude.request.x = 0;
+				// srv_attitude.request.y = 0;
+				// srv_attitude.request.yaw = 0;
+				// for(int i = 0; i < 200; i ++)
+				// {
+				// 	if(i < 180)
+				// 		srv_attitude.request.z = 0.5;
+				// 	else
+				// 		srv_attitude.request.z = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// sleep(1);
 
-				srv_attitude.request.flag = 0x40;
-				srv_attitude.request.x = 0;
-				srv_attitude.request.y = 0;
-				srv_attitude.request.yaw = 0;
-				for(int i = 0; i < 200; i ++)
-				{
-					if(i < 180)
-						srv_attitude.request.z = -0.5;
-					else
-						srv_attitude.request.z = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				sleep(1);
+				// srv_attitude.request.flag = 0x40;
+				// srv_attitude.request.x = 0;
+				// srv_attitude.request.y = 0;
+				// srv_attitude.request.yaw = 0;
+				// for(int i = 0; i < 200; i ++)
+				// {
+				// 	if(i < 180)
+				// 		srv_attitude.request.z = -0.5;
+				// 	else
+				// 		srv_attitude.request.z = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// sleep(1);
 
-				srv_attitude.request.flag = 0xA;
-				srv_attitude.request.x = 0;
-				srv_attitude.request.y = 0;
-				srv_attitude.request.z = 0;
-				for(int i = 0; i < 200; i ++)
-				{
-					if(i < 180)
-						srv_attitude.request.yaw = 90;
-					else
-						srv_attitude.request.yaw = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				sleep(1);
+				// srv_attitude.request.flag = 0xA;
+				// srv_attitude.request.x = 0;
+				// srv_attitude.request.y = 0;
+				// srv_attitude.request.z = 0;
+				// for(int i = 0; i < 200; i ++)
+				// {
+				// 	if(i < 180)
+				// 		srv_attitude.request.yaw = 90;
+				// 	else
+				// 		srv_attitude.request.yaw = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// sleep(1);
 
-				srv_attitude.request.flag = 0xA;
-				srv_attitude.request.x = 0;
-				srv_attitude.request.y = 0;
-				srv_attitude.request.z = 0;
-				for(int i = 0; i < 200; i ++)
-				{
-					if(i < 180)
-						srv_attitude.request.yaw = -90;
-					else
-						srv_attitude.request.yaw = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				sleep(1);
+				// srv_attitude.request.flag = 0xA;
+				// srv_attitude.request.x = 0;
+				// srv_attitude.request.y = 0;
+				// srv_attitude.request.z = 0;
+				// for(int i = 0; i < 200; i ++)
+				// {
+				// 	if(i < 180)
+				// 		srv_attitude.request.yaw = -90;
+				// 	else
+				// 		srv_attitude.request.yaw = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// sleep(1);
 
 
-				srv_action.request.action=1;
-				drone_action_client.call(srv_action);
+				// srv_action.request.action=1;
+				// drone_action_client.call(srv_action);
 				break;
 
 			case 'h':
 				/*draw circle sample*/
-				static float time = 0;
-				static float R = 2;
-				static float V = 2;
-				static float vx;
-				static float vy;
-				/* start to draw circle */
-				for(int i = 0; i < 300; i ++)
-				{
-					vx = V * sin((V/R)*time/50.0f);
-					vy = V * cos((V/R)*time/50.0f);
-					srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
-					srv_attitude.request.x = vx;
-					srv_attitude.request.y = vy;
-					srv_attitude.request.z = 0;
-					srv_attitude.request.yaw = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-					time++;
-				}
+				// static float time = 0;
+				// static float R = 2;
+				// static float V = 2;
+				// static float vx;
+				// static float vy;
+				// /* start to draw circle */
+				// for(int i = 0; i < 300; i ++)
+				// {
+				// 	vx = V * sin((V/R)*time/50.0f);
+				// 	vy = V * cos((V/R)*time/50.0f);
+				// 	srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
+				// 	srv_attitude.request.x = vx;
+				// 	srv_attitude.request.y = vy;
+				// 	srv_attitude.request.z = 0;
+				// 	srv_attitude.request.yaw = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// 	time++;
+				// }
 				break;
 			case 'i':
 				/*draw square sample*/
-				for(int i = 0;i < 60;i++)
-				{
-					srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
-					srv_attitude.request.x = 3;
-					srv_attitude.request.y = 3;
-					srv_attitude.request.z = 0;
-					srv_attitude.request.yaw = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				for(int i = 0;i < 60;i++)
-				{
-					srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
-					srv_attitude.request.x = -3;
-					srv_attitude.request.y = 3;
-					srv_attitude.request.z = 0;
-					srv_attitude.request.yaw = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				for(int i = 0;i < 60;i++)
-				{
-					srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
-					srv_attitude.request.x = -3;
-					srv_attitude.request.y = -3;
-					srv_attitude.request.z = 0;
-					srv_attitude.request.yaw = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
-				for(int i = 0;i < 60;i++)
-				{
-					srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
-					srv_attitude.request.x = 3;
-					srv_attitude.request.y = -3;
-					srv_attitude.request.z = 0;
-					srv_attitude.request.yaw = 0;
-					drone_attitude_client.call(srv_attitude);
-					usleep(20000);
-				}
+				// for(int i = 0;i < 60;i++)
+				// {
+				// 	srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
+				// 	srv_attitude.request.x = 3;
+				// 	srv_attitude.request.y = 3;
+				// 	srv_attitude.request.z = 0;
+				// 	srv_attitude.request.yaw = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// for(int i = 0;i < 60;i++)
+				// {
+				// 	srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
+				// 	srv_attitude.request.x = -3;
+				// 	srv_attitude.request.y = 3;
+				// 	srv_attitude.request.z = 0;
+				// 	srv_attitude.request.yaw = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// for(int i = 0;i < 60;i++)
+				// {
+				// 	srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
+				// 	srv_attitude.request.x = -3;
+				// 	srv_attitude.request.y = -3;
+				// 	srv_attitude.request.z = 0;
+				// 	srv_attitude.request.yaw = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
+				// for(int i = 0;i < 60;i++)
+				// {
+				// 	srv_attitude.request.flag = HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|YAW_BODY;
+				// 	srv_attitude.request.x = 3;
+				// 	srv_attitude.request.y = -3;
+				// 	srv_attitude.request.z = 0;
+				// 	srv_attitude.request.yaw = 0;
+				// 	drone_attitude_client.call(srv_attitude);
+				// 	usleep(20000);
+				// }
 				break;
 			case 'j':
 				/*take a picture*/
-				srv_camera.request.camera_action=0;
-				camera_action_client.call(srv_camera);
+				drone->take_picture();
 				break;
 			case 'k':
 				/*start video*/
-				srv_camera.request.camera_action=1;
-				camera_action_client.call(srv_camera);
+				drone->start_video();
 				break;
 			case 'l':
 				/*stop video*/
-				srv_camera.request.camera_action=2;
-				camera_action_client.call(srv_camera);
+				drone->stop_video();
 				break;
 			case 'm':
 				return 0;
