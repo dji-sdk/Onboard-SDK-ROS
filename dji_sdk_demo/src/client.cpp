@@ -341,7 +341,7 @@ int main(int argc, char **argv)
 				break;
 			case 'k':
 				/*start video*/
-				drone->start_video();
+				drone->record_video();
 				break;
 			case 'l':
 				/*stop video*/

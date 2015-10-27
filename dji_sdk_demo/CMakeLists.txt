@@ -102,7 +102,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES dji_sdk_demo
-#  CATKIN_DEPENDS 
+#  CATKIN_DEPENDS dji_sdk roscpp 
 #  DEPENDS dji_sdk
 )
 

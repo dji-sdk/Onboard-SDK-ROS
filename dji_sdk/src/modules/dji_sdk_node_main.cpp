@@ -1,4 +1,4 @@
-#include "dji_sdk_node.h"
+#include <dji_sdk/dji_sdk_node.h>
 #include <functional>
 
 //----------------------------------------------------------

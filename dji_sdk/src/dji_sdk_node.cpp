@@ -2,7 +2,7 @@
 #include <cstdio>
 #include <cstring>
 #include <cmath>
-#include "dji_sdk_node.h"
+#include <dji_sdk/dji_sdk_node.h>
 
 int main(int argc, char **argv) {
 	ros::init(argc, argv, "dji_sdk");

@@ -108,9 +108,9 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
+  INCLUDE_DIRS include
 #  LIBRARIES dji_sdk
-#  CATKIN_DEPENDS geometry_msgs message_generation nav_msgs roscpp rospy std_msgs
+  CATKIN_DEPENDS message_runtime actionlib actionlib_msgs geometry_msgs nav_msgs std_msgs
 #  DEPENDS system_lib
 )
 
@@ -137,11 +137,11 @@ add_executable(dji_sdk_node
   src/modules/dji_sdk_node_actions.cpp 
   src/modules/dji_sdk_node_services.cpp 
   src/modules/dji_sdk_node_main.cpp 
-  include/DJI_LIB/DJI_Pro_App.cpp 
-  include/DJI_LIB/DJI_Pro_Codec.cpp 
-  include/DJI_LIB/DJI_Pro_Hw.cpp 
-  include/DJI_LIB/DJI_Pro_Link.cpp 
-  include/DJI_LIB/DJI_Pro_Rmu.cpp)
+  include/dji_sdk/DJI_LIB/DJI_Pro_App.cpp 
+  include/dji_sdk/DJI_LIB/DJI_Pro_Codec.cpp 
+  include/dji_sdk/DJI_LIB/DJI_Pro_Hw.cpp 
+  include/dji_sdk/DJI_LIB/DJI_Pro_Link.cpp 
+  include/dji_sdk/DJI_LIB/DJI_Pro_Rmu.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -152,6 +152,7 @@ add_dependencies(dji_sdk_node
 target_link_libraries(dji_sdk_node
   ${catkin_LIBRARIES}
 )
+
 #############
 ## Install ##
 #############

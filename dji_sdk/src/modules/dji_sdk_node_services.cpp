@@ -1,4 +1,4 @@
-#include "dji_sdk_node.h"
+#include <dji_sdk/dji_sdk_node.h>
 
 bool DJISDKNode::attitude_control_callback(dji_sdk::AttitudeControl::Request& request, dji_sdk::AttitudeControl::Response& response)
 {
