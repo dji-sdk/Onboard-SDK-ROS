@@ -16,7 +16,7 @@ void DJISDKNode::broadcast_callback()
 	auto current_time = ros::Time::now();
 
 	//update attitude msg
-	if ((msg_flags & ENABLE_MSG_Q) && (msg_flags & ENABLE_MSG_W)){
+	if ((msg_flags & ENABLE_MSG_Q) && (msg_flags & ENABLE_MSG_W)) {
 		attitude_quaternion.header.frame_id = "/world";
 		attitude_quaternion.header.stamp = current_time;
 		attitude_quaternion.q0 = recv_sdk_std_msgs.q.q0;
@@ -31,7 +31,7 @@ void DJISDKNode::broadcast_callback()
 	}
 
 	//update global_position msg
-	if ((msg_flags & ENABLE_MSG_POS)){
+	if ((msg_flags & ENABLE_MSG_POS)) {
 		global_position.header.frame_id = "/world";
 		global_position.header.stamp = current_time;
 		global_position.ts = recv_sdk_std_msgs.time_stamp;
@@ -68,7 +68,7 @@ void DJISDKNode::broadcast_callback()
 
 
 	//update velocity msg
-	if ((msg_flags & ENABLE_MSG_V)){
+	if ((msg_flags & ENABLE_MSG_V)) {
 		velocity.header.frame_id = "/world";
 		velocity.header.stamp = current_time;
 		velocity.ts = recv_sdk_std_msgs.time_stamp;
@@ -79,7 +79,7 @@ void DJISDKNode::broadcast_callback()
 	}
 
 	//update acceleration msg
-	if((msg_flags & ENABLE_MSG_A)){
+	if ((msg_flags & ENABLE_MSG_A)) {
 		acceleration.header.frame_id = "/world";
 		acceleration.header.stamp = current_time;
 		acceleration.ts = recv_sdk_std_msgs.time_stamp;
@@ -90,7 +90,7 @@ void DJISDKNode::broadcast_callback()
 	}
 
 	//update gimbal msg
-	if((msg_flags & ENABLE_MSG_GIMBAL)){
+	if ((msg_flags & ENABLE_MSG_GIMBAL)) {
 		gimbal.header.frame_id = "/gimbal";
 		gimbal.header.stamp= current_time;
 		gimbal.ts = recv_sdk_std_msgs.time_stamp;
@@ -101,7 +101,7 @@ void DJISDKNode::broadcast_callback()
 	}
 
 	//update odom msg
-	if((msg_flags & ENABLE_MSG_POS)&&(msg_flags & ENABLE_MSG_Q)&&(msg_flags & ENABLE_MSG_W)&&(msg_flags & ENABLE_MSG_V)){
+	if ((msg_flags & ENABLE_MSG_POS) && (msg_flags & ENABLE_MSG_Q) && (msg_flags & ENABLE_MSG_W) && (msg_flags & ENABLE_MSG_V)) {
 		odometry.header.frame_id = "/world";
 		odometry.header.stamp = current_time;
 		odometry.pose.pose.position.x = local_position.x;
@@ -121,7 +121,7 @@ void DJISDKNode::broadcast_callback()
 	}
 
 	//update rc_channel msg
-	if((msg_flags & ENABLE_MSG_RC)){
+	if ((msg_flags & ENABLE_MSG_RC)) {
 		rc_channels.header.frame_id = "/rc";
 		rc_channels.header.stamp = current_time;
 		rc_channels.ts = recv_sdk_std_msgs.time_stamp;
@@ -135,7 +135,7 @@ void DJISDKNode::broadcast_callback()
 	}
 
 	//update compass msg
-	if((msg_flags & ENABLE_MSG_MAG)){
+	if ((msg_flags & ENABLE_MSG_MAG)) {
 		compass.header.frame_id = "/world";
 		compass.header.stamp = current_time;
 		compass.ts = recv_sdk_std_msgs.time_stamp;
@@ -147,7 +147,7 @@ void DJISDKNode::broadcast_callback()
 
 
 	//update flight_status 
-	if((msg_flags & ENABLE_MSG_STATUS)){
+	if ((msg_flags & ENABLE_MSG_STATUS)) {
 		std_msgs::UInt8 msg;
 		flight_status = recv_sdk_std_msgs.status;
 		msg.data = flight_status;
@@ -155,20 +155,20 @@ void DJISDKNode::broadcast_callback()
 	}
 
 	//update battery msg
-	if((msg_flags & ENABLE_MSG_BATTERY)){
+	if ((msg_flags & ENABLE_MSG_BATTERY)) {
 		power_status.percentage = recv_sdk_std_msgs.battery_remaining_capacity;
 		power_status_publisher.publish(power_status);
 	}
 
 	//update flight control info
-	if((msg_flags & ENABLE_MSG_DEVICE)){
+	if ((msg_flags & ENABLE_MSG_DEVICE)) {
 		flight_control_info.cur_ctrl_dev_in_navi_mode = recv_sdk_std_msgs.ctrl_info.cur_ctrl_dev_in_navi_mode;
 		flight_control_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
 		flight_control_info_publisher.publish(flight_control_info);
 	}
 
 	//update obtaincontrol msg
-	if((msg_flags & ENABLE_MSG_TIME)) {
+	if ((msg_flags & ENABLE_MSG_TIME)) {
 		std_msgs::UInt8 msg;
 		sdk_permission_opened = recv_sdk_std_msgs.obtained_control;
 		msg.data = recv_sdk_std_msgs.obtained_control;

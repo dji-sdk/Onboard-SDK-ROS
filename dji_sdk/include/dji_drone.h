@@ -24,6 +24,7 @@ class DJIDrone
     ros::ServiceClient sdk_permission_control_service;
     ros::ServiceClient velocity_control_service;
 
+public:
 	DJIDrone(std::string ns = ""): 
 		ns(ns), 
 		nh(ns), 
@@ -104,7 +105,6 @@ class DJIDrone
 		gimbal_angle_control.request.yaw = yaw;
 		gimbal_angle_control.request.duration= duration;
 		return gimbal_angle_control_service.call(gimbal_angle_control) && gimbal_angle_control.response.result;
-
 	}
 	
 	bool request_sdk_permission_control()
@@ -207,7 +207,3 @@ class DJIDrone
 
 };
 
-int main() {
-	return 0;
-
-}

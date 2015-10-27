@@ -132,7 +132,7 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(dji_sdk 
+add_executable(dji_sdk_node
   src/dji_sdk_node.cpp 
   src/modules/dji_sdk_node_actions.cpp 
   src/modules/dji_sdk_node_services.cpp 
@@ -145,21 +145,11 @@ add_executable(dji_sdk
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(dji_sdk 
+add_dependencies(dji_sdk_node
   dji_sdk_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(dji_sdk
-  ${catkin_LIBRARIES}
-)
-
-add_executable(dji_sdk_client 
-	src/DJIDrone.cpp)
-
-add_dependencies(dji_sdk_client
-  dji_sdk_generate_messages_cpp)
-
-target_link_libraries(dji_sdk_client
+target_link_libraries(dji_sdk_node
   ${catkin_LIBRARIES}
 )
 #############
