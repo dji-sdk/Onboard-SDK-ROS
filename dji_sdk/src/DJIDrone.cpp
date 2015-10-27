@@ -172,16 +172,27 @@ class DJIDrone
 		local_position_navigation_goal.z = z;
 		local_position_navigation_action_client.sendGoal(local_position_navigation_goal);
 
+		return true;//pls check Feedback topic for progress detail
 	}
 
-	bool global_position_navigation()
+	bool global_position_navigation(double latitude, double longitude, float altitude)
 	{
-
+		dji_sdk::GlobalPositionNavigationGoal global_position_navigation_goal;
+		global_position_navigation_goal.latitude = latitude;
+		global_position_navigation_goal.longitude = longitude;
+		global_position_navigation_goal.altitude = altitude;
+		global_position_navigation_action_client.sendGoal(global_position_navigation_goal);
+		
+		return true;
 	}
 
-	bool waypoint_navigation()
+	bool waypoint_navigation(dji_sdk::WaypointList waypoint_data)
 	{
+		dji_sdk::WaypointNavigationGoal waypoint_navigation_goal;
+		waypoint_navigation_goal.waypoint_list = waypoint_data;
+		waypoint_navigation_action_client.sendGoal(waypoint_navigation_goal);
 
+		return true;
 	}
 
 };
