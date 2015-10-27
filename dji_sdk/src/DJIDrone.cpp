@@ -126,9 +126,6 @@ class DJIDrone
 		return attitude_control_service.call(attitude_control) && attitude_control.response.result;
 	}
 
-<<<<<<< HEAD
-	
-=======
 	bool velocity_control(int frame, float x, float y, float z, float yaw)
 	{
 		dji_sdk::VelocityControl velocity_control;
@@ -153,7 +150,6 @@ class DJIDrone
 		return local_position_control_service.call(local_position_control) && local_position_control.respoinse.result;
 
 	}
->>>>>>> 58c115a... garbage
 
 	bool global_position_control(double latitude, double longitude, float altitude, float yaw)
 	{
