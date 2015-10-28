@@ -16,18 +16,19 @@
 /* memory management unit */
 #define STATIC_MEMORY_SIZE				MEMORY_SIZE
 #define MMU_TABLE_NUM					32
+
 typedef struct MMU_Tab
 {
 	unsigned int tab_index : 8;
 	unsigned int usage_flag : 8;
 	unsigned int mem_size : 16;
 	unsigned char *pmem;
-}MMU_Tab;
+} MMU_Tab;
 
 /* session management unit */
 
 #define ACK_SESSION_IDLE				0
-#define ACK_SESSION_PROCESS			1
+#define ACK_SESSION_PROCESS				1
 #define ACK_SESSION_USING				2
 #define SESSION_TABLE_NUM				32
 #define CMD_SESSION_0					0
@@ -45,7 +46,7 @@ typedef struct CMD_Session_Tab
 	ACK_Callback_Func ack_callback;
 	unsigned int pre_seq_num;
 	unsigned int pre_timestamp;
-}CMD_Session_Tab;
+} CMD_Session_Tab;
 
 typedef struct ACK_Session_Tab
 {
@@ -53,7 +54,7 @@ typedef struct ACK_Session_Tab
 	unsigned int session_status:2;
 	unsigned int res:25;
 	MMU_Tab *mmu;
-}ACK_Session_Tab;
+} ACK_Session_Tab;
 
 extern CMD_Session_Tab * Get_CMD_Session_Tab(void);
 extern ACK_Session_Tab * Get_ACK_Session_Tab(void);

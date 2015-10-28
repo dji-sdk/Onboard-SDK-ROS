@@ -187,7 +187,7 @@ static void * Status_Ctrl_Thread_Func(void * arg)
  * return:-1->parameter error or previous cmd is not finish,otherwise 0
  */
 
-int DJI_Pro_Status_Ctrl(unsigned char cmd,Command_Result_Notify user_notice_entrance)
+int DJI_Pro_Status_Ctrl(unsigned char cmd, Command_Result_Notify user_notice_entrance)
 {
     static unsigned char cur_cmd = 0;
 
@@ -204,7 +204,7 @@ int DJI_Pro_Status_Ctrl(unsigned char cmd,Command_Result_Notify user_notice_entr
     p_status_ctrl_interface = user_notice_entrance ? user_notice_entrance : 0;
     cur_cmd = cmd;
 
-    if(DJI_Pro_Create_Thread(Status_Ctrl_Thread_Func,&cur_cmd) != 0)
+    if (DJI_Pro_Create_Thread(Status_Ctrl_Thread_Func,&cur_cmd) != 0)
     {
         status_ctrl_lock = 0;
         return -1;

@@ -5,7 +5,7 @@
 #include <nav_msgs/Odometry.h>
 #include <std_msgs/UInt8.h>
 #include <boost/bind.hpp>
-#include "dji_sdk.h"
+#include <dji_sdk/dji_sdk.h>
 #include <actionlib/server/simple_action_server.h>
 
 #define C_EARTH (double) 6378137.0
@@ -66,7 +66,7 @@ private:
         gimbal_publisher = nh.advertise<dji_sdk::Gimbal>("dji_sdk/gimbal", 10);
         global_position_publisher = nh.advertise<dji_sdk::GlobalPosition>("dji_sdk/global_position", 10);
         local_position_publisher = nh.advertise<dji_sdk::LocalPosition>("dji_sdk/local_position", 10);
-        power_status_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/power_status", 10);
+        power_status_publisher = nh.advertise<dji_sdk::PowerStatus>("dji_sdk/power_status", 10);
         rc_channels_publisher = nh.advertise<dji_sdk::RCChannels>("dji_sdk/rc_channels", 10);
         velocity_publisher = nh.advertise<dji_sdk::Velocity>("dji_sdk/velocity", 10);
         activation_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/activation", 10);

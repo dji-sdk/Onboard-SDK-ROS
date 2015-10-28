@@ -295,7 +295,6 @@ int Pro_Hw_Setup(const char *device,int baudrate)
 #include "DJI_Pro_Link.h"
 #include "DJI_Pro_Codec.h"
 #include "DJI_Pro_Hw.h"
-#include "DJI_Pro_Codec.h"
 
 DJI_Pro_Hw *DJI_Pro_Hw::serial_object = (DJI_Pro_Hw *)NULL;
 
