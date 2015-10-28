@@ -256,12 +256,6 @@ DJISDKNode::DJISDKNode()
 	init_parameters_and_activate();
 }
 
-void DJISDKNode::run()
-{
-	ros::AsyncSpinner spinner(4); // Use 4 threads
-	spinner.start();
-}
-
 void DJISDKNode::gps_convert_ned(float &ned_x, float &ned_y,
             double gps_t_lon, double gps_t_lat,
             double gps_r_lon, double gps_r_lat)

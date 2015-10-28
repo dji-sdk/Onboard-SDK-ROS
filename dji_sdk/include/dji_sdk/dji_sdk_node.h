@@ -13,8 +13,11 @@
 
 class DJISDKNode
 {
-private:
+public:
+//ROS node:
+    ros::NodeHandle nh;
 
+private:
 //Drone state variables:
     dji_sdk::Acceleration acceleration;
     dji_sdk::AttitudeQuaternion attitude_quaternion;
@@ -36,8 +39,6 @@ private:
     bool localposbase_use_height = true;
 
     int global_position_ref_seted = 0;
-//ROS node:
-    ros::NodeHandle nh;
 
 //Publishers:
     ros::Publisher acceleration_publisher;
@@ -99,41 +100,15 @@ private:
 
     int init_services()
     {
-        attitude_control_service = nh.advertiseService<dji_sdk::AttitudeControl::Request, dji_sdk::AttitudeControl::Response>(
-            "dji_sdk/attitude_control", 
-            boost::bind(&DJISDKNode::attitude_control_callback, this, _1, _2));
-
-        camera_action_control_service = nh.advertiseService<dji_sdk::CameraActionControl::Request, dji_sdk::CameraActionControl::Response>(
-            "dji_sdk/camera_action_control",
-            boost::bind(&DJISDKNode::camera_action_control_callback, this, _1, _2));
-
-        drone_task_control_service = nh.advertiseService<dji_sdk::DroneTaskControl::Request, dji_sdk::DroneTaskControl::Response>(
-            "dji_sdk/drone_task_control", 
-            boost::bind(&DJISDKNode::drone_task_control_callback, this, _1, _2));
-
-        gimbal_angle_control_service = nh.advertiseService<dji_sdk::GimbalAngleControl::Request, dji_sdk::GimbalAngleControl::Response>(
-            "dji_sdk/gimbal_angle_control", 
-            boost::bind(&DJISDKNode::gimbal_angle_control_callback, this, _1, _2));
-
-        gimbal_speed_control_service = nh.advertiseService<dji_sdk::GimbalSpeedControl::Request, dji_sdk::GimbalSpeedControl::Response>(
-            "dji_sdk/gimbal_speed_control", 
-            boost::bind(&DJISDKNode::gimbal_speed_control_callback, this, _1, _2));
-
-        global_position_control_service = nh.advertiseService<dji_sdk::GlobalPositionControl::Request, dji_sdk::GlobalPositionControl::Response>(
-            "dji_sdk/global_position_control", 
-            boost::bind(&DJISDKNode::global_position_control_callback, this, _1, _2));
-
-        local_position_control_service = nh.advertiseService<dji_sdk::LocalPositionControl::Request, dji_sdk::LocalPositionControl::Response>(
-            "dji_sdk/local_position_control", 
-            boost::bind(&DJISDKNode::local_position_control_callback, this, _1, _2));
-
-        sdk_permission_control_service = nh.advertiseService<dji_sdk::SDKPermissionControl::Request, dji_sdk::SDKPermissionControl::Response>(
-            "dji_sdk/sdk_permission_control", 
-            boost::bind(&DJISDKNode::sdk_permission_control_callback, this, _1, _2));
-
-        velocity_control_service = nh.advertiseService<dji_sdk::VelocityControl::Request, dji_sdk::VelocityControl::Response>(
-            "dji_sdk/velocity_control", 
-            boost::bind(&DJISDKNode::velocity_control_callback, this, _1, _2));
+        attitude_control_service = nh.advertiseService("dji_sdk/attitude_control", &DJISDKNode::attitude_control_callback, this);
+        camera_action_control_service = nh.advertiseService("dji_sdk/camera_action_control",&DJISDKNode::camera_action_control_callback, this);
+        drone_task_control_service = nh.advertiseService("dji_sdk/drone_task_control", &DJISDKNode::drone_task_control_callback, this);
+        gimbal_angle_control_service = nh.advertiseService("dji_sdk/gimbal_angle_control", &DJISDKNode::gimbal_angle_control_callback, this);
+        gimbal_speed_control_service = nh.advertiseService("dji_sdk/gimbal_speed_control", &DJISDKNode::gimbal_speed_control_callback, this);
+        global_position_control_service = nh.advertiseService("dji_sdk/global_position_control", &DJISDKNode::global_position_control_callback, this);
+        local_position_control_service = nh.advertiseService("dji_sdk/local_position_control", &DJISDKNode::local_position_control_callback, this);
+        sdk_permission_control_service = nh.advertiseService("dji_sdk/sdk_permission_control", &DJISDKNode::sdk_permission_control_callback, this);
+        velocity_control_service = nh.advertiseService("dji_sdk/velocity_control", &DJISDKNode::velocity_control_callback, this);
         
         return 0;
     }
@@ -190,7 +165,6 @@ private:
 
 public:
     DJISDKNode();
-    void run();
 
 private:
     int init_parameters_and_activate();

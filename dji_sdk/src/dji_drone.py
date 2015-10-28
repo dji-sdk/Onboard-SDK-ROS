@@ -11,49 +11,23 @@ import actionlib
 import roslib
 
 class DJISDKConnection:
-    def handle_acceleration(self, data):
-        self.acceleration = data 
-
-    def handle_attitude_quad(self, data):
-        self.attitude_quad = data
-
-    def handle_battery_status(self, data):
-        self.battery_status = data
-
-    def handle_gimbal_info(self, data):
-        self.gimbal_info = data
-
-    def handle_flight_status(self, data):
-        self.handle_flight_status = data 
-
-    def handle_global_position(self, data):
-        self.global_position = data
-
-    def handle_local_position(self, data):
-        self.local_position = data
-
-    def handle_odom(self, data):
-        self.odom = data
-
-    def handle_velocity(self, data):
-        self.velocity = data
-
-    def handle_rc_channels(self, data):
-        self.rc_channels = data
-
-    def handle_obtained_control(self, data):
-        self.obtained_control = data
-
-    def handle_activation_result(self, data):
-        self.activation_result = data 
-
-    def handle_ctrl_info(self, data):
-        self.ctrl_info = data
-
-    def handle_compass_info(self, data):
-        self.compass_info = data
-
+    
     def init_subscribers(self):
+        self.acceleration_publisher = nh.advertise<dji_sdk::Acceleration>("dji_sdk/acceleration", 10);
+        self.attitude_quaternion_publisher = nh.advertise<dji_sdk::AttitudeQuaternion>("dji_sdk/attitude_quaternion", 10);
+        self.compass_publisher = nh.advertise<dji_sdk::Compass>("dji_sdk/compass", 10);
+        self.flight_control_info_publisher = nh.advertise<dji_sdk::FlightControlInfo>("dji_sdk/flight_control_info", 10);
+        self.flight_status_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/flight_status", 10);
+        self.gimbal_publisher = nh.advertise<dji_sdk::Gimbal>("dji_sdk/gimbal", 10);
+        self.global_position_publisher = nh.advertise<dji_sdk::GlobalPosition>("dji_sdk/global_position", 10);
+        self.local_position_publisher = nh.advertise<dji_sdk::LocalPosition>("dji_sdk/local_position", 10);
+        self.power_status_publisher = nh.advertise<dji_sdk::PowerStatus>("dji_sdk/power_status", 10);
+        self.rc_channels_publisher = nh.advertise<dji_sdk::RCChannels>("dji_sdk/rc_channels", 10);
+        self.velocity_publisher = nh.advertise<dji_sdk::Velocity>("dji_sdk/velocity", 10);
+        self.activation_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/activation", 10);
+        self.odometry_publisher = nh.advertise<nav_msgs::Odometry>("dji_sdk/odometry",10);
+        self.sdk_permission_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/sdk_permission", 10);
+
         self.acceleration_sub = rospy.Subscriber(self.ns + "/dji_sdk/acceleration", dji_sdk.msg.acc, self.handle_acceleration)
         self.attitude_quaternion_sub = rospy.Subscriber(self.ns + "/dji_sdk/attitude_quad", dji_sdk.msg.attitude_quad, self.handle_attitude_quad)
         self.power_status_sub = rospy.Subscriber(self.ns + "/dji_sdk/battery_status", std_msgs.msg.UInt8, self.handle_battery_status)
