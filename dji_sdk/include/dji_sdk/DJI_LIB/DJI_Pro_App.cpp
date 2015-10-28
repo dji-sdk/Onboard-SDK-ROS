@@ -324,19 +324,19 @@ static void DJI_Pro_Activate_API_CallBack(ProHeader *header)
                 printf("Activation Successfully\n");
 
 					 pthread_mutex_lock(&std_msg_lock);
-					 std_broadcast_data.activation= 1;
+					 std_broadcast_data.activation = 1;
 					 pthread_mutex_unlock(&std_msg_lock);
 
-                if(from_user_account_data.app_key)
+                if (from_user_account_data.app_key)
                     Pro_Config_Comm_Encrypt_Key(from_user_account_data.app_key);
             }
             else
             {
-               printf("%s,line %d,activate ERR code:0x%X\n",__func__,__LINE__,ack_data);
+                printf("%s,line %d,activate ERR code:0x%X\n",__func__,__LINE__,ack_data);
 
-					pthread_mutex_lock(&std_msg_lock);
-					std_broadcast_data.activation= 0;
-					pthread_mutex_unlock(&std_msg_lock);
+				pthread_mutex_lock(&std_msg_lock);
+				std_broadcast_data.activation= 0;
+				pthread_mutex_unlock(&std_msg_lock);
 
             }
             if(p_activate_api_interface)
@@ -373,9 +373,9 @@ static void * Activate_API_Thread_Func(void * arg)
         {
             printf("--- NO RESPONSE: %d ---\n",__LINE__);
 
-				pthread_mutex_lock(&std_msg_lock);
-				std_broadcast_data.activation= 2;
-				pthread_mutex_unlock(&std_msg_lock);
+			pthread_mutex_lock(&std_msg_lock);
+			std_broadcast_data.activation= 2;
+			pthread_mutex_unlock(&std_msg_lock);
 
             if(p_activate_api_interface)
             {
@@ -396,9 +396,9 @@ static void * Activate_API_Thread_Func(void * arg)
             {
                 printf("--- NO RESPONSE:%d ---\n",__LINE__);
 
-					 pthread_mutex_lock(&std_msg_lock);
-					 std_broadcast_data.activation= 2;
-					 pthread_mutex_unlock(&std_msg_lock);
+                pthread_mutex_lock(&std_msg_lock);
+                std_broadcast_data.activation= 2;
+                pthread_mutex_unlock(&std_msg_lock);
 
                 if(p_activate_api_interface)
                 {
@@ -488,8 +488,8 @@ static void DJI_Pro_Control_Management_CallBack(ProHeader *header)
     unsigned short ack_data = 0xFFFF;
     if(header->length - EXC_DATA_SIZE <= 2)
     {
-        memcpy((unsigned char *)&ack_data,(unsigned char *)&header->magic, (header->length - EXC_DATA_SIZE));
-        if(p_control_management_interface)
+        memcpy((unsigned char *)&ack_data, (unsigned char *)&header->magic, (header->length - EXC_DATA_SIZE));
+        if (p_control_management_interface)
             p_control_management_interface(ack_data);
 
     }
@@ -503,27 +503,27 @@ static void DJI_Pro_Control_Management_CallBack(ProHeader *header)
     {
     case 0x0001:
         printf("%s,line %d, release control successfully\n",__func__,__LINE__);
-			 pthread_mutex_lock(&std_msg_lock);
-            std_broadcast_data.obtained_control= 0;
-			 pthread_mutex_unlock(&std_msg_lock);
+        pthread_mutex_lock(&std_msg_lock);
+        std_broadcast_data.obtained_control = 0;
+        pthread_mutex_unlock(&std_msg_lock);
         break;
     case 0x0002:
         printf("%s,line %d, obtain control successfully\n",__func__,__LINE__);
-			 pthread_mutex_lock(&std_msg_lock);
-            std_broadcast_data.obtained_control = 1;
-			 pthread_mutex_unlock(&std_msg_lock);
+        pthread_mutex_lock(&std_msg_lock);
+        std_broadcast_data.obtained_control = 1;
+        pthread_mutex_unlock(&std_msg_lock);
         break;
     case 0x0003:
         printf("%s,line %d, obtain control failed\n",__func__,__LINE__);
-			 pthread_mutex_lock(&std_msg_lock);
-            std_broadcast_data.obtained_control = 2;
-			 pthread_mutex_unlock(&std_msg_lock);
+        pthread_mutex_lock(&std_msg_lock);
+        std_broadcast_data.obtained_control = 2;
+        pthread_mutex_unlock(&std_msg_lock);
         break;
     default:
         printf("%s,line %d, there is unkown error,ack=0x%X\n",__func__,__LINE__,ack_data);
-			 pthread_mutex_lock(&std_msg_lock);
-           std_broadcast_data.obtained_control = 3;
-			 pthread_mutex_unlock(&std_msg_lock);
+        pthread_mutex_lock(&std_msg_lock);
+        std_broadcast_data.obtained_control = 3;
+        pthread_mutex_unlock(&std_msg_lock);
         break;
     }
 }
@@ -531,12 +531,12 @@ static void DJI_Pro_Control_Management_CallBack(ProHeader *header)
 int DJI_Pro_Control_Management(unsigned char cmd,Command_Result_Notify user_notice_entrance)
 {
     unsigned char data = cmd & 0x1;
-    DJI_Pro_App_Send_Data(2,1, MY_CTRL_CMD_SET, API_CTRL_MANAGEMENT,
-               &data,1,NULL,500,1);
+    DJI_Pro_App_Send_Data(2, 1, MY_CTRL_CMD_SET, API_CTRL_MANAGEMENT,
+                          &data, 1, NULL, 500, 1);
     usleep(50000);
     p_control_management_interface = user_notice_entrance ? user_notice_entrance : 0;
-    DJI_Pro_App_Send_Data(2,1, MY_CTRL_CMD_SET, API_CTRL_MANAGEMENT,
-               &data,1,DJI_Pro_Control_Management_CallBack,500,1);
+    DJI_Pro_App_Send_Data(2, 1, MY_CTRL_CMD_SET, API_CTRL_MANAGEMENT,
+                          &data, 1, DJI_Pro_Control_Management_CallBack, 500, 1);
     return 0;
 }
 

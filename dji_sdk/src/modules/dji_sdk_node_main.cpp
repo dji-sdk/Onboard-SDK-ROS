@@ -1,5 +1,6 @@
 #include <dji_sdk/dji_sdk_node.h>
 #include <functional>
+#define DEG2RAD(DEG) ((DEG)*((C_PI)/(180.0)))
 
 //----------------------------------------------------------
 // timer spin_function 50Hz
@@ -198,11 +199,8 @@ int DJI_Setup(std::string serial_port, int baudrate) {
 	DJI_Pro_Setup(NULL);
 	return 0;
 }
-
-int DJISDKNode::init_parameters_and_activate()
+int DJISDKNode::init_parameters_and_activate(ros::NodeHandle& nh_private)
 {
-	ros::NodeHandle nh_private("~");
-
 	std::string serial_name;
 	int	baud_rate;
 	int	app_id;
@@ -211,7 +209,7 @@ int DJISDKNode::init_parameters_and_activate()
 	std::string app_bundle_id;
 	std::string enc_key;
 
-	nh_private.param("serial_name", serial_name, std::string("/dev/ttyTHS1"));
+	nh_private.param("serial_name", serial_name, std::string("/dev/cu.usbserial-A603T4HK"));
 	nh_private.param("baud_rate", baud_rate, 230400);
 	nh_private.param("app_id", app_id, 1022384);
 	nh_private.param("app_api_level", app_api_level, 2);
@@ -221,13 +219,11 @@ int DJISDKNode::init_parameters_and_activate()
 			std::string("e7bad64696529559318bb35d0a8c6050d3b88e791e1808cfe8f7802150ee6f0d"));
 
 	// activation
-	activate_data_t user_act_data;
 	user_act_data.app_id = app_id;
 	user_act_data.app_api_level = app_api_level;
 	user_act_data.app_ver = SDK_VERSION;
 	strcpy((char*) user_act_data.app_bundle_id, app_bundle_id.c_str());
-	char temp_buf[65];
-	user_act_data.app_key = temp_buf;
+	user_act_data.app_key = app_key;
 	strcpy(user_act_data.app_key, enc_key.c_str());
 
 	printf("=================================================\n");
@@ -239,7 +235,7 @@ int DJISDKNode::init_parameters_and_activate()
 
 	if (DJI_Setup(serial_name.c_str(), baud_rate) < 0) {
 		printf("Serial Port Cannot Open\n");
-		return 0;
+		return -1;
 	}
 	
 	DJI_Pro_Activate_API(&user_act_data, NULL);
@@ -248,22 +244,22 @@ int DJISDKNode::init_parameters_and_activate()
 	return 0;
 }
 
-DJISDKNode::DJISDKNode()
+DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
 {
-	init_publishers();
-	init_services();
-	init_actions();
-	init_parameters_and_activate();
+	init_publishers(nh);
+	init_services(nh);
+	init_actions(nh);
+	init_parameters_and_activate(nh_private);
 }
 
-void DJISDKNode::gps_convert_ned(float &ned_x, float &ned_y,
+inline void DJISDKNode::gps_convert_ned(float &ned_x, float &ned_y,
             double gps_t_lon, double gps_t_lat,
             double gps_r_lon, double gps_r_lat)
 {
     double d_lon = gps_t_lon - gps_r_lon;
     double d_lat = gps_t_lat - gps_r_lat;
-    ned_x = d_lat * C_EARTH;
-    ned_y = d_lon * C_EARTH * cos((gps_t_lat));
+    ned_x = DEG2RAD(d_lat) * C_EARTH;
+    ned_y = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
 }
 
 dji_sdk::LocalPosition DJISDKNode::gps_convert_ned(dji_sdk::GlobalPosition loc)

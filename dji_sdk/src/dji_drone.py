@@ -13,145 +13,130 @@ import roslib
 class DJISDKConnection:
     
     def init_subscribers(self):
-        self.acceleration_publisher = nh.advertise<dji_sdk::Acceleration>("dji_sdk/acceleration", 10);
-        self.attitude_quaternion_publisher = nh.advertise<dji_sdk::AttitudeQuaternion>("dji_sdk/attitude_quaternion", 10);
-        self.compass_publisher = nh.advertise<dji_sdk::Compass>("dji_sdk/compass", 10);
-        self.flight_control_info_publisher = nh.advertise<dji_sdk::FlightControlInfo>("dji_sdk/flight_control_info", 10);
-        self.flight_status_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/flight_status", 10);
-        self.gimbal_publisher = nh.advertise<dji_sdk::Gimbal>("dji_sdk/gimbal", 10);
-        self.global_position_publisher = nh.advertise<dji_sdk::GlobalPosition>("dji_sdk/global_position", 10);
-        self.local_position_publisher = nh.advertise<dji_sdk::LocalPosition>("dji_sdk/local_position", 10);
-        self.power_status_publisher = nh.advertise<dji_sdk::PowerStatus>("dji_sdk/power_status", 10);
-        self.rc_channels_publisher = nh.advertise<dji_sdk::RCChannels>("dji_sdk/rc_channels", 10);
-        self.velocity_publisher = nh.advertise<dji_sdk::Velocity>("dji_sdk/velocity", 10);
-        self.activation_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/activation", 10);
-        self.odometry_publisher = nh.advertise<nav_msgs::Odometry>("dji_sdk/odometry",10);
-        self.sdk_permission_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/sdk_permission", 10);
+        self.acceleration_subscriber = rospy.Subscriber("dji_sdk/acceleration", dji_sdk.msg.Acceleration)
+        self.attitude_quaternion_subscriber = rospy.Subscriber("dji_sdk/attitude_quaternion",dji_sdk.msg.AttitudeQuaternion)
+        self.compass_subscriber = rospy.Subscriber("dji_sdk/compass", dji_sdk.msg.Compass)
+        self.flight_control_info_subscriber = rospy.Subscriber("dji_sdk/flight_control_info", dji_sdk.msg.FlightControlInfo)
+        self.flight_status_subscriber = rospy.Subscriber("dji_sdk/flight_status", std_msgs.msg.UInt8)
+        self.gimbal_subscriber = rospy.Subscriber("dji_sdk/gimbal", dji_sdk.msg.Gimbal)
+        self.global_position_subscriber = rospy.Subscriber("dji_sdk/global_position", dji_sdk.msg.GlobalPosition)
+        self.local_position_subscriber = rospy.Subscriber("dji_sdk/local_position", dji_sdk.msg.LocalPosition)
+        self.power_status_subscriber = rospy.Subscriber("dji_sdk/power_status", dji_sdk.msg.PowerStatus)
+        self.rc_channels_subscriber = rospy.Subscriber("dji_sdk/rc_channels", dji_sdk.msg.RCChannels)
+        self.velocity_subscriber = rospy.Subscriber("dji_sdk/velocity", dji_sdk.msg.Velocity)
+        self.activation_subscriber = rospy.Subscriber("dji_sdk/activation", std_msgs.msg.UInt8)
+        self.odometry_subscriber = rospy.Subscriber("dji_sdk/odometry", nav_msgs.msg.Odometry)
+        self.sdk_permission_subscriber = rospy.Subscriber("dji_sdk/sdk_permission", std_msgs.msg.UInt8)
 
-        self.acceleration_sub = rospy.Subscriber(self.ns + "/dji_sdk/acceleration", dji_sdk.msg.acc, self.handle_acceleration)
-        self.attitude_quaternion_sub = rospy.Subscriber(self.ns + "/dji_sdk/attitude_quad", dji_sdk.msg.attitude_quad, self.handle_attitude_quad)
-        self.power_status_sub = rospy.Subscriber(self.ns + "/dji_sdk/battery_status", std_msgs.msg.UInt8, self.handle_battery_status)
-        self.gimbal_sub = rospy.Subscriber(self.ns + "/dji_sdk/gimbal_info", dji_sdk.msg.gimbal, self.handle_gimbal_info)
-        self.flight_status_sub = rospy.Subscriber(self.ns + "/dji_sdk/flight_status", std_msgs.msg.UInt8, self.handle_flight_status)
-        self.global_position_sub = rospy.Subscriber(self.ns + "/dji_sdk/global_position", dji_sdk.msg.global_position, self.handle_global_position)
-        self.local_position_sub = rospy.Subscriber(self.ns + "/dji_sdk/local_position", dji_sdk.msg.local_position, self.handle_local_position)
-        self.odom_sub = rospy.Subscriber(self.ns + "/dji_sdk/odom", nav_msgs.msg.Odometry, self.handle_odom)
-        self.vel_sub = rospy.Subscriber(self.ns + "/dji_sdk/velocity", dji_sdk.msg.velocity, self.handle_velocity)
-        self.rc_channels_sub = rospy.Subscriber(self.ns + "/dji_sdk/rc_channels", dji_sdk.msg.rc_channels, self.handle_rc_channels)
-        self.control_sub = rospy.Subscriber(self.ns + "/dji_sdk/obtained_control", std_msgs.msg.UInt8, self.handle_obtained_control)
-        self.activation_sub = rospy.Subscriber(self.ns + "/dji_sdk/activation_result", std_msgs.msg.UInt8, self.handle_activation_result)
-        self.ctrl_info_sub = rospy.Subscriber(self.ns + "/dji_sdk/ctrl_info", dji_sdk.msg.ctrl_info, self.handle_ctrl_info)
-        self.compass_sub = rospy.Subscriber(self.ns + "/dji_sdk/compass_info", dji_sdk.msg.compass, self.handle_compass_info)
+    def init_services(self):
+        rospy.wait_for_service("dji_sdk/attitude_control")
+        rospy.wait_for_service("dji_sdk/camera_action_control")
+        rospy.wait_for_service("dji_sdk/drone_task_control")
+        rospy.wait_for_service("dji_sdk/gimbal_angle_control")
+        rospy.wait_for_service("dji_sdk/gimbal_speed_control")
+        rospy.wait_for_service("dji_sdk/global_position_control")
+        rospy.wait_for_service("dji_sdk/local_position_control")
+        rospy.wait_for_service("dji_sdk/sdk_permission_control")
+        rospy.wait_for_service("dji_sdk/velocity_control")
+
+        self.attitude_control_service = rospy.ServiceProxy("dji_sdk/attitude_control", dji_sdk.srv.AttitudeControl)
+        self.camera_action_control_service = rospy.ServiceProxy("dji_sdk/camera_action_control", dji_sdk.srv.CameraActionControl)
+        self.drone_task_control_service = rospy.ServiceProxy("dji_sdk/drone_task_control", dji_sdk.srv.DroneTaskControl)
+        self.gimbal_angle_control_service = rospy.ServiceProxy("dji_sdk/gimbal_angle_control", dji_sdk.srv.GimbalAngleControl)
+        self.gimbal_speed_control_service = rospy.ServiceProxy("dji_sdk/gimbal_speed_control", dji_sdk.srv.GimbalSpeedControl)
+        self.global_position_control_service = rospy.ServiceProxy("dji_sdk/global_position_control", dji_sdk.srv.GlobalPositionControl)
+        self.local_position_control_service = rospy.ServiceProxy("dji_sdk/local_position_control", dji_sdk.srv.LocalPositionControl)
+        self.sdk_permission_control_service = rospy.ServiceProxy("dji_sdk/sdk_permission_control", dji_sdk.srv.SDKPermissionControl)
+        self.velocity_control_service = rospy.ServiceProxy("dji_sdk/velocity_control", dji_sdk.srv.VelocityControl)
 
     def init_actions(self):
-        self.local_navigation_action_client = actionlib.SimpleActionClient(self.ns + "/dji_sdk/local_navigation_action", dji_sdk.msg.local_navigationAction)
-        self.local_navigation_action_client.wait_for_server()
-        self.gps_navigation_action_client = actionlib.SimpleActionClient(self.ns + "/dji_sdk/gps_navigation_action", dji_sdk.msg.gps_navigationAction)
-        self.gps_navigation_action_client.wait_for_server()
-        self.waypoint_navigation_action_client = actionlib.SimpleActionClient(self.ns + "/dji_sdk/waypoint_navigation_action", dji_sdk.msg.waypoint_navigationAction)
+        self.local_position_navigation_action_client = actionlib.SimpleActionClient("dji_sdk/local_position_navigation_action", dji_sdk.msg.LocalPositionNavigationAction)
+        self.local_position_navigation_action_client.wait_for_server()
+        self.global_position_navigation_action_client = actionlib.SimpleActionClient("dji_sdk/global_position_navigation_action", dji_sdk.msg.GlobalPositionNavigationAction)
+        self.global_position_navigation_action_client.wait_for_server()
+        self.waypoint_navigation_action_client = actionlib.SimpleActionClient("dji_sdk/waypoint_navigation_action", dji_sdk.msg.WaypointNavigationAction)
         self.waypoint_navigation_action_client.wait_for_server()
 
     def navigate_local_action(self, x, y, z):
         self.local_navigation_action_client.wait_for_server()
-        goal = dji_sdk.msg.local_navigationGoal(x = x, y = y, z = z)
+        goal = dji_sdk.msg.LocalPositionControlGoal(x = x, y = y, z = z)
         local_navigation_action_client.send_goal(goal)
-        local_navigation_action_client.wait_for_result()
-        return local_navigation_action_client.get_result()
 
     def navigate_global_action(self, latitude, longitude, altitude):
         self.gps_navigation_action_client.wait_for_server()
         goal = dji_sdk.msg.gps_navigationGoal(latitude = latitude, longitude = longitude, altitude = altitude)
         gps_navigation_action_client.send_goal(goal)
-        gps_navigation_action_client.wait_for_result()
-        return gps_navigation_action_client.get_result()
 
-    def navigate_waypoint_action(self, waypointList):
+    def navigate_waypoint_action(self, waypoint_list):
         self.waypoint_navigation_action_client.wait_for_server()
-        goal = dji_sdk.msg.waypointList(waypointList=waypointList)
+        goal = dji_sdk.msg.waypointList(waypoint_list=waypoint_list)
         waypoint_navigation_action_client.send_goal(goal)
-        waypoint_navigation_action_client.wait_for_result()
-        return waypoint_navigation_action_client.get_result()
-
-    def request_control(self):
-        self.control_service(control_ability=1)
-
-    def release_control(self):
-        self.control_service(control_ability=0)
 
     def takeoff(self):
-        self.action_service(action=4)
+        self.drone_task_control_service(task=4)
 
-    def land(self):
-        self.action_service(action=6)
+    def landing(self):
+        self.drone_task_control_service(task=6)
 
-    def go_home(self):
-        self.action_service(action=1)
+    def gohome(self):
+        self.drone_task_control_service(task=1)
 
     def take_picture(self):
-        self.camera_service(camera_action=0)
+        self.camera_action_control_service(camera_action=0)
 
     def start_video(self):
-        self.camera_service(camera_action=1)
+        self.camera_action_control_service(camera_action=1)
 
     def stop_video(self):
-        self.camera_service(camera_action=2)
+        self.camera_action_control_service(camera_action=2)
 
-    def set_gimbal_angle(self, flag, yaw, x, y, duration):
-        self.gimbal_angle_service(flag, yaw, x, y, duration)
+    def set_gimbal_angle(self, flag, yaw, roll, pitch, duration):
+        self.gimbal_angle_control_service(flag = flag, yaw = yaw, roll = roll, pitch = pitch, duration = duration)
 
-    def control_gimbal_speed(self, yaw_rate, x_rate, y_rate):
-        self.gimbal_speed_service(yaw_rate, x_rate, y_rate)
+    def gimbal_speed_control(self, yaw_rate, roll_rate, pitch_rate):
+        self.gimbal_speed_control_service(yaw_rate = yaw_rate, roll_rate = roll_rate, pitch_rate = pitch_rate)
 
-    def control_attitude(self, flag, x, y, yaw):
-        self.attitude_service(flag, x, y, yaw)
+    def request_sdk_permission_control(self):
+        sdk_permission_control_service.call(control_enable = 1)
 
-    def init_services(self):
-        print "initing service..."
+    def release_sdk_permission_control(self):
+        sdk_permission_control_service.call(control_enable = 0)
 
-        rospy.wait_for_service(self.ns + "/dji_sdk/obtain_release_control")
-        self.control_service = rospy.ServiceProxy(self.ns + "/dji_sdk/obtain_release_control",  dji_sdk.srv.control_manager)
+    def attitude_control(flag, x, y, z, yaw):
+        attitude_control_service.call(flag = flag, x = x, y = y, z = z, yaw = yaw)
 
-        rospy.wait_for_service(self.ns + "/dji_sdk/drone_action_control")
-        self.action_service = rospy.ServiceProxy(self.ns + "/dji_sdk/drone_action_control",  dji_sdk.srv.action)
+    def velocity_control(frame, vx, vy, vz, yawAngle):
+        velocity_control_service.call(frame = frame, vx = vx, vy = vy, vz = vz, yawAngle = yawAngle)
 
-        rospy.wait_for_service(self.ns + "/dji_sdk/camera_action_control")
-        self.camera_service = rospy.ServiceProxy(self.ns + "/dji_sdk/camera_action_control",  dji_sdk.srv.camera_action)
+    def local_position_control(x, y, z, yaw):
+        local_position_control_service.call(x = x, y = y, z = z, yaw = yaw)
 
-        rospy.wait_for_service(self.ns + "/dji_sdk/gimbal_angle_control")
-        self.gimbal_angle_service = rospy.ServiceProxy(self.ns + "/dji_sdk/gimbal_angle_control",  dji_sdk.srv.gimbal_angle)
-
-        rospy.wait_for_service(self.ns + "/dji_sdk/gimbal_speed_control")
-        self.gimbal_speed_service = rospy.ServiceProxy(self.ns + "/dji_sdk/gimbal_speed_control",  dji_sdk.srv.gimbal_speed)
-
-        rospy.wait_for_service(self.ns + "/dji_sdk/drone_attitude_control")
-        self.attitude_service = rospy.ServiceProxy(self.ns + "/dji_sdk/drone_attitude_control",  dji_sdk.srv.attitude)
-
-        rospy.wait_for_service(self.ns + "/dji_sdk/local_navigation_control")
-        self.local_navigation_service = rospy.ServiceProxy(self.ns + "/dji_sdk/local_navigation_control",  dji_sdk.srv.local_navigation)
-
-        rospy.wait_for_service(self.ns + "/dji_sdk/gps_navigation_control")
-        self.gps_navigation_service = rospy.ServiceProxy(self.ns + "/dji_sdk/gps_navigation_control",  dji_sdk.srv.gps_navigation)
+    def global_position_control(latitude, longitude, altitude, yaw):
+        global_position_control_service.call(latitude = latitude, longitude = longitude, altitude = altitude, yaw = yaw)
 
     def __init__(self, namespace=''):
         rospy.init_node('dji_sdk_connector')
-        self.ns = namespace
-        self.count = 0
+        self.namespace = namespace
 
-        self.elapsed_time = 0
-
-        self.cmd_sp = 0
-        self.status = 0
-
-        self.open = 0
         self.need_open = True
 
-        self.att_quad = attitude_quad()
-        self.global_position = dji_sdk.msg.global_position()
-        self.local_position = dji_sdk.msg.local_position()
-        self.vel = velocity()
-        self.acc = acc()
-        self.gimbal_sp = gimbal()
-        self.rc_channels = rc_channels()
+        self.acceleration = dji_sdk.msg.Acceleration()
+        self.attitude_quaternion = dji_sdk.msg.AttitudeQuaternion()
+        self.compass = dji_sdk.msg.Compass()
+        self.flight_control_info = dji_sdk.msg.FlightControlInfo()
+        self.flight_status = std_msgs.msg.UInt8()
+        self.gimbal = dji_sdk.msg.Gimbal()
+        self.global_position = dji_sdk.msg.GlobalPosition()
+        self.global_position_ref = dji_sdk.msg.GlobalPosition()
+        self.local_position = dji_sdk.msg.LocalPosition()
+        self.local_position_ref = dji_sdk.msg.LocalPosition()
+        self.power_status = dji_sdk.msg.PowerStatus()
+        self.rc_channels = dji_sdk.msg.rc_channels() 
+        self.velocity = dji_sdk.msg.velocity()
+        self.odometry = nav_msgs.msg.Odometry()
+        self.sdk_permission_opened = False
+        self.activation = False
+        self.localposbase_use_height = True
 
         self.init_actions()
         self.init_subscribers()

@@ -6,28 +6,19 @@
 #include <actionlib/client/terminal_state.h> 
 #include <string>
 
-typedef boost::function<void (const actionlib::SimpleClientGoalState& state,  const dji_sdk::LocalPositionNavigationResultConstPtr& result) > LocalPositionNavigationSimpleDoneCallback;
-typedef boost::function<void () > LocalPositionNavigationSimpleActiveCallback;
-typedef boost::function<void (const dji_sdk::LocalPositionNavigationFeedbackConstPtr& feedback) > LocalPositionNavigationSimpleFeedbackCallback;
-
-typedef boost::function<void (const actionlib::SimpleClientGoalState& state,  const dji_sdk::GlobalPositionNavigationResultConstPtr& result) > GlobalPositionNavigationSimpleDoneCallback;
-typedef boost::function<void () > GlobalPositionNavigationSimpleActiveCallback;
-typedef boost::function<void (const dji_sdk::GlobalPositionNavigationFeedbackConstPtr& feedback) > GlobalPositionNavigationSimpleFeedbackCallback;
-
-typedef boost::function<void (const actionlib::SimpleClientGoalState& state,  const dji_sdk::WaypointNavigationResultConstPtr& result) > WaypointNavigationSimpleDoneCallback;
-typedef boost::function<void () > WaypointNavigationSimpleActiveCallback;
-typedef boost::function<void (const dji_sdk::WaypointNavigationFeedbackConstPtr& feedback) > WaypointNavigationSimpleFeedbackCallback;
-
 class DJIDrone
 {
 private:
-	std::string ns;
-	ros::NodeHandle nh;
 
-	actionlib::SimpleActionClient<dji_sdk::DroneTaskAction> drone_task_action_client;
-	actionlib::SimpleActionClient<dji_sdk::LocalPositionNavigationAction> local_position_navigation_action_client;
-	actionlib::SimpleActionClient<dji_sdk::GlobalPositionNavigationAction> global_position_navigation_action_client;
-	actionlib::SimpleActionClient<dji_sdk::WaypointNavigationAction> waypoint_navigation_action_client;
+    typedef actionlib::SimpleActionClient<dji_sdk::DroneTaskAction> DroneTaskActionClient;
+    typedef actionlib::SimpleActionClient<dji_sdk::LocalPositionNavigationAction> LocalPositionNavigationActionClient;
+    typedef actionlib::SimpleActionClient<dji_sdk::GlobalPositionNavigationAction> GlobalPositionNavigationActionClient;
+    typedef actionlib::SimpleActionClient<dji_sdk::WaypointNavigationAction> WaypointNavigationActionClient;
+
+	DroneTaskActionClient drone_task_action_client;
+	LocalPositionNavigationActionClient local_position_navigation_action_client;
+	GlobalPositionNavigationActionClient global_position_navigation_action_client;
+	WaypointNavigationActionClient waypoint_navigation_action_client;
 
 	ros::ServiceClient attitude_control_service;
     ros::ServiceClient camera_action_control_service;
@@ -74,66 +65,78 @@ public:
     bool localposbase_use_height = true;
 
 private:
-	void acceleration_subscriber_callback(dji_sdk::Acceleration acceleration) {
+	void acceleration_subscriber_callback(dji_sdk::Acceleration acceleration)
+	{
 		this->acceleration = acceleration;
 	}
 
-	void attitude_quaternion_subscriber_callback(dji_sdk::AttitudeQuaternion attitude_quaternion) {
+	void attitude_quaternion_subscriber_callback(dji_sdk::AttitudeQuaternion attitude_quaternion)
+	{
 		this->attitude_quaternion = attitude_quaternion;
 	}
 
-	void compass_subscriber_callback(dji_sdk::Compass compass) {
+	void compass_subscriber_callback(dji_sdk::Compass compass)
+	{
 		this->compass = compass;
 	}
 
-	void flight_control_info_subscriber_callback(dji_sdk::FlightControlInfo flight_control_info) {
+	void flight_control_info_subscriber_callback(dji_sdk::FlightControlInfo flight_control_info)
+	{
 		this->flight_control_info = flight_control_info;
 	}
 
-	void flight_status_subscriber_callback(std_msgs::UInt8 flight_status) {
+	void flight_status_subscriber_callback(std_msgs::UInt8 flight_status)
+	{
 		this->flight_status = flight_status.data;
 	}
 
-	void gimbal_subscriber_callback(dji_sdk::Gimbal gimbal) {
+	void gimbal_subscriber_callback(dji_sdk::Gimbal gimbal)
+	{
 		this->gimbal = gimbal;
 	}
 
-	void global_position_subscriber_callback(dji_sdk::GlobalPosition global_position) {
+	void global_position_subscriber_callback(dji_sdk::GlobalPosition global_position)
+	{
 		this->global_position = global_position;
 	}
 
-	void local_position_subscriber_callback(dji_sdk::LocalPosition local_position) {
+	void local_position_subscriber_callback(dji_sdk::LocalPosition local_position)
+	{
 		this->local_position = local_position;
 	}
 
-	void power_status_subscriber_callback(dji_sdk::PowerStatus power_status) {
+	void power_status_subscriber_callback(dji_sdk::PowerStatus power_status)
+	{
 		this->power_status = power_status;
 	}
 
-	void rc_channels_subscriber_callback(dji_sdk::RCChannels rc_channels) {
+	void rc_channels_subscriber_callback(dji_sdk::RCChannels rc_channels)
+	{
 		this->rc_channels = rc_channels;
 	}
 
-	void velocity_subscriber_callback(dji_sdk::Velocity velocity) {
+	void velocity_subscriber_callback(dji_sdk::Velocity velocity)
+	{
 		this->velocity = velocity;
 	}
 
-	void activation_subscriber_callback(std_msgs::UInt8 activation) {
+	void activation_subscriber_callback(std_msgs::UInt8 activation)
+	{
 		this->activation = activation.data;
 	}
 
-	void odometry_subscriber_callback(nav_msgs::Odometry odometry) {
+	void odometry_subscriber_callback(nav_msgs::Odometry odometry)
+	{
 		this->odometry = odometry;
 	}
 
-	void sdk_permission_subscriber_callback(std_msgs::UInt8 sdk_permission) {
+	void sdk_permission_subscriber_callback(std_msgs::UInt8 sdk_permission)
+	{
 		this->sdk_permission_opened = sdk_permission.data;
 	}
 
 public:
-	DJIDrone(std::string ns = ""): 
-		ns(ns), 
-		nh(ns), 
+	DJIDrone(ros::NodeHandle& nh):
 		drone_task_action_client(nh, "dji_sdk/drone_task_action", true),
 		local_position_navigation_action_client(nh, "dji_sdk/local_position_navigation_action", true),
 		global_position_navigation_action_client(nh, "dji_sdk/global_position_navigation_action", true),
@@ -294,18 +297,17 @@ public:
 		return global_position_control_service.call(global_position_control) && global_position_control.response.result;
 	}
 
-
-	bool local_position_navigation_cancel_current_goal()
+	void local_position_navigation_cancel_current_goal()
 	{
 		local_position_navigation_action_client.cancelGoal();
 	}
 
-	bool local_position_navigation_cancel_all_goals()
+	void local_position_navigation_cancel_all_goals()
 	{
 		local_position_navigation_action_client.cancelAllGoals();
 	}
 
-	bool local_position_navigation_cancel_goals_at_and_before_time(const ros::Time time)
+	void local_position_navigation_cancel_goals_at_and_before_time(const ros::Time time)
 	{
 		local_position_navigation_action_client.cancelGoalsAtAndBeforeTime(time);
 	}
@@ -325,7 +327,10 @@ public:
 		return local_position_navigation_action_client.isServerConnected();
 	}
 
-	bool local_position_navigation_send_request(float x, float y, float z, LocalPositionNavigationSimpleDoneCallback done_callback = 0 , LocalPositionNavigationSimpleActiveCallback active_callback = 0 , LocalPositionNavigationSimpleFeedbackCallback feedback_callback = 0 )
+	void local_position_navigation_send_request(float x, float y, float z, 
+		LocalPositionNavigationActionClient::SimpleDoneCallback done_callback = LocalPositionNavigationActionClient::SimpleDoneCallback(), 
+		LocalPositionNavigationActionClient::SimpleActiveCallback active_callback = LocalPositionNavigationActionClient::SimpleActiveCallback(), 
+		LocalPositionNavigationActionClient::SimpleFeedbackCallback feedback_callback = LocalPositionNavigationActionClient::SimpleFeedbackCallback())
 	{
 		dji_sdk::LocalPositionNavigationGoal local_position_navigation_goal;
 		local_position_navigation_goal.x = x;
@@ -334,7 +339,7 @@ public:
 		local_position_navigation_action_client.sendGoal(local_position_navigation_goal, done_callback, active_callback, feedback_callback);
 	}
 
-	bool local_position_navigation_wait_for_result (const ros::Duration duration = ros::Duration(0))
+	bool local_position_navigation_wait_for_result(const ros::Duration duration = ros::Duration(0))
 	{
 		return local_position_navigation_action_client.waitForResult(duration);
 	}
@@ -350,17 +355,17 @@ public:
 		return local_position_navigation_action_client.waitForServer(duration);
 	}
 	
-	bool global_position_navigation_cancel_current_goal()
+	void global_position_navigation_cancel_current_goal()
 	{
 		global_position_navigation_action_client.cancelGoal();
 	}
 
-	bool global_position_navigation_cancel_all_goals()
+	void global_position_navigation_cancel_all_goals()
 	{
 		global_position_navigation_action_client.cancelAllGoals();
 	}
 
-	bool global_position_navigation_cancel_goals_at_and_before_time(const ros::Time time)
+	void global_position_navigation_cancel_goals_at_and_before_time(const ros::Time time)
 	{
 		global_position_navigation_action_client.cancelGoalsAtAndBeforeTime(time);
 	}
@@ -380,7 +385,10 @@ public:
 		return global_position_navigation_action_client.isServerConnected();
 	}
 
-	bool global_position_navigation_send_request(double latitude, double longitude, float altitude, GlobalPositionNavigationSimpleDoneCallback done_callback = 0 , GlobalPositionNavigationSimpleActiveCallback active_callback = 0 , GlobalPositionNavigationSimpleFeedbackCallback feedback_callback = 0 )
+	void global_position_navigation_send_request(double latitude, double longitude, float altitude, 
+		GlobalPositionNavigationActionClient::SimpleDoneCallback done_callback = GlobalPositionNavigationActionClient::SimpleDoneCallback(), 
+		GlobalPositionNavigationActionClient::SimpleActiveCallback active_callback = GlobalPositionNavigationActionClient::SimpleActiveCallback(), 
+		GlobalPositionNavigationActionClient::SimpleFeedbackCallback feedback_callback = GlobalPositionNavigationActionClient::SimpleFeedbackCallback())
 	{
 		dji_sdk::GlobalPositionNavigationGoal global_position_navigation_goal;
 		global_position_navigation_goal.latitude = latitude;
@@ -406,17 +414,17 @@ public:
 	}
 	
 
-	bool waypoint_navigation_cancel_current_goal()
+	void waypoint_navigation_cancel_current_goal()
 	{
 		waypoint_navigation_action_client.cancelGoal();
 	}
 
-	bool waypoint_navigation_cancel_all_goals()
+	void waypoint_navigation_cancel_all_goals()
 	{
 		waypoint_navigation_action_client.cancelAllGoals();
 	}
 
-	bool waypoint_navigation_cancel_goals_at_and_before_time(const ros::Time time)
+	void waypoint_navigation_cancel_goals_at_and_before_time(const ros::Time time)
 	{
 		waypoint_navigation_action_client.cancelGoalsAtAndBeforeTime(time);
 	}
@@ -436,14 +444,17 @@ public:
 		return waypoint_navigation_action_client.isServerConnected();
 	}
 
-	bool waypoint_navigation_send_request(dji_sdk::WaypointList waypoint_data, WaypointNavigationSimpleDoneCallback done_callback = 0 , WaypointNavigationSimpleActiveCallback active_callback = 0 , WaypointNavigationSimpleFeedbackCallback feedback_callback = 0 )
+	void waypoint_navigation_send_request(dji_sdk::WaypointList waypoint_data, 
+		WaypointNavigationActionClient::SimpleDoneCallback done_callback = WaypointNavigationActionClient::SimpleDoneCallback(), 
+		WaypointNavigationActionClient::SimpleActiveCallback active_callback = WaypointNavigationActionClient::SimpleActiveCallback(), 
+		WaypointNavigationActionClient::SimpleFeedbackCallback feedback_callback = WaypointNavigationActionClient::SimpleFeedbackCallback())
 	{
 		dji_sdk::WaypointNavigationGoal waypoint_navigation_goal;
 		waypoint_navigation_goal.waypoint_list = waypoint_data;
 		waypoint_navigation_action_client.sendGoal(waypoint_navigation_goal, done_callback, active_callback, feedback_callback);
 	}
 
-	bool waypoint_navigation_wait_for_result (const ros::Duration duration = ros::Duration(0))
+	bool waypoint_navigation_wait_for_result(const ros::Duration duration = ros::Duration(0))
 	{
 		return waypoint_navigation_action_client.waitForResult(duration);
 	}

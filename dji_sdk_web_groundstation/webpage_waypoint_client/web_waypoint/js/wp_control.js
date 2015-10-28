@@ -40,7 +40,7 @@ $( document ).ready(function() {
 	//bind events to control panel wadgets
 	$( "#start-plan" ).bind( "click", function() {
 
-		//my_Communicator.getGlobalPosition();
+		my_Communicator.getGlobalPosition();
 		console.log('Home position: ' + home_lon + ', ' + home_lat);
 		if(home_lon == 0 || home_lat == 0)
 			alert("Home Location Not Recorded!");

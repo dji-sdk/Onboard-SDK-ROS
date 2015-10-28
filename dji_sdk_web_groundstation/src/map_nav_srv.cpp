@@ -19,7 +19,7 @@ typedef dji_sdk::WaypointNavigationAction WPAction_t;
 
 SimpleActionServer<Action_t>* asPtr_;
 
-DJIDrone* drone = new DJIDrone("drone_web_demo");
+DJIDrone* drone;
 
 uint8_t cmdCode_ = 0;
 uint8_t stage_ = 0;
@@ -72,7 +72,7 @@ void goalCB() {
     }
 
     tid_ = newGoal.tid;
-    dji_sdk::WaypointList wpl = newGoal.waypointList;
+    dji_sdk::WaypointList wpl = newGoal.waypoint_list;
     stage_ = 1;
 
     while(ros::ok()) {
@@ -209,24 +209,25 @@ void ctrlCB(const std_msgs::Bool::ConstPtr& msg) {
     else
         ROS_INFO("Release control");
 
-	drone -> sdk_permission_control(msg->data);
+	drone->sdk_permission_control(msg->data);
 	
 }
 
 int main(int argc, char* argv[]) {
     ros::init(argc, argv, "map_nav_srv");
     ros::NodeHandle nh;
-
+    drone = new DJIDrone(nh);
+    
     //web_waypoint_receive action server
     asPtr_ = new SimpleActionServer<Action_t>(
         nh, 
-        "dji_sdk/web_waypoint_receive_action", 
+        "dji_sdk_web_groundstation/web_waypoint_receive_action", 
         false
     );
 
     //command subscribers
-    ros::Subscriber sub1 = nh.subscribe("/dji_sdk/map_nav_srv/cmd", 1, cmdCB);
-    ros::Subscriber sub2 = nh.subscribe("/dji_sdk/map_nav_srv/ctrl", 1, ctrlCB);
+    ros::Subscriber sub1 = nh.subscribe("dji_sdk_web_groundstation/map_nav_srv/cmd", 1, cmdCB);
+    ros::Subscriber sub2 = nh.subscribe("dji_sdk_web_groundstation/map_nav_srv/ctrl", 1, ctrlCB);
 
     asPtr_->registerGoalCallback(&goalCB);
     asPtr_->registerPreemptCallback(&preemptCB);

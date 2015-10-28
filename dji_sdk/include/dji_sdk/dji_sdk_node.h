@@ -13,10 +13,6 @@
 
 class DJISDKNode
 {
-public:
-//ROS node:
-    ros::NodeHandle nh;
-
 private:
 //Drone state variables:
     dji_sdk::Acceleration acceleration;
@@ -40,6 +36,10 @@ private:
 
     int global_position_ref_seted = 0;
 
+//internal variables
+    char app_key[65];
+    activate_data_t user_act_data;
+
 //Publishers:
     ros::Publisher acceleration_publisher;
     ros::Publisher attitude_quaternion_publisher;
@@ -56,7 +56,7 @@ private:
     ros::Publisher odometry_publisher;
     ros::Publisher sdk_permission_publisher;
 
-    int init_publishers()
+    void init_publishers(ros::NodeHandle& nh)
     {
         // start ros publisher
         acceleration_publisher = nh.advertise<dji_sdk::Acceleration>("dji_sdk/acceleration", 10);
@@ -73,8 +73,6 @@ private:
         activation_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/activation", 10);
         odometry_publisher = nh.advertise<nav_msgs::Odometry>("dji_sdk/odometry",10);
         sdk_permission_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/sdk_permission", 10);
-
-        return 0;
     }
 
 //Services:
@@ -98,7 +96,7 @@ private:
     bool sdk_permission_control_callback(dji_sdk::SDKPermissionControl::Request& request, dji_sdk::SDKPermissionControl::Response& response);
     bool velocity_control_callback(dji_sdk::VelocityControl::Request& request, dji_sdk::VelocityControl::Response& response);
 
-    int init_services()
+    void init_services(ros::NodeHandle& nh)
     {
         attitude_control_service = nh.advertiseService("dji_sdk/attitude_control", &DJISDKNode::attitude_control_callback, this);
         camera_action_control_service = nh.advertiseService("dji_sdk/camera_action_control",&DJISDKNode::camera_action_control_callback, this);
@@ -109,8 +107,6 @@ private:
         local_position_control_service = nh.advertiseService("dji_sdk/local_position_control", &DJISDKNode::local_position_control_callback, this);
         sdk_permission_control_service = nh.advertiseService("dji_sdk/sdk_permission_control", &DJISDKNode::sdk_permission_control_callback, this);
         velocity_control_service = nh.advertiseService("dji_sdk/velocity_control", &DJISDKNode::velocity_control_callback, this);
-        
-        return 0;
     }
 
 //Actions:
@@ -138,7 +134,7 @@ private:
     bool global_position_navigation_action_callback(const dji_sdk::GlobalPositionNavigationGoalConstPtr& goal);
     bool waypoint_navigation_action_callback(const dji_sdk::WaypointNavigationGoalConstPtr& goal);
 
-    int init_actions()
+    void init_actions(ros::NodeHandle& nh)
     {
         drone_task_action_server = new DroneTaskActionServer(nh, 
             "dji_sdk/drone_task_action", 
@@ -159,20 +155,18 @@ private:
             "dji_sdk/waypoint_navigation_action", 
             boost::bind(&DJISDKNode::waypoint_navigation_action_callback, this, _1), false);
         waypoint_navigation_action_server->start();
-
-        return 0;
     }
 
 public:
-    DJISDKNode();
+    DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private);
 
 private:
-    int init_parameters_and_activate();
+    int init_parameters_and_activate(ros::NodeHandle& nh_private);
     void broadcast_callback();
 
     bool process_waypoint(dji_sdk::Waypoint new_waypoint);
 
-    void gps_convert_ned(float &ned_x, float &ned_y,
+    inline void gps_convert_ned(float &ned_x, float &ned_y,
             double gps_t_lon, double gps_t_lat,
             double gps_r_lon, double gps_r_lat);
 

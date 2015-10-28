@@ -45,8 +45,8 @@ int main(int argc, char **argv)
 	bool err_flag = false;
 	ros::init(argc, argv, "sdk_client");
 	ROS_INFO("sdk_service_client_test");
-	
-	DJIDrone* drone = new DJIDrone("drone_demo");
+	ros::NodeHandle nh;
+	DJIDrone* drone = new DJIDrone(nh);
 
 	Display_Main_Menu();
 	while(1)
@@ -111,6 +111,10 @@ int main(int argc, char **argv)
 				drone->gimbal_angle_control(0, 0, 300, 0, 20);
 				sleep(2);
 				drone->gimbal_angle_control(0, 0, -300, 0, 20);
+				sleep(2);
+				drone->gimbal_speed_control(100, 0, 0);
+				sleep(2);
+				drone->gimbal_speed_control(-100, 0, 0);
 				sleep(2);
 				drone->gimbal_speed_control(0, 0, 200);
 				sleep(2);

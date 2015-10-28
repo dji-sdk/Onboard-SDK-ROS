@@ -1,5 +1,5 @@
 <launch>
-	<node pkg="dji_sdk" type="dji_sdk_node" name="dji_sdk" output="screen" ns="drone_demo">
+	<node pkg="dji_sdk" type="dji_sdk_node" name="dji_sdk" output="screen">
 		<!-- node parameters -->
 		<param name="serial_name" type="string" value="/dev/ttyTHS1"/>
 		<param name="baud_rate" type="int" value="230400"/>

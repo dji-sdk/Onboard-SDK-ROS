@@ -32,8 +32,9 @@ int main(int argc, char **argv)
 
 	ros::init(argc, argv, "sdk_wp_client");
 
-	DJIDrone* drone = new DJIDrone("drone_demo");
-
+	ros::NodeHandle nh;
+	DJIDrone* drone = new DJIDrone(nh);
+	
 	dji_sdk::WaypointList newWaypointList;
 	dji_sdk::Waypoint waypoint0;
 	dji_sdk::Waypoint waypoint1;

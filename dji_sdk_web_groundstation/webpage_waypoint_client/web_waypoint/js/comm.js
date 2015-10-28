@@ -253,27 +253,27 @@ function Communicator(socket) {
     //action client
     this.web_wp_client = new ROSLIB.ActionClient({
         ros : this.ros,
-        serverName : '/dji_sdk/web_waypoint_receive_action',
-        actionName : 'dji_sdk/web_waypoint_receiveAction'
+        serverName : 'dji_sdk_web_groundstation/web_waypoint_receive_action',
+        actionName : 'dji_sdk_web_groundstation/WebWaypointReceiveAction'
     });;
 
     //publisher
     this.ctrlTopic = new ROSLIB.Topic({
         ros : this.ros,
-        name : '/dji_sdk/map_nav_srv/ctrl',
+        name : 'dji_sdk_web_groundstation/map_nav_srv/ctrl',
         messageType : 'std_msgs/Bool'
     });
     this.cmdTopic = new ROSLIB.Topic({
         ros : this.ros,
-        name : '/dji_sdk/map_nav_srv/cmd',
-        messageType : 'dji_sdk/map_nav_srv_cmd'
+        name : 'dji_sdk_web_groundstation/map_nav_srv/cmd',
+        messageType : 'dji_sdk_web_groundstation/MapNavSrvCmd'
     });
 
     //subscriber
     this.rosListener = new ROSLIB.Topic({
         ros : this.ros,
-        name : '/dji_sdk/global_position',
-        messageType : 'dji_sdk/global_position'
+        name : 'dji_sdk/global_position',
+        messageType : 'dji_sdk/GlobalPosition'
     });
     this.rosListener.subscribe(function(msg) {
         home_lat = msg.latitude / Math.PI * 180;
