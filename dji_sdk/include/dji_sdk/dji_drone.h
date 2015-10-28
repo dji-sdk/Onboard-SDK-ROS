@@ -6,6 +6,18 @@
 #include <actionlib/client/terminal_state.h> 
 #include <string>
 
+typedef boost::function<void (const actionlib::SimpleClientGoalState& state,  const dji_sdk::LocalPositionNavigationResultConstPtr& result) > LocalPositionNavigationSimpleDoneCallback;
+typedef boost::function<void () > LocalPositionNavigationSimpleActiveCallback;
+typedef boost::function<void (const dji_sdk::LocalPositionNavigationFeedbackConstPtr& feedback) > LocalPositionNavigationSimpleFeedbackCallback;
+
+typedef boost::function<void (const actionlib::SimpleClientGoalState& state,  const dji_sdk::GlobalPositionNavigationResultConstPtr& result) > GlobalPositionNavigationSimpleDoneCallback;
+typedef boost::function<void () > GlobalPositionNavigationSimpleActiveCallback;
+typedef boost::function<void (const dji_sdk::GlobalPositionNavigationFeedbackConstPtr& feedback) > GlobalPositionNavigationSimpleFeedbackCallback;
+
+typedef boost::function<void (const actionlib::SimpleClientGoalState& state,  const dji_sdk::WaypointNavigationResultConstPtr& result) > WaypointNavigationSimpleDoneCallback;
+typedef boost::function<void () > WaypointNavigationSimpleActiveCallback;
+typedef boost::function<void (const dji_sdk::WaypointNavigationFeedbackConstPtr& feedback) > WaypointNavigationSimpleFeedbackCallback;
+
 class DJIDrone
 {
 private:
@@ -283,64 +295,169 @@ public:
 	}
 
 
-	bool local_position_navigation(float x, float y, float z)
+	bool local_position_navigation_cancel_current_goal()
 	{
-		local_position_navigation_action_client.waitForServer();
+		local_position_navigation_action_client.cancelGoal();
+	}
 
+	bool local_position_navigation_cancel_all_goals()
+	{
+		local_position_navigation_action_client.cancelAllGoals();
+	}
+
+	bool local_position_navigation_cancel_goals_at_and_before_time(const ros::Time time)
+	{
+		local_position_navigation_action_client.cancelGoalsAtAndBeforeTime(time);
+	}
+
+	dji_sdk::LocalPositionNavigationResultConstPtr local_position_navigation_get_result()
+	{
+		return local_position_navigation_action_client.getResult();
+	}
+
+	actionlib::SimpleClientGoalState local_position_navigation_get_state()
+	{
+		return local_position_navigation_action_client.getState();
+	}
+
+	bool local_position_navigation_is_server_connected() 
+	{
+		return local_position_navigation_action_client.isServerConnected();
+	}
+
+	bool local_position_navigation_send_request(float x, float y, float z, LocalPositionNavigationSimpleDoneCallback done_callback = 0 , LocalPositionNavigationSimpleActiveCallback active_callback = 0 , LocalPositionNavigationSimpleFeedbackCallback feedback_callback = 0 )
+	{
 		dji_sdk::LocalPositionNavigationGoal local_position_navigation_goal;
 		local_position_navigation_goal.x = x;
 		local_position_navigation_goal.y = y;
 		local_position_navigation_goal.z = z;
-		local_position_navigation_action_client.sendGoal(local_position_navigation_goal);
-
-		return true;//pls check Feedback topic for progress detail
+		local_position_navigation_action_client.sendGoal(local_position_navigation_goal, done_callback, active_callback, feedback_callback);
 	}
 
-	bool global_position_navigation(double latitude, double longitude, float altitude)
+	bool local_position_navigation_wait_for_result (const ros::Duration duration = ros::Duration(0))
 	{
-		global_position_navigation_action_client.waitForServer();
+		return local_position_navigation_action_client.waitForResult(duration);
+	}
 
+	bool local_position_navigation_stop_tracking_goal()
+	{
+		local_position_navigation_action_client.stopTrackingGoal();
+		return true;
+	}
+	
+	bool local_position_navigation_wait_server(const ros::Duration duration = ros::Duration(0))
+	{
+		return local_position_navigation_action_client.waitForServer(duration);
+	}
+	
+	bool global_position_navigation_cancel_current_goal()
+	{
+		global_position_navigation_action_client.cancelGoal();
+	}
+
+	bool global_position_navigation_cancel_all_goals()
+	{
+		global_position_navigation_action_client.cancelAllGoals();
+	}
+
+	bool global_position_navigation_cancel_goals_at_and_before_time(const ros::Time time)
+	{
+		global_position_navigation_action_client.cancelGoalsAtAndBeforeTime(time);
+	}
+
+	dji_sdk::GlobalPositionNavigationResultConstPtr global_position_navigation_get_result()
+	{
+		return global_position_navigation_action_client.getResult();
+	}
+
+	actionlib::SimpleClientGoalState global_position_navigation_get_state()
+	{
+		return global_position_navigation_action_client.getState();
+	}
+
+	bool global_position_navigation_is_server_connected() 
+	{
+		return global_position_navigation_action_client.isServerConnected();
+	}
+
+	bool global_position_navigation_send_request(double latitude, double longitude, float altitude, GlobalPositionNavigationSimpleDoneCallback done_callback = 0 , GlobalPositionNavigationSimpleActiveCallback active_callback = 0 , GlobalPositionNavigationSimpleFeedbackCallback feedback_callback = 0 )
+	{
 		dji_sdk::GlobalPositionNavigationGoal global_position_navigation_goal;
 		global_position_navigation_goal.latitude = latitude;
 		global_position_navigation_goal.longitude = longitude;
 		global_position_navigation_goal.altitude = altitude;
-		global_position_navigation_action_client.sendGoal(global_position_navigation_goal);
-
-		bool finished_before_timeout = global_position_navigation_action_client.waitForResult(ros::Duration(300.0));
-		if (finished_before_timeout)
-		{
-			actionlib::SimpleClientGoalState state = global_position_navigation_action_client.getState();
-			ROS_INFO("Action finished: %s",state.toString().c_str());
-		}
-		else {
-			ROS_INFO("Action did not finish before the time out.");
-		}
-
-		return finished_before_timeout;//pls check Feedback topic for progress detail
-
+		global_position_navigation_action_client.sendGoal(global_position_navigation_goal, done_callback, active_callback, feedback_callback);
 	}
 
-	bool waypoint_navigation(dji_sdk::WaypointList waypoint_data)
+	bool global_position_navigation_wait_for_result (const ros::Duration duration = ros::Duration(0))
 	{
-		waypoint_navigation_action_client.waitForServer();
+		return global_position_navigation_action_client.waitForResult(duration);
+	}
 
+	bool global_position_navigation_stop_tracking_goal()
+	{
+		global_position_navigation_action_client.stopTrackingGoal();
+		return true;
+	}
+	
+	bool global_position_navigation_wait_server(const ros::Duration duration = ros::Duration(0))
+	{
+		return global_position_navigation_action_client.waitForServer(duration);
+	}
+	
+
+	bool waypoint_navigation_cancel_current_goal()
+	{
+		waypoint_navigation_action_client.cancelGoal();
+	}
+
+	bool waypoint_navigation_cancel_all_goals()
+	{
+		waypoint_navigation_action_client.cancelAllGoals();
+	}
+
+	bool waypoint_navigation_cancel_goals_at_and_before_time(const ros::Time time)
+	{
+		waypoint_navigation_action_client.cancelGoalsAtAndBeforeTime(time);
+	}
+
+	dji_sdk::WaypointNavigationResultConstPtr waypoint_navigation_get_result()
+	{
+		return waypoint_navigation_action_client.getResult();
+	}
+
+	actionlib::SimpleClientGoalState waypoint_navigation_get_state()
+	{
+		return waypoint_navigation_action_client.getState();
+	}
+
+	bool waypoint_navigation_is_server_connected() 
+	{
+		return waypoint_navigation_action_client.isServerConnected();
+	}
+
+	bool waypoint_navigation_send_request(dji_sdk::WaypointList waypoint_data, WaypointNavigationSimpleDoneCallback done_callback = 0 , WaypointNavigationSimpleActiveCallback active_callback = 0 , WaypointNavigationSimpleFeedbackCallback feedback_callback = 0 )
+	{
 		dji_sdk::WaypointNavigationGoal waypoint_navigation_goal;
 		waypoint_navigation_goal.waypoint_list = waypoint_data;
-		waypoint_navigation_action_client.sendGoal(waypoint_navigation_goal);
-
-		bool finished_before_timeout = waypoint_navigation_action_client.waitForResult(ros::Duration(300.0));
-		if (finished_before_timeout)
-		{
-			actionlib::SimpleClientGoalState state = waypoint_navigation_action_client.getState();
-			ROS_INFO("Action finished: %s",state.toString().c_str());
-		}
-		else {
-			ROS_INFO("Action did not finish before the time out.");
-		}
-
-		return finished_before_timeout;//pls check Feedback topic for progress detail
-
+		waypoint_navigation_action_client.sendGoal(waypoint_navigation_goal, done_callback, active_callback, feedback_callback);
 	}
 
+	bool waypoint_navigation_wait_for_result (const ros::Duration duration = ros::Duration(0))
+	{
+		return waypoint_navigation_action_client.waitForResult(duration);
+	}
+
+	bool waypoint_navigation_stop_tracking_goal()
+	{
+		waypoint_navigation_action_client.stopTrackingGoal();
+		return true;
+	}
+	
+	bool waypoint_navigation_wait_server(const ros::Duration duration = ros::Duration(0))
+	{
+		return waypoint_navigation_action_client.waitForServer(duration);
+	}
+	
 };
 

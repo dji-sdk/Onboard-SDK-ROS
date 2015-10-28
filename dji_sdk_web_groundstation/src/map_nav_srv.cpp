@@ -2,21 +2,24 @@
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
 #include <std_msgs/Bool.h>
-#include "SDK.h"
+#include <dji_sdk/dji_drone.h>
+#include <dji_sdk_web_groundstation/WebWaypointReceiveAction.h>
+#include <dji_sdk_web_groundstation/MapNavSrvCmd.h>
+#include <dji_sdk/WaypointNavigationAction.h>
 
 using namespace actionlib;
 
-typedef dji_sdk::web_waypoint_receiveAction Action_t;
-typedef dji_sdk::web_waypoint_receiveGoal Goal_t;
-typedef dji_sdk::web_waypoint_receiveGoalConstPtr GoalConstPtr_t;
-typedef dji_sdk::web_waypoint_receiveFeedback Feedback_t;
-typedef dji_sdk::web_waypoint_receiveResult Result_t;
+typedef dji_sdk_web_groundstation::WebWaypointReceiveAction Action_t;
+typedef dji_sdk_web_groundstation::WebWaypointReceiveGoal Goal_t;
+typedef dji_sdk_web_groundstation::WebWaypointReceiveGoalConstPtr GoalConstPtr_t;
+typedef dji_sdk_web_groundstation::WebWaypointReceiveFeedback Feedback_t;
+typedef dji_sdk_web_groundstation::WebWaypointReceiveResult Result_t;
 
-typedef dji_sdk::waypoint_navigationAction WPAction_t;
+typedef dji_sdk::WaypointNavigationAction WPAction_t;
 
-SimpleActionClient<WPAction_t>* wpClientPtr_;
 SimpleActionServer<Action_t>* asPtr_;
-ros::ServiceClient* drone_ctrl_mgr_ptr;
+
+DJIDrone* drone = new DJIDrone("drone_web_demo");
 
 uint8_t cmdCode_ = 0;
 uint8_t stage_ = 0;
@@ -29,7 +32,7 @@ uint8_t alt_p_; //altitude_progress
 uint8_t idx_p_; //index_progress
 
 
-void wp_feedbackCB(const dji_sdk::waypoint_navigationFeedbackConstPtr& fb) {
+void wp_feedbackCB(const dji_sdk::WaypointNavigationFeedbackConstPtr& fb) {
     lat_p_ = fb->latitude_progress;
     lon_p_ = fb->longitude_progress;
     alt_p_ = fb->altitude_progress;
@@ -69,7 +72,7 @@ void goalCB() {
     }
 
     tid_ = newGoal.tid;
-    dji_sdk::waypointList wpl = newGoal.waypointList;
+    dji_sdk::WaypointList wpl = newGoal.waypointList;
     stage_ = 1;
 
     while(ros::ok()) {
@@ -117,7 +120,6 @@ void goalCB() {
 
         bool isFinished; //flag for task result
         int cnt; //feedback count
-        dji_sdk::waypoint_navigationGoal wpGoal; //to call waypoint action
         switch(stage_) {
             case 0: //"0" for waiting for waypointList
                 rslt.result = false;
@@ -130,9 +132,11 @@ void goalCB() {
             case 3: //"3" for paused
                 continue;
             case 2: //"2" for in progress
-                wpClientPtr_->waitForServer();
-                wpGoal.waypointList = wpl;
-                wpClientPtr_->sendGoal(wpGoal, 
+                //wpClientPtr_->waitForServer();
+				drone->waypoint_navigation_wait_server();
+				
+                //wpClientPtr_->sendGoal(wpGoal, 
+				drone->waypoint_navigation_send_request(wpl,
                     SimpleActionClient<WPAction_t>::SimpleDoneCallback(), 
                     SimpleActionClient<WPAction_t>::SimpleActiveCallback(), 
                     &wp_feedbackCB
@@ -155,14 +159,15 @@ void goalCB() {
                         ROS_INFO("The task is canceled while executing.");
                         stage_ = 0;
                         tid_ = 0;
-                        wpClientPtr_->cancelGoal();
+                        //wpClientPtr_->cancelGoal();
+						drone->waypoint_navigation_cancel_current_goal();
                         return;
                     }
-                    isFinished = wpClientPtr_->waitForResult(ros::Duration(0.25));
+                    isFinished = drone->waypoint_navigation_wait_for_result(); 
                 }
                 if(isFinished) {
                     ROS_INFO("Action finished: %s", 
-                        wpClientPtr_->getState().toString().c_str()
+						drone->waypoint_navigation_get_state().toString().c_str()
                     );
                     rslt.result = true;
                     asPtr_->setSucceeded(rslt);
@@ -180,7 +185,7 @@ void goalCB() {
                 tid_ = 0;
                 rslt.result = false;
                 asPtr_->setPreempted(rslt);
-                wpClientPtr_->cancelAllGoals();
+				drone->waypoint_navigation_cancel_all_goals();
                 return;
         }
     }
@@ -191,7 +196,7 @@ void preemptCB() {
     ROS_INFO("Hey! I got preempt!");
 }
 
-void cmdCB(const dji_sdk::map_nav_srv_cmdConstPtr& msg) {
+void cmdCB(const dji_sdk_web_groundstation::MapNavSrvCmdConstPtr& msg) {
     ROS_INFO("Received command \"%c\" of tid %llu", msg->cmdCode, msg->tid);
     cmdCode_ = msg->cmdCode;
     cmdTid_ = msg->tid;
@@ -203,27 +208,14 @@ void ctrlCB(const std_msgs::Bool::ConstPtr& msg) {
         ROS_INFO("Request to obtain control");
     else
         ROS_INFO("Release control");
-    dji_sdk::control_manager srv_ctrl;
 
-    srv_ctrl.request.control_ability = msg->data;
-    drone_ctrl_mgr_ptr->call(srv_ctrl);
+	drone -> sdk_permission_control(msg->data);
+	
 }
 
 int main(int argc, char* argv[]) {
     ros::init(argc, argv, "map_nav_srv");
     ros::NodeHandle nh;
-
-    //drone control manager
-    ros::ServiceClient ctrl_mgr = nh.serviceClient<dji_sdk::control_manager>(
-        "dji_sdk/obtain_release_control"
-    );
-    drone_ctrl_mgr_ptr = &ctrl_mgr;
-
-    //waypoint_navigation action server
-    wpClientPtr_ = new SimpleActionClient<WPAction_t>(
-        "dji_sdk/waypoint_navigation_action", 
-        true
-    );
 
     //web_waypoint_receive action server
     asPtr_ = new SimpleActionServer<Action_t>(

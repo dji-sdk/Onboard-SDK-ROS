@@ -91,11 +91,11 @@ int main(int argc, char **argv)
 				drone->gohome();
 				break;
 			case 'f':
-				drone->local_position_navigation(-100, -100, 100);
+				drone->local_position_navigation_send_request(-100, -100, 100);
 
 				break;
 			case 'g':
-				drone->global_position_navigation(22.535, 113.95, 100);
+				drone->global_position_navigation_send_request(22.535, 113.95, 100);
 
 				break;
 
@@ -145,7 +145,7 @@ int main(int argc, char **argv)
 				}
 				newWaypointList.waypoint_list.push_back(waypoint4);
 
-				drone->waypoint_navigation(newWaypointList);
+				drone->waypoint_navigation_send_request(newWaypointList);
 
 				break;
 

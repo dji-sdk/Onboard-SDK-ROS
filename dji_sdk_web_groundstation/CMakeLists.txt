@@ -4,11 +4,19 @@ project(dji_sdk_web_groundstation)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED COMPONENTS
+	message_generation
+	roscpp
+	std_msgs
+	actionlib_msgs
+	actionlib
+	dji_sdk
+	)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -40,11 +48,12 @@ find_package(catkin REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
+ add_message_files(
+   FILES
+   MapNavSrvCmd.msg
 #   Message1.msg
 #   Message2.msg
-# )
+ )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -54,17 +63,18 @@ find_package(catkin REQUIRED)
 # )
 
 ## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
+add_action_files(
+   FILES
+   WebWaypointReceive.action
 #   Action1.action
 #   Action2.action
-# )
+)
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   std_msgs		actionlib_msgs		dji_sdk
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -98,7 +108,7 @@ find_package(catkin REQUIRED)
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES dji_sdk_web_groundstation
-#  CATKIN_DEPENDS other_catkin_pkg
+ CATKIN_DEPENDS actionlib_msgs std_msgs dji_sdk
 #  DEPENDS system_lib
 )
 
@@ -108,7 +118,9 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(
+	${catkin_INCLUDE_DIRS}
+)
 
 ## Declare a C++ library
 # add_library(dji_sdk_web_groundstation
@@ -133,11 +145,11 @@ catkin_package(
 # )
 
 
-add_executable(dji_sdk_wp_client src/wp_client.cpp)
-target_link_libraries(dji_sdk_wp_client
+add_executable(dji_sdk_web_client src/map_nav_srv.cpp)
+target_link_libraries(dji_sdk_web_client
   ${catkin_LIBRARIES}
 )
-add_dependencies(dji_sdk_wp_client dji_sdk_generate_messages_cpp)
+add_dependencies(dji_sdk_web_client dji_sdk_web_groundstation_generate_messages_cpp)
 
 #############
 ## Install ##
