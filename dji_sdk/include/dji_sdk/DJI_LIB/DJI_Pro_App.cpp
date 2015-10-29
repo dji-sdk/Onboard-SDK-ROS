@@ -619,7 +619,7 @@ static unsigned short std_msg_flag = 0;
  * interface: get broadcast data
  */
 
-int DJI_Pro_Get_Broadcast_Data(sdk_std_msg_t *p_user_buf, unsigned char *msg_flags) {
+int DJI_Pro_Get_Broadcast_Data(sdk_std_msg_t *p_user_buf, unsigned short *msg_flags) {
 	pthread_mutex_lock(&std_msg_lock); 	
 	*p_user_buf = std_broadcast_data; 	
 	*msg_flags = std_msg_flag;
