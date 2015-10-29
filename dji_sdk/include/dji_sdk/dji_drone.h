@@ -196,7 +196,7 @@ public:
 		return camera_action_control_service.call(camera_action_control) && camera_action_control.response.result;
 	}
 
-	bool record_video()
+	bool start_video()
 	{
 		dji_sdk::CameraActionControl camera_action_control;
 		camera_action_control.request.camera_action = 1;

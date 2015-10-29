@@ -1,19 +1,8 @@
 #include <ros/ros.h>
 #include <dji_sdk/dji_drone.h>
 #include <cstdlib>
-
-#define HORIZ_ATT 0x00
-#define HORIZ_VEL 0x40
-#define HORIZ_POS 0x80
-#define VERT_VEL 0x00
-#define VERT_POS 0x10
-#define VERT_TRU 0x20
-#define YAW_ANG 0x00
-#define YAW_RATE 0x08
-#define HORIZ_GND 0x00
-#define HORIZ_BODY 0x02
-#define YAW_GND 0x00
-#define YAW_BODY 0x01
+#include <actionlib/client/simple_action_client.h>
+#include <actionlib/client/terminal_state.h>
 
 static void Display_Main_Menu(void)
 {
@@ -31,7 +20,10 @@ static void Display_Main_Menu(void)
 	printf("[j] Take a picture\n");
 	printf("[k] Start video\n");
 	printf("[l] Stop video\n");
-	printf("[m] Exit\n");
+	printf("[m] Local Navi Test\n");
+	printf("[n] GPS Navi Test\n");
+	printf("[o] Waypoint List Test\n");
+	printf("[p] Exit\n");
 	printf("\ninput a/b/c etc..then press enter key\r\n");
 	printf("\nuse `rostopic echo` to query drone status\r\n");
 	printf("----------------------------------------\r\n");
@@ -48,13 +40,20 @@ int main(int argc, char **argv)
 	ros::NodeHandle nh;
 	DJIDrone* drone = new DJIDrone(nh);
 
+	dji_sdk::WaypointList newWaypointList;
+	dji_sdk::Waypoint waypoint0;
+	dji_sdk::Waypoint waypoint1;
+	dji_sdk::Waypoint waypoint2;
+	dji_sdk::Waypoint waypoint3;
+	dji_sdk::Waypoint waypoint4;
+
 	Display_Main_Menu();
 	while(1)
 	{
 		temp32 = getchar();
 		if(temp32 != 10)
 		{
-			if(temp32 >= 'a' && temp32 <= 'm' && valid_flag == false)
+			if(temp32 >= 'a' && temp32 <= 'p' && valid_flag == false)
 			{
 				main_operate_code = temp32;
 				valid_flag = true;
@@ -275,13 +274,70 @@ int main(int argc, char **argv)
 				break;
 			case 'k':
 				/*start video*/
-				drone->record_video();
+				drone->start_video();
 				break;
 			case 'l':
 				/*stop video*/
 				drone->stop_video();
 				break;
 			case 'm':
+				/* Local Navi Test */
+				drone->local_position_navigation_send_request(-100, -100, 100);
+				break;
+			case 'n':
+				/* GPS Navi Test */
+				drone->global_position_navigation_send_request(22.535, 113.95, 100);
+				break;
+			case 'o':
+			    /* Waypoint List Navi Test */
+				{
+					waypoint0.latitude = 22.535;
+					waypoint0.longitude = 113.95;
+					waypoint0.altitude = 100;
+					waypoint0.staytime = 5;
+					waypoint0.heading = 0;
+				}
+				newWaypointList.waypoint_list.push_back(waypoint0);
+
+				{
+					waypoint1.latitude = 22.535;
+					waypoint1.longitude = 113.96;
+					waypoint1.altitude = 100;
+					waypoint1.staytime = 0;
+					waypoint1.heading = 90;
+				}
+				newWaypointList.waypoint_list.push_back(waypoint1);
+
+				{
+					waypoint2.latitude = 22.545;
+					waypoint2.longitude = 113.96;
+					waypoint2.altitude = 100;
+					waypoint2.staytime = 4;
+					waypoint2.heading = -90;
+				}
+				newWaypointList.waypoint_list.push_back(waypoint2);
+
+				{
+					waypoint3.latitude = 22.545;
+					waypoint3.longitude = 113.96;
+					waypoint3.altitude = 10;
+					waypoint3.staytime = 2;
+					waypoint3.heading = 180;
+				}
+				newWaypointList.waypoint_list.push_back(waypoint3);
+
+				{
+					waypoint4.latitude = 22.525;
+					waypoint4.longitude = 113.93;
+					waypoint4.altitude = 50;
+					waypoint4.staytime = 0;
+					waypoint4.heading = -180;
+				}
+				newWaypointList.waypoint_list.push_back(waypoint4);
+
+				drone->waypoint_navigation_send_request(newWaypointList);
+				break;
+			case 'p':
 				return 0;
 
 			default:
