@@ -8,7 +8,7 @@
 void DJISDKNode::broadcast_callback()
 {
 	sdk_std_msg_t recv_sdk_std_msgs;
-	unsigned char msg_flags;
+	unsigned short msg_flags;
 	DJI_Pro_Get_Broadcast_Data(&recv_sdk_std_msgs, &msg_flags);
 
 	static int frame_id = 0;
@@ -149,23 +149,23 @@ void DJISDKNode::broadcast_callback()
 
 	//update flight_status 
 	if ((msg_flags & ENABLE_MSG_STATUS)) {
-		std_msgs::UInt8 msg;
-		flight_status = recv_sdk_std_msgs.status;
-		msg.data = flight_status;
-		flight_status_publisher.publish(msg);
+	  std_msgs::UInt8 msg;
+	  flight_status = recv_sdk_std_msgs.status;
+	  msg.data = flight_status;
+	  flight_status_publisher.publish(msg);
 	}
 
 	//update battery msg
 	if ((msg_flags & ENABLE_MSG_BATTERY)) {
-		power_status.percentage = recv_sdk_std_msgs.battery_remaining_capacity;
-		power_status_publisher.publish(power_status);
+	  power_status.percentage = recv_sdk_std_msgs.battery_remaining_capacity;
+	  power_status_publisher.publish(power_status);
 	}
 
 	//update flight control info
 	if ((msg_flags & ENABLE_MSG_DEVICE)) {
-		flight_control_info.cur_ctrl_dev_in_navi_mode = recv_sdk_std_msgs.ctrl_info.cur_ctrl_dev_in_navi_mode;
-		flight_control_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
-		flight_control_info_publisher.publish(flight_control_info);
+	  flight_control_info.cur_ctrl_dev_in_navi_mode = recv_sdk_std_msgs.ctrl_info.cur_ctrl_dev_in_navi_mode;
+	  flight_control_info.serial_req_status = recv_sdk_std_msgs.ctrl_info.serial_req_status;
+	  flight_control_info_publisher.publish(flight_control_info);
 	}
 
 	//update obtaincontrol msg
