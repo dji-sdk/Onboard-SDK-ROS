@@ -133,6 +133,7 @@ void goalCB() {
                 continue;
             case 2: //"2" for in progress
                 //wpClientPtr_->waitForServer();
+				drone->takeoff();
 				drone->waypoint_navigation_wait_server();
 				
                 //wpClientPtr_->sendGoal(wpGoal, 

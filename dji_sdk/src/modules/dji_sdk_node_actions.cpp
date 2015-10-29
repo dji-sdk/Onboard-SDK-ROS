@@ -35,9 +35,10 @@ bool DJISDKNode::process_waypoint(dji_sdk::Waypoint new_waypoint)
             return false;
         }
 
-        gps_convert_ned(user_ctrl_data.roll_or_x, user_ctrl_data.pitch_or_y,
-             dst_longitude,  dst_latitude,
-             global_position.longitude,  global_position.latitude);
+		double d_lon = dst_longitude - global_position.longitude;
+		double d_lat = dst_latitude - global_position.latitude;
+		user_ctrl_data.roll_or_x = ((d_lat) *C_PI/180) * C_EARTH;
+		user_ctrl_data.pitch_or_y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
 
         DJI_Pro_Attitude_Control(&user_ctrl_data);
 
@@ -52,8 +53,8 @@ bool DJISDKNode::process_waypoint(dji_sdk::Waypoint new_waypoint)
 
      //lazy evaluation
      //need to find a better way
-     if (std::abs(dst_latitude - global_position.latitude) < 0.00001) latitude_progress = 100;
-     if (std::abs(dst_longitude - global_position.longitude) < 0.00001) longitude_progress = 100;
+     if (std::abs(dst_latitude - global_position.latitude) < 0.001) latitude_progress = 100;
+     if (std::abs(dst_longitude - global_position.longitude) < 0.001) longitude_progress = 100;
      if (std::abs(dst_altitude - global_position.altitude) < 0.12) altitude_progress = 100;
 
      waypoint_navigation_feedback.latitude_progress = latitude_progress;
@@ -193,9 +194,11 @@ bool DJISDKNode::global_position_navigation_action_callback(const dji_sdk::Globa
     int altitude_progress = 0; 
 
     while (latitude_progress < 100 || longitude_progress < 100 || altitude_progress < 100) {
-         gps_convert_ned(user_ctrl_data.roll_or_x, user_ctrl_data.pitch_or_y,
-                 dst_longitude,  dst_latitude,
-                 global_position.longitude,  global_position.latitude);
+
+		double d_lon = dst_longitude - global_position.longitude;
+		double d_lat = dst_latitude - global_position.latitude;
+		user_ctrl_data.roll_or_x = ((d_lat) *C_PI/180) * C_EARTH;
+		user_ctrl_data.pitch_or_y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
 
          DJI_Pro_Attitude_Control(&user_ctrl_data);
 
@@ -209,9 +212,9 @@ bool DJISDKNode::global_position_navigation_action_callback(const dji_sdk::Globa
          altitude_progress = 100 - (int)det_z;
 
          //lazy evaluation
-         if (std::abs(dst_latitude - global_position.latitude) < 0.00001) latitude_progress = 100;
-         if (std::abs(dst_longitude - global_position.longitude) < 0.00001) longitude_progress = 100;
-         if (std::abs(dst_altitude - global_position.altitude) < 0.1) altitude_progress = 100;
+         if (std::abs(dst_latitude - global_position.latitude) < 0.001) latitude_progress = 100;
+         if (std::abs(dst_longitude - global_position.longitude) < 0.001) longitude_progress = 100;
+         if (std::abs(dst_altitude - global_position.altitude) < 0.12) altitude_progress = 100;
 
 
          global_position_navigation_feedback.latitude_progress = latitude_progress;
