@@ -133,11 +133,11 @@ void goalCB() {
                 continue;
             case 2: //"2" for in progress
                 //wpClientPtr_->waitForServer();
-				drone->takeoff();
-				drone->waypoint_navigation_wait_server();
-				
+                drone->takeoff();
+                drone->waypoint_navigation_wait_server();
+                
                 //wpClientPtr_->sendGoal(wpGoal, 
-				drone->waypoint_navigation_send_request(wpl,
+                drone->waypoint_navigation_send_request(wpl,
                     SimpleActionClient<WPAction_t>::SimpleDoneCallback(), 
                     SimpleActionClient<WPAction_t>::SimpleActiveCallback(), 
                     &wp_feedbackCB
@@ -161,14 +161,14 @@ void goalCB() {
                         stage_ = 0;
                         tid_ = 0;
                         //wpClientPtr_->cancelGoal();
-						drone->waypoint_navigation_cancel_current_goal();
+                        drone->waypoint_navigation_cancel_current_goal();
                         return;
                     }
                     isFinished = drone->waypoint_navigation_wait_for_result(); 
                 }
                 if(isFinished) {
                     ROS_INFO("Action finished: %s", 
-						drone->waypoint_navigation_get_state().toString().c_str()
+                        drone->waypoint_navigation_get_state().toString().c_str()
                     );
                     rslt.result = true;
                     asPtr_->setSucceeded(rslt);
@@ -186,7 +186,7 @@ void goalCB() {
                 tid_ = 0;
                 rslt.result = false;
                 asPtr_->setPreempted(rslt);
-				drone->waypoint_navigation_cancel_all_goals();
+                drone->waypoint_navigation_cancel_all_goals();
                 return;
         }
     }
@@ -210,8 +210,8 @@ void ctrlCB(const std_msgs::Bool::ConstPtr& msg) {
     else
         ROS_INFO("Release control");
 
-	drone->sdk_permission_control(msg->data);
-	
+    drone->sdk_permission_control(msg->data);
+    
 }
 
 int main(int argc, char* argv[]) {
