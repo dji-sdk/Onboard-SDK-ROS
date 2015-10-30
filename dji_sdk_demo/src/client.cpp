@@ -99,17 +99,17 @@ int main(int argc, char **argv)
             case 'f':
                 /*gimbal test*/
 
-                drone->gimbal_angle_control(0, 0, 0, 1800, 20);
+                drone->gimbal_angle_control(0, 0, 1800, 20);
                 sleep(2);
-                drone->gimbal_angle_control(0, 0, 0, -1800, 20);
+                drone->gimbal_angle_control(0, 0, -1800, 20);
                 sleep(2);
-                drone->gimbal_angle_control(0, 300, 0, 0, 20);
+                drone->gimbal_angle_control(300, 0, 0, 20);
                 sleep(2);
-                drone->gimbal_angle_control(0, -300, 0, 0, 20);
+                drone->gimbal_angle_control(-300, 0, 0, 20);
                 sleep(2);
-                drone->gimbal_angle_control(0, 0, 300, 0, 20);
+                drone->gimbal_angle_control(0, 300, 0, 20);
                 sleep(2);
-                drone->gimbal_angle_control(0, 0, -300, 0, 20);
+                drone->gimbal_angle_control(0, -300, 0, 20);
                 sleep(2);
                 drone->gimbal_speed_control(100, 0, 0);
                 sleep(2);
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
                 sleep(2);
                 drone->gimbal_speed_control(0, -200, 0);
                 sleep(2);
-                drone->gimbal_angle_control(0, 0, 0, 0, 20);
+                drone->gimbal_angle_control(0, 0, 0, 20);
                 break;
 
             case 'g':

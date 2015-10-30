@@ -64,11 +64,11 @@ bool DJISDKNode::gimbal_angle_control_callback(dji_sdk::GimbalAngleControl::Requ
     gimbal_angle.yaw_angle = request.yaw;
     gimbal_angle.roll_angle = request.roll;
     gimbal_angle.pitch_angle = request.pitch;
-    gimbal_angle.ctrl_byte.base = request.flag;
-    gimbal_angle.ctrl_byte.yaw_cmd_ignore = 0;
-    gimbal_angle.ctrl_byte.roll_cmd_ignore = 0;
-    gimbal_angle.ctrl_byte.pitch_cmd_ignore = 0;
     gimbal_angle.duration = request.duration;
+    gimbal_angle.ctrl_byte.base = request.absolute_or_incremental;
+    gimbal_angle.ctrl_byte.yaw_cmd_ignore = request.yaw_cmd_ignore;
+    gimbal_angle.ctrl_byte.roll_cmd_ignore = request.roll_cmd_ignore;
+    gimbal_angle.ctrl_byte.pitch_cmd_ignore = request.pitch_cmd_ignore;
 
     DJI_Pro_Gimbal_Angle_Control(&gimbal_angle);
     response.result = true;
@@ -81,7 +81,7 @@ bool DJISDKNode::gimbal_speed_control_callback(dji_sdk::GimbalSpeedControl::Requ
     gimbal_speed.yaw_angle_rate = request.yaw_rate;
     gimbal_speed.roll_angle_rate = request.roll_rate;
     gimbal_speed.pitch_angle_rate = request.pitch_rate;
-    gimbal_speed.ctrl_byte.ctrl_switch = 1;
+    gimbal_speed.ctrl_byte.ctrl_switch = request.absolute_or_incremental;
 
     DJI_Pro_Gimbal_Speed_Control(&gimbal_speed);
     response.result = true;

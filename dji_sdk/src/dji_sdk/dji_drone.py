@@ -141,11 +141,13 @@ class DJIDrone:
     def stop_video(self):
         self.camera_action_control_service(camera_action=2)
 
-    def gimbal_angle_control(self, flag, yaw, roll, pitch, duration):
-        self.gimbal_angle_control_service(flag = flag, yaw = yaw, roll = roll, pitch = pitch, duration = duration)
+    def gimbal_angle_control(self, yaw = 0, roll = 0, pitch = 0, duration = 0, absolute_or_incremental = True, yaw_cmd_ignore = False, roll_cmd_ignore = False, pitch_cmd_ignore = False):
+        self.gimbal_angle_control_service(yaw = yaw, roll = roll, pitch = pitch, duration = duration,
+            absolute_or_incremental = absolute_or_incremental, yaw_cmd_ignore = yaw_cmd_ignore, roll_cmd_ignore = roll_cmd_ignore, pitch_cmd_ignore = pitch_cmd_ignore)
 
-    def gimbal_speed_control(self, yaw_rate, roll_rate, pitch_rate):
-        self.gimbal_speed_control_service(yaw_rate = yaw_rate, roll_rate = roll_rate, pitch_rate = pitch_rate)
+    def gimbal_speed_control(self, yaw_rate = 0, roll_rate = 0, pitch_rate = 0, absolute_or_incremental = True):
+        self.gimbal_speed_control_service(yaw_rate = yaw_rate, roll_rate = roll_rate, pitch_rate = pitch_rate, 
+            absolute_or_incremental = absolute_or_incremental)
 
     def request_sdk_permission_control(self):
         self.sdk_permission_control_service(control_enable = 1)
@@ -164,6 +166,13 @@ class DJIDrone:
 
     def global_position_control(self, latitude, longitude, altitude, yaw):
         self.global_position_control_service(latitude = latitude, longitude = longitude, altitude = altitude, yaw = yaw)
+
+    def lookat(self, x, y, z, duration):
+        x, y, z
+        self.local_position
+
+        self.gimbal_angle_control_service(flag = flag, yaw = yaw, roll = 0, pitch = 0, duration = duration)
+        self.local_position_control_service(x = x, y = y, z = z, yaw = yaw)
 
     def __init__(self, namespace=''):
         rospy.init_node('dji_sdk_connector')
@@ -191,12 +200,4 @@ class DJIDrone:
         self.init_actions()
         self.init_subscribers()
         self.init_services()
-
-        self.sdk_permission_need_open = True
-
-        #self.update_time = rospy.Timer(rospy.Duration(0.02), self.update)
-
-    def update_modes(self):
-        if self.sdk_permission_need_open:
-            self.request_sdk_permission_control()
 

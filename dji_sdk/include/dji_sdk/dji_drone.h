@@ -210,24 +210,29 @@ public:
 		return camera_action_control_service.call(camera_action_control) && camera_action_control.response.result;
 	}
 
-	bool gimbal_speed_control(int roll_rate, int pitch_rate, int yaw_rate)
+	bool gimbal_speed_control(int roll_rate = 0, int pitch_rate = 0, int yaw_rate = 0, bool absolute_or_incremental = 1)
 	{
 		dji_sdk::GimbalSpeedControl gimbal_speed_control;
 		gimbal_speed_control.request.roll_rate = roll_rate;
 		gimbal_speed_control.request.pitch_rate = pitch_rate;
 		gimbal_speed_control.request.yaw_rate = yaw_rate;
-		return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
+		gimbal_speed_control.request.absolute_or_incremental = absolute_or_incremental;
 
+		return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
 	}
 
-	bool gimbal_angle_control(unsigned char ctrl_flag, int roll, int pitch, int yaw, int duration)
+	bool gimbal_angle_control(int roll = 0, int pitch = 0, int yaw = 0, int duration = 0, bool absolute_or_incremental = 1, bool yaw_cmd_ignore = 0, bool roll_cmd_ignore = 0, bool pitch_cmd_ignore = 0)
 	{
 		dji_sdk::GimbalAngleControl gimbal_angle_control;
-		gimbal_angle_control.request.flag = ctrl_flag;
 		gimbal_angle_control.request.roll = roll;
 		gimbal_angle_control.request.pitch = pitch;
 		gimbal_angle_control.request.yaw = yaw;
-		gimbal_angle_control.request.duration= duration;
+		gimbal_angle_control.request.duration = duration;
+		gimbal_angle_control.request.absolute_or_incremental = absolute_or_incremental;
+		gimbal_angle_control.request.yaw_cmd_ignore = 0;
+		gimbal_angle_control.request.roll_cmd_ignore = 0;
+		gimbal_angle_control.request.pitch_cmd_ignore = 0;
+
 		return gimbal_angle_control_service.call(gimbal_angle_control) && gimbal_angle_control.response.result;
 	}
 	
