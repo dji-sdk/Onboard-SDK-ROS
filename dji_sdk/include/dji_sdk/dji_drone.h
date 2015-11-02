@@ -229,9 +229,9 @@ public:
 		gimbal_angle_control.request.yaw = yaw;
 		gimbal_angle_control.request.duration = duration;
 		gimbal_angle_control.request.absolute_or_incremental = absolute_or_incremental;
-		gimbal_angle_control.request.yaw_cmd_ignore = 0;
-		gimbal_angle_control.request.roll_cmd_ignore = 0;
-		gimbal_angle_control.request.pitch_cmd_ignore = 0;
+		gimbal_angle_control.request.yaw_cmd_ignore = yaw_cmd_ignore;
+		gimbal_angle_control.request.roll_cmd_ignore = roll_cmd_ignore;
+		gimbal_angle_control.request.pitch_cmd_ignore = pitch_cmd_ignore;
 
 		return gimbal_angle_control_service.call(gimbal_angle_control) && gimbal_angle_control.response.result;
 	}
