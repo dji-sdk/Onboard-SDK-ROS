@@ -27,7 +27,7 @@ void DJISDKNode::broadcast_callback()
         attitude_quaternion.wx = recv_sdk_std_msgs.w.x;
         attitude_quaternion.wy = recv_sdk_std_msgs.w.y;
         attitude_quaternion.wz = recv_sdk_std_msgs.w.z;
-        attitude_quaternion.ts = recv_sdk_std_msgs.time_stamp;
+        attitude_quaternion.ts = recv_sdk_std_msgs.time_stamp.time;
         attitude_quaternion_publisher.publish(attitude_quaternion);
     }
 
@@ -35,7 +35,7 @@ void DJISDKNode::broadcast_callback()
     if ((msg_flags & ENABLE_MSG_POS)) {
         global_position.header.frame_id = "/world";
         global_position.header.stamp = current_time;
-        global_position.ts = recv_sdk_std_msgs.time_stamp;
+        global_position.ts = recv_sdk_std_msgs.time_stamp.time;
         global_position.latitude = recv_sdk_std_msgs.pos.lati * 180.0 / C_PI;
         global_position.longitude = recv_sdk_std_msgs.pos.longti * 180.0 / C_PI;
         global_position.height = recv_sdk_std_msgs.pos.height;
@@ -72,7 +72,7 @@ void DJISDKNode::broadcast_callback()
     if ((msg_flags & ENABLE_MSG_V)) {
         velocity.header.frame_id = "/world";
         velocity.header.stamp = current_time;
-        velocity.ts = recv_sdk_std_msgs.time_stamp;
+        velocity.ts = recv_sdk_std_msgs.time_stamp.time;
         velocity.vx = recv_sdk_std_msgs.v.x;
         velocity.vy = recv_sdk_std_msgs.v.y;
         velocity.vz = recv_sdk_std_msgs.v.z;
@@ -83,7 +83,7 @@ void DJISDKNode::broadcast_callback()
     if ((msg_flags & ENABLE_MSG_A)) {
         acceleration.header.frame_id = "/world";
         acceleration.header.stamp = current_time;
-        acceleration.ts = recv_sdk_std_msgs.time_stamp;
+        acceleration.ts = recv_sdk_std_msgs.time_stamp.time;
         acceleration.ax = recv_sdk_std_msgs.a.x;
         acceleration.ay = recv_sdk_std_msgs.a.y;
         acceleration.az = recv_sdk_std_msgs.a.z;
@@ -94,10 +94,10 @@ void DJISDKNode::broadcast_callback()
     if ((msg_flags & ENABLE_MSG_GIMBAL)) {
         gimbal.header.frame_id = "/gimbal";
         gimbal.header.stamp= current_time;
-        gimbal.ts = recv_sdk_std_msgs.time_stamp;
-        gimbal.roll = recv_sdk_std_msgs.gimbal.x;
-        gimbal.pitch = recv_sdk_std_msgs.gimbal.y;
-        gimbal.yaw = recv_sdk_std_msgs.gimbal.z;
+        gimbal.ts = recv_sdk_std_msgs.time_stamp.time;
+        gimbal.roll = recv_sdk_std_msgs.gimbal.roll;
+        gimbal.pitch = recv_sdk_std_msgs.gimbal.pitch;
+        gimbal.yaw = recv_sdk_std_msgs.gimbal.yaw;
         gimbal_publisher.publish(gimbal);
     }
 
@@ -125,7 +125,7 @@ void DJISDKNode::broadcast_callback()
     if ((msg_flags & ENABLE_MSG_RC)) {
         rc_channels.header.frame_id = "/rc";
         rc_channels.header.stamp = current_time;
-        rc_channels.ts = recv_sdk_std_msgs.time_stamp;
+        rc_channels.ts = recv_sdk_std_msgs.time_stamp.time;
         rc_channels.pitch = recv_sdk_std_msgs.rc.pitch;
         rc_channels.roll = recv_sdk_std_msgs.rc.roll;
         rc_channels.mode = recv_sdk_std_msgs.rc.mode;
@@ -139,7 +139,7 @@ void DJISDKNode::broadcast_callback()
     if ((msg_flags & ENABLE_MSG_MAG)) {
         compass.header.frame_id = "/world";
         compass.header.stamp = current_time;
-        compass.ts = recv_sdk_std_msgs.time_stamp;
+        compass.ts = recv_sdk_std_msgs.time_stamp.time;
         compass.x = recv_sdk_std_msgs.mag.x;
         compass.y = recv_sdk_std_msgs.mag.y;
         compass.z = recv_sdk_std_msgs.mag.z;
