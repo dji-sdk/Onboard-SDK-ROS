@@ -12,8 +12,8 @@ It helps users handle the following commands and actions.
 * The take off procedure
 * The landing procedure
 * The go home procedure
-* Example for the gimbal control
-* Example for the attitude control
+* The Gimbal control
+* The attitude control
 * The photo taking procedure
 * The start/stop video recording procedure
 * Local navigation (fly into a certain (X,Y,Z))
@@ -45,6 +45,7 @@ We also provides a ROS package
 * [dji_sdk_doc](dji_sdk_doc): all documents
 
 ![image](dji_sdk_doc/structure.jpg)
+[click to see fullsize image](https://raw.githubusercontent.com/dji-sdk/Onboard-SDK-ROS/2.3/dji_sdk_doc/structure.jpg)
 
 ###System Environment
 The below environment has been tested.
