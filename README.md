@@ -44,7 +44,7 @@ We also provides a ROS package
 * [dji_sdk_manifold_read_cam_nv](dji_sdk_manifold_read_cam_nv): same as the previous one, but use hardware decoding method and in Grayscale, CATKIN_IGNOREd by defualt
 * [dji_sdk_doc](dji_sdk_doc): all documents
 
-![image](../dji_sdk_doc/structure.jpg)
+![image](dji_sdk_doc/structure.jpg)
 
 ###System Environment
 The below environment has been tested.
