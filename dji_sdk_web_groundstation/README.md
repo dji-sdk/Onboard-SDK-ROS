@@ -1,5 +1,4 @@
-#DJI Onboard SDK
-##Map Waypoint Navigation Demo
+##DJI SDK ROS Package Map Waypoint Navigation Demo
 ---
 
 Date: 2015/10/22
@@ -26,19 +25,19 @@ sudo apt-get install ros-indigo-rosbridge-server
 #####c) Launch Main SDK Monitor Program
 The main SDK monitor program provide some services interface to communicate with the flight controller layer. It is necessary for this demo:
 ```
-roslaunch dji_sdk sdk_demo.launch
+roslaunch dji_sdk sdk_manifold.launch
 ```
 
 #####d) Launch Demo
 Finally, launch the demo:
 ```
-roslaunch dji_sdk map_nav_srv.launch
+roslaunch dji_sdk_web_groundstation map_nav_srv.launch
 ```
 This launch file will fire up both rosbridge websocket server and the demo server. Default 19871 port is monitored by the websocket server. You can modify it in the launch file.
 
 ####2. Put the Webpage Client to Use
 #####a) Setup the network
-The webpage client will comunicate with rosbridge on default localhost:19871. If you are not testing the webpage on the onboard computer, you need to modify this network address in line 11 of wp_control.js.
+The webpage client will comunicate with rosbridge on default localhost:19871. If you are not testing the webpage on the onboard computer, you need to modify this network address in wp_control.js.
 
 #####b) Create a Mission
 On the webpage, click "Start Planning" to begin a mission. One the map a initial marker will be created to show current position.
@@ -52,4 +51,4 @@ Next, click "Upload Mission" to upload the mission to onboard server.
 Finally, click"Start Mission" to execute.
 During the execution, if you want to cancel the mission, click "Cancel Mission" and stop the quadcopter.
 
-![webpageClient](../../../Onboard_SDK_Doc/en/Images/ROS.png)
+![webpageClient](../dji_sdk_doc/webpage.png)
