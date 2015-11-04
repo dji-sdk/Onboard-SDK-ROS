@@ -730,7 +730,7 @@ static void DJI_Pro_Mission_WP_Upload_Waypoint_CallBack(ProHeader *header) {
 
 int DJI_Pro_Mission_WP_Upload_Waypoint(cmd_mission_wp_waypoint_upload_comm_t *p_waypoint_upload){
 	DJI_Pro_App_Send_Data(2,1, MY_MISSION_CMD_SET, API_MISSION_WP_UPLOAD,
-						(unsigned char*)p_waypoint_upload, sizeof(&p_waypoint_upload),//TODO:the size
+						(unsigned char*)p_waypoint_upload, sizeof(cmd_mission_wp_waypoint_upload_comm_t),
 						DJI_Pro_Mission_WP_Upload_Waypoint_CallBack,500,1);
 	return 0;
 }
@@ -821,7 +821,7 @@ static void DJI_Pro_Mission_WP_Download_Waypoint_CallBack(ProHeader *header) {
    unsigned short ack_data = 0xFFFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
-	//TODO test, memcpy wp->memcpy action->memcpy action param
+		//TODO test, memcpy wp->memcpy action->memcpy action param
 		unsigned char ack;
 	    memcpy((unsigned char*)&ack, (unsigned char*) &ack_data, sizeof(ack));
 		cmd_mission_wp_waypoint_info_comm_t waypoint_info;

@@ -7,6 +7,7 @@
 #include <boost/bind.hpp>
 #include <dji_sdk/dji_sdk.h>
 #include <actionlib/server/simple_action_server.h>
+#include <dji_sdk/dji_sdk_mission.h>
 
 #define C_EARTH (double) 6378137.0
 #define C_PI (double) 3.141592653589793
@@ -29,6 +30,8 @@ private:
     dji_sdk::RCChannels rc_channels;
     dji_sdk::Velocity velocity;
     nav_msgs::Odometry odometry;
+
+	DJIMission dji_mission;
 
     bool sdk_permission_opened = false;
     bool activated = false;

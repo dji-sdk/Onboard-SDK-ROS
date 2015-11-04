@@ -133,7 +133,7 @@ typedef struct
     signed short pitch_angle;
     struct
     {
-        unsigned char base : 1;
+        unsigned char base : 1;//decide increment mode or absolute mode
         unsigned char yaw_cmd_ignore : 1;
         unsigned char roll_cmd_ignore : 1;
         unsigned char pitch_cmd_ignore : 1;
@@ -149,12 +149,12 @@ typedef struct
     signed short pitch_angle_rate;
     struct
     {
-        unsigned char reserve : 7; unsigned char ctrl_switch : 1;//decide increment mode or absolute mode
+        unsigned char reserve : 7; unsigned char ctrl_switch : 1;//enable or disable
     }ctrl_byte;
 }gimbal_custom_speed_t;
 
 /*
- *struct of api contrl
+ *struct of quaternion data
  */
 
 typedef struct
@@ -438,10 +438,10 @@ typedef struct
  */
 typedef struct
 {
-	unsigned char action_num	:4;
+	unsigned char action_num 	:4;
 	unsigned char action_rpt	:4;
-	unsigned char command_list[]; //TODO [WP_ACTION_MAX_NUM]
-	unsigned char command_param[];
+	unsigned char command_list [16]; //TODO [WP_ACTION_MAX_NUM]
+	unsigned char command_param[16];
 }cmd_mission_wp_action_comm_t;
 
 /*
