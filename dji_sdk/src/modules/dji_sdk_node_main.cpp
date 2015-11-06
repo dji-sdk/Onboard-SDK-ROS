@@ -249,6 +249,7 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
     init_publishers(nh);
     init_services(nh);
     init_actions(nh);
+	DJISDKMission dji_sdk_mission(nh);
     init_parameters_and_activate(nh_private);
 }
 

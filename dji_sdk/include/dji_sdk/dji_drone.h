@@ -473,6 +473,72 @@ public:
 	{
 		return waypoint_navigation_action_client.waitForServer(duration);
 	}
+
+	bool mission_start()
+	{
+
+	}
+
+	bool mission_pause()
+	{
+
+	}
+
+	bool mission_cancel()
+	{
+
+	}
+
+	bool mission_download()
+	{
+
+	}
+	
+	bool mission_wp_upload()
+	{
+
+	}
+
+	bool mission_wp_set_speed()
+	{
+
+	}
+
+	bool mission_wp_get_speed()
+	{
+
+	}
+
+	bool mission_hp_upload()
+	{
+
+	}
+
+	bool mission_hp_set_speed()
+	{
+
+	}
+
+	bool mission_hp_set_radiu()
+	{
+
+	}
+
+	bool mission_hp_reset_yaw()
+	{
+
+	}
+
+	bool mission_fm_upload()
+	{
+
+	}
+
+	bool mission_fm_set_target()
+	{
+
+	}
+
 	
 };
 

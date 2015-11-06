@@ -40,5 +40,27 @@
 #include <dji_sdk/LocalPositionNavigationAction.h>
 #include <dji_sdk/WaypointNavigationAction.h>
 
+//missions
+#include <dji_sdk/MissionFollowme.h>
+#include <dji_sdk/MissionFollowmeTarget.h>
+#include <dji_sdk/MissionHotpoint.h>
+#include <dji_sdk/MissionPushInfo.h>
+#include <dji_sdk/MissionWaypointAction.h>
+#include <dji_sdk/MissionWaypoint.h>
+#include <dji_sdk/MissionWaypointTask.h>
+#include <dji_sdk/MissionCancel.h>
+#include <dji_sdk/MissionDownload.h>
+#include <dji_sdk/MissionFmSetTarget.h>
+#include <dji_sdk/MissionFmUpload.h>
+#include <dji_sdk/MissionHpResetYaw.h>
+#include <dji_sdk/MissionHpSetRadiu.h>
+#include <dji_sdk/MissionHpSetSpeed.h>
+#include <dji_sdk/MissionHpUpload.h>
+#include <dji_sdk/MissionPause.h>
+#include <dji_sdk/MissionStart.h>
+#include <dji_sdk/MissionWpGetSpeed.h>
+#include <dji_sdk/MissionWpSetSpeed.h>
+#include <dji_sdk/MissionWpUpload.h>
+
 
 #endif

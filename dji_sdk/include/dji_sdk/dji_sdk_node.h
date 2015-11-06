@@ -31,8 +31,6 @@ private:
     dji_sdk::Velocity velocity;
     nav_msgs::Odometry odometry;
 
-	DJIMission dji_mission;
-
     bool sdk_permission_opened = false;
     bool activated = false;
     bool localposbase_use_height = true;

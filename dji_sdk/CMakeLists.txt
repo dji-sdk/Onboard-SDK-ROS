@@ -64,6 +64,14 @@ add_message_files(
   Velocity.msg
   Waypoint.msg
   WaypointList.msg
+
+  MissionPushInfo.msg
+  MissionWaypointAction.msg
+  MissionWaypoint.msg
+  MissionWaypointTask.msg
+  MissionHotpoint.msg
+  MissionFollowme.msg
+  MissionFollowmeTarget.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -78,6 +86,20 @@ add_service_files(
   LocalPositionControl.srv
   SDKPermissionControl.srv
   VelocityControl.srv
+
+  MissionStart.srv
+  MissionPause.srv
+  MissionCancel.srv
+  MissionDownload.srv
+  MissionWpUpload.srv
+  MissionWpSetSpeed.srv
+  MissionWpGetSpeed.srv
+  MissionHpUpload.srv
+  MissionHpSetSpeed.srv
+  MissionHpSetRadiu.srv
+  MissionHpResetYaw.srv
+  MissionFmUpload.srv
+  MissionFmSetTarget.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -110,7 +132,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES dji_sdk
-  CATKIN_DEPENDS message_runtime actionlib actionlib_msgs geometry_msgs nav_msgs std_msgs
+  CATKIN_DEPENDS message_runtime actionlib actionlib_msgs geometry_msgs nav_msgs std_msgs 
 #  DEPENDS system_lib
 )
 
@@ -137,6 +159,7 @@ add_executable(dji_sdk_node
   src/modules/dji_sdk_node_actions.cpp 
   src/modules/dji_sdk_node_services.cpp 
   src/modules/dji_sdk_node_main.cpp 
+  src/modules/dji_sdk_node_mission.cpp
   include/dji_sdk/DJI_LIB/DJI_Pro_App.cpp 
   include/dji_sdk/DJI_LIB/DJI_Pro_Codec.cpp 
   include/dji_sdk/DJI_LIB/DJI_Pro_Hw.cpp 

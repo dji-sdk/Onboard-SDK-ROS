@@ -1,0 +1,6 @@
+uint8 mode
+uint8 yaw_mode
+float64 initial_latitude
+float64 initial_longitude
+uint16 initial_altitude
+uint8 sensitivity
