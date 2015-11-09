@@ -145,9 +145,8 @@ class DJIDrone:
         self.gimbal_angle_control_service(yaw = yaw, roll = roll, pitch = pitch, duration = duration,
             absolute_or_incremental = absolute_or_incremental, yaw_cmd_ignore = yaw_cmd_ignore, roll_cmd_ignore = roll_cmd_ignore, pitch_cmd_ignore = pitch_cmd_ignore)
 
-    def gimbal_speed_control(self, yaw_rate = 0, roll_rate = 0, pitch_rate = 0, absolute_or_incremental = True):
-        self.gimbal_speed_control_service(yaw_rate = yaw_rate, roll_rate = roll_rate, pitch_rate = pitch_rate, 
-            absolute_or_incremental = absolute_or_incremental)
+    def gimbal_speed_control(self, yaw_rate = 0, roll_rate = 0, pitch_rate = 0):
+        self.gimbal_speed_control_service(yaw_rate = yaw_rate, roll_rate = roll_rate, pitch_rate = pitch_rate)
 
     def request_sdk_permission_control(self):
         self.sdk_permission_control_service(control_enable = 1)

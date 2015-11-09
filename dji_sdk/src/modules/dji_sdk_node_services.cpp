@@ -81,7 +81,7 @@ bool DJISDKNode::gimbal_speed_control_callback(dji_sdk::GimbalSpeedControl::Requ
     gimbal_speed.yaw_angle_rate = request.yaw_rate;
     gimbal_speed.roll_angle_rate = request.roll_rate;
     gimbal_speed.pitch_angle_rate = request.pitch_rate;
-    gimbal_speed.ctrl_byte.ctrl_switch = request.absolute_or_incremental;
+    gimbal_speed.ctrl_byte.ctrl_switch = 1; //enable
 
     DJI_Pro_Gimbal_Speed_Control(&gimbal_speed);
     response.result = true;

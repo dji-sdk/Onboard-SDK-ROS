@@ -1,8 +1,8 @@
 Header header
 int32 ts
-#latitude is in radian
+#latitude is in angle
 float64 latitude
-#longitude is in radian
+#longitude is in angle
 float64 longitude
 float32 altitude
 float32 height

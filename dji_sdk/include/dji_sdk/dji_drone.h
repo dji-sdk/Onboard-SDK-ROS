@@ -210,13 +210,12 @@ public:
 		return camera_action_control_service.call(camera_action_control) && camera_action_control.response.result;
 	}
 
-	bool gimbal_speed_control(int roll_rate = 0, int pitch_rate = 0, int yaw_rate = 0, bool absolute_or_incremental = 1)
+	bool gimbal_speed_control(int roll_rate = 0, int pitch_rate = 0, int yaw_rate = 0)
 	{
 		dji_sdk::GimbalSpeedControl gimbal_speed_control;
 		gimbal_speed_control.request.roll_rate = roll_rate;
 		gimbal_speed_control.request.pitch_rate = pitch_rate;
 		gimbal_speed_control.request.yaw_rate = yaw_rate;
-		gimbal_speed_control.request.absolute_or_incremental = absolute_or_incremental;
 
 		return gimbal_speed_control_service.call(gimbal_speed_control) && gimbal_speed_control.response.result;
 	}

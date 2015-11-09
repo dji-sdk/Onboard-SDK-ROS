@@ -4,7 +4,5 @@ int16 yaw_rate
 int16 roll_rate
 int16 pitch_rate
 
-# absolute = 1, incremental = 0
-bool absolute_or_incremental
 ---
 bool result 
