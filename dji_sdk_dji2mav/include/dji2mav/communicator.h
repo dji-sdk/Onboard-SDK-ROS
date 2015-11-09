@@ -1,7 +1,7 @@
 /****************************************************************************
  * @brief   ROS-free and MavLink-free low-level socket communicator class
  * @version 1.0
- * @Date    2014/10/29
+ * @Date    2015/10/29
  ****************************************************************************/
 
 #ifndef _DJI2MAV_COMMUNICATOR_H_
@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
+#include <iostream>
 #include <string>
 
 namespace dji2mav {
@@ -28,7 +29,7 @@ namespace dji2mav {
                         m_instance = new Communicator();
                     } catch(std::bad_alloc &m) {
                         std::cerr << "Cannot new instance of Communicator: " 
-                                << "At line: " << __LINE__ << ", func: " 
+                                << "at line: " << __LINE__ << ", func: " 
                                 << __func__ << ", file: " << __FILE__ 
                                 << std::endl;
                         perror( m.what() );
@@ -48,23 +49,28 @@ namespace dji2mav {
 
                 memset(&m_gcsAddr, 0, sizeof(m_gcsAddr));
                 m_gcsAddr.sin_family = AF_INET;
-                m_gcsAddr.sin_addr.s_addr = inet_addr(gcsIP.c_srt());
+                m_gcsAddr.sin_addr.s_addr = inet_addr(gcsIP.c_str());
                 m_gcsAddr.sin_port = htons(gcsPort);
             }
 
 
             /* Connect to the GCS */
             bool connect() {
+                printf("Attempt to connect %s:%u using local port %u...\n", 
+                        inet_ntoa(m_gcsAddr.sin_addr), 
+                        ntohs(m_gcsAddr.sin_port), 
+                        ntohs(m_locAddr.sin_port) );
+
                 // Set socket properties. Using UDP
                 if((m_sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
-                    perror("Socket invalid: " + strerror(errno));
+                    perror("Socket invalid");
                     return false;
                 }
 
                 // Set the Communication Nonblocking
                 int flag = fcntl(m_sock, F_GETFL, 0);
                 if(fcntl(m_sock, F_SETFL, flag | O_NONBLOCK) < 0) {
-                    perror("Set nonblocking socket fail: " + strerror(errno));
+                    perror("Set nonblocking socket fail");
                     close(m_sock);
                     return false;
                 }
@@ -72,20 +78,21 @@ namespace dji2mav {
                 // Bind socket
                 if( -1 == bind(m_sock, (struct sockaddr *)&m_locAddr, 
                         sizeof(struct sockaddr_in)) ) {
-                    perror("Bind socket fail: " + strerror(errno));
+                    perror("Bind socket fail");
                     close(m_sock);
                     return false;
                 }
 
+                printf("Connection Succeed!\n");
                 return true;
             }
 
 
             /* Disconnect to the GCS */
             bool disconnect() {
-                if(m_sock != INVALID_SOCKET) {
+                if(m_sock != -1) {
                     close(m_sock);
-                    m_sock = INVALID_SOCKET;
+                    m_sock = -1;
                     return true;
                 } else {
                     return false;
@@ -105,9 +112,9 @@ namespace dji2mav {
                         (struct sockaddr *)&m_gcsAddr, 
                         sizeof(struct sockaddr_in) );
                 if(ret == -1)
-                    perror("Fail to send message: " + strerror(errno));
+                    perror("Fail to send message");
                 else if(ret < msglen)
-                    perror("Partial msg failed to send: " + strerror(errno));
+                    perror("Partial msg failed to send");
                 return ret;
             }
 
@@ -119,12 +126,16 @@ namespace dji2mav {
              * @return Bytes that is received. Return -1 if it fails
              */
             int recv(void* recvBuf, uint16_t maxBufLen) {
+                socklen_t l = sizeof(m_gcsAddr);
                 // Using Nonblocking flag "MSG_DONTWAIT"
                 int ret = recvfrom( m_sock, recvBuf, maxBufLen, MSG_DONTWAIT, 
-                        (struct sockaddr *)&m_gcsAddr, 
-                        sizeof(struct sockaddr_in) );
-                if(ret == -1)
-                    perror("Fail to receive message: " + strerror(errno));
+                        (struct sockaddr *)&m_gcsAddr, &l );
+                if(ret == -1) {
+                    if(errno != EAGAIN)
+                        perror("Fail to receive message");
+                    else
+                        printf("No datagram received.\n");
+                }
                 return ret;
             }
 
@@ -145,6 +156,8 @@ namespace dji2mav {
             struct sockaddr_in m_locAddr;
             int m_sock;
     };
+
+    Communicator* Communicator::m_instance = NULL;
 
 }
 

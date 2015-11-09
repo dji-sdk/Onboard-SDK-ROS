@@ -1,7 +1,7 @@
 /****************************************************************************
  * @brief   Messages sender. Alloc send buffer here and manager it.
  * @version 1.0
- * @Date    2014/10/30
+ * @Date    2015/10/30
  ****************************************************************************/
 
 #ifndef _MSGSENDER_H_
@@ -9,6 +9,8 @@
 
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
 #include <string>
 #include <new>
 
@@ -20,10 +22,13 @@ namespace dji2mav {
 
                 try {
                     m_sendBuf = new uint8_t[m_bufSize];
-                } catch(bad_alloc& m) {
-                    //cerr<<
-                    perror( "Failed to alloc memory for MsgSender buffer: " 
-                            + m.what() );
+                } catch(std::bad_alloc &m) {
+                    std::cerr << "Fail to alloc memory for MsgSender buf: " 
+                            << "at line: " << __LINE__ << ", func: " 
+                            << __func__ << ", file: " << __FILE__ 
+                            << std::endl;
+                    perror( m.what() );
+                    exit(EXIT_FAILURE);
                 }
                 m_comm = Communicator::getInstance();
 
@@ -37,17 +42,17 @@ namespace dji2mav {
             }
 
 
-            uint16_t getBufSize() {
+            inline uint16_t getBufSize() {
                 return m_bufSize;
             }
 
 
-            uint8_t* getBuf() {
+            inline uint8_t* getBuf() {
                 return m_sendBuf;
             }
 
 
-            int send(uint16_t len) {
+            inline int send(uint16_t len) {
                 return m_comm->send(m_sendBuf, len);
             }
 

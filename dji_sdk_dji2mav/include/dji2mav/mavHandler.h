@@ -1,7 +1,7 @@
 /****************************************************************************
  * @brief   Handle mavlink messages packing and unpacking. ROS-free singleton
  * @version 1.0
- * @Date    2014/10/31
+ * @Date    2015/10/31
  ****************************************************************************/
 
 #ifndef _DJI2MAV_MAVHANDLER_H_
@@ -12,6 +12,8 @@
 #include "msgManager.h"
 
 #include <mavlink/v1.0/common/mavlink.h>
+#include <stdio.h>
+#include <iostream>
 #include <new>
 #include <string>
 
@@ -27,13 +29,17 @@ namespace dji2mav {
              * @return  The only instance of MavHandler
              * @warning UNSAFE FOR MULTI-THREAD!
              */
-            MavHandler* getInstance() {
+            static MavHandler* getInstance() {
                 if(NULL == m_instance) {
                     try {
                         m_instance = new MavHandler;
-                    } catch(bad_alloc& m) {
-                        perror( "Cannot new instance of MavHandler: " 
-                                + m.what() );
+                    } catch(std::bad_alloc &m) {
+                        std::cerr << "New instance of MavHandler fail: "
+                                << "at line: " << __LINE__ << ", func: " 
+                                << __func__ << ", file: " << __FILE__ 
+                                << std::endl;
+                        perror( m.what() );
+                        exit(EXIT_FAILURE);
                     }
                 }
                 return m_instance;
@@ -82,26 +88,43 @@ namespace dji2mav {
              * @param  recvBufSize    : Default 4096
              * @return True if succeed and false if fail
              */
-            bool establish(string gcsIP, int gcsPort, int locPort, 
+            bool establish(std::string gcsIP, int gcsPort, int locPort, 
                     uint16_t senderListSize = DEFAULT_SENDER_LIST_SIZE, 
                     uint16_t recvBufSize = DEFAULT_RECV_BUF_SIZE) {
 
                 m_comm = Communicator::getInstance();
-                m_comm.setConf(gcsIP, gcsPort, locPort);
-                if( m_comm.connect() == false ) {
-                    perror("Fail to connect to GCS!");
+                m_comm->setConf(gcsIP, gcsPort, locPort);
+                if( m_comm->connect() == false ) {
+                    printf("Connecting to GCS fail!");
                     return false;
                 }
                 m_mng = MsgManager::getInstance(senderListSize, recvBufSize);
+                printf("Establishing connection succeed!\n");
                 return true;
 
             }
 
 
-            //TODO: temporary
-            //-1 for fail and -2 for having not registered yet
-            int registerSender() {
-                return m_mng->registerSender();
+            /**
+             * @brief  Designed for send encoded package
+             * @param  idx   : The index of sender
+             * @param  msg_p : The pointer of msg that should be sent
+             * @return True if succeed and false if fail
+             */
+            inline bool sendEncodedMsg(int idx, 
+                    const mavlink_message_t *msg_p) {
+                uint16_t len = mavlink_msg_to_send_buffer(
+                        m_mng->getSendBuf(idx), msg_p);
+                int bytes_sent = m_mng->send(idx, len);
+                if(bytes_sent < 0)
+                    return false;
+                if( (uint16_t)bytes_sent != len ) {
+                    std::cout << bytes_sent << " bytes were sent. But " 
+                            << len << "-byte package was generated!" 
+                            << std::endl;
+                    return false;
+                }
+                return true;
             }
 
 
@@ -109,33 +132,103 @@ namespace dji2mav {
              * @brief  Send heartbeat once
              * @return True if succeed and false if fail
              */
-            bool sendHB_Once() {
-                if(-2 == m_HBSender) {
-                    m_HBSender = this.registerSender();
+            bool sendHB() {
+                if(-2 == m_HBIdx) {
+                    m_HBIdx = m_mng->registerSender();
                 }
-                if(-1 == m_HBSender) {
-                    perror("Fail to register a heartbeat sender!");
+                if(-1 == m_HBIdx) {
+                    printf("Registering a heartbeat sender fail!");
                     return false;
                 }
 
                 mavlink_message_t msg;
-                mavlink_msg_heartbeat_pack(m_mavSys.sysid, m_mavSys.compid, 
-                        &msg, m_mavHB.type, m_mavHB.autopilot, 
-                        m_mavHB.base_mode, m_mavHB.custom_mode, 
-                        m_mavHB.system_status);
-                uint16_t len = mavlink_msg_to_send_buffer(
-                        m_HBSender.getBuf(), &msg);
-                int bytes_sent = m_mng.send(m_HBSender, len);
-                if(bytes_sent < 0) {
-                    perror("Fail to send heartbeat pack!");
+                mavlink_msg_heartbeat_encode(m_mavSys.sysid, m_mavSys.compid, 
+                        &msg, &m_mavHB);
+
+                if( sendEncodedMsg(m_HBIdx, &msg) ) {
+                    return true;
+                } else {
+                    printf("Sending heartbeat pack fail!");
                     return false;
                 }
-                if( (uint16_t)bytes_sent != len ) {
-                    perror("%d bytes were sent, which didn't match %d bytes!", 
-                            bytes_sent, len);
+            }
+
+
+            /**
+             * @brief  Send status
+             * @return True if succeed and false if fail
+             */
+            bool sendStatus() {
+                if(-2 == m_statusIdx) {
+                    m_statusIdx = m_mng->registerSender();
+                }
+                if(-1 == m_statusIdx) {
+                    printf("Registering a status sender fail!");
                     return false;
                 }
-                return true;
+
+                mavlink_message_t msg;
+                mavlink_msg_sys_status_encode(m_mavSys.sysid, 
+                        m_mavSys.compid, &msg, &m_sysStatus);
+
+                if( sendEncodedMsg(m_statusIdx, &msg) ) {
+                    return true;
+                } else {
+                    printf("Sending status pack fail!");
+                    return false;
+                }
+            }
+
+
+            /**
+             * @brief  Send local position
+             * @return True if succeed and false if fail
+             */
+            bool sendLocPos() {
+                if(-2 == m_locPosIdx) {
+                    m_locPosIdx = m_mng->registerSender();
+                }
+                if(-1 == m_locPosIdx) {
+                    printf("Registering a local position sender fail!");
+                    return false;
+                }
+
+                mavlink_message_t msg;
+                mavlink_msg_local_position_ned_encode(m_mavSys.sysid, 
+                        m_mavSys.compid, &msg, &m_locPos);
+
+                if( sendEncodedMsg(m_locPosIdx, &msg) ) {
+                    return true;
+                } else {
+                    printf("Sending local position pack fail!");
+                    return false;
+                }
+            }
+
+
+            /**
+             * @brief  Send attitude
+             * @return True if succeed and false if fail
+             */
+            bool sendAtt() {
+                if(-2 == m_attIdx) {
+                    m_attIdx = m_mng->registerSender();
+                }
+                if(-1 == m_attIdx) {
+                    printf("Registering a attitude sender fail!");
+                    return false;
+                }
+
+                mavlink_message_t msg;
+                mavlink_msg_attitude_encode(m_mavSys.sysid, 
+                        m_mavSys.compid, &msg, &m_att);
+
+                if( sendEncodedMsg(m_attIdx, &msg) ) {
+                    return true;
+                } else {
+                    printf("Sending attitude pack fail!");
+                    return false;
+                }
             }
 
 
@@ -145,10 +238,11 @@ namespace dji2mav {
              */
             bool receive(mavlink_message_t &recvMsg, 
                     mavlink_status_t &recvStatus) {
+
                 bool ret = false;
                 int bytes_recv = m_mng->recv();
-                if(bytes_recv < 0) {
-                    perror("Fail to execute receive process!");
+                if(bytes_recv < 0 && errno != EAGAIN) {
+                    printf("Execution of receive process fail!");
                     return false;
                 }
                 if(bytes_recv > 0) {
@@ -159,20 +253,108 @@ namespace dji2mav {
                         if(mavlink_parse_char(MAVLINK_COMM_0, 
                                 ( m_mng->getRecvBuf() )[i], 
                                 &recvMsg, &recvStatus)) {
+
                             ret = true;
                             printf("\nReceived packet: SYS: %d, COMP: %d, LEN: %d, MSG ID: %d\n", recvMsg.sysid, recvMsg.compid, recvMsg.len, recvMsg.msgid); //TODO: temporary
+
                         }
                     }
                     printf("\n"); //TODO: temporary
                 }
                 return ret;
+
+            }
+
+
+            /**
+             * @brief Refer to mavlink/common/mavlink_msg_heartbeat.h
+             */
+            void updateHB(uint8_t type, uint8_t autopilot, uint8_t base_mode, 
+                    uint32_t custom_mode, uint8_t system_status, 
+                    uint8_t mavlink_version) {
+
+                m_mavHB.type = type;
+                m_mavHB.autopilot = autopilot;
+                m_mavHB.base_mode = base_mode;
+                m_mavHB.custom_mode = custom_mode;
+                m_mavHB.system_status = system_status;
+                m_mavHB.mavlink_version = mavlink_version;
+
+            }
+
+
+            /**
+             * @brief Refer to mavlink/common/mavlink_msg_sys_status.h
+             */
+            void updateStatus(uint32_t onboard_control_sensors_present, 
+                    uint32_t onboard_control_sensors_enabled, 
+                    uint32_t onboard_control_sensors_health, 
+                    uint16_t load, uint16_t voltage_battery, 
+                    int16_t current_battery, int8_t battery_remaining, 
+                    uint16_t drop_rate_comm, uint16_t errors_comm, 
+                    uint16_t errors_count1, uint16_t errors_count2, 
+                    uint16_t errors_count3, uint16_t errors_count4) {
+
+                m_sysStatus.onboard_control_sensors_present;
+                m_sysStatus.onboard_control_sensors_enabled;
+                m_sysStatus.onboard_control_sensors_health;
+                m_sysStatus.load;
+                m_sysStatus.voltage_battery;
+                m_sysStatus.current_battery;
+                m_sysStatus.battery_remaining;
+                m_sysStatus.drop_rate_comm;
+                m_sysStatus.errors_comm;
+                m_sysStatus.errors_count1;
+                m_sysStatus.errors_count2;
+                m_sysStatus.errors_count3;
+                m_sysStatus.errors_count4;
+
+            }
+
+
+            /**
+             * @brief Refer to mavlink/common/mavlink_msg_local_position_ned.h
+             */
+            void updateLocPos(uint32_t time_boot_ms, float x, float y, 
+                    float z, float vx, float vy, float vz) {
+
+                m_locPos.time_boot_ms = time_boot_ms;
+                m_locPos.x = x;
+                m_locPos.y = y;
+                m_locPos.z = z;
+                m_locPos.vx = vx;
+                m_locPos.vy = vy;
+                m_locPos.vz = vz;
+
+            }
+
+
+            /**
+             * @brief Refer to mavlink/common/mavlink_msg_attitude.h
+             */
+            void updateAtt(uint32_t time_boot_ms, float roll, float pitch, 
+                    float yaw, float rollspeed, float pitchspeed, 
+                    float yawspeed) {
+
+                m_att.time_boot_ms = time_boot_ms;
+                m_att.roll = roll;
+                m_att.pitch = pitch;
+                m_att.yaw = yaw;
+                m_att.rollspeed = rollspeed;
+                m_att.pitchspeed = pitchspeed;
+                m_att.yawspeed = yawspeed;
+
             }
 
 
         private:
             MavHandler() {
                 //TODO: temporary
-                m_HBSender = -2;
+                //-2 for having not registered yet
+                m_HBIdx = -2;
+                m_statusIdx = -2;
+                m_locPosIdx = -2;
+                m_attIdx = -2;
             }
 
 
@@ -185,10 +367,18 @@ namespace dji2mav {
             MsgManager* m_mng;
             mavlink_system_t m_mavSys;
             mavlink_heartbeat_t m_mavHB;
+            mavlink_sys_status_t m_sysStatus;
+            mavlink_local_position_ned_t m_locPos;
+            mavlink_attitude_t m_att;
 
             //TODO: temporary
-            int m_HBSender;
+            int m_HBIdx;
+            int m_statusIdx;
+            int m_locPosIdx;
+            int m_attIdx;
     };
+
+    MavHandler* MavHandler::m_instance = NULL;
 
 }
 
