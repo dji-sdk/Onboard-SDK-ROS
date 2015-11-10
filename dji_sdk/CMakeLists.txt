@@ -87,6 +87,9 @@ add_service_files(
   SDKPermissionControl.srv
   VelocityControl.srv
 
+  VirtualRCEnableControl.srv
+  VirtualRCDataControl.srv
+
   MissionStart.srv
   MissionPause.srv
   MissionCancel.srv

@@ -3,13 +3,15 @@
 
 #include <ros/ros.h>
 #include <dji_sdk/dji_sdk.h>
-enum class serverState {
+
+//the state machine is based on the command run definitely successfully assumption.
+enum class ServerState {
 	READY,
 	RUNNING,
 	PAUSED
 };
 
-enum class missionType {
+enum class MissionType {
 	EMPTY,
 	WAYPOINT,
 	HOTPOINT,
@@ -47,8 +49,8 @@ private:
 	ros::ServiceServer mission_fm_set_target_service;
 
 	
-	serverState current_state = serverState::READY;
-	missionType current_type = missionType::EMPTY;
+	ServerState current_state = ServerState::READY;
+	MissionType current_type = MissionType::EMPTY;
 
 	bool mission_start_callback(dji_sdk::MissionStart::Request& request, dji_sdk::MissionStart::Response& response);
 	bool mission_pause_callback(dji_sdk::MissionPause::Request& request, dji_sdk::MissionPause::Response& response);
@@ -82,7 +84,6 @@ private:
 		mission_hp_reset_yaw_service = nh.advertiseService("dji_sdk/mission_hotpoint_reset_yaw", &DJISDKMission::mission_hp_reset_yaw_callback ,this);
 		mission_fm_upload_service = nh.advertiseService("dji_sdk/mission_follome_upload", &DJISDKMission::mission_fm_upload_callback ,this);
 		mission_fm_set_target_service = nh.advertiseService("dji_sdk/mission_followme_set_target", &DJISDKMission::mission_fm_set_target_callback ,this);
-		
 
 	}
 };

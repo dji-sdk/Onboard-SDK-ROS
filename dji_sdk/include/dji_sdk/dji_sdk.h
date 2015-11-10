@@ -34,6 +34,9 @@
 #include <dji_sdk/SDKPermissionControl.h>
 #include <dji_sdk/VelocityControl.h>
 
+#include <dji_sdk/VirtualRCEnableControl.h>
+#include <dji_sdk/VirtualRCDataControl.h>
+
 //actions
 #include <dji_sdk/DroneTaskAction.h>
 #include <dji_sdk/GlobalPositionNavigationAction.h>

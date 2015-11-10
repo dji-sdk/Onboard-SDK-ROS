@@ -651,7 +651,7 @@ int DJI_Pro_Sync_Flag_Send(uint32_t frequency)
  * interface: start/stop virtual rc control interface
  */
 
-static void DJI_Pro_Virtual_RC_Manager_CallBack(ProHeader *header) {
+static void DJI_Pro_Virtual_RC_Manage_CallBack(ProHeader *header) {
    unsigned short ack_data = 0xFFFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
@@ -664,11 +664,11 @@ static void DJI_Pro_Virtual_RC_Manager_CallBack(ProHeader *header) {
     }
 }
 
-int DJI_Pro_Virtual_RC_Manager(virtual_rc_manager_t *p_rc_manager_data)
+int DJI_Pro_Virtual_RC_Manage(virtual_rc_manager_t *p_rc_manager_data)
 {
 	DJI_Pro_App_Send_Data(2,1, MY_VIRTUAL_RC_CMD_SET, API_VIRTUAL_RC_MANAGER,
 					(unsigned char*)p_rc_manager_data, sizeof(virtual_rc_manager_t), 
-						DJI_Pro_Virtual_RC_Manager_CallBack, 500, 1);
+						DJI_Pro_Virtual_RC_Manage_CallBack, 500, 1);
 	return 0;
 }
 

@@ -413,7 +413,7 @@ typedef struct
 }virtual_rc_data_t;
 
 /*
- * struct of mission info
+ * struct of waypoint mission info
  */
 typedef struct
 {
@@ -569,7 +569,8 @@ int DJI_Pro_Arm_Control(unsigned char arm_cmd);
 int DJI_Pro_Send_Sync_Flag(uint32_t frequency);
 int DJI_Pro_Camera_Control(unsigned char camera_cmd);
 int DJI_Pro_Set_Msgs_Frequency(sdk_msgs_frequency_data_t *p_frequency_data);
-int DJI_Pro_Virtual_RC_Manager(virtual_rc_manager_t *p_rc_manager_data);
+int DJI_Pro_Virtual_RC_Manage(virtual_rc_manager_t *p_rc_manager_data);
+int DJI_Pro_Virtual_RC_Send_Value(virtual_rc_data_t *p_rc_value);
 
 int DJI_Pro_Mission_WP_Upload_Task(cmd_mission_wp_task_info_comm_t *p_task_info);
 int DJI_Pro_Mission_WP_Upload_Waypoint(cmd_mission_wp_waypoint_upload_comm_t *p_waypoint_upload);
