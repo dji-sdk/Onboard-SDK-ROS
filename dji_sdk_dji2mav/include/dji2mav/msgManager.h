@@ -1,7 +1,9 @@
 /****************************************************************************
- * @brief   Manage msg sending and receiving. ROS-free and mav-free singleton
- * @version 1.0
- * @Date    2015/10/30
+ * @Brief   Manage msg sending and receiving. ROS-free and mav-free singleton
+ * @Version 1.0
+ * @Author  Chris Liu
+ * @Create  2015/10/30
+ * @Modify  2015/11/03
  ****************************************************************************/
 
 #ifndef _DJI2MAV_MSGMANAGER_H_
@@ -128,7 +130,7 @@ namespace dji2mav{
              * @brief   Get the buffer of receiver
              * @return  The pointer to the receiver buffer
              */
-            inline uint8_t* getRecvBuf() {
+            uint8_t* getRecvBuf() {
                 return m_receiver->getBuf();
             }
 
@@ -137,7 +139,7 @@ namespace dji2mav{
              * @brief   Get the buffer size of receiver
              * @return  The size of the receiver buffer
              */
-            inline uint16_t getRecvBufSize() {
+            uint16_t getRecvBufSize() {
                 return m_receiver->getBufSize();
             }
 
@@ -147,7 +149,7 @@ namespace dji2mav{
              * @return  Bytes that is received. Return -1 if it fails
              * @warning UNSAFE FOR MULTI_THREAD!
              */
-            inline int recv() {
+            int recv() {
                 return m_receiver->recv();
             }
 

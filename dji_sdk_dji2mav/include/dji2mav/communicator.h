@@ -1,7 +1,9 @@
 /****************************************************************************
- * @brief   ROS-free and MavLink-free low-level socket communicator class
- * @version 1.0
- * @Date    2015/10/29
+ * @Brief   ROS-free and MavLink-free low-level socket communicator class
+ * @Version 1.0
+ * @Author  Chris Liu
+ * @Create  2015/10/29
+ * @Modify  2015/11/03
  ****************************************************************************/
 
 #ifndef _DJI2MAV_COMMUNICATOR_H_

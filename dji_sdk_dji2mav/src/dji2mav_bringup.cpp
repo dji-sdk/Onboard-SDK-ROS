@@ -1,7 +1,9 @@
 /****************************************************************************
- * @brief   A bringup node for dji2mav. Using MavHandler interface v1.x
- * @version 1.0
- * @Date    2015/11/2
+ * @Brief   A bringup node for dji2mav. Using MavHandler interface v1.x
+ * @Version 1.0
+ * @Author  Chris Liu
+ * @Create  2015/11/02
+ * @Modify  2015/11/05
  ****************************************************************************/
 
 #include <pthread.h>
@@ -53,6 +55,10 @@ void attCB(const dji_sdk::AttitudeQuaternion &msg) {
     g_att.wz = msg.wz;
 }
 
+void respondToHeartbeat() {
+    ROS_INFO("Hey! Function pointer works!");
+}
+
 int main(int argc, char* argv[]) {
 
     ros::init(argc, argv, "dji2mav_bringup");
@@ -61,7 +67,7 @@ int main(int argc, char* argv[]) {
     /* Setup MavHandler */
     g_mavHandler = dji2mav::MavHandler::getInstance();
     g_mavHandler->setupMav(1);
-    g_mavHandler->establish("10.60.23.186", 14550, 14551);
+    g_mavHandler->establish("10.60.23.185", 14550, 14551);
 
     /* Register Subscribers */
     ros::Subscriber sub1 = nh.subscribe("/dji_sdk/local_position", 1, locPosCB);
@@ -76,6 +82,10 @@ int main(int argc, char* argv[]) {
     if(0 != thread_ret) {
         ROS_ERROR("Create pthread for sending heartbeat fail! Error code: %d", thread_ret);
     }
+
+    //TODO:right?
+    dji2mav::MavResponser* mavResponser = dji2mav::MavResponser::getInstance();
+    mavResponser->registerHeartbeat(respondToHeartbeat);
 
     while(ros::ok()) {
         /* Send local position */

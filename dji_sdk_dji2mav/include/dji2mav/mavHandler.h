@@ -1,7 +1,9 @@
 /****************************************************************************
- * @brief   Handle mavlink messages packing and unpacking. ROS-free singleton
- * @version 1.0
- * @Date    2015/10/31
+ * @Brief   Handle mavlink messages packing and unpacking. ROS-free singleton
+ * @Version 1.0
+ * @Author  Chris Liu
+ * @Create  2015/10/31
+ * @Modify  2015/11/04
  ****************************************************************************/
 
 #ifndef _DJI2MAV_MAVHANDLER_H_
@@ -10,6 +12,7 @@
 
 #include "communicator.h"
 #include "msgManager.h"
+#include "mavResponser.h"
 
 #include <mavlink/v1.0/common/mavlink.h>
 #include <stdio.h>
@@ -98,8 +101,20 @@ namespace dji2mav {
                     printf("Connecting to GCS fail!");
                     return false;
                 }
+
                 m_mng = MsgManager::getInstance(senderListSize, recvBufSize);
-                printf("Establishing connection succeed!\n");
+                if(NULL == m_mng) {
+                    printf("Get MsgManager instance fail!\n");
+                    return false;
+                }
+
+                m_rsp = MavResponser::getInstance();
+                if(NULL == m_rsp) {
+                    printf("Get MavResponser instance fail!\n");
+                    return false;
+                }
+
+                printf("Establishing Connection Succeed!\n");
                 return true;
 
             }
@@ -255,7 +270,8 @@ namespace dji2mav {
                                 &recvMsg, &recvStatus)) {
 
                             ret = true;
-                            printf("\nReceived packet: SYS: %d, COMP: %d, LEN: %d, MSG ID: %d\n", recvMsg.sysid, recvMsg.compid, recvMsg.len, recvMsg.msgid); //TODO: temporary
+                            m_rsp->decode(recvMsg);
+                            //printf("\nReceived packet: SYS: %d, COMP: %d, LEN: %d, MSG ID: %d\n", recvMsg.sysid, recvMsg.compid, recvMsg.len, recvMsg.msgid); //TODO: temporary
 
                         }
                     }
@@ -365,6 +381,7 @@ namespace dji2mav {
             static MavHandler* m_instance;
             Communicator* m_comm;
             MsgManager* m_mng;
+            MavResponser* m_rsp;
             mavlink_system_t m_mavSys;
             mavlink_heartbeat_t m_mavHB;
             mavlink_sys_status_t m_sysStatus;

@@ -1,7 +1,9 @@
 /****************************************************************************
- * @brief   Singleton msg receiver. Alloc receive buffer here and manager it.
- * @version 1.0
- * @Date    2015/10/30
+ * @Brief   Singleton msg receiver. Alloc receive buffer here and manager it.
+ * @Version 1.0
+ * @Author  Chris Liu
+ * @Create  2015/10/30
+ * @Modify  2015/11/10
  ****************************************************************************/
 
 #ifndef _MSGRECEIVER_H_
@@ -39,17 +41,17 @@ namespace dji2mav {
             }
 
 
-            inline uint16_t getBufSize() {
+            uint16_t getBufSize() {
                 return m_bufSize;
             }
 
 
-            inline uint8_t* getBuf() {
+            uint8_t* getBuf() {
                 return m_recvBuf;
             }
 
 
-            inline int recv() {
+            int recv() {
                 return m_comm->recv( (void *)m_recvBuf, m_bufSize );
             }
 
