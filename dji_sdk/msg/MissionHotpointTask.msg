@@ -1,0 +1,8 @@
+float64 hotpoint_latitude
+float64 hotpoint_longitude
+float64 hotpoint_altitude
+float64 hotpoint_radius
+float32 angular_speed
+uint8 is_clockwise
+uint8 start_position
+uint8 yaw_mode
