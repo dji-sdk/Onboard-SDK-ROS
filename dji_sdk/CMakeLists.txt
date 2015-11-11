@@ -69,8 +69,8 @@ add_message_files(
   MissionWaypointAction.msg
   MissionWaypoint.msg
   MissionWaypointTask.msg
-  MissionHotpoint.msg
-  MissionFollowme.msg
+  MissionHotpointTask.msg
+  MissionFollowmeTask.msg
   MissionFollowmeTarget.msg
 )
 

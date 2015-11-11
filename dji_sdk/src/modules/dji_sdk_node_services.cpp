@@ -180,8 +180,6 @@ bool DJISDKNode::virtual_rc_enable_control_callback(dji_sdk::VirtualRCEnableCont
 bool DJISDKNode::virtual_rc_data_control_callback(dji_sdk::VirtualRCDataControl::Request& request, dji_sdk::VirtualRCDataControl::Response& response)
 {
 	virtual_rc_data_t virtual_rc_data;
-	//virtual_rc_data.channel_data = request.channel_data.data();
-
 	std::copy(request.channel_data.begin(), request.channel_data.end(), virtual_rc_data.channel_data);
 	DJI_Pro_Virtual_RC_Send_Value(&virtual_rc_data);
 

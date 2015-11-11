@@ -44,9 +44,9 @@
 #include <dji_sdk/WaypointNavigationAction.h>
 
 //missions
-#include <dji_sdk/MissionFollowme.h>
+#include <dji_sdk/MissionFollowmeTask.h>
 #include <dji_sdk/MissionFollowmeTarget.h>
-#include <dji_sdk/MissionHotpoint.h>
+#include <dji_sdk/MissionHotpointTask.h>
 #include <dji_sdk/MissionPushInfo.h>
 #include <dji_sdk/MissionWaypointAction.h>
 #include <dji_sdk/MissionWaypoint.h>

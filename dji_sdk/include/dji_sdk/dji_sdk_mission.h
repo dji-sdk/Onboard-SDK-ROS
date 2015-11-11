@@ -20,6 +20,11 @@ enum class MissionType {
 
 class DJISDKMission
 {
+private:
+	dji_sdk::MissionWaypointTask waypoint_task;
+	dji_sdk::MissionHotpointTask hotpoint_task;
+	dji_sdk::MissionFollowmeTask followme_task;
+	
 public:
 	DJISDKMission(ros::NodeHandle& nh);
 private:

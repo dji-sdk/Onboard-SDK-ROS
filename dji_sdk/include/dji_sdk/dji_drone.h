@@ -30,6 +30,9 @@ private:
     ros::ServiceClient sdk_permission_control_service;
     ros::ServiceClient velocity_control_service;
 
+	ros::ServiceClient virtual_rc_enable_control_service;
+	ros::ServiceClient virtual_rc_data_control_service;
+
     ros::Subscriber acceleration_subscriber;
     ros::Subscriber attitude_quaternion_subscriber;
     ros::Subscriber compass_subscriber;
@@ -44,6 +47,7 @@ private:
     ros::Subscriber activation_subscriber;
     ros::Subscriber odometry_subscriber;
     ros::Subscriber sdk_permission_subscriber;
+
 
 public:
     dji_sdk::Acceleration acceleration;
@@ -276,6 +280,27 @@ public:
 		velocity_control.request.yawAngle = yaw;
 	
 		return velocity_control_service.call(velocity_control) && velocity_control.response.result;
+	}
+
+	bool virtual_rc_enable_control(uint8_t enable)
+	{
+		dji_sdk::VirtualRCEnableControl virtual_rc_enable_control;
+		virtual_rc_enable_control.request.enable = enable;
+		
+		return virtual_rc_enable_control_service.call(virtual_rc_enable_control) && virtual_rc_enable_control.response.result;
+	}
+
+	bool virtual_rc_data_control(uint32_t channel_data[16])
+	{
+		dji_sdk::VirtualRCDataControl virtual_rc_data_control;
+
+		//virtual_rc_data_control.request.channel_data = std::vector<uint32_t> v(std::begin(channel_data), std::end(channel_data));
+		std::vector<uint32_t> v(channel_data, channel_data + sizeof channel_data / sizeof channel_data[0]);
+		std::copy(v.begin(), v.end(), virtual_rc_data_control.request.channel_data);
+
+		//virtual_rc_data_control.request.channel_data = v;
+
+		return virtual_rc_data_control_service.call(virtual_rc_data_control) && virtual_rc_data_control.response.result;
 	}
 
 	bool local_position_control(float x, float y, float z, float yaw)
