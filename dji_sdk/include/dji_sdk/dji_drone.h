@@ -293,12 +293,8 @@ public:
 	bool virtual_rc_data_control(uint32_t channel_data[16])
 	{
 		dji_sdk::VirtualRCDataControl virtual_rc_data_control;
-
-		//virtual_rc_data_control.request.channel_data = std::vector<uint32_t> v(std::begin(channel_data), std::end(channel_data));
 		std::vector<uint32_t> v(channel_data, channel_data + sizeof channel_data / sizeof channel_data[0]);
-		std::copy(v.begin(), v.end(), virtual_rc_data_control.request.channel_data);
-
-		//virtual_rc_data_control.request.channel_data = v;
+		std::copy(v.begin(), v.end(), virtual_rc_data_control.request.channel_data.begin());
 
 		return virtual_rc_data_control_service.call(virtual_rc_data_control) && virtual_rc_data_control.response.result;
 	}
