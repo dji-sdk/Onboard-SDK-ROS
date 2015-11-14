@@ -1,9 +1,9 @@
 /****************************************************************************
- * @Brief   A bringup node for dji2mav. Using MavHandler interface v1.x
+ * @Brief   A bringup node for dji2mav. Using dji2mav interface v1.x
  * @Version 1.0
  * @Author  Chris Liu
  * @Create  2015/11/02
- * @Modify  2015/11/05
+ * @Modify  2015/11/13
  ****************************************************************************/
 
 #include <pthread.h>
@@ -15,6 +15,7 @@
 #include <dji_sdk/AttitudeQuaternion.h>
 
 #include "dji2mav/mavHandler.h"
+#include "dji2mav/mavContainer.h"
 
 dji_sdk::LocalPosition g_locPos;
 dji_sdk::Velocity g_vel;
@@ -59,6 +60,26 @@ void respondToHeartbeat() {
     ROS_INFO("Hey! Function pointer works!");
 }
 
+void respondToMissionRequestList() {
+    ROS_INFO("Mission request list get\n");
+}
+
+void respondToMissionRequest(uint16_t* param) {
+    ROS_INFO("--- Finally! Mission Request get %d! ---", *param);
+}
+
+void respondToMissionAck() {
+    ROS_INFO("Mission ack get\n");
+}
+
+void respondToMissionCount(uint16_t* param) {
+    ROS_INFO("*** Get mission count %d! ***", *param);
+}
+
+void respondToMissionItem(uint16_t* param) {
+    ROS_INFO("+++ Get mission item %d +++", *param);
+}
+
 int main(int argc, char* argv[]) {
 
     ros::init(argc, argv, "dji2mav_bringup");
@@ -68,6 +89,18 @@ int main(int argc, char* argv[]) {
     g_mavHandler = dji2mav::MavHandler::getInstance();
     g_mavHandler->setupMav(1);
     g_mavHandler->establish("10.60.23.185", 14550, 14551);
+
+    /* Setup MavResponser */
+    dji2mav::MavResponser* mavResponser = dji2mav::MavResponser::getInstance();
+    mavResponser->setHeartbeatRsp(respondToHeartbeat);
+    mavResponser->setMissionRequestListRsp(respondToMissionRequestList);
+    mavResponser->setMissionRequestRsp(respondToMissionRequest);
+    mavResponser->setMissionAckRsp(respondToMissionAck);
+    mavResponser->setMissionCountRsp(respondToMissionCount);
+    mavResponser->setMissionItemRsp(respondToMissionItem);
+
+    /* Setup MavContainer */
+    dji2mav::MavContainer* mavContainer = dji2mav::MavContainer::getInstance();
 
     /* Register Subscribers */
     ros::Subscriber sub1 = nh.subscribe("/dji_sdk/local_position", 1, locPosCB);
@@ -82,10 +115,6 @@ int main(int argc, char* argv[]) {
     if(0 != thread_ret) {
         ROS_ERROR("Create pthread for sending heartbeat fail! Error code: %d", thread_ret);
     }
-
-    //TODO:right?
-    dji2mav::MavResponser* mavResponser = dji2mav::MavResponser::getInstance();
-    mavResponser->registerHeartbeat(respondToHeartbeat);
 
     while(ros::ok()) {
         /* Send local position */
@@ -107,16 +136,20 @@ int main(int argc, char* argv[]) {
                 g_att.wz  );
         g_mavHandler->sendAtt();
 
+        /* Execute Container Applications */
+        mavContainer->execute();
+
         /* Remember to spin */
         ros::Duration(0.1).sleep();
         ros::spinOnce();
 
+        // Replaced by the mavContainer execute
         /* Get received data */
-        mavlink_message_t recvMsg;
+        /*mavlink_message_t recvMsg;
         mavlink_status_t recvStatus;
         if( g_mavHandler->receive(recvMsg, recvStatus) ) {
             ROS_INFO("Get!");
-        };
+        };*/
     }
 
     return 0;

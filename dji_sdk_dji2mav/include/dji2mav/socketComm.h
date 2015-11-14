@@ -1,14 +1,16 @@
-/****************************************************************************
- * @Brief   ROS-free and MavLink-free low-level socket communicator class
- * @Version 1.0
- * @Author  Chris Liu
- * @Create  2015/10/29
- * @Modify  2015/11/03
- ****************************************************************************/
+/*****************************************************************************
+ * @Brief     ROS-free and MavLink-free low-level socket communicator class
+ * @Version   1.0
+ * @Author    Chris Liu
+ * @Created   2015/10/29
+ * @Modified  2015/11/14
+ *****************************************************************************/
 
-#ifndef _DJI2MAV_COMMUNICATOR_H_
-#define _DJI2MAV_COMMUNICATOR_H_
+#ifndef _DJI2MAV_SOCKETCOMM_H_
+#define _DJI2MAV_SOCKETCOMM_H_
 
+
+#include "config.h"
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -22,15 +24,15 @@
 
 namespace dji2mav {
 
-    class Communicator {
+    class SocketComm {
         public:
             /* Lazy Mode Singleton. WARNING: Unsafe for multi-thread */
-            static Communicator* getInstance() {
+            static SocketComm* getInstance() {
                 if(NULL == m_instance) {
                     try {
-                        m_instance = new Communicator();
+                        m_instance = new SocketComm();
                     } catch(std::bad_alloc &m) {
-                        std::cerr << "Cannot new instance of Communicator: " 
+                        std::cerr << "Cannot new instance of SocketComm: " 
                                 << "at line: " << __LINE__ << ", func: " 
                                 << __func__ << ", file: " << __FILE__ 
                                 << std::endl;
@@ -58,7 +60,7 @@ namespace dji2mav {
 
             /* Connect to the GCS */
             bool connect() {
-                printf("Attempt to connect %s:%u using local port %u...\n", 
+                printf("Attempt to connect to %s:%u using local port %u\n", 
                         inet_ntoa(m_gcsAddr.sin_addr), 
                         ntohs(m_gcsAddr.sin_port), 
                         ntohs(m_locAddr.sin_port) );
@@ -143,23 +145,23 @@ namespace dji2mav {
 
 
         private:
-            Communicator() {
+            SocketComm() {
                 m_sock = -1;
             }
 
 
-            ~Communicator() {
+            ~SocketComm() {
                 disconnect();
             }
 
 
-            static Communicator* m_instance;
+            static SocketComm* m_instance;
             struct sockaddr_in m_gcsAddr;
             struct sockaddr_in m_locAddr;
             int m_sock;
     };
 
-    Communicator* Communicator::m_instance = NULL;
+    SocketComm* SocketComm::m_instance = NULL;
 
 }
 

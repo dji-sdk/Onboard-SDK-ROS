@@ -1,10 +1,10 @@
-/****************************************************************************
- * @Brief   Singleton msg receiver. Alloc receive buffer here and manager it.
- * @Version 1.0
- * @Author  Chris Liu
- * @Create  2015/10/30
- * @Modify  2015/11/10
- ****************************************************************************/
+/*****************************************************************************
+ * @Brief     Singleton msg receiver. Alloc receive buffer here and manager it
+ * @Version   1.0
+ * @Author    Chris Liu
+ * @Created   2015/10/30
+ * @Modified  2015/11/10
+ *****************************************************************************/
 
 #ifndef _MSGRECEIVER_H_
 #define _MSGRECEIVER_H_
@@ -16,17 +16,19 @@
 #include <string>
 #include <new>
 
+#define DEFAULT_RECV_BUF_SIZE 4096
+
 namespace dji2mav {
 
     class MsgReceiver {
         public:
             /* Lazy Mode Singleton. WARNING: Unsafe for multi-thread */
             // Can set buffer size at the first call of getInstance(size)
-            static MsgReceiver* getInstance(uint16_t bufSize) {
+            static MsgReceiver* getInstance() {
 
                 if(NULL == m_instance) {
                     try {
-                        m_instance = new MsgReceiver(bufSize);
+                        m_instance = new MsgReceiver();
                     } catch(std::bad_alloc &m) {
                         std::cerr << "Cannot new instance of MsgReceiver: " 
                                 << "at line: " << __LINE__ << ", func: " 
@@ -57,7 +59,7 @@ namespace dji2mav {
 
 
         private:
-            MsgReceiver(uint16_t bufSize) : m_bufSize(bufSize) {
+            MsgReceiver() {
                 try {
                     m_recvBuf = new uint8_t[m_bufSize];
                 } catch(std::bad_alloc &m) {
@@ -68,7 +70,7 @@ namespace dji2mav {
                     perror( m.what() );
                     exit(EXIT_FAILURE);
                 }
-                m_comm = Communicator::getInstance();
+                m_comm = SocketComm::getInstance();
             }
 
 
@@ -80,12 +82,13 @@ namespace dji2mav {
 
 
             static MsgReceiver* m_instance;
+            static uint16_t m_bufSize;
             uint8_t* m_recvBuf;
-            uint16_t m_bufSize;
-            Communicator* m_comm;
+            SocketComm* m_comm;
     };
 
     MsgReceiver* MsgReceiver::m_instance = NULL;
+    uint16_t m_bufSize = DEFAULT_RECV_BUF_SIZE;
 
 }
 

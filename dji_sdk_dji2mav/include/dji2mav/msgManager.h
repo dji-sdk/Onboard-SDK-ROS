@@ -1,10 +1,10 @@
-/****************************************************************************
- * @Brief   Manage msg sending and receiving. ROS-free and mav-free singleton
- * @Version 1.0
- * @Author  Chris Liu
- * @Create  2015/10/30
- * @Modify  2015/11/03
- ****************************************************************************/
+/*****************************************************************************
+ * @Brief     Manage msg senders and receiver. ROS-free and mav-free singleton
+ * @Version   1.0
+ * @Author    Chris Liu
+ * @Created   2015/10/30
+ * @Modified  2015/11/03
+ *****************************************************************************/
 
 #ifndef _DJI2MAV_MSGMANAGER_H_
 #define _DJI2MAV_MSGMANAGER_H_
@@ -18,8 +18,6 @@
 #include <iostream>
 
 #define DEFAULT_SENDER_LIST_SIZE 256
-#define DEFAULT_SEND_BUF_SIZE 1024
-#define DEFAULT_RECV_BUF_SIZE 4096
 
 namespace dji2mav{
 

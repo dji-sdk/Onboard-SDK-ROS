@@ -1,10 +1,10 @@
-/****************************************************************************
- * @Brief   Handle mavlink messages packing and unpacking. ROS-free singleton
- * @Version 1.0
- * @Author  Chris Liu
- * @Create  2015/10/31
- * @Modify  2015/11/04
- ****************************************************************************/
+/*****************************************************************************
+ * @Brief     Handle mavlink msg packing and unpacking. ROS-free singleton
+ * @Version   1.0
+ * @Author    Chris Liu
+ * @Created   2015/10/31
+ * @Modified  2015/11/04
+ *****************************************************************************/
 
 #ifndef _DJI2MAV_MAVHANDLER_H_
 #define _DJI2MAV_MAVHANDLER_H_
@@ -21,31 +21,29 @@
 #include <string>
 
 #define DEFAULT_SENDER_LIST_SIZE 256
-#define DEFAULT_RECV_BUF_SIZE 4096
 
 namespace dji2mav {
 
     class MavHandler {
         public:
-            /**
-             * @brief   Lazy mode singleton
-             * @return  The only instance of MavHandler
-             * @warning UNSAFE FOR MULTI-THREAD!
-             */
-            static MavHandler* getInstance() {
-                if(NULL == m_instance) {
-                    try {
-                        m_instance = new MavHandler;
-                    } catch(std::bad_alloc &m) {
-                        std::cerr << "New instance of MavHandler fail: "
-                                << "at line: " << __LINE__ << ", func: " 
-                                << __func__ << ", file: " << __FILE__ 
-                                << std::endl;
-                        perror( m.what() );
-                        exit(EXIT_FAILURE);
-                    }
+            MavHandler() {
+                //TODO: Better architecture?
+                //-2 for having not registered yet
+                m_hbIdx = -2;
+                m_statusIdx = -2;
+                m_locPosIdx = -2;
+                m_attIdx = -2;
+                m_wpIdx = -2;
+
+                //TODO: temporary add sender for waypoint
+                m_tempWpIdx = m_mng->registerSender();
+                if(-1 == m_tempWpIdx) {
+                    printf("Registering a temp waypoint sender fail!");
                 }
-                return m_instance;
+            }
+
+
+            ~MavHandler() {
             }
 
 
@@ -108,12 +106,6 @@ namespace dji2mav {
                     return false;
                 }
 
-                m_rsp = MavResponser::getInstance();
-                if(NULL == m_rsp) {
-                    printf("Get MavResponser instance fail!\n");
-                    return false;
-                }
-
                 printf("Establishing Connection Succeed!\n");
                 return true;
 
@@ -148,10 +140,10 @@ namespace dji2mav {
              * @return True if succeed and false if fail
              */
             bool sendHB() {
-                if(-2 == m_HBIdx) {
-                    m_HBIdx = m_mng->registerSender();
+                if(-2 == m_hbIdx) {
+                    m_hbIdx = m_mng->registerSender();
                 }
-                if(-1 == m_HBIdx) {
+                if(-1 == m_hbIdx) {
                     printf("Registering a heartbeat sender fail!");
                     return false;
                 }
@@ -160,7 +152,7 @@ namespace dji2mav {
                 mavlink_msg_heartbeat_encode(m_mavSys.sysid, m_mavSys.compid, 
                         &msg, &m_mavHB);
 
-                if( sendEncodedMsg(m_HBIdx, &msg) ) {
+                if( sendEncodedMsg(m_hbIdx, &msg) ) {
                     return true;
                 } else {
                     printf("Sending heartbeat pack fail!");
@@ -270,8 +262,8 @@ namespace dji2mav {
                                 &recvMsg, &recvStatus)) {
 
                             ret = true;
-                            m_rsp->decode(recvMsg);
-                            //printf("\nReceived packet: SYS: %d, COMP: %d, LEN: %d, MSG ID: %d\n", recvMsg.sysid, recvMsg.compid, recvMsg.len, recvMsg.msgid); //TODO: temporary
+                            //m_rsp->decode(recvMsg);
+                            ////printf("\nReceived packet: SYS: %d, COMP: %d, LEN: %d, MSG ID: %d\n", recvMsg.sysid, recvMsg.compid, recvMsg.len, recvMsg.msgid); //TODO: temporary
 
                         }
                     }
@@ -364,35 +356,23 @@ namespace dji2mav {
 
 
         private:
-            MavHandler() {
-                //TODO: temporary
-                //-2 for having not registered yet
-                m_HBIdx = -2;
-                m_statusIdx = -2;
-                m_locPosIdx = -2;
-                m_attIdx = -2;
-            }
-
-
-            ~MavHandler() {
-            }
-
-
             static MavHandler* m_instance;
             Communicator* m_comm;
             MsgManager* m_mng;
-            MavResponser* m_rsp;
+
             mavlink_system_t m_mavSys;
             mavlink_heartbeat_t m_mavHB;
             mavlink_sys_status_t m_sysStatus;
             mavlink_local_position_ned_t m_locPos;
             mavlink_attitude_t m_att;
 
-            //TODO: temporary
-            int m_HBIdx;
+            //TODO: temporary?
+            int m_hbIdx;
             int m_statusIdx;
             int m_locPosIdx;
             int m_attIdx;
+
+            int m_tempWpIdx;
     };
 
     MavHandler* MavHandler::m_instance = NULL;

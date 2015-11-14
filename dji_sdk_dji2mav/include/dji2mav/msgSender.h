@@ -1,10 +1,10 @@
-/****************************************************************************
- * @Brief   Messages sender. Alloc send buffer here and manager it.
- * @Version 1.0
- * @Author  Chris Liu
- * @Create  2015/10/30
- * @Modify  2015/11/10
- ****************************************************************************/
+/*****************************************************************************
+ * @Brief     Messages sender. Alloc send buffer here and manager it.
+ * @Version   1.0
+ * @Author    Chris Liu
+ * @Created   2015/10/30
+ * @Modified  2015/11/14
+ *****************************************************************************/
 
 #ifndef _MSGSENDER_H_
 #define _MSGSENDER_H_
@@ -16,11 +16,14 @@
 #include <string>
 #include <new>
 
+#define DEFAULT_SEND_BUF_SIZE 1024
+
 namespace dji2mav {
 
     class MsgSender {
         public:
-            MsgSender(uint16_t bufSize) : m_bufSize(bufSize) {
+            MsgSender(uint16_t bufSize = DEFAULT_SEND_BUF_SIZE) : 
+                    m_bufSize(bufSize) {
 
                 try {
                     m_sendBuf = new uint8_t[m_bufSize];
@@ -32,7 +35,7 @@ namespace dji2mav {
                     perror( m.what() );
                     exit(EXIT_FAILURE);
                 }
-                m_comm = Communicator::getInstance();
+                m_comm = SocktComm::getInstance();
 
             }
 
@@ -62,7 +65,7 @@ namespace dji2mav {
         private:
             uint8_t* m_sendBuf;
             uint16_t m_bufSize;
-            Communicator* m_comm;
+            SocketComm* m_comm;
     };
 
 }
