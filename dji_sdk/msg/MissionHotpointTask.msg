@@ -4,5 +4,5 @@ float64 hotpoint_altitude
 float64 hotpoint_radius
 float32 angular_speed
 uint8 is_clockwise
-uint8 start_position
+uint8 start_point
 uint8 yaw_mode

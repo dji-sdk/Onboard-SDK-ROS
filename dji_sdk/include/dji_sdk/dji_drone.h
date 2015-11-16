@@ -6,6 +6,58 @@
 #include <actionlib/client/terminal_state.h> 
 #include <string>
 
+typedef struct 
+{
+	uint8_t mission_type;
+	uint8_t target_waypoint;
+	uint8_t current_state;
+	uint8_t error_code;
+}waypoint_mission_push_info_t;
+
+typedef struct
+{
+	uint8_t mission_type;
+	uint8_t mission_status;
+	uint16_t hotpoint_radius;
+	uint8_t error_code;
+	uint8_t hotpoint_velocity;
+}hotpoint_mission_push_info_t;
+
+typedef struct
+{
+	uint8_t mission_type;
+}followme_mission_push_info_t;
+
+typedef struct 
+{
+	uint8_t mission_type;
+	uint8_t last_mission_type;
+	uint8_t is_broken:1;
+	uint8_t reserved: 7;
+	uint8_t error_code;
+}other_mission_push_info_t;
+
+typedef struct
+{
+	uint8_t incident_type;
+	uint8_t mission_valid;
+	uint16_t estimated_runtime;
+}waypoint_upload_push_info_t;
+
+typedef struct
+{
+	uint8_t incident_type;
+	uint8_t repeat;
+}waypoint_finish_action_push_info_t;
+
+typedef struct
+{
+	uint8_t incident_type;
+	uint8_t waypoint_index;
+	uint8_t current_state;
+}waypoint_reached_push_info_t;
+
+
 class DJIDrone
 {
 private:
@@ -32,6 +84,19 @@ private:
 
 	ros::ServiceClient virtual_rc_enable_control_service;
 	ros::ServiceClient virtual_rc_data_control_service;
+	ros::ServiceClient mission_start_service;
+	ros::ServiceClient mission_pause_service;
+	ros::ServiceClient mission_cancel_service;
+	ros::ServiceClient mission_download_service;
+	ros::ServiceClient mission_wp_upload_service;
+	ros::ServiceClient mission_wp_set_speed_service;
+	ros::ServiceClient mission_wp_get_speed_service;
+	ros::ServiceClient mission_hp_upload_service;
+	ros::ServiceClient mission_hp_set_speed_service;
+	ros::ServiceClient mission_hp_set_radiu_service;
+	ros::ServiceClient mission_hp_reset_yaw_service;
+	ros::ServiceClient mission_fm_upload_service;
+	ros::ServiceClient mission_fm_set_target_service;
 
     ros::Subscriber acceleration_subscriber;
     ros::Subscriber attitude_quaternion_subscriber;
@@ -48,6 +113,8 @@ private:
     ros::Subscriber odometry_subscriber;
     ros::Subscriber sdk_permission_subscriber;
 
+	ros::Subscriber mission_state_publisher;
+	ros::Subscriber mission_event_subscriber;
 
 public:
     dji_sdk::Acceleration acceleration;
@@ -67,6 +134,20 @@ public:
     bool sdk_permission_opened = false;
     bool activation = false;
     bool localposbase_use_height = true;
+
+	uint8_t mission_type;
+
+	waypoint_mission_push_info_t waypoint_mission_push_info;
+	hotpoint_mission_push_info_t hotpoint_mission_push_info;
+	followme_mission_push_info_t followme_mission_push_info;
+	other_mission_push_info_t other_mission_push_info;
+
+
+	uint8_t incident_type;
+	
+	waypoint_upload_push_info_t waypoint_upload_result;
+	waypoint_finish_action_push_info_t waypoint_action_result;
+	waypoint_reached_push_info_t waypoint_reached_result;
 
 private:
 	void acceleration_subscriber_callback(dji_sdk::Acceleration acceleration)
@@ -139,6 +220,67 @@ private:
 		this->sdk_permission_opened = sdk_permission.data;
 	}
 
+	void mission_state_push_info_callback(dji_sdk::MissionPushInfo state_push_info)
+	{
+		mission_type = state_push_info.type;
+		switch(state_push_info.type)
+		{
+			case 1:
+				waypoint_mission_push_info.mission_type = state_push_info.type;
+				waypoint_mission_push_info.target_waypoint = state_push_info.data_1;
+				waypoint_mission_push_info.current_state = state_push_info.data_2;
+				waypoint_mission_push_info.error_code = state_push_info.data_3;
+				break;
+
+			case 2:
+				hotpoint_mission_push_info.mission_type = state_push_info.type;
+				hotpoint_mission_push_info.mission_status = state_push_info.data_1;
+				hotpoint_mission_push_info.hotpoint_radius = state_push_info.data_2 << 8 | state_push_info.data_3;
+				hotpoint_mission_push_info.error_code = state_push_info.data_4;
+				hotpoint_mission_push_info.hotpoint_velocity = state_push_info.data_5;
+				break;
+
+			case 3:
+				followme_mission_push_info.mission_type = state_push_info.type;
+				break;
+
+			case 0:
+			case 4:
+				other_mission_push_info.mission_type = state_push_info.type;
+				other_mission_push_info.last_mission_type = state_push_info.data_1;
+				other_mission_push_info.is_broken = state_push_info.data_2;
+				other_mission_push_info.error_code = state_push_info.data_3;
+				break;
+			default:
+				break;
+		}
+	
+	}
+
+	void mission_event_push_info_callback(dji_sdk::MissionPushInfo event_push_info)
+	{
+		incident_type = event_push_info.type;
+		switch(event_push_info.type)
+		{
+			case 0:
+				waypoint_upload_result.incident_type = event_push_info.type;
+				waypoint_upload_result.mission_valid = event_push_info.data_1;
+				waypoint_upload_result.estimated_runtime = event_push_info.data_2 << 8 | event_push_info.data_3;
+				break;
+			case 1:
+				waypoint_action_result.incident_type = event_push_info.type;
+				waypoint_action_result.repeat = event_push_info.data_1;
+				break;
+			case 2:
+				waypoint_reached_result.incident_type = event_push_info.type;
+				waypoint_reached_result.waypoint_index = event_push_info.data_1;
+				waypoint_reached_result.current_state = event_push_info.data_2;
+				break;
+			default:
+				break;
+		}
+	}
+
 public:
 	DJIDrone(ros::NodeHandle& nh):
 		drone_task_action_client(nh, "dji_sdk/drone_task_action", true),
@@ -170,6 +312,8 @@ public:
         activation_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/activation", 10, &DJIDrone::activation_subscriber_callback, this);
         odometry_subscriber = nh.subscribe<nav_msgs::Odometry>("dji_sdk/odometry",10, &DJIDrone::odometry_subscriber_callback, this);
         sdk_permission_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/sdk_permission", 10, &DJIDrone::sdk_permission_subscriber_callback, this);
+		mission_state_publisher = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/missino_state", 10, &DJIDrone::mission_state_push_info_callback, this);  
+		mission_event_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_event", 10, &DJIDrone::mission_event_push_info_callback, this);
 	}
 
 	bool takeoff()

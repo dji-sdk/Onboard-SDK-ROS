@@ -17,8 +17,8 @@ static unsigned char Pro_Encode_Data[1024];
 static unsigned char Pro_Encode_ACK[10];
 static sdk_std_msg_t std_broadcast_data;
 static pthread_mutex_t std_msg_lock = PTHREAD_MUTEX_INITIALIZER;
-static cmd_common_data_t mission_broadcast_data;
-static cmd_common_data_t mission_notification_data;
+static cmd_mission_common_data_t mission_status_data;
+static cmd_mission_common_data_t mission_event_data;
 
 
 void DJI_Pro_App_Send_Data(unsigned char session_mode, unsigned char is_enc, unsigned char  cmd_set, unsigned char cmd_id,
@@ -688,7 +688,7 @@ int DJI_Pro_Virtual_RC_Send_Value(virtual_rc_data_t *p_rc_value)
 /* 
  * interface: init waypoint interface
  */
-static void DJI_Pro_Mission_WP_Upload_Task_CallBack(ProHeader *header) {
+static void DJI_Pro_Mission_Waypoint_Upload_Task_CallBack(ProHeader *header) {
 	unsigned short ack_data = 0xFFFF;
 	if (header->length - EXC_DATA_SIZE<= 2) {
 		memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
@@ -702,11 +702,11 @@ static void DJI_Pro_Mission_WP_Upload_Task_CallBack(ProHeader *header) {
 
 }
 
-int DJI_Pro_Mission_WP_Upload_Task(cmd_mission_wp_task_info_comm_t *p_task_info)
+int DJI_Pro_Mission_Waypoint_Upload_Task(cmd_mission_wp_task_info_comm_t *p_task_info)
 {
 	DJI_Pro_App_Send_Data(2,1, MY_MISSION_CMD_SET, API_MISSION_TASK_UPLOAD,
 			(unsigned char*)p_task_info, sizeof(cmd_mission_wp_task_info_comm_t),
-			DJI_Pro_Mission_WP_Upload_Task_CallBack, 500, 1);
+			DJI_Pro_Mission_Waypoint_Upload_Task_CallBack, 500, 1);
 	return 0;
 }
 
@@ -714,7 +714,7 @@ int DJI_Pro_Mission_WP_Upload_Task(cmd_mission_wp_task_info_comm_t *p_task_info)
  * interface: upload waypoint interface
  */
 
-static void DJI_Pro_Mission_WP_Upload_Waypoint_CallBack(ProHeader *header) {
+static void DJI_Pro_Mission_Waypoint_Upload_Waypoint_CallBack(ProHeader *header) {
 	unsigned short ack_data = 0xFFFF;
 	if (header->length - EXC_DATA_SIZE<= 2) {
 		memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
@@ -728,17 +728,17 @@ static void DJI_Pro_Mission_WP_Upload_Waypoint_CallBack(ProHeader *header) {
 
 }
 
-int DJI_Pro_Mission_WP_Upload_Waypoint(cmd_mission_wp_waypoint_upload_comm_t *p_waypoint_upload){
+int DJI_Pro_Mission_Waypoint_Upload_Waypoint(cmd_mission_wp_waypoint_upload_comm_t *p_waypoint_upload){
 	DJI_Pro_App_Send_Data(2,1, MY_MISSION_CMD_SET, API_MISSION_WP_UPLOAD,
 						(unsigned char*)p_waypoint_upload, sizeof(cmd_mission_wp_waypoint_upload_comm_t),
-						DJI_Pro_Mission_WP_Upload_Waypoint_CallBack,500,1);
+						DJI_Pro_Mission_Waypoint_Upload_Waypoint_CallBack,500,1);
 	return 0;
 }
 /* 
  * interface: start/stop waypoint interface
  */
 
-static void DJI_Pro_Mission_WP_Start_CallBack(ProHeader *header) {
+static void DJI_Pro_Mission_Waypoint_Start_CallBack(ProHeader *header) {
    unsigned short ack_data = 0xFFFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
@@ -751,18 +751,18 @@ static void DJI_Pro_Mission_WP_Start_CallBack(ProHeader *header) {
     }
 }
 
-int DJI_Pro_Mission_WP_Start(unsigned char start_cmd)
+int DJI_Pro_Mission_Waypoint_Start(unsigned char start_cmd)
 {
 	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_WP_START,
 						&start_cmd, sizeof(start_cmd), 
-						DJI_Pro_Mission_WP_Start_CallBack, 100, 1);
+						DJI_Pro_Mission_Waypoint_Start_CallBack, 100, 1);
     return 0;
 }
 
 /*
  * interface: pause/resume waypoint interface
  */
-static void DJI_Pro_Mission_WP_Pause_CallBack(ProHeader *header) {
+static void DJI_Pro_Mission_Waypoint_Pause_CallBack(ProHeader *header) {
    unsigned short ack_data = 0xFFFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
@@ -775,18 +775,18 @@ static void DJI_Pro_Mission_WP_Pause_CallBack(ProHeader *header) {
     }
 }
 
-int DJI_Pro_Mission_WP_Pause(unsigned char pause_cmd)
+int DJI_Pro_Mission_Waypoint_Pause(unsigned char pause_cmd)
 {
 	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_WP_PAUSE,
 						&pause_cmd, sizeof(pause_cmd), 
-						DJI_Pro_Mission_WP_Pause_CallBack, 100, 1);
+						DJI_Pro_Mission_Waypoint_Pause_CallBack, 100, 1);
     return 0;
 }
 /*
  * interface: download task info interface
  */
 
-static void DJI_Pro_Mission_WP_Download_Task_CallBack(ProHeader *header) {
+static void DJI_Pro_Mission_Waypoint_Download_Task_CallBack(ProHeader *header) {
    unsigned short ack_data = 0xFFFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 		memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
@@ -805,19 +805,19 @@ static void DJI_Pro_Mission_WP_Download_Task_CallBack(ProHeader *header) {
     }
 }
 
-int DJI_Pro_Mission_WP_Download_Task()
+int DJI_Pro_Mission_Waypoint_Download_Task()
 {
 	unsigned char temp = 1;
 	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_TASK_DOWNLOAD,
 						&temp, sizeof(temp), 
-						DJI_Pro_Mission_WP_Download_Task_CallBack, 100, 1);
+						DJI_Pro_Mission_Waypoint_Download_Task_CallBack, 100, 1);
     return 0;
 }
 /*
  * interface: download waypoint info interface
  */
 
-static void DJI_Pro_Mission_WP_Download_Waypoint_CallBack(ProHeader *header) {
+static void DJI_Pro_Mission_Waypoint_Download_Waypoint_CallBack(ProHeader *header) {
    unsigned short ack_data = 0xFFFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
@@ -835,18 +835,18 @@ static void DJI_Pro_Mission_WP_Download_Waypoint_CallBack(ProHeader *header) {
     }
 }
 
-int DJI_Pro_Mission_WP_Download_Waypoint(unsigned char index)
+int DJI_Pro_Mission_Waypoint_Download_Waypoint(unsigned char index)
 {
 	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_WP_DOWNLOAD,
 						&index, sizeof(index), 
-						DJI_Pro_Mission_WP_Download_Waypoint_CallBack, 100, 1);
+						DJI_Pro_Mission_Waypoint_Download_Waypoint_CallBack, 100, 1);
     return 0;
 }
 /*
  * interface: set idle speed interface
  */
 
-static void DJI_Pro_Mission_WP_Set_Idle_Speed_CallBack(ProHeader *header) {
+static void DJI_Pro_Mission_Waypoint_Set_Idle_Speed_CallBack(ProHeader *header) {
    unsigned short ack_data = 0xFFFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
@@ -859,18 +859,18 @@ static void DJI_Pro_Mission_WP_Set_Idle_Speed_CallBack(ProHeader *header) {
     }
 }
 
-int DJI_Pro_Mission_WP_Set_Idle_Speed(fp32 vel)
+int DJI_Pro_Mission_Waypoint_Set_Idle_Speed(fp32 vel)
 {
 	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_SET_IDLE_SPEED,
 						(unsigned char*)&vel, sizeof(vel), 
-						DJI_Pro_Mission_WP_Set_Idle_Speed_CallBack, 100, 1);
+						DJI_Pro_Mission_Waypoint_Set_Idle_Speed_CallBack, 100, 1);
     return 0;
 }
 /*
  * interface: get idle speed interface
  */ 
 
-static void DJI_Pro_Mission_WP_Get_Idle_Speed_CallBack(ProHeader *header) {
+static void DJI_Pro_Mission_Waypoint_Get_Idle_Speed_CallBack(ProHeader *header) {
    unsigned short ack_data = 0xFFFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
@@ -890,12 +890,12 @@ static void DJI_Pro_Mission_WP_Get_Idle_Speed_CallBack(ProHeader *header) {
     }
 }
 
-int DJI_Pro_Mission_WP_Get_Idle_Speed()
+int DJI_Pro_Mission_Waypoint_Get_Idle_Speed()
 {
 	unsigned char temp = 1;
 	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_GET_IDLE_SPEED,
 						&temp, sizeof(temp), 
-						DJI_Pro_Mission_WP_Get_Idle_Speed_CallBack, 100, 1);
+						DJI_Pro_Mission_Waypoint_Get_Idle_Speed_CallBack, 100, 1);
     return 0;
 }
 /*
@@ -973,7 +973,6 @@ int DJI_Pro_Mission_Hotpoint_Pause(unsigned char pause_action)
 /*
  * interface: set default velocity interface
  */
-
 static void DJI_Pro_Mission_Hotpoint_Set_Speed_CallBack(ProHeader *header) {
    unsigned short ack_data = 0xFFFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
@@ -1232,6 +1231,8 @@ int DJI_Pro_Get_Broadcast_Data(sdk_std_msg_t *p_user_buf, unsigned short *msg_fl
 }
 
 static User_Broadcast_Handler_Func p_user_broadcast_handler_func = 0;
+static Mission_State_Handler_Func p_mission_state_handler_func = 0;
+static Mission_Event_Handler_Func p_mission_event_handler_func = 0;
 static User_Handler_Func p_user_handler_func = 0;
 static Transparent_Transmission_Func p_user_rec_func = 0;
 
@@ -1291,15 +1292,17 @@ static void DJI_Pro_App_Recv_Req_Data(ProHeader *header)
 		else if (DJI_Pro_Get_CmdSet_Id(header) == MY_BROADCAST_CMD_SET
 				&& DJI_Pro_Get_CmdCode_Id(header) == API_MISSION_DATA)
 		{
-			//TODO
-			memcpy((unsigned char*)&mission_broadcast_data, (unsigned char*)header->magic,(header->length - EXC_DATA_SIZE));
+			memcpy((unsigned char*)&mission_status_data, (unsigned char*)header->magic,(header->length - EXC_DATA_SIZE));
+			if (p_mission_state_handler_func)
+				p_mission_state_handler_func();
 		}
 	
 		else if (DJI_Pro_Get_CmdSet_Id(header) == MY_BROADCAST_CMD_SET
 				&& DJI_Pro_Get_CmdCode_Id(header) == API_WAYPOINT_DATA)
 		{
-			//TODO
-			memcpy((unsigned char*)&mission_notification_data, (unsigned char*)header->magic,(header->length - EXC_DATA_SIZE));
+			memcpy((unsigned char*)&mission_event_data, (unsigned char*)header->magic,(header->length - EXC_DATA_SIZE));
+			if (p_mission_event_handler_func)
+				p_mission_event_handler_func();
 		}
 
         else
@@ -1345,6 +1348,18 @@ int DJI_Pro_Register_Transparent_Transmission_Callback(Transparent_Transmission_
 int DJI_Pro_Register_Broadcast_Callback(User_Broadcast_Handler_Func user_broadcast_handler_entrance)
 {
 	p_user_broadcast_handler_func = user_broadcast_handler_entrance;
+	return 0;
+}
+
+int DJI_Pro_Register_Mission_State_Callback(Mission_State_Handler_Func mission_state_handler_entrance)
+{
+	p_mission_state_handler_func = mission_state_handler_entrance;
+	return 0;
+}
+
+int DJI_Pro_Register_Mission_Event_Callback(Mission_Event_Handler_Func mission_event_handler_entrance)
+{
+	p_mission_event_handler_func = mission_event_handler_entrance;
 	return 0;
 }
 

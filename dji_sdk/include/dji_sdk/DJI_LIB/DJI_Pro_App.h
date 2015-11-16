@@ -421,7 +421,7 @@ typedef struct
 	fp32	vel_cmd_range;
 	fp32	idle_vel;
 	unsigned char action_on_finish;
-	unsigned char mission_exec_num;
+	unsigned char mission_exec_times;
 	unsigned char yaw_mode;
 	unsigned char trace_mode;
 	unsigned char action_on_rc_lost;
@@ -440,8 +440,8 @@ typedef struct
 {
 	unsigned char action_num 	:4;
 	unsigned char action_rpt	:4;
-	unsigned char command_list [16]; //TODO [WP_ACTION_MAX_NUM]
-	unsigned char command_param[16];
+	unsigned char command_list [15]; //TODO [WP_ACTION_MAX_NUM]
+	int16_t command_param[15];
 }cmd_mission_wp_action_comm_t;
 
 /*
@@ -451,7 +451,7 @@ typedef struct
 {
 	fp64	latitude;
 	fp64	longitude;
-	fp32	alti;
+	fp32	altitude;
 	fp32	damping_dis;
 	int16_t	tgt_yaw;
 	int16_t tgt_gimbal_pitch;
@@ -481,10 +481,10 @@ typedef struct
 	
 	fp64 hp_latitude;
 	fp64 hp_longitude;
-	fp64 alti;
+	fp64 altitude;
 	
 	fp64 radius;
-	fp32 angle_rate;
+	fp32 angular_rate;
 	unsigned char is_clockwise;
 	unsigned char start_point;
 	unsigned char yaw_mode;
@@ -498,7 +498,7 @@ typedef struct
 typedef struct 
 {
 	unsigned char is_clockwise;
-	fp32 tgt_vel;
+	fp32 speed;
 }cmd_mission_hotpoint_velocity_t;
 
 /*
@@ -506,15 +506,15 @@ typedef struct
  */
 typedef struct
 {
-	unsigned char follow_mode;
+	unsigned char mode;
 	unsigned char yaw_mode;
 
-	fp64 init_latitude;
-	fp64 init_longitude;
-	uint16_t	init_alti;
-	uint16_t	init_mag_angle;
+	fp64 initial_latitude;
+	fp64 initial_longitude;
+	uint16_t	initial_altitude;
+	uint16_t	initial_mag_angle;
 	
-	unsigned char follow_sensitivity;	
+	unsigned char sensitivity;	
 }cmd_mission_follow_setting_t;
 
 /*
@@ -524,7 +524,7 @@ typedef struct
 {
 	fp64	latitude;
 	fp64	longitude;
-	uint16_t alti;
+	uint16_t altitude;
 	uint16_t mag_angle;
 }cmd_mission_follow_target_t;
 
@@ -539,7 +539,7 @@ typedef struct
 	uint8_t data_3;
 	uint8_t data_4;
 	uint8_t data_5;
-}cmd_common_data_t;
+}cmd_mission_common_data_t;
 	
 
 #pragma  pack()
@@ -548,6 +548,8 @@ typedef std::function<void(unsigned short)> Command_Result_Notify;
 typedef std::function<void(version_query_data_t *)> Get_API_Version_Notify;
 typedef std::function<void(ProHeader *)> User_Handler_Func;
 typedef std::function<void()> User_Broadcast_Handler_Func;
+typedef std::function<void()> Mission_State_Handler_Func;
+typedef std::function<void()> Mission_Event_Handler_Func;
 typedef std::function<void(unsigned char *, unsigned char)> Transparent_Transmission_Func;
 
 void DJI_Pro_App_Send_Data(unsigned char session_mode, unsigned char is_enc, unsigned char  cmd_set, unsigned char cmd_id,
@@ -572,20 +574,21 @@ int DJI_Pro_Set_Msgs_Frequency(sdk_msgs_frequency_data_t *p_frequency_data);
 int DJI_Pro_Virtual_RC_Manage(virtual_rc_manager_t *p_rc_manager_data);
 int DJI_Pro_Virtual_RC_Send_Value(virtual_rc_data_t *p_rc_value);
 
-int DJI_Pro_Mission_WP_Upload_Task(cmd_mission_wp_task_info_comm_t *p_task_info);
-int DJI_Pro_Mission_WP_Upload_Waypoint(cmd_mission_wp_waypoint_upload_comm_t *p_waypoint_upload);
-int DJI_Pro_Mission_WP_Start(unsigned char start_cmd);
-int DJI_Pro_Mission_WP_Pause(unsigned char pause_cmd);
-int DJI_Pro_Mission_WP_Download_Task(void);
-int DJI_Pro_Mission_WP_Download_Waypoint(unsigned char index);
-int DJI_Pro_Mission_WP_Set_Idle_Speed(fp32 vel);
-int DJI_Pro_Mission_WP_Get_Idle_Speed(void);
+int DJI_Pro_Mission_Waypoint_Upload_Task(cmd_mission_wp_task_info_comm_t *p_task_info);
+int DJI_Pro_Mission_Waypoint_Upload_Waypoint(cmd_mission_wp_waypoint_upload_comm_t *p_waypoint_upload);
+int DJI_Pro_Mission_Waypoint_Start(unsigned char start_cmd);
+int DJI_Pro_Mission_Waypoint_Pause(unsigned char pause_cmd);
+int DJI_Pro_Mission_Waypoint_Download_Task(void);
+int DJI_Pro_Mission_Waypoint_Download_Waypoint(unsigned char index);
+int DJI_Pro_Mission_Waypoint_Set_Idle_Speed(fp32 vel);
+int DJI_Pro_Mission_Waypoint_Get_Idle_Speed(void);
 int DJI_Pro_Mission_Hotpoint_Start(cmd_mission_hotpoint_setting_t *p_hotpoint_data);
 int DJI_Pro_Mission_Hotpoint_Stop(void);
 int DJI_Pro_Mission_Hotpoint_Pause(unsigned char pause_action);
 int DJI_Pro_Mission_Hotpoint_Set_Speed(cmd_mission_hotpoint_velocity_t *p_hp_velocity);
 int DJI_Pro_Mission_Hotpoint_Set_Radius(fp32 radius);
 int DJI_Pro_Mission_Hotpoint_Reset_Yaw(void);
+int DJI_Pro_Mission_Hotpoint_Download(void);
 int DJI_Pro_Mission_Followme_Start(cmd_mission_follow_setting_t *p_follow_data);
 int DJI_Pro_Mission_Followme_Stop(void);
 int DJI_Pro_Mission_Followme_Pause(unsigned char pause);

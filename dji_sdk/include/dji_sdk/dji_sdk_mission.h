@@ -5,13 +5,15 @@
 #include <dji_sdk/dji_sdk.h>
 
 //the state machine is based on the command run definitely successfully assumption.
-enum class ServerState {
+enum class ServerState 
+{
 	READY,
 	RUNNING,
 	PAUSED
 };
 
-enum class MissionType {
+enum class MissionType 
+{
 	EMPTY,
 	WAYPOINT,
 	HOTPOINT,
@@ -29,8 +31,8 @@ public:
 	DJISDKMission(ros::NodeHandle& nh);
 private:
 	//mission data publisher, processing data from N1
-	ros::Publisher mission_event_publisher;
 	ros::Publisher mission_state_publisher;
+	ros::Publisher mission_event_publisher;
 
 	//common mission request subscriber
 	ros::ServiceServer mission_start_service;
@@ -52,7 +54,6 @@ private:
 	//subscriber running when operating followme
 	ros::ServiceServer mission_fm_upload_service;
 	ros::ServiceServer mission_fm_set_target_service;
-
 	
 	ServerState current_state = ServerState::READY;
 	MissionType current_type = MissionType::EMPTY;
@@ -73,8 +74,8 @@ private:
 
 	void init_missions(ros::NodeHandle& nh)
 	{
-		mission_event_publisher = nh.advertise<dji_sdk::MissionPushInfo>("dji_sdk/mission_event_push", 10);
-		mission_state_publisher = nh.advertise<dji_sdk::MissionPushInfo>("dji_sdk/mission_state_push", 10);
+		mission_state_publisher = nh.advertise<dji_sdk::MissionPushInfo>("dji_sdk/mission_state", 10);
+		mission_event_publisher = nh.advertise<dji_sdk::MissionPushInfo>("dji_sdk/mission_event", 10);
 
 		mission_start_service = nh.advertiseService("dji_sdk/mission_start", &DJISDKMission::mission_start_callback ,this);
 		mission_pause_service = nh.advertiseService("dji_sdk/mission_pause", &DJISDKMission::mission_pause_callback ,this);

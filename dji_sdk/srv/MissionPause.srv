@@ -1,3 +1,3 @@
-uint8 command
+uint8 pause
 ---
 bool result
