@@ -1,19 +1,17 @@
 /****************************************************************************
- * @Brief   Contain various modules, such as waypoint. ROS-free singleton
- * @Version 1.1
+ * @Brief   Contain various applications, such as waypoint. ROS-free singleton
+ * @Version 1.0
  * @Author  Chris Liu
  * @Create  2015/11/12
- * @Modify  2015/11/16
+ * @Modify  2015/11/12
  ****************************************************************************/
 
 #ifndef _MAVCONTAINER_H_
 #define _MAVCONTAINER_H_
 
 
-#include "mngHandler.h"
-#include "modules/heartbeat/mavHeartbeat.h"
-#include "modules/sensors/mavSensors.h"
-#include "modules/waypoint/mavWaypoint.h"
+#include "mavWaypoint.h"
+#include "mavResponser.h"
 
 #include <mavlink/v1.0/common/mavlink.h>
 #include <new>
@@ -22,11 +20,6 @@ namespace dji2mav {
 
     class MavContainer {
         public:
-            /**
-             * @brief   Get the only instance. Lazy mode singleton
-             * @return  The only instance of MavContainer
-             * @warning UNSAFE FOR MULTI-THREAD! Should be called BEFORE fork
-             */
             static MavContainer* getInstance() {
                 if(NULL == m_instance) {
                     try {
@@ -41,88 +34,6 @@ namespace dji2mav {
                     }
                 }
                 return m_instance;
-            }
-
-
-            /**
-             * @brief  Alloc memory for senderTable
-             * @param  num : The number of GCS(Ground Control Stations)
-             * @return True if succeed or false if fail
-             */
-            bool setContainerConf(uint16_t num) {
-
-                if(0 != m_gcsNum) {
-                    printf("The GCS number has been set before!\n");
-                    return false;
-                }
-
-                m_gcsNum = num;
-
-                try {
-                    m_senderTable = new int*[m_module.SIZE];
-                    for(uint16_t i = 0; i < m_module.SIZE; ++i) {
-                        m_senderTable[i] = new int[m_gcsNum];
-                    }
-                } catch(std::bad_alloc& m) {
-                    std::cerr << "Failed to alloc memory for senderTable: " 
-                            << "at line: " << __LINE__ << ", func: " 
-                            << __func__ << ", file: " << __FILE__ 
-                            << std::endl;
-                    perror( m.what() );
-                    exit(EXIT_FAILURE);
-                }
-
-                for(uint16_t i = 0; i < m_gcsNum; ++i) {
-
-                    // send heartbeat to every GCS
-                    m_senderTable[m_module.Heartbeat][i] 
-                            = m_hdlr->registerSender(i);
-
-                    // send sensor data to every GCS
-                    m_senderTable[m_module.Sensors][i] 
-                            = m_hdlr->registerSender(i);
-
-                    // only execute waypoint command from GCS #0
-                    if(0 == i) {
-                        m_senderTable[m_module.Waypoint][0] 
-                                = m_hdlr->getGeneralSenderIdx(0);
-                    }
-
-                }
-
-                return true;
-
-            }
-
-
-            /**
-             * @breif  Get the number of GCS
-             * @return The number of GCS
-             */
-            inline uint16_t getGcsNum() {
-                return m_gcsNum;
-            }
-
-
-            /**
-             * @brief  Check whether the mng index is valid
-             * @param  mngIdx : The index of mng that is to be checked
-             * @return True if valid or false if invalid
-             */
-            inline bool isValidMngIdx(uint16_t mngIdx) {
-                return m_hdlr->isValidMngIdx(mngIdx);
-            }
-
-
-            /**
-             * @brief  Check whether the mng index and sender index are valid
-             * @param  mngIdx    : The index of mng that is to be checked
-             * @param  senderIdx : The index of sender that is to be checked
-             * @return True if valid or false if invalid
-             */
-            inline bool isValidIdx(uint16_t mngIdx, uint16_t senderIdx) {
-                return ( m_hdlr->isValidMngIdx(mngIdx)
-                        && m_hdlr->isValidSenderIdx(mngIdx, senderIdx) );
             }
 
 
@@ -212,10 +123,11 @@ namespace dji2mav {
 
         private:
             MavContainer() {
-                m_hdlr = MngHandler::getInstance();
-                m_hb = MavHeartbeat::getInstance();
+                m_hdlr = MavHandler::getInstance();
                 m_wp = MavWaypoint::getInstance();
-                m_gcsNum = 0;
+                m_rsp = MavResponser::getInstance();
+
+                m_wpStatus = idle;
             }
 
 
@@ -223,21 +135,13 @@ namespace dji2mav {
             }
 
 
-            enum Modules {
-                Heartbeat = 0,
-                Sensors,
-                Waypoint,
-                SIZE
-            } m_module;
-
-
             static MavContainer* m_instance;
-            MngHandler* m_hdlr;
-            MavHeartbeat* m_hb;
-            MavSensors* m_sensors;
+            MavHandler* m_hdlr;
             MavWaypoint* m_wp;
-            int** senderTable;
-            uint16_t m_gcsNum;
+            MavResponser* m_rsp;
+
+            // waypoint state machine
+            enum {idle, ready, executing, paused, error} m_wpStatus;
 
     };
 

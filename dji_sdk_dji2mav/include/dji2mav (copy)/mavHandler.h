@@ -27,18 +27,9 @@ namespace dji2mav {
     class MavHandler {
         public:
             MavHandler() {
-                //TODO: Better architecture?
-                //-2 for having not registered yet
-                m_hbIdx = -2;
-                m_statusIdx = -2;
-                m_locPosIdx = -2;
-                m_attIdx = -2;
-                m_wpIdx = -2;
-
-                //TODO: temporary add sender for waypoint
-                m_tempWpIdx = m_mng->registerSender();
-                if(-1 == m_tempWpIdx) {
-                    printf("Registering a temp waypoint sender fail!");
+                m_generalSenderIdx = m_mng->registerSender();
+                if(-1 == m_generalSenderIdx) {
+                    printf("Registering a general sender fail!\n");
                 }
             }
 
@@ -50,7 +41,7 @@ namespace dji2mav {
             /**
              * @brief  Set configurations for this mavlink device
              * @param  sysid        : ID of this mavlink system
-             * @param  compid       : ID of this component
+             * @param  compid       : ID of this component. Default IMU
              * @param  mavType      : Default quadrotor type
              * @param  mavAutopilot : Default full supporting for every
              * @param  mavMode      : Default autocontrol and disarmed
@@ -58,8 +49,7 @@ namespace dji2mav {
              * @param  mavStatus    : Default vehicle grounded and standby
              * @param  mavVersion   : Default 3
              */
-            //TODO: MAV_COMP_ID_IMU?
-            void setupMav(uint8_t sysid, uint8_t compid = MAV_COMP_ID_IMU, 
+            void setupHandler(uint8_t sysid, uint8_t compid = MAV_COMP_ID_IMU, 
                     uint8_t mavType = MAV_TYPE_QUADROTOR, 
                     uint8_t mavAutopilot = MAV_AUTOPILOT_GENERIC, 
                     uint8_t mavMode = MAV_MODE_GUIDED_DISARMED, 
@@ -96,7 +86,7 @@ namespace dji2mav {
                 m_comm = Communicator::getInstance();
                 m_comm->setConf(gcsIP, gcsPort, locPort);
                 if( m_comm->connect() == false ) {
-                    printf("Connecting to GCS fail!");
+                    printf("Connecting to GCS fail!\n");
                     return false;
                 }
 
@@ -114,12 +104,18 @@ namespace dji2mav {
 
             /**
              * @brief  Designed for send encoded package
-             * @param  idx   : The index of sender
              * @param  msg_p : The pointer of msg that should be sent
+             * @param  idx   : The index of sender
              * @return True if succeed and false if fail
              */
-            inline bool sendEncodedMsg(int idx, 
-                    const mavlink_message_t *msg_p) {
+            inline bool sendEncodedMsg(const mavlink_message_t *msg_p, 
+                    int idx = m_generalSenderIdx) {
+
+                if(NULL == m_senderList[idx]) {
+                    printf("Invalid sender index!\n");
+                    return false;
+                }
+
                 uint16_t len = mavlink_msg_to_send_buffer(
                         m_mng->getSendBuf(idx), msg_p);
                 int bytes_sent = m_mng->send(idx, len);
@@ -132,6 +128,7 @@ namespace dji2mav {
                     return false;
                 }
                 return true;
+
             }
 
 
@@ -366,13 +363,7 @@ namespace dji2mav {
             mavlink_local_position_ned_t m_locPos;
             mavlink_attitude_t m_att;
 
-            //TODO: temporary?
-            int m_hbIdx;
-            int m_statusIdx;
-            int m_locPosIdx;
-            int m_attIdx;
-
-            int m_tempWpIdx;
+            m_generalSenderIdx
     };
 
     MavHandler* MavHandler::m_instance = NULL;
