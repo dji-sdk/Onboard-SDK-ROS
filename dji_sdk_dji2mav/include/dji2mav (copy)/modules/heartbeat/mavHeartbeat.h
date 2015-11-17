@@ -10,7 +10,7 @@
 #define _DJI2MAV_MAVHEARTBEAT_H_
 
 
-#include "../../mavHandler.h"
+#include "mavHandler.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -58,7 +58,7 @@ namespace dji2mav {
              * @return True if succeed or false if fail
              */
             bool setSenderIdx(uint16_t gcsIdx, int senderIdx) {
-                if( !m_hdlr->isValidIdx(gcsIdx, senderIdx) )
+                if( !m_ctnr->isValidIdx(gcsIdx, senderIdx) )
                     return false;
                 m_senderRecord[gcsIdx] = senderIdx;
                 return true;
@@ -74,7 +74,7 @@ namespace dji2mav {
                 int newSender = m_hdlr->registerSender(gcsIdx);
                 if( newSender < 0 ) {
                     printf("Fail to regiser a sender for GCS #%u! "
-                            "Did you set sender list size 0 or 1?\n", gcsIdx);
+                            "Did you sent sender list size 0 or 1?\n", i);
                     return false;
                 }
                 m_senderRecord[gcsIdx] = newSender;
@@ -167,10 +167,10 @@ namespace dji2mav {
              */
             bool sendHeartbeat(uint16_t gcsIdx) {
                 mavlink_msg_heartbeat_encode(m_hdlr->getSysid(), 
-                        MAV_COMP_ID_ALL, &m_sendMsg, &m_mavHb);
+                        MAV_COPM_ID_ALL, &m_msg, &m_mavHb);
 
                 if( m_hdlr->sendEncodedMsg(gcsIdx, m_senderRecord[gcsIdx], 
-                        &m_sendMsg) ) {
+                        &m_msg) ) {
                     return true;
                 } else {
                     printf("Sending heartbeat to GCS #%u fail!\n", gcsIdx);
@@ -186,39 +186,16 @@ namespace dji2mav {
             inline bool sendHeartbeat() {
                 bool ret = true;
                 for(uint16_t i = 0; i < m_hdlr->getMngListSize(); ++i) {
-                    ret &= sendHeartbeat(i);
+                    ret &= sendHeatbeat(i);
                 }
                 return ret;
             }
 
 
-            /**
-             * @brief  React to heartbeat from specific GCS and execute rsp
-             * @param  gcsIdx : Get the index of GCS
-             * @param  msg    : Get the received message
-             */
-            void reactToHeartbeat(uint16_t gcsIdx, mavlink_message_t &msg) {
-                printf("Get heartbeat with sysid %u and compid %u "
-                        "from GCS #%u.\n", msg.sysid, msg.compid, gcsIdx);
-                if(NULL != m_rsp) {
-                    m_rsp();
-                }
-            }
-
-
-            /**
-             * @brief  React to heartbeat from all GCS and execute rsp
-             * @return True if succeed or false if fail
-             */
-            inline void setHeartbeatRsp( void (*func)() ) {
-                m_rsp = func;
-            }
-
-
         private:
-            MavHeartbeat() {
+            MavContainer() {
 
-                m_hdlr = MavHandler::getInstance();
+                m_ctnr = MavContainer::getInstance();
 
                 try {
                     m_senderRecord = new int[m_hdlr->getMngListSize()];
@@ -232,19 +209,16 @@ namespace dji2mav {
                 }
                 for(uint16_t i = 0; i < m_hdlr->getMngListSize(); ++i) {
                     // register new sender for heartbeat in every GCS
-                    if( applyNewSender(i) < 0)
-                        printf("Fail to register new sender for heartbeat!\n");
+                    applyNewSender(i);
                 }
 
                 setHeartbeatData(MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, 
                         MAV_MODE_GUIDED_DISARMED, 0, MAV_STATE_STANDBY, 3);
 
-                setHeartbeatRsp(NULL);
-
             }
 
 
-            ~MavHeartbeat() {
+            ~MavContainer() {
             }
 
 
@@ -252,16 +226,10 @@ namespace dji2mav {
             MavHandler* m_hdlr;
             int* m_senderRecord;
 
-            mavlink_message_t m_sendMsg;
-            mavlink_message_t m_recvMsg;
-            mavlink_status_t m_recvStatus;
+            mavlink_message_t m_msg;
             mavlink_heartbeat_t m_mavHb;
 
-            void (*m_rsp)();
-
     };
-
-    MavHeartbeat* MavHeartbeat::m_instance = NULL;
 
 } //namespace dji2mav
 

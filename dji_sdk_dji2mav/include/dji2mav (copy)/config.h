@@ -1,29 +1,36 @@
 /*****************************************************************************
  * @Brief     Manage configuration of dji2mav. ROS-free singleton
- * @Version   1.0
+ * @Version   1.1
  * @Author    Chris Liu
  * @Created   2015/11/14
- * @Modified  2015/11/15
+ * @Modified  2015/11/16
  *****************************************************************************/
 
 #ifndef _DJI2MAV_CONFIG_H_
 #define _DJI2MAV_CONFIG_H_
 
 
-#include "mavHandler.h"
+#include "mngHandler.h"
+#include "mavContainer.h"
 
+#include <iostream>
 #include <string>
+#include <new>
+
+#define DEFAULT_SENDER_LIST_SIZE 256
+#define DEFAULT_SEND_BUF_SIZE 1024
+#define DEFAULT_RECV_BUF_SIZE 4096
 
 namespace dji2mav {
 
     class Config {
         public:
             /**
-             * @brief   Lazy mode singleton
-             * @return  The only instance of MavWaypoint
-             * @warning UNSAFE FOR MULTI-THREAD!
+             * @brief   Get the only instance. Lazy mode singleton
+             * @return  The only instance of Config
+             * @warning UNSAFE FOR MULTI-THREAD! Should be called BEFORE fork
              */
-            static MavWaypoint* getInstance() {
+            static Config* getInstance() {
                 if(NULL == m_instance) {
                     try {
                         m_instance = new Config();
@@ -41,99 +48,44 @@ namespace dji2mav {
 
 
             /**
-             * @brief  Set the size of Ground Control Station list
-             * @param  num : The number of Ground Control Stations
-             * @return The real size of Ground Control Station list
+             * @brief  Set the mavlink system id and the size of GCS list
+             * @param  mavSysid : The system id of this vehicle
+             * @param  num      : The number of Ground Control Stations
+             * @return True if succeed or false if fail
              */
-            uint8_t setGCSNum(uint8_t num) {
-                if(NULL != m_gcsList) {
-                    return m_gcsListSize;
-                }
-
-                for(uint8_t i = 0; i < num; ++i) {
-                    try {
-                        m_gcsList[i] = new MavHandler();
-                    } catch(std::bad_alloc &m) {
-                        std::cerr << "Cannot new instance of MavHanler " 
-                                << i << ": at line: " << __LINE__ 
-                                << ", func: " << __func__ << ", file: " 
-                                << __FILE__ << std::endl;
-                        perror( m.what() );
-                        exit(EXIT_FAILURE);
-                    }
-                }
-                return m_gcsListSize = num;
-            }
-
-
-            /**
-             * @brief Set system id for the vehicle. Unnecssary to be called
-             * @param sysid : The system id to be set
-             */
-            inline void setSysid(uint8_t sysid) {
-                m_sysid = sysid;
-            }
-
-
-            /**
-             * @brief  Get system id for the whole device
-             * @return The system id of this device
-             */
-            inline uint8_t getSysid() {
-                return m_sysid;
+            inline bool setup(uint8_t mavSysid, uint16_t num) {
+                return ( m_hdlr->setHandlerConf(mavSysid, num) );
             }
 
 
             /**
              * @brief  Establish the connection of specific GCS
-             * @param  gcsIdx  : The index of the GCS. Begin from 0
-             * @param  gcsIP   : The IP of GCS
-             * @param  gcsPort : Connection port of GCS
-             * @param  locPort : Localhost port
+             * @param  gcsIdx         : The index of the GCS. Begin from 0
+             * @param  gcsIP          : The IP of GCS
+             * @param  gcsPort        : Connection port of GCS
+             * @param  locPort        : Localhost port
+             * @param  senderListSize : Default 256
+             * @param  sendBufSize    : Default 1024
+             * @param  recvBufSize    : Default 4096
              * @return True if succeed or false if fail
              */
-            inline bool establish(uint8_t gcsIdx, std::string gcsIP, 
-                    int gcsPort, int locPort) {
-                if(gcsIdx >= m_gcsListSize)
-                    return false;
-                return m_gcsList[gcsIdx]->establish(gcsIP, gcsPort, locPort);
-            }
+            inline bool start(uint16_t gcsIdx, std::string gcsIP, 
+                    uint16_t gcsPort, uint16_t locPort, 
+                    uint16_t senderListSize = DEFAULT_SENDER_LIST_SIZE, 
+                    uint16_t sendBufSize = DEFAULT_SEND_BUF_SIZE, 
+                    uint16_t recvBufSize = DEFAULT_RECV_BUF_SIZE) {
 
+                return ( m_hdlr->setMngConf(gcsIdx, senderListSize, 
+                        sendBufSize, recvBufSize) 
+                        && m_hdlr->establish(mngIdx, gcsIP, gcsPort, 
+                        locPort) );
 
-            /**
-             * @brief Set the size of sender buffer. Not necessary to be called
-             * @param idx  : The index of the GCS. Begin from 0
-             * @param size : The size of sender buffer
-             */
-            inline void setSendBufSize(uint8_t idx, uint16_t size) {
-                m_gcsList[idx]->setSendBufSize(size);
-            }
-
-
-            /**
-             * @brief Set the size of receiver buf. Not necessary to be called
-             * @param idx  : The index of the GCS. Begin from 0
-             * @param size : The size of receiver buffer
-             */
-            inline void setRecvBufSize(uint8_t idx, uint16_t size) {
-                m_gcsList[idx]->setRecvBufSize(size);
-            }
-
-
-            /**
-             * @brief Set the size of sender list. Not necessary to be called
-             * @param idx  : The index of the GCS. Begin from 0
-             * @param size : The size of sender list
-             */
-            inline void setSendBufListSize(uint8_t idx, uint16_t size) {
-                m_gcsList[idx]->setSendBufListSize(size);
             }
 
 
         private:
             Config() {
-                m_gcsListSize = 0;
-                m_sysid = 1;
+                m_hdlr = MngHandler::getInstance();
             }
 
 
@@ -142,15 +94,13 @@ namespace dji2mav {
 
 
             static Config* m_instance;
-            uint8_t m_gcsListSize;
-            MavHandler** m_gcsList;
-            uint8_t m_sysid;
+            MngHandler* m_hdlr;
 
     };
 
     Config* Config::m_instance = NULL;
 
-}
+} //namespace dji2mav
 
 
 #endif

@@ -1,14 +1,16 @@
 /*****************************************************************************
  * @Brief     Messages sender. Alloc send buffer here and manager it.
- * @Version   1.0
+ * @Version   1.1
  * @Author    Chris Liu
  * @Created   2015/10/30
- * @Modified  2015/11/14
+ * @Modified  2015/11/15
  *****************************************************************************/
 
 #ifndef _MSGSENDER_H_
 #define _MSGSENDER_H_
 
+
+#include "SocktComm.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -16,14 +18,11 @@
 #include <string>
 #include <new>
 
-#define DEFAULT_SEND_BUF_SIZE 1024
-
 namespace dji2mav {
 
     class MsgSender {
         public:
-            MsgSender(uint16_t bufSize = DEFAULT_SEND_BUF_SIZE) : 
-                    m_bufSize(bufSize) {
+            MsgSender(uint16_t bufSize) : m_bufSize(bufSize) {
 
                 try {
                     m_sendBuf = new uint8_t[m_bufSize];
@@ -35,7 +34,6 @@ namespace dji2mav {
                     perror( m.what() );
                     exit(EXIT_FAILURE);
                 }
-                m_comm = SocktComm::getInstance();
 
             }
 
@@ -43,32 +41,30 @@ namespace dji2mav {
             ~MsgSender() {
                 delete []m_sendBuf;
                 m_sendBuf = NULL;
-                m_comm = NULL;
             }
 
 
-            uint16_t getBufSize() {
+            inline uint16_t getBufSize() {
                 return m_bufSize;
             }
 
 
-            uint8_t* getBuf() {
+            inline uint8_t* getBuf() {
                 return m_sendBuf;
             }
 
 
-            int send(uint16_t len) {
-                return m_comm->send(m_sendBuf, len);
+            inline int send(SocketComm* comm_p, uint16_t len) {
+                return comm_p->send(m_sendBuf, len);
             }
 
 
         private:
             uint8_t* m_sendBuf;
             uint16_t m_bufSize;
-            SocketComm* m_comm;
     };
 
-}
+} //namespace dji2mav
 
 
 #endif

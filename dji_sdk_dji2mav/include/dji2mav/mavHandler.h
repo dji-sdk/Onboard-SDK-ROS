@@ -6,8 +6,8 @@
  * @Modified  2015/11/16
  *****************************************************************************/
 
-#ifndef _DJI2MAV_MNGHANDLER_H_
-#define _DJI2MAV_MNGHANDLER_H_
+#ifndef _DJI2MAV_MAVHANDLER_H_
+#define _DJI2MAV_MAVHANDLER_H_
 
 
 #include "msgManager.h"
@@ -20,19 +20,19 @@
 
 namespace dji2mav {
 
-    class MngHandler {
+    class MavHandler {
         public:
             /**
              * @brief   Get the only instance. Lazy mode singleton
-             * @return  The only instance of MngHandler
+             * @return  The only instance of MavHandler
              * @warning UNSAFE FOR MULTI-THREAD! Should be called BEFORE fork
              */
-            static MngHandler* getInstance() {
+            static MavHandler* getInstance() {
                 if(NULL == m_instance) {
                     try {
-                        m_instance = new MngHandler();
+                        m_instance = new MavHandler();
                     } catch(std::bad_alloc &m) {
-                        std::cerr << "New instance of MngHandler fail: " 
+                        std::cerr << "New instance of MavHandler fail: " 
                                 << "at line: " << __LINE__ << ", func: " 
                                 << __func__ << ", file: " << __FILE__ 
                                 << std::endl;
@@ -85,7 +85,7 @@ namespace dji2mav {
              * @return Index of the sender. Return -1 if the list is full
              */
             inline int registerSender(uint16_t mngIdx, uint16_t bufSize) {
-                return m_mngList[mngIdx]->registerSender(bufsize);
+                return m_mngList[mngIdx]->registerSender(bufSize);
             }
 
 
@@ -127,7 +127,7 @@ namespace dji2mav {
 
                 try {
                     m_mngList = new MsgManager*[m_mngListSize];
-                    memset(m_mngList, 0, m_mngListSize);
+                    memset(m_mngList, 0, m_mngListSize * sizeof(MsgManager));
                 } catch(std::bad_alloc& m) {
                     std::cerr << "Failed to alloc memory for mng list: " 
                             << "at line: " << __LINE__ << ", func: " 
@@ -143,7 +143,7 @@ namespace dji2mav {
 
 
             /**
-             * @brief  Set the configurations of MngHandler
+             * @brief  Set the configurations of MavHandler
              * @param  mngIdx            : The index of mng that is to be set
              * @param  senderListSize : The size of sender list
              * @param  sendBufSize    : The default value of send buf size
@@ -154,7 +154,7 @@ namespace dji2mav {
                     uint16_t sendBufSize, uint16_t recvBufSize) {
 
                 if(mngIdx >= m_mngListSize) {
-                    printf("The index %u oversteps the mng list size %u.", 
+                    printf("The index %u exceeds the mng list size %u.", 
                             mngIdx, m_mngListSize);
                     return false;
                 }
@@ -183,6 +183,15 @@ namespace dji2mav {
 
 
             /**
+             * @brief  Get the size of mngList(aka, GCS number)
+             * @return The size of mngList(aka, GCS number)
+             */
+            inline uint16_t getMngListSize() {
+                return m_mngListSize;
+            }
+
+
+            /**
              * @brief  Establish UDP connection of the mng
              * @param  mngIdx     : The index of mng
              * @param  targetIP   : The IP of target
@@ -190,7 +199,7 @@ namespace dji2mav {
              * @param  srcPort    : The connection port of source
              * @return True if succeed or false if fail
              */
-            inline bool establish(uint16_t mngIdx, std::string targetIP, 
+            bool establish(uint16_t mngIdx, std::string targetIP, 
                     uint16_t targetPort, uint16_t srcPort) {
 
                 if( !isValidMngIdx(mngIdx) )
@@ -199,6 +208,15 @@ namespace dji2mav {
                 return m_mngList[mngIdx]->establish(targetIP, targetPort, 
                         srcPort);
 
+            }
+
+
+            /**
+             * @brief  Get the system id of this vehicle
+             * @return The system id of this vehicle
+             */
+            inline uint8_t getSysid() {
+                return m_sysid;
             }
 
 
@@ -217,7 +235,7 @@ namespace dji2mav {
 
                 uint16_t len = mavlink_msg_to_send_buffer(
                         m_mngList[mngIdx]->getSendBuf(senderIdx), msg_p);
-                int bytes_sent = m_mng->send(senderIdx, len);
+                int bytes_sent = m_mngList[mngIdx]->send(senderIdx, len);
                 if(bytes_sent < 0)
                     return false;
                 if( (uint16_t)bytes_sent != len ) {
@@ -283,24 +301,46 @@ namespace dji2mav {
             }
 
 
+            /**
+             * @brief  Receive data from every mng(aka, GCS)
+             * @param  recvMsgList    : The pointer to recv msg list
+             * @pram   recvStatusList : The pointer to recv status list
+             * @return True if succeed and false if fail
+             */
+            inline bool receive(mavlink_message_t* recvMsgList, 
+                    mavlink_status_t* recvStatusList) {
+
+                bool ret = true;
+                for(uint16_t i = 0; i < m_mngListSize; ++i) {
+                    ret &= receive(i, recvMsgList[i], recvStatusList[i]);
+                }
+                return ret;
+
+            }
+
+
         private:
-            MngHandler() {
+            MavHandler() {
                 m_mngListSize = 0;
             }
 
 
-            ~MngHandler() {
+            ~MavHandler() {
+                if(NULL != m_mngList) {
+                    delete []m_mngList;
+                    m_mngList = NULL;
+                }
             }
 
 
-            static MngHandler* m_instance;
+            static MavHandler* m_instance;
             MsgManager** m_mngList;
             uint16_t m_mngListSize;
 
-            uint8_t mavSysid;
+            uint8_t m_sysid;
     };
 
-    MngHandler* MngHandler::m_instance = NULL;
+    MavHandler* MavHandler::m_instance = NULL;
 
 } //namespace dji2mav
 

@@ -3,7 +3,7 @@
  * @Version   1.1
  * @Author    Chris Liu
  * @Created   2015/10/30
- * @Modified  2015/11/15
+ * @Modified  2015/11/16
  *****************************************************************************/
 
 #ifndef _DJI2MAV_MSGMANAGER_H_
@@ -29,7 +29,7 @@ namespace dji2mav{
              */
             MsgManager(uint16_t senderListSize, uint16_t sendBufSize, 
                     uint16_t recvBufSize) : m_maxListSize(senderListSize), 
-                    uint16_t m_defaultSendBufSize(sendBufSize) {
+                    m_defaultSendBufSize(sendBufSize) {
 
                 try {
                     m_senderList = new MsgSender*[m_maxListSize];
@@ -58,15 +58,17 @@ namespace dji2mav{
 
             ~MsgManager() {
                 if(NULL != m_senderList) {
-                    for(int i = 0; i < m_maxListSize; ++i) {
-                        delete m_senderList[i];
-                        m_senderList[i] = NULL;
-                    }
+                    delete []m_senderList;
+                    m_senderList = NULL;
                 }
-                delete m_receiver;
-                m_receiver = NULL;
-                delete m_comm;
-                m_comm = NULL;
+                if(NULL != m_receiver) {
+                    delete m_receiver;
+                    m_receiver = NULL;
+                }
+                if(NULL != m_comm) {
+                    delete m_comm;
+                    m_comm = NULL;
+                }
             }
 
 
@@ -109,7 +111,7 @@ namespace dji2mav{
              */
             inline uint8_t* getSendBuf(uint16_t idx) {
                 if(idx >= m_currListSize) {
-                    perror("Invalid sender index");
+                    printf("Invalid sender index %u!\n", idx);
                     return NULL;
                 }
                 return m_senderList[idx]->getBuf();
@@ -123,7 +125,7 @@ namespace dji2mav{
              */
             inline uint16_t getSendBufSize(uint16_t idx) {
                 if(idx >= m_currListSize) {
-                    perror("Invalid sender index");
+                    printf("Invalid sender index %u!\n", idx);
                     return -1;
                 }
                 return m_senderList[idx]->getBufSize();
@@ -147,11 +149,11 @@ namespace dji2mav{
              */
             int send(uint16_t idx, int len) {
                 if(idx >= m_currListSize) {
-                    printf("Invalid sender index!\n");
+                    printf("Send fail! Invalid sender index %u!\n", idx);
                     return -2;
                 }
                 if(len < 0 || m_senderList[idx]->getBufSize() < len) {
-                    printf("Invalid length value!\n");
+                    printf("Send fail! Invalid length value %d!\n", len);
                     return -3;
                 }
                 return m_senderList[idx]->send(m_comm, len);

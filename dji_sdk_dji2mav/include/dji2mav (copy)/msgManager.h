@@ -1,9 +1,9 @@
 /*****************************************************************************
- * @Brief     Manage msg senders and receiver. ROS-free and mav-free singleton
- * @Version   1.0
+ * @Brief     Manage msg senders and receiver. ROS-free and mav-free
+ * @Version   1.1
  * @Author    Chris Liu
  * @Created   2015/10/30
- * @Modified  2015/11/03
+ * @Modified  2015/11/16
  *****************************************************************************/
 
 #ifndef _DJI2MAV_MSGMANAGER_H_
@@ -17,38 +17,56 @@
 #include <stdio.h>
 #include <iostream>
 
-#define DEFAULT_SENDER_LIST_SIZE 256
-
 namespace dji2mav{
 
     class MsgManager {
         public:
             /**
-             * @brief   Lazy mode singleton
-             * @param   senderListSize : Default 256. Valid on first call
-             * @param   recvBufSize    : Default 4096. Valid on first call
-             * @return  The only instance of MsgManager
-             * @warning UNSAFE FOR MULTI-THREAD!
+             * @brief   Constructor for MsgManager
+             * @param   senderListSize : Used to alloc senders list
+             * @param   sendBufSize    : Used to alloc buf for sender
+             * @param   recvBufSize    : Used to alloc buf for receiver
              */
-            static MsgManager* getInstance(uint16_t senderListSize 
-                    = DEFAULT_SENDER_LIST_SIZE, uint16_t recvBufSize
-                    = DEFAULT_RECV_BUF_SIZE) {
+            MsgManager(uint16_t senderListSize, uint16_t sendBufSize, 
+                    uint16_t recvBufSize) : m_maxListSize(senderListSize), 
+                    uint16_t m_defaultSendBufSize(sendBufSize) {
 
-                if(NULL == m_instance) {
-                    try {
-                        m_instance = new MsgManager(senderListSize, 
-                                recvBufSize);
-                    } catch(std::bad_alloc &m) {
-                        std::cerr << "Cannot new instance of MsgManager: " 
-                                << "at line: " << __LINE__ << ", func: " 
-                                << __func__ << ", file: " << __FILE__ 
-                                << std::endl;
-                        perror( m.what() );
-                        exit(EXIT_FAILURE);
+                try {
+                    m_senderList = new MsgSender*[m_maxListSize];
+                    memset(m_senderList, 0, m_maxListSize);
+                } catch(std::bad_alloc& m) {
+                    std::cerr << "Failed to alloc memory for sender list: " 
+                            << "at line: " << __LINE__ << ", func: " 
+                            << __func__ << ", file: " << __FILE__ 
+                            << std::endl;
+                    perror( m.what() );
+                    exit(EXIT_FAILURE);
+                }
+                m_currListSize = 0;
+                m_comm = new SocketComm();
+                m_receiver = new MsgReceiver(recvBufSize);
+
+                m_generalSenderIdx = registerSender();
+                if(-1 == m_generalSenderIdx) {
+                    printf("Fail to register a general sender. "
+                            "Did you set sender list size 0?\n");
+                    exit(EXIT_FAILURE);
+                }
+
+            }
+
+
+            ~MsgManager() {
+                if(NULL != m_senderList) {
+                    for(int i = 0; i < m_maxListSize; ++i) {
+                        delete m_senderList[i];
+                        m_senderList[i] = NULL;
                     }
                 }
-                return m_instance;
-
+                delete m_receiver;
+                m_receiver = NULL;
+                delete m_comm;
+                m_comm = NULL;
             }
 
 
@@ -58,12 +76,11 @@ namespace dji2mav{
              * @return  Index of the sender. Return -1 if the list is full
              * @warning UNSAFE FOR MULTI-THREAD!
              */
-            int registerSender(uint16_t bufSize = DEFAULT_SEND_BUF_SIZE) {
-                int idx = m_currListSize;
+            int registerSender(uint16_t bufSize) {
                 if(m_currListSize >= m_maxListSize)
                     return -1;
                 try {
-                    m_senderList[idx] = new MsgSender(bufSize);
+                    m_senderList[m_currListSize] = new MsgSender(bufSize);
                 } catch(std::bad_alloc &m) {
                     std::cerr << "Failed to new MsgSender object: "
                             << "at line: " << __LINE__ << ", func: " 
@@ -72,8 +89,16 @@ namespace dji2mav{
                     perror( m.what() );
                     exit(EXIT_FAILURE);
                 }
-                ++m_currListSize;
-                return idx;
+                return m_currListSize++;
+            }
+
+
+            /**
+             * @brief  Register a messager sender with default buf size
+             * @return Refer to "int registerSender(uint16_t bufSize)"
+             */
+            inline int registerSender() {
+                return registerSender(m_defaultSendBufSize);
             }
 
 
@@ -82,8 +107,8 @@ namespace dji2mav{
              * @param  idx : The index of the sender
              * @return A pointer to send buf. Return NULL for invalid input
              */
-            uint8_t* getSendBuf(int idx) {
-                if(idx < 0 || idx > m_currListSize + 1) {
+            inline const uint8_t* getSendBuf(uint16_t idx) {
+                if(idx >= m_currListSize) {
                     perror("Invalid sender index");
                     return NULL;
                 }
@@ -96,12 +121,21 @@ namespace dji2mav{
              * @param  idx : The index of the sender
              * @return The size of send buf. Return -1 for invalid input
              */
-            uint16_t getSendBufSize(int idx) {
-                if(idx < 0 || idx > m_currListSize + 1) {
+            inline uint16_t getSendBufSize(uint16_t idx) {
+                if(idx >= m_currListSize) {
                     perror("Invalid sender index");
                     return -1;
                 }
                 return m_senderList[idx]->getBufSize();
+            }
+
+
+            /**
+             * @brief  Get general sender index
+             * @return The index of general sender
+             */
+            inline uint16_t getGeneralSenderIdx() {
+                return m_generalSenderIdx;
             }
 
 
@@ -111,16 +145,16 @@ namespace dji2mav{
              * @param  len : The length that should be sent
              * @return Bytes that is sent. Return -2 for invalid, -1 for fail
              */
-            int send(int idx, int len) {
-                if(idx < 0 || idx > m_currListSize + 1) {
-                    perror("Invalid sender index");
+            int send(uint16_t idx, int len) {
+                if(idx >= m_currListSize) {
+                    printf("Invalid sender index!\n");
                     return -2;
                 }
                 if(len < 0 || m_senderList[idx]->getBufSize() < len) {
-                    perror("Invalid length value");
+                    printf("Invalid length value!\n");
                     return -3;
                 }
-                return m_senderList[idx]->send(len);
+                return m_senderList[idx]->send(m_comm, len);
             }
 
 
@@ -128,7 +162,7 @@ namespace dji2mav{
              * @brief   Get the buffer of receiver
              * @return  The pointer to the receiver buffer
              */
-            uint8_t* getRecvBuf() {
+            inline const uint8_t* getRecvBuf() {
                 return m_receiver->getBuf();
             }
 
@@ -137,7 +171,7 @@ namespace dji2mav{
              * @brief   Get the buffer size of receiver
              * @return  The size of the receiver buffer
              */
-            uint16_t getRecvBufSize() {
+            inline uint16_t getRecvBufSize() {
                 return m_receiver->getBufSize();
             }
 
@@ -147,51 +181,56 @@ namespace dji2mav{
              * @return  Bytes that is received. Return -1 if it fails
              * @warning UNSAFE FOR MULTI_THREAD!
              */
-            int recv() {
-                return m_receiver->recv();
+            inline int recv() {
+                return m_receiver->recv(m_comm);
+            }
+
+
+            /**
+             * @brief  Establish the UDP connection to the target
+             * @param  targetIP   : The IP of target
+             * @param  targetPort : The connection port of target
+             * @param  srcPort    : The connection port of source
+             * @return True if succeed or false if fail
+             */
+            inline bool establish(std::string targetIP, uint16_t targetPort, 
+                    uint16_t srcPort) {
+
+                m_comm->setConf(targetIP, targetPort, srcPort);
+                return m_comm->connect();
+
+            }
+
+
+            /**
+             * @brief  Get current sender list size
+             * @return The size of current sender list
+             */
+            inline uint16_t getCurrSenderListSize() {
+                return m_currListSize;
+            }
+
+
+            /**
+             * @brief  Get max sender list size
+             * @return The size of max sender list
+             */
+            inline uint16_t getMaxSenderListSize() {
+                return m_maxListSize;
             }
 
 
         private:
-            MsgManager(uint16_t senderListSize, uint16_t recvBufSize) {
-                m_maxListSize = senderListSize;
-                m_currListSize = 0;
-                try {
-                    m_senderList = new MsgSender*[m_maxListSize];
-                    memset(m_senderList, 0, m_maxListSize);
-                } catch(std::bad_alloc& m) {
-                    std::cerr << "Failed to alloc memory for sender list: " 
-                            << "at line: " << __LINE__ << ", func: " 
-                            << __func__ << ", file: " << __FILE__ 
-                            << std::endl;
-                    perror( m.what() );
-                    exit(EXIT_FAILURE);
-                }
-                m_receiver = MsgReceiver::getInstance(recvBufSize);
-            }
-
-
-            ~MsgManager() {
-                if(NULL != m_senderList) {
-                    for(int i = 0; i < m_maxListSize; ++i) {
-                        delete m_senderList[i];
-                        m_senderList[i] = NULL;
-                    }
-                }
-                m_receiver = NULL;
-            }
-
-
-            static MsgManager* m_instance;
             MsgSender** m_senderList;
             uint16_t m_maxListSize;
             uint16_t m_currListSize;
+            uint16_t m_defaultSendBufSize;
+            uint16_t m_generalSenderIdx;
             MsgReceiver* m_receiver;
+            SocketComm* m_comm;
     };
 
-    MsgManager* MsgManager::m_instance = NULL;
-
-}
+} //namespace dji2mav
 
 
 #endif

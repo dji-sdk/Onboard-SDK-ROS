@@ -10,7 +10,7 @@
 #define _MSGSENDER_H_
 
 
-#include "SocktComm.h"
+#include "socketComm.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,16 +1,14 @@
 /*****************************************************************************
  * @Brief     ROS-free and MavLink-free low-level socket communicator class
- * @Version   1.0
+ * @Version   1.1
  * @Author    Chris Liu
  * @Created   2015/10/29
- * @Modified  2015/11/14
+ * @Modified  2015/11/15
  *****************************************************************************/
 
 #ifndef _DJI2MAV_SOCKETCOMM_H_
 #define _DJI2MAV_SOCKETCOMM_H_
 
-
-#include "config.h"
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -26,26 +24,20 @@ namespace dji2mav {
 
     class SocketComm {
         public:
-            /* Lazy Mode Singleton. WARNING: Unsafe for multi-thread */
-            static SocketComm* getInstance() {
-                if(NULL == m_instance) {
-                    try {
-                        m_instance = new SocketComm();
-                    } catch(std::bad_alloc &m) {
-                        std::cerr << "Cannot new instance of SocketComm: " 
-                                << "at line: " << __LINE__ << ", func: " 
-                                << __func__ << ", file: " << __FILE__ 
-                                << std::endl;
-                        perror( m.what() );
-                        exit(EXIT_FAILURE);
-                    }
-                }
-                return m_instance;
+            SocketComm() {
+                m_sock = -1;
+            }
+
+
+            ~SocketComm() {
+                disconnect();
             }
 
 
             /* Set the Connection Configuration */
-            void setConf(std::string gcsIP, int gcsPort, int locPort) {
+            void setConf(std::string gcsIP, uint16_t gcsPort, 
+                    uint16_t locPort) {
+
                 memset(&m_locAddr, 0, sizeof(m_locAddr));
                 m_locAddr.sin_family = AF_INET;
                 m_locAddr.sin_addr.s_addr = INADDR_ANY;
@@ -55,6 +47,7 @@ namespace dji2mav {
                 m_gcsAddr.sin_family = AF_INET;
                 m_gcsAddr.sin_addr.s_addr = inet_addr(gcsIP.c_str());
                 m_gcsAddr.sin_port = htons(gcsPort);
+
             }
 
 
@@ -145,25 +138,12 @@ namespace dji2mav {
 
 
         private:
-            SocketComm() {
-                m_sock = -1;
-            }
-
-
-            ~SocketComm() {
-                disconnect();
-            }
-
-
-            static SocketComm* m_instance;
             struct sockaddr_in m_gcsAddr;
             struct sockaddr_in m_locAddr;
             int m_sock;
     };
 
-    SocketComm* SocketComm::m_instance = NULL;
-
-}
+} //namespace dji2mav
 
 
 #endif

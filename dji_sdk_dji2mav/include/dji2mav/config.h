@@ -10,8 +10,8 @@
 #define _DJI2MAV_CONFIG_H_
 
 
-#include "mngHandler.h"
-#include "mavContainer.h"
+#include "mavHandler.h"
+#include "mavDistributor.h"
 
 #include <iostream>
 #include <string>
@@ -55,7 +55,7 @@ namespace dji2mav {
              */
             inline bool setup(uint8_t mavSysid, uint16_t num) {
                 return ( m_hdlr->setHandlerConf(mavSysid, num)
-                        && m_ctnr->setContainerConf(num) );
+                        && m_dstb->setDistributorConf(num) );
             }
 
 
@@ -78,7 +78,7 @@ namespace dji2mav {
 
                 return ( m_hdlr->setMngConf(gcsIdx, senderListSize, 
                         sendBufSize, recvBufSize) 
-                        && m_hdlr->establish(mngIdx, gcsIP, gcsPort, 
+                        && m_hdlr->establish(gcsIdx, gcsIP, gcsPort, 
                         locPort) );
 
             }
@@ -86,8 +86,8 @@ namespace dji2mav {
 
         private:
             Config() {
-                m_hdlr = MngHandler::getInstance();
-                m_ctnr = MavContainer::getInstance();
+                m_hdlr = MavHandler::getInstance();
+                m_dstb = MavDistributor::getInstance();
             }
 
 
@@ -96,8 +96,8 @@ namespace dji2mav {
 
 
             static Config* m_instance;
-            MngHandler* m_hdlr;
-            MavContainer* m_ctnr;
+            MavHandler* m_hdlr;
+            MavDistributor* m_dstb;
 
     };
 
