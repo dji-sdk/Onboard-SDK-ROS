@@ -16,6 +16,14 @@ void DJISDKNode::broadcast_callback()
 
     auto current_time = ros::Time::now();
 
+	if((msg_flags & ENABLE_MSG_TIME)){
+		time_stamp.header.frame_id = "/time";
+		time_stamp.header.stamp = current_time;
+		time_stamp.time_ms = recv_sdk_std_msgs.time_stamp.time;
+		time_stamp.time_ns = recv_sdk_std_msgs.time_stamp.asr_ts;
+		time_stamp.sync_flag = recv_sdk_std_msgs.time_stamp.sync_flag;
+		time_stamp_publisher.publish(time_stamp);
+	}
     //update attitude msg
     if ((msg_flags & ENABLE_MSG_Q) && (msg_flags & ENABLE_MSG_W)) {
         attitude_quaternion.header.frame_id = "/world";

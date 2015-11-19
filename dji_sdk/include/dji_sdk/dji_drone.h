@@ -116,7 +116,8 @@ private:
     ros::Subscriber odometry_subscriber;
     ros::Subscriber sdk_permission_subscriber;
 
-	ros::Subscriber mission_state_publisher;
+	ros::Subscriber time_stamp_subscriber;
+	ros::Subscriber mission_state_subscriber;
 	ros::Subscriber mission_event_subscriber;
 
 public:
@@ -134,6 +135,7 @@ public:
     dji_sdk::RCChannels rc_channels;
     dji_sdk::Velocity velocity;
     nav_msgs::Odometry odometry;
+	dji_sdk::TimeStamp time_stamp;
     bool sdk_permission_opened = false;
     bool activation = false;
     bool localposbase_use_height = true;
@@ -221,6 +223,11 @@ private:
 	void sdk_permission_subscriber_callback(std_msgs::UInt8 sdk_permission)
 	{
 		this->sdk_permission_opened = sdk_permission.data;
+	}
+
+	void time_stamp_subscriber_callback(dji_sdk::TimeStamp time_stamp)
+	{
+		this->time_stamp = time_stamp;
 	}
 
 	void mission_state_push_info_callback(dji_sdk::MissionPushInfo state_push_info)
@@ -320,7 +327,8 @@ public:
         activation_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/activation", 10, &DJIDrone::activation_subscriber_callback, this);
         odometry_subscriber = nh.subscribe<nav_msgs::Odometry>("dji_sdk/odometry",10, &DJIDrone::odometry_subscriber_callback, this);
         sdk_permission_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/sdk_permission", 10, &DJIDrone::sdk_permission_subscriber_callback, this);
-		mission_state_publisher = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/missino_state", 10, &DJIDrone::mission_state_push_info_callback, this);  
+		time_stamp_subscriber = nh.subscribe<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10, &DJIDrone::time_stamp_subscriber_callback,this);
+		mission_state_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/missino_state", 10, &DJIDrone::mission_state_push_info_callback, this);  
 		mission_event_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_event", 10, &DJIDrone::mission_event_push_info_callback, this);
 	}
 

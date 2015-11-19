@@ -23,6 +23,7 @@
 #include <dji_sdk/Waypoint.h>
 #include <dji_sdk/WaypointList.h>
 
+#include <dji_sdk/TimeStamp.h>
 
 //srvs
 #include <dji_sdk/AttitudeControl.h>

@@ -30,6 +30,7 @@ private:
     dji_sdk::RCChannels rc_channels;
     dji_sdk::Velocity velocity;
     nav_msgs::Odometry odometry;
+	dji_sdk::TimeStamp time_stamp;
 
     bool sdk_permission_opened = false;
     bool activated = false;
@@ -56,6 +57,7 @@ private:
     ros::Publisher activation_publisher;
     ros::Publisher odometry_publisher;
     ros::Publisher sdk_permission_publisher;
+	ros::Publisher time_stamp_publisher;
 
     void init_publishers(ros::NodeHandle& nh)
     {
@@ -74,6 +76,7 @@ private:
         activation_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/activation", 10);
         odometry_publisher = nh.advertise<nav_msgs::Odometry>("dji_sdk/odometry",10);
         sdk_permission_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/sdk_permission", 10);
+		time_stamp_publisher = nh.advertise<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10);
     }
 
 //Services:

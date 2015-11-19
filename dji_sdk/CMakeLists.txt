@@ -65,6 +65,8 @@ add_message_files(
   Waypoint.msg
   WaypointList.msg
 
+  TimeStamp.msg
+
   MissionPushInfo.msg
   MissionWaypointAction.msg
   MissionWaypoint.msg
