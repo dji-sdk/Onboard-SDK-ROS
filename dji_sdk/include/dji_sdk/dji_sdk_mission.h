@@ -72,6 +72,9 @@ private:
 	bool mission_fm_upload_callback(dji_sdk::MissionFmUpload::Request& request, dji_sdk::MissionFmUpload::Response& response);
 	bool mission_fm_set_target_callback(dji_sdk::MissionFmSetTarget::Request& request, dji_sdk::MissionFmSetTarget::Response& response);
 
+	void mission_state_callback();
+	void mission_event_callback();
+
 	void init_missions(ros::NodeHandle& nh)
 	{
 		mission_state_publisher = nh.advertise<dji_sdk::MissionPushInfo>("dji_sdk/mission_state", 10);

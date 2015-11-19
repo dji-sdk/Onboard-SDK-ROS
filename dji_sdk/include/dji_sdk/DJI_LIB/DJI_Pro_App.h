@@ -96,7 +96,7 @@
 #define STABLE_FLAG_ENABLE 	0x01
 
 #define MAKE_VERSION(a,b,c,d) (((a << 24)&0xff000000) | ((b << 16)&0x00ff0000) | ((c << 8)&0x0000ff00) | (d&0x000000ff))
-#define SDK_VERSION           (MAKE_VERSION(3,0,10,0))
+#define SDK_VERSION           (MAKE_VERSION(3,0,100,0))
 
 // data_type
 typedef float 	fp32;
@@ -440,7 +440,7 @@ typedef struct
 {
 	unsigned char action_num 	:4;
 	unsigned char action_rpt	:4;
-	unsigned char command_list [15]; //TODO [WP_ACTION_MAX_NUM]
+	unsigned char command_list [15];
 	int16_t command_param[15];
 }cmd_mission_wp_action_comm_t;
 
@@ -595,9 +595,13 @@ int DJI_Pro_Mission_Followme_Pause(unsigned char pause);
 int DJI_Pro_Mission_Followme_Update_Target(cmd_mission_follow_target_t *target_update);
 
 int DJI_Pro_Get_Broadcast_Data(sdk_std_msg_t *p_user_buf, unsigned short *msg_flags);
+int DJI_Pro_Get_Mission_State_Data(cmd_mission_common_data_t *p_user_buf);
+int DJI_Pro_Get_Mission_Event_Data(cmd_mission_common_data_t *p_user_buf);
 unsigned char DJI_Pro_Get_CmdSet_Id(ProHeader *header);
 unsigned char DJI_Pro_Get_CmdCode_Id(ProHeader *header);
 int DJI_Pro_Register_Transparent_Transmission_Callback(Transparent_Transmission_Func user_rec_handler_entrance);
+int DJI_Pro_Register_Mission_State_Callback(Mission_State_Handler_Func mission_state_handler_entrance);
+int DJI_Pro_Register_Mission_Event_Callback(Mission_Event_Handler_Func mission_event_handler_entrance);
 int DJI_Pro_Register_Broadcast_Callback(User_Broadcast_Handler_Func user_broadcast_handler_entrance);
 int DJI_Pro_Setup(User_Handler_Func user_cmd_handler_entrance);
 

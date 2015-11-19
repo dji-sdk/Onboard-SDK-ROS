@@ -1,5 +1,33 @@
 #include <dji_sdk/dji_sdk_mission.h>
 
+void DJISDKMission::mission_state_callback()
+{
+	cmd_mission_common_data_t mission_state_data;
+	dji_sdk::MissionPushInfo mission_state;
+	DJI_Pro_Get_Mission_State_Data(&mission_state_data);
+	mission_state.type = mission_state_data.type;
+	mission_state.data_1 = mission_state_data.data_1;
+	mission_state.data_2 = mission_state_data.data_2;
+	mission_state.data_3 = mission_state_data.data_3;
+	mission_state.data_4 = mission_state_data.data_4;
+	mission_state.data_5 = mission_state_data.data_5;
+	mission_state_publisher.publish(mission_state);
+}
+
+void DJISDKMission::mission_event_callback()
+{
+	cmd_mission_common_data_t mission_event_data;
+	dji_sdk::MissionPushInfo mission_event;
+	DJI_Pro_Get_Mission_Event_Data(&mission_event_data);
+	mission_event.data_1 = mission_event_data.data_1;
+	mission_event.data_2 = mission_event_data.data_2;
+	mission_event.data_3 = mission_event_data.data_3;
+	mission_event.data_4 = mission_event_data.data_4;
+	mission_event.data_5 = mission_event_data.data_5;
+	mission_event_publisher.publish(mission_event);
+
+}
+
 bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& request, dji_sdk::MissionStart::Response& response)
 {
 	//the start cmd should run while ready
@@ -117,7 +145,6 @@ bool DJISDKMission::mission_download_callback(dji_sdk::MissionDownload::Request&
 	if (current_state == ServerState::READY)
 		return false;
 
-	//TODO handling the downloaded mission
 	switch(current_type)
 	{	
 		//different callback
@@ -148,7 +175,6 @@ bool DJISDKMission::mission_wp_upload_callback(dji_sdk::MissionWpUpload::Request
 	if (current_state != ServerState::READY)
 		return false;
 
-	//TODO 
 	waypoint_task = request.waypoint_task;
 
 	cmd_mission_wp_task_info_comm_t new_task;
@@ -281,8 +307,8 @@ bool DJISDKMission::mission_fm_set_target_callback(dji_sdk::MissionFmSetTarget::
 DJISDKMission::DJISDKMission(ros::NodeHandle& nh)
 {
 	init_missions(nh);
+	DJI_Pro_Register_Mission_State_Callback(std::bind(&DJISDKMission::mission_state_callback,this));
+	DJI_Pro_Register_Mission_Event_Callback(std::bind(&DJISDKMission::mission_event_callback,this));
 }
 
 
-//TODO
-//the two publisher

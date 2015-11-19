@@ -17,7 +17,9 @@ static unsigned char Pro_Encode_Data[1024];
 static unsigned char Pro_Encode_ACK[10];
 static sdk_std_msg_t std_broadcast_data;
 static pthread_mutex_t std_msg_lock = PTHREAD_MUTEX_INITIALIZER;
-static cmd_mission_common_data_t mission_status_data;
+static pthread_mutex_t mission_state_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t mission_event_lock = PTHREAD_MUTEX_INITIALIZER;
+static cmd_mission_common_data_t mission_state_data;
 static cmd_mission_common_data_t mission_event_data;
 
 
@@ -1230,6 +1232,23 @@ int DJI_Pro_Get_Broadcast_Data(sdk_std_msg_t *p_user_buf, unsigned short *msg_fl
 	return 0; 	
 }
 
+int DJI_Pro_Get_Mission_State_Data(cmd_mission_common_data_t *p_user_buf)
+{
+	pthread_mutex_lock(&mission_state_lock);
+	*p_user_buf = mission_state_data;
+	pthread_mutex_unlock(&mission_state_lock);
+	return 0;
+}
+
+int DJI_Pro_Get_Mission_Event_Data(cmd_mission_common_data_t *p_user_buf)
+{
+	pthread_mutex_lock(&mission_event_lock);
+	*p_user_buf = mission_event_data;
+	pthread_mutex_unlock(&mission_event_lock);
+	return 0;
+}
+	
+
 static User_Broadcast_Handler_Func p_user_broadcast_handler_func = 0;
 static Mission_State_Handler_Func p_mission_state_handler_func = 0;
 static Mission_Event_Handler_Func p_mission_event_handler_func = 0;
@@ -1292,7 +1311,8 @@ static void DJI_Pro_App_Recv_Req_Data(ProHeader *header)
 		else if (DJI_Pro_Get_CmdSet_Id(header) == MY_BROADCAST_CMD_SET
 				&& DJI_Pro_Get_CmdCode_Id(header) == API_MISSION_DATA)
 		{
-			memcpy((unsigned char*)&mission_status_data, (unsigned char*)header->magic,(header->length - EXC_DATA_SIZE));
+			pthread_mutex_lock(&mission_event_lock);
+			memcpy((unsigned char*)&mission_state_data, (unsigned char*)header->magic,(header->length - EXC_DATA_SIZE));
 			if (p_mission_state_handler_func)
 				p_mission_state_handler_func();
 		}

@@ -17,7 +17,7 @@ typedef struct
 typedef struct
 {
 	uint8_t mission_type;
-	uint8_t mission_status;
+	uint8_t mission_state;
 	uint16_t hotpoint_radius;
 	uint8_t error_code;
 	uint8_t hotpoint_velocity;
@@ -222,34 +222,34 @@ private:
 
 	void mission_state_push_info_callback(dji_sdk::MissionPushInfo state_push_info)
 	{
-		mission_type = state_push_info.type;
+		this->mission_type = state_push_info.type;
 		switch(state_push_info.type)
 		{
 			case 1:
-				waypoint_mission_push_info.mission_type = state_push_info.type;
-				waypoint_mission_push_info.target_waypoint = state_push_info.data_1;
-				waypoint_mission_push_info.current_state = state_push_info.data_2;
-				waypoint_mission_push_info.error_code = state_push_info.data_3;
+				this->waypoint_mission_push_info.mission_type = state_push_info.type;
+				this->waypoint_mission_push_info.target_waypoint = state_push_info.data_1;
+				this->waypoint_mission_push_info.current_state = state_push_info.data_2;
+				this->waypoint_mission_push_info.error_code = state_push_info.data_3;
 				break;
 
 			case 2:
-				hotpoint_mission_push_info.mission_type = state_push_info.type;
-				hotpoint_mission_push_info.mission_status = state_push_info.data_1;
-				hotpoint_mission_push_info.hotpoint_radius = state_push_info.data_2 << 8 | state_push_info.data_3;
-				hotpoint_mission_push_info.error_code = state_push_info.data_4;
-				hotpoint_mission_push_info.hotpoint_velocity = state_push_info.data_5;
+				this->hotpoint_mission_push_info.mission_type = state_push_info.type;
+				this->hotpoint_mission_push_info.mission_state= state_push_info.data_1;
+				this->hotpoint_mission_push_info.hotpoint_radius = state_push_info.data_2 << 8 | state_push_info.data_3;
+				this->hotpoint_mission_push_info.error_code = state_push_info.data_4;
+				this->hotpoint_mission_push_info.hotpoint_velocity = state_push_info.data_5;
 				break;
 
 			case 3:
-				followme_mission_push_info.mission_type = state_push_info.type;
+				this->followme_mission_push_info.mission_type = state_push_info.type;
 				break;
 
 			case 0:
 			case 4:
-				other_mission_push_info.mission_type = state_push_info.type;
-				other_mission_push_info.last_mission_type = state_push_info.data_1;
-				other_mission_push_info.is_broken = state_push_info.data_2;
-				other_mission_push_info.error_code = state_push_info.data_3;
+				this->other_mission_push_info.mission_type = state_push_info.type;
+				this->other_mission_push_info.last_mission_type = state_push_info.data_1;
+				this->other_mission_push_info.is_broken = state_push_info.data_2;
+				this->other_mission_push_info.error_code = state_push_info.data_3;
 				break;
 			default:
 				break;
@@ -259,22 +259,22 @@ private:
 
 	void mission_event_push_info_callback(dji_sdk::MissionPushInfo event_push_info)
 	{
-		incident_type = event_push_info.type;
+		this->incident_type = event_push_info.type;
 		switch(event_push_info.type)
 		{
 			case 0:
-				waypoint_upload_result.incident_type = event_push_info.type;
-				waypoint_upload_result.mission_valid = event_push_info.data_1;
-				waypoint_upload_result.estimated_runtime = event_push_info.data_2 << 8 | event_push_info.data_3;
+				this->waypoint_upload_result.incident_type = event_push_info.type;
+				this->waypoint_upload_result.mission_valid = event_push_info.data_1;
+				this->waypoint_upload_result.estimated_runtime = event_push_info.data_2 << 8 | event_push_info.data_3;
 				break;
 			case 1:
-				waypoint_action_result.incident_type = event_push_info.type;
-				waypoint_action_result.repeat = event_push_info.data_1;
+				this->waypoint_action_result.incident_type = event_push_info.type;
+				this->waypoint_action_result.repeat = event_push_info.data_1;
 				break;
 			case 2:
-				waypoint_reached_result.incident_type = event_push_info.type;
-				waypoint_reached_result.waypoint_index = event_push_info.data_1;
-				waypoint_reached_result.current_state = event_push_info.data_2;
+				this->waypoint_reached_result.incident_type = event_push_info.type;
+				this->waypoint_reached_result.waypoint_index = event_push_info.data_1;
+				this->waypoint_reached_result.current_state = event_push_info.data_2;
 				break;
 			default:
 				break;
@@ -641,66 +641,90 @@ public:
 
 	bool mission_start()
 	{
-
+		dji_sdk::MissionStart mission_start;
+		return mission_start_service.call(mission_start)&&mission_start.response.result;
 	}
 
-	bool mission_pause()
+	bool mission_pause(uint8_t pause)
 	{
-
+		dji_sdk::MissionPause mission_pause;
+		mission_pause.request.pause = pause;
+		return mission_pause_service.call(mission_pause)&&mission_pause.response.result;
 	}
 
 	bool mission_cancel()
 	{
-
+		dji_sdk::MissionCancel mission_cancel;
+		return mission_cancel_service.call(mission_cancel)&&mission_cancel.response.result;
 	}
 
 	bool mission_download()
 	{
-
+		dji_sdk::MissionDownload mission_download;
+		return mission_download_service.call(mission_download)&&mission_download.response.result;
 	}
 	
-	bool mission_wp_upload()
+	bool mission_wp_upload(dji_sdk::MissionWaypointTask waypoint_task)
 	{
-
+		dji_sdk::MissionWpUpload mission_waypoint_task;
+		mission_waypoint_task.request.waypoint_task = waypoint_task;
+		return mission_wp_upload_service.call(mission_waypoint_task)&&mission_waypoint_task.response.result;
 	}
 
-	bool mission_wp_set_speed()
+	bool mission_wp_set_speed(float speed)
 	{
-
+		dji_sdk::MissionWpSetSpeed mission_waypoint_set_speed;
+		mission_waypoint_set_speed.request.speed = speed;
+		return mission_wp_set_speed_service.call(mission_waypoint_set_speed)&&mission_waypoint_set_speed.response.result;
 	}
 
-	bool mission_wp_get_speed()
+	float mission_wp_get_speed()
 	{
-
+		dji_sdk::MissionWpGetSpeed mission_waypoint_get_speed;
+		mission_wp_get_speed_service.call(mission_waypoint_get_speed);
+		return mission_waypoint_get_speed.response.speed;
 	}
 
-	bool mission_hp_upload()
+	bool mission_hp_upload(dji_sdk::MissionHotpointTask hotpoint_task)
 	{
-
+		dji_sdk::MissionHpUpload mission_hotpoint_upload;
+		mission_hotpoint_upload.request.hotpoint_task = hotpoint_task;
+		return mission_hp_upload_service.call(mission_hotpoint_upload)&&mission_hotpoint_upload.response.result;
 	}
 
-	bool mission_hp_set_speed()
+	bool mission_hp_set_speed(float speed, uint8_t direction)
 	{
-
+		dji_sdk::MissionHpSetSpeed mission_hotpoint_set_speed;
+		mission_hotpoint_set_speed.request.speed = speed;
+		mission_hotpoint_set_speed.request.direction = direction;
+		return mission_hp_set_speed_service.call(mission_hotpoint_set_speed)&&mission_hotpoint_set_speed.response.result;
 	}
 
-	bool mission_hp_set_radiu()
+	bool mission_hp_set_radiu(float radius)
 	{
-
+		dji_sdk::MissionHpSetRadiu mission_hotpoint_set_radiu;
+		mission_hotpoint_set_radiu.request.radius = radius;
+		return mission_hp_set_radiu_service.call(mission_hotpoint_set_radiu)&&mission_hotpoint_set_radiu.response.result;
 	}
 
 	bool mission_hp_reset_yaw()
 	{
-
+		dji_sdk::MissionHpResetYaw mission_hotpoint_reset_yaw;
+		return mission_hp_reset_yaw_service.call(mission_hotpoint_reset_yaw)&&mission_hotpoint_reset_yaw.response.result;
 	}
 
-	bool mission_fm_upload()
+	bool mission_fm_upload(dji_sdk::MissionFollowmeTask followme_task)
 	{
-
+		dji_sdk::MissionFmUpload mission_followme_task;
+		mission_followme_task.request.followme_task = followme_task;
+		return mission_fm_upload_service.call(mission_followme_task)&&mission_followme_task.response.result;
 	}
 
-	bool mission_fm_set_target()
+	bool mission_fm_set_target(dji_sdk::MissionFollowmeTarget followme_target)
 	{
+		dji_sdk::MissionFmSetTarget mission_followme_set_target;
+		mission_followme_set_target.request.followme_target = followme_target;
+		return mission_fm_set_target_service.call(mission_followme_set_target)&&mission_followme_set_target.response.result;
 
 	}
 
