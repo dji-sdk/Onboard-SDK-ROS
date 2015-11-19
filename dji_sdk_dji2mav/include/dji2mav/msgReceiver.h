@@ -39,6 +39,7 @@ namespace dji2mav {
 
 
             ~MsgReceiver() {
+                printf("Going to destruct Receiver\n");
                 delete []m_recvBuf;
                 m_recvBuf = NULL;
             }

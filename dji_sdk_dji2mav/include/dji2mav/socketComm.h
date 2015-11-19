@@ -30,7 +30,9 @@ namespace dji2mav {
 
 
             ~SocketComm() {
+                printf("Going to disconnect socket...\n");
                 disconnect();
+                printf("Finish to disconnect socket\n");
             }
 
 

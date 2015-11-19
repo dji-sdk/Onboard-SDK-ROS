@@ -34,6 +34,7 @@ namespace dji2mav{
                 try {
                     m_senderList = new MsgSender*[m_maxListSize];
                     memset(m_senderList, 0, m_maxListSize);
+                    printf("XX m_senderList %02x\n", (uint32_t)m_senderList);
                 } catch(std::bad_alloc& m) {
                     std::cerr << "Failed to alloc memory for sender list: " 
                             << "at line: " << __LINE__ << ", func: " 
@@ -58,6 +59,10 @@ namespace dji2mav{
 
             ~MsgManager() {
                 if(NULL != m_senderList) {
+                    for(uint16_t i = 0; i < m_currListSize; ++i) {
+                        delete m_senderList[i];
+                        m_senderList[i] = NULL;
+                    }
                     delete []m_senderList;
                     m_senderList = NULL;
                 }
@@ -69,6 +74,8 @@ namespace dji2mav{
                     delete m_comm;
                     m_comm = NULL;
                 }
+
+                printf("Finish to destruct Manager\n");
             }
 
 

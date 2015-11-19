@@ -54,7 +54,10 @@ namespace dji2mav {
              * @return True if succeed or false if fail
              */
             inline bool setup(uint8_t mavSysid, uint16_t num) {
-                return ( m_hdlr->setHandlerConf(mavSysid, num)
+                    printf("XX m_instance %02x\n", (uint32_t)m_instance);
+                    printf("XX m_hdlr %02x\n", (uint32_t)m_hdlr);
+                    printf("XX m_dstb %02x\n", (uint32_t)m_dstb);
+                return ( m_hdlr->setHandlerConf(mavSysid, num) 
                         && m_dstb->setDistributorConf(num) );
             }
 
@@ -70,17 +73,28 @@ namespace dji2mav {
              * @param  recvBufSize    : Default 4096
              * @return True if succeed or false if fail
              */
-            inline bool start(uint16_t gcsIdx, std::string gcsIP, 
+            bool start(uint16_t gcsIdx, std::string gcsIP, 
                     uint16_t gcsPort, uint16_t locPort, 
                     uint16_t senderListSize = DEFAULT_SENDER_LIST_SIZE, 
                     uint16_t sendBufSize = DEFAULT_SEND_BUF_SIZE, 
                     uint16_t recvBufSize = DEFAULT_RECV_BUF_SIZE) {
 
-                return ( m_hdlr->setMngConf(gcsIdx, senderListSize, 
+                bool ret =  m_hdlr->setMngConf(gcsIdx, senderListSize, 
                         sendBufSize, recvBufSize) 
-                        && m_hdlr->establish(gcsIdx, gcsIP, gcsPort, 
-                        locPort) );
+                        & m_hdlr->establish(gcsIdx, gcsIP, gcsPort, 
+                        locPort);
+                if(ret) {
+                    m_dstb->startModules();
+                }
+                return ret;
 
+            }
+
+
+            void distructor() {
+                m_hdlr->distructor();
+                m_dstb->distructor();
+                delete m_instance;
             }
 
 
@@ -92,6 +106,9 @@ namespace dji2mav {
 
 
             ~Config() {
+                m_hdlr = NULL;
+                m_dstb = NULL;
+                printf("Finish to destruct Config\n");
             }
 
 

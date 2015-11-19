@@ -12,6 +12,8 @@
 
 #include "mavHandler.h"
 #include "modules/heartbeat/mavHeartbeat.h"
+#include "modules/sensors/mavSensors.h"
+#include "modules/waypoint/mavWaypoint.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -63,6 +65,10 @@ namespace dji2mav{
                             m_listSize * sizeof(mavlink_message_t));
                     memset(m_recvStatusList, 0, 
                             m_listSize * sizeof(mavlink_status_t));
+                    printf("XX m_recvMsgList %02x\n", (uint32_t)m_recvMsgList);
+                    printf("XX m_recvStatusList %02x\n", (uint32_t)m_recvStatusList);
+                    printf("XX m_listSize %d\n", m_listSize);
+                    printf("XX m_instance %02x\n", (uint32_t)m_instance);
                 } catch(std::bad_alloc& m) {
                     std::cerr << "Failed to alloc memory for recv lists: " 
                             << "at line: " << __LINE__ << ", func: " 
@@ -72,8 +78,7 @@ namespace dji2mav{
                     exit(EXIT_FAILURE);
                 }
 
-                startModules();
-
+                printf("Succeed to setup Distributor\n");
                 return true;
 
             }
@@ -85,6 +90,8 @@ namespace dji2mav{
              */
             inline void startModules() {
                   m_moduleHb = MavHeartbeat::getInstance();
+                  m_moduleSs = MavSensors::getInstance();
+                  m_moduleWp = MavWaypoint::getInstance();
             }
 
 
@@ -100,7 +107,27 @@ namespace dji2mav{
                     switch(m_recvMsgList[gcsIdx].msgid) {
                         case MAVLINK_MSG_ID_HEARTBEAT:
                             m_moduleHb->reactToHeartbeat(gcsIdx, 
-                                    m_recvMsgList[gcsIdx]);
+                                    &m_recvMsgList[gcsIdx]);
+                            break;
+                        case MAVLINK_MSG_ID_MISSION_REQUEST_LIST:
+                            m_moduleWp->reactToMissionRequestList(gcsIdx, 
+                                    &m_recvMsgList[gcsIdx]);
+                            break;
+                        case MAVLINK_MSG_ID_MISSION_REQUEST:
+                            m_moduleWp->reactToMissionRequest(gcsIdx, 
+                                    &m_recvMsgList[gcsIdx]);
+                            break;
+                        case MAVLINK_MSG_ID_MISSION_ACK:
+                            m_moduleWp->reactToMissionAck(gcsIdx, 
+                                    &m_recvMsgList[gcsIdx]);
+                            break;
+                        case MAVLINK_MSG_ID_MISSION_COUNT:
+                            m_moduleWp->reactToMissionCount(gcsIdx, 
+                                    &m_recvMsgList[gcsIdx]);
+                            break;
+                        case MAVLINK_MSG_ID_MISSION_ITEM:
+                            m_moduleWp->reactToMissionItem(gcsIdx, 
+                                    &m_recvMsgList[gcsIdx]);
                             break;
                         default:
                             printf("Undistributed message with msgid %u!\n", 
@@ -123,6 +150,17 @@ namespace dji2mav{
             }
 
 
+            void distructor() {
+                if(NULL != m_moduleHb)
+                    m_moduleHb->distructor();
+                if(NULL != m_moduleSs)
+                    m_moduleSs->distructor();
+                if(NULL != m_moduleWp)
+                    m_moduleWp->distructor();
+                delete m_instance;
+            }
+
+
         private:
             MavDistributor() {
                 m_listSize = 0;
@@ -139,6 +177,13 @@ namespace dji2mav{
                     delete []m_recvStatusList;
                     m_recvStatusList = NULL;
                 }
+
+                m_hdlr = NULL;
+                m_moduleHb = NULL;
+                m_moduleSs = NULL;
+                m_moduleWp = NULL;
+
+                printf("Finish to destruct Distributor\n");
             }
 
 
@@ -151,6 +196,8 @@ namespace dji2mav{
             MavHandler* m_hdlr;
 
             MavHeartbeat* m_moduleHb;
+            MavSensors* m_moduleSs;
+            MavWaypoint* m_moduleWp;
 
     };
 

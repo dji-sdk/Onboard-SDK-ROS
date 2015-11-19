@@ -128,6 +128,10 @@ namespace dji2mav {
                 try {
                     m_mngList = new MsgManager*[m_mngListSize];
                     memset(m_mngList, 0, m_mngListSize * sizeof(MsgManager));
+                    printf("XX m_mngList %02x\n", (uint32_t)m_mngList);
+                    printf("XX size %02x\n", sizeof(m_mngList));
+                    printf("XX m_mngListSize %02x\n", m_mngListSize);
+                    printf("XX m_instance %02x\n", (uint32_t)m_instance);
                 } catch(std::bad_alloc& m) {
                     std::cerr << "Failed to alloc memory for mng list: " 
                             << "at line: " << __LINE__ << ", func: " 
@@ -137,6 +141,7 @@ namespace dji2mav {
                     exit(EXIT_FAILURE);
                 }
 
+                printf("Succeed to setup Handler\n");
                 return true;
 
             }
@@ -319,6 +324,11 @@ namespace dji2mav {
             }
 
 
+            void distructor() {
+                delete m_instance;
+            }
+
+
         private:
             MavHandler() {
                 m_mngListSize = 0;
@@ -326,10 +336,20 @@ namespace dji2mav {
 
 
             ~MavHandler() {
+                printf("Going to destruct Handler\n");
+
                 if(NULL != m_mngList) {
-                    delete []m_mngList;
+                    for(uint16_t i = 0; i < m_mngListSize; ++i) {
+                        if(NULL != m_mngList[i]) {
+                            delete m_mngList[i];
+                            m_mngList[i] = NULL;
+                        }
+                    }
+                    //delete []m_mngList;
                     m_mngList = NULL;
                 }
+
+                printf("Finish to destruct Handler\n");
             }
 
 

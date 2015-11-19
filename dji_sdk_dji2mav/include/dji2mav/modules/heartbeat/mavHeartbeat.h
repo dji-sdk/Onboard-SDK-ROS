@@ -73,8 +73,8 @@ namespace dji2mav {
             bool applyNewSender(uint16_t gcsIdx) {
                 int newSender = m_hdlr->registerSender(gcsIdx);
                 if( newSender < 0 ) {
-                    printf("Fail to regiser a sender for GCS #%u! "
-                            "Did you set sender list size 0 or 1?\n", gcsIdx);
+                    printf("Fail to register sender for heartbeat in GCS #%u! "
+                            "Did you set sender list too small?\n", gcsIdx);
                     return false;
                 }
                 m_senderRecord[gcsIdx] = newSender;
@@ -96,12 +96,12 @@ namespace dji2mav {
                     uint32_t customMode, uint8_t mavStatus, 
                     uint8_t mavVersion) {
 
-                m_mavHb.type = mavType;
-                m_mavHb.autopilot = mavAutopilot;
-                m_mavHb.base_mode = mavMode;
-                m_mavHb.custom_mode = customMode;
-                m_mavHb.system_status = mavStatus;
-                m_mavHb.mavlink_version = mavVersion;
+                m_hbMsg.type = mavType;
+                m_hbMsg.autopilot = mavAutopilot;
+                m_hbMsg.base_mode = mavMode;
+                m_hbMsg.custom_mode = customMode;
+                m_hbMsg.system_status = mavStatus;
+                m_hbMsg.mavlink_version = mavVersion;
 
             }
 
@@ -111,7 +111,7 @@ namespace dji2mav {
              * @param  mavType : Default quadrotor type
              */
             inline void setType(uint8_t mavType) {
-                m_mavHb.type = mavType;
+                m_hbMsg.type = mavType;
             }
 
 
@@ -120,7 +120,7 @@ namespace dji2mav {
              * @param  mavAutopilot : Default full supporting for everything
              */
             inline void setAutopilot(uint8_t mavAutopilot) {
-                m_mavHb.autopilot = mavAutopilot;
+                m_hbMsg.autopilot = mavAutopilot;
             }
 
 
@@ -129,7 +129,7 @@ namespace dji2mav {
              * @param  mavMode : Default autocontrol and disarmed
              */
             inline void setBaseMode(uint8_t mavMode) {
-                m_mavHb.base_mode = mavMode;
+                m_hbMsg.base_mode = mavMode;
             }
 
 
@@ -138,7 +138,7 @@ namespace dji2mav {
              * @param  customMode : Default 0. Defined by user
              */
             inline void setCustomMode(uint32_t customMode) {
-                m_mavHb.custom_mode = customMode;
+                m_hbMsg.custom_mode = customMode;
             }
 
 
@@ -147,7 +147,7 @@ namespace dji2mav {
              * @param  mavStatus : Default vehicle grounded and standby
              */
             inline void setSystemStatus(uint8_t mavStatus) {
-                m_mavHb.system_status = mavStatus;
+                m_hbMsg.system_status = mavStatus;
             }
 
 
@@ -156,18 +156,18 @@ namespace dji2mav {
              * @param  mavVersion : Default 3
              */
             inline void setMavlinkVersion(uint8_t mavVersion) {
-                m_mavHb.mavlink_version = mavVersion;
+                m_hbMsg.mavlink_version = mavVersion;
             }
 
 
             /**
-             * @brief  Send heartbeat to specific GCS
+             * @brief  Send heartbeat to specific GCS. Compid is set to ALL
              * @param  gcsIdx : The index of GCS
              * @return True if succeed or false if fail
              */
             bool sendHeartbeat(uint16_t gcsIdx) {
                 mavlink_msg_heartbeat_encode(m_hdlr->getSysid(), 
-                        MAV_COMP_ID_ALL, &m_sendMsg, &m_mavHb);
+                        MAV_COMP_ID_ALL, &m_sendMsg, &m_hbMsg);
 
                 if( m_hdlr->sendEncodedMsg(gcsIdx, m_senderRecord[gcsIdx], 
                         &m_sendMsg) ) {
@@ -197,9 +197,9 @@ namespace dji2mav {
              * @param  gcsIdx : Get the index of GCS
              * @param  msg    : Get the received message
              */
-            void reactToHeartbeat(uint16_t gcsIdx, mavlink_message_t &msg) {
-                printf("Get heartbeat with sysid %u and compid %u "
-                        "from GCS #%u.\n", msg.sysid, msg.compid, gcsIdx);
+            void reactToHeartbeat(uint16_t gcsIdx, const mavlink_message_t* msg) {
+                printf("-- Get heartbeat with sysid %u and compid %u "
+                        "from GCS #%u.\n", msg->sysid, msg->compid, gcsIdx);
                 if(NULL != m_rsp) {
                     m_rsp();
                 }
@@ -207,11 +207,16 @@ namespace dji2mav {
 
 
             /**
-             * @brief  React to heartbeat from all GCS and execute rsp
-             * @return True if succeed or false if fail
+             * @brief Set the responser function pointer for the heartbeat
+             * @param The function pointer that is to be set
              */
             inline void setHeartbeatRsp( void (*func)() ) {
                 m_rsp = func;
+            }
+
+
+            void distructor() {
+                delete m_instance;
             }
 
 
@@ -241,21 +246,24 @@ namespace dji2mav {
 
                 setHeartbeatRsp(NULL);
 
+                printf("Succeed to construct Heartbeat module\n");
+
             }
 
 
             ~MavHeartbeat() {
+                m_hdlr = NULL;
+                printf("Finish to destruct Heartbeat module\n");
             }
 
 
             static MavHeartbeat* m_instance;
-            MavHandler* m_hdlr;
             int* m_senderRecord;
 
+            MavHandler* m_hdlr;
+
             mavlink_message_t m_sendMsg;
-            mavlink_message_t m_recvMsg;
-            mavlink_status_t m_recvStatus;
-            mavlink_heartbeat_t m_mavHb;
+            mavlink_heartbeat_t m_hbMsg;
 
             void (*m_rsp)();
 
