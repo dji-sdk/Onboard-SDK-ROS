@@ -187,3 +187,30 @@ bool DJISDKNode::virtual_rc_data_control_callback(dji_sdk::VirtualRCDataControl:
 	return true;
 }
 
+bool DJISDKNode::drone_arm_control_callback(dji_sdk::DroneArmControl::Request& request, dji_sdk::DroneArmControl::Response& response)
+{
+	uint8_t arm = request.arm;
+	DJI_Pro_Arm_Control(arm);
+
+	response.result = true;
+	return true;
+}
+
+bool DJISDKNode::sync_flag_control_callback(dji_sdk::SyncFlagControl::Request& request, dji_sdk::SyncFlagControl::Response& response)
+{
+	uint32_t frequency = request.frequency;
+	DJI_Pro_Send_Sync_Flag(frequency);
+
+	response.result = true;
+	return true;
+}
+
+bool DJISDKNode::message_frequency_control_callback(dji_sdk::MessageFrequencyControl::Request& request, dji_sdk::MessageFrequencyControl::Response& response)
+{
+	sdk_msgs_frequency_data_t message_frequency;
+	std::copy(request.frequency.begin(), request.frequency.end(), message_frequency.std_freq);
+	DJI_Pro_Set_Msgs_Frequency(&message_frequency);
+
+	response.result = true;
+	return true;
+}

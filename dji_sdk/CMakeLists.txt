@@ -87,6 +87,9 @@ add_service_files(
   SDKPermissionControl.srv
   VelocityControl.srv
 
+  DroneArmControl.srv
+  SyncFlagControl.srv
+  MessageFrequencyControl.srv
   VirtualRCEnableControl.srv
   VirtualRCDataControl.srv
 

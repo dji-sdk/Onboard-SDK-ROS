@@ -601,7 +601,7 @@ static void DJI_Pro_Msgs_Frequency_Set_CallBack(ProHeader *header) {
    }
 }
 
-int DJI_Pro_Msgs_Frequency_Set(sdk_msgs_frequency_data_t *p_frequency_data)
+int DJI_Pro_Set_Msgs_Frequency(sdk_msgs_frequency_data_t *p_frequency_data)
 {
 	DJI_Pro_App_Send_Data(2,1, MY_ACTIVATION_SET, API_SET_FREQUENCY,
 					(unsigned char*)p_frequency_data, sizeof(sdk_msgs_frequency_data_t),
@@ -641,7 +641,7 @@ int DJI_Pro_Arm_Control(unsigned char arm_cmd)
 /*
  * interface: sync timestamp interface
  */
-int DJI_Pro_Sync_Flag_Send(uint32_t frequency)
+int DJI_Pro_Send_Sync_Flag(uint32_t frequency)
 {
 	DJI_Pro_App_Send_Data(0, 1, MY_SYNC_CMD_SET, API_SYNC_TIMESTAMP,
 						(unsigned char*)&frequency, sizeof(frequency), 0, 0, 1);

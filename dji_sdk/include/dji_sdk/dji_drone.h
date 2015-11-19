@@ -84,6 +84,9 @@ private:
 
 	ros::ServiceClient virtual_rc_enable_control_service;
 	ros::ServiceClient virtual_rc_data_control_service;
+	ros::ServiceClient drone_arm_control_service;
+	ros::ServiceClient sync_flag_control_service;
+	ros::ServiceClient message_frequency_control_service;
 	ros::ServiceClient mission_start_service;
 	ros::ServiceClient mission_pause_service;
 	ros::ServiceClient mission_cancel_service;
@@ -297,6 +300,11 @@ public:
 	    local_position_control_service = nh.serviceClient<dji_sdk::LocalPositionControl>("dji_sdk/local_position_control");
 	    sdk_permission_control_service = nh.serviceClient<dji_sdk::SDKPermissionControl>("dji_sdk/sdk_permission_control");
 	    velocity_control_service = nh.serviceClient<dji_sdk::VelocityControl>("dji_sdk/velocity_control");
+		virtual_rc_enable_control_service = nh.serviceClient<dji_sdk::VirtualRCEnableControl>("dji_sdk/virtual_rc_enable_control");
+		virtual_rc_data_control_service = nh.serviceClient<dji_sdk::VirtualRCDataControl>("dji_sdk/virtual_rc_data_control");
+		drone_arm_control_service = nh.serviceClient<dji_sdk::DroneArmControl>("dji_sdk/drone_arm_control");
+		sync_flag_control_service = nh.serviceClient<dji_sdk::SyncFlagControl>("dji_sdk/sync_flag_control");
+		message_frequency_control_service = nh.serviceClient<dji_sdk::MessageFrequencyControl>("dji_sdk/message_frequency_control");
 
         acceleration_subscriber = nh.subscribe<dji_sdk::Acceleration>("dji_sdk/acceleration", 10, &DJIDrone::acceleration_subscriber_callback, this);
         attitude_quaternion_subscriber = nh.subscribe<dji_sdk::AttitudeQuaternion>("dji_sdk/attitude_quaternion", 10, &DJIDrone::attitude_quaternion_subscriber_callback, this);
@@ -441,6 +449,28 @@ public:
 		std::copy(v.begin(), v.end(), virtual_rc_data_control.request.channel_data.begin());
 
 		return virtual_rc_data_control_service.call(virtual_rc_data_control) && virtual_rc_data_control.response.result;
+	}
+
+	bool drone_arm_control(uint8_t arm)
+	{
+		dji_sdk::DroneArmControl drone_arm_control;
+		drone_arm_control.request.arm = arm;
+		return drone_arm_control_service.call(drone_arm_control) && drone_arm_control.response.result;
+	}
+
+	bool sync_flag_control(float frequency)
+	{
+		dji_sdk::SyncFlagControl sync_flag_control;
+		sync_flag_control.request.frequency = frequency;
+		return sync_flag_control_service.call(sync_flag_control) && sync_flag_control.response.result;
+	}
+
+	bool message_frequency_control(uint8_t frequency_data[16])
+	{
+		dji_sdk::MessageFrequencyControl message_frequency_control;
+		std::vector<uint8_t> v(frequency_data, frequency_data + sizeof frequency_data / sizeof frequency_data[0]);
+		std::copy(v.begin(), v.end(), message_frequency_control.request.frequency.begin());
+		return message_frequency_control_service.call(message_frequency_control) && message_frequency_control.response.result;
 	}
 
 	bool local_position_control(float x, float y, float z, float yaw)

@@ -567,9 +567,10 @@ int DJI_Pro_Control_Management(unsigned char cmd,
 int DJI_Pro_Attitude_Control(attitude_data_t *p_user_data);
 int DJI_Pro_Gimbal_Angle_Control(gimbal_custom_control_angle_t *p_user_data);
 int DJI_Pro_Gimbal_Speed_Control(gimbal_custom_speed_t *p_user_data);
+int DJI_Pro_Camera_Control(unsigned char camera_cmd);
+
 int DJI_Pro_Arm_Control(unsigned char arm_cmd);
 int DJI_Pro_Send_Sync_Flag(uint32_t frequency);
-int DJI_Pro_Camera_Control(unsigned char camera_cmd);
 int DJI_Pro_Set_Msgs_Frequency(sdk_msgs_frequency_data_t *p_frequency_data);
 int DJI_Pro_Virtual_RC_Manage(virtual_rc_manager_t *p_rc_manager_data);
 int DJI_Pro_Virtual_RC_Send_Value(virtual_rc_data_t *p_rc_value);

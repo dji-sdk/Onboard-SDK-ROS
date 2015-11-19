@@ -23,6 +23,7 @@
 #include <dji_sdk/Waypoint.h>
 #include <dji_sdk/WaypointList.h>
 
+
 //srvs
 #include <dji_sdk/AttitudeControl.h>
 #include <dji_sdk/CameraActionControl.h>
@@ -34,6 +35,9 @@
 #include <dji_sdk/SDKPermissionControl.h>
 #include <dji_sdk/VelocityControl.h>
 
+#include <dji_sdk/DroneArmControl.h>
+#include <dji_sdk/SyncFlagControl.h>
+#include <dji_sdk/MessageFrequencyControl.h>
 #include <dji_sdk/VirtualRCEnableControl.h>
 #include <dji_sdk/VirtualRCDataControl.h>
 
