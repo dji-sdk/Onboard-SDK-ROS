@@ -23,7 +23,27 @@ static void Display_Main_Menu(void)
     printf("[m] Local Navi Test\n");
     printf("[n] GPS Navi Test\n");
     printf("[o] Waypoint List Test\n");
-    printf("[p] Exit\n");
+    printf("[p] Drone Arm\n");
+    printf("[q] Drone Disarm\n");
+    printf("[r] Virtual RC Test 1\n");
+    printf("[s] Virtual RC Test 2\n");
+    printf("[t] Sync Flag Test\n");
+    printf("[u] Set Msg Frequency Test\n");
+    printf("[v] Mission Start\n");
+    printf("[w] Mission Pause\n");
+    printf("[x] Mission Resume\n");
+    printf("[y] Mission Cancel\n");
+    printf("[z] Mission Download\n");
+    printf("[1] Mission Wp Upload\n");
+    printf("[2] Mission Hp Upload\n");
+    printf("[3] Mission Fm Upload\n");
+    printf("[4] Mission Wp Set Speed\n");
+    printf("[5] Mission Wp Get Speed\n");
+    printf("[6] Mission Hp Set Speed\n");
+    printf("[7] Mission Hp Set Radiu\n");
+    printf("[8] Mission Hp Reset Yaw\n");
+    printf("[9] Mission Fm Set Target\n");
+    printf("[0] Exit\n");
     printf("\ninput a/b/c etc..then press enter key\r\n");
     printf("\nuse `rostopic echo` to query drone status\r\n");
     printf("----------------------------------------\r\n");
@@ -40,6 +60,8 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     DJIDrone* drone = new DJIDrone(nh);
 
+	uint32_t virtual_rc_data[16];
+	uint8_t  msg_frequency_data[16] = {2};
     dji_sdk::WaypointList newWaypointList;
     dji_sdk::Waypoint waypoint0;
     dji_sdk::Waypoint waypoint1;
@@ -47,13 +69,18 @@ int main(int argc, char **argv)
     dji_sdk::Waypoint waypoint3;
     dji_sdk::Waypoint waypoint4;
 
+	dji_sdk::MissionWaypointTask waypoint_task;
+	dji_sdk::MissionHotpointTask hotpoint_task;
+	dji_sdk::MissionFollowmeTask followme_task;
+	dji_sdk::MissionFollowmeTarget followme_target;
+
     Display_Main_Menu();
     while(1)
     {
         temp32 = getchar();
         if(temp32 != 10)
         {
-            if(temp32 >= 'a' && temp32 <= 'p' && valid_flag == false)
+            if(valid_flag == false)
             {
                 main_operate_code = temp32;
                 valid_flag = true;
@@ -337,7 +364,105 @@ int main(int argc, char **argv)
 
                 drone->waypoint_navigation_send_request(newWaypointList);
                 break;
-            case 'p':
+			case 'p':
+				//drone arm
+				drone->drone_arm();
+                break;
+			case 'q':
+				//drone disarm
+				drone->drone_disarm();
+                break;
+			case 'r':
+				//virtual rc test 1: arm & disarm
+				drone->virtual_rc_enable();
+				virtual_rc_data[0] = 1024+600;	//0-> roll     	[1024-600,1024+600] 
+				virtual_rc_data[1] = 1024-600;	//1-> pitch    	[1024-600,1024+600]
+				virtual_rc_data[2] = 1024-600;	//2-> throttle 	[1024-600,1024+600]
+				virtual_rc_data[3] = 1024-600;	//3-> yaw      	[1024-600,1024+600]
+				virtual_rc_data[6] = 1552;    	//6-> mode     	{1552(P), 1024(A), 496(F)}
+				virtual_rc_data[4] = 1684;	 	//4-> gear		{1684(UP), 1324(DOWN)}
+
+				for(int i = 0; i < 10; i++) {
+					drone->virtual_rc_control(virtual_rc_data);
+					usleep(20000);
+				}
+				break;
+			case 's':
+				//virtual rc test 2: a circle path
+				drone->virtual_rc_enable();
+				virtual_rc_data[0] = 1024;		//0-> roll     	[1024-600,1024+600] 
+				virtual_rc_data[1] = 1024;		//1-> pitch    	[1024-600,1024+600]
+				virtual_rc_data[2] = 1024;		//2-> throttle 	[1024-600,1024+600]
+				virtual_rc_data[3] = 1024-600;	//3-> yaw      	[1024-600,1024+600]
+				virtual_rc_data[6] = 1552;    	//6-> mode     	{1552(P), 1024(A), 496(F)}
+				virtual_rc_data[4] = 1684;	 	//4-> gear		{1684(UP), 1324(DOWN)}
+
+				for(int i = 0; i < 10; i++) {
+					drone->virtual_rc_control(virtual_rc_data);
+					usleep(20000);
+				}
+				break;
+			case 't':
+				//sync flag
+				drone->sync_flag_control(1);
+				break;
+			case 'u':
+				//set msg frequency
+				drone->set_message_frequency(msg_frequency_data);
+				break;
+			case 'v':
+				//mission start
+				drone->mission_start();
+				break;
+			case 'w':
+				//mission pause
+				drone->mission_pause();
+				break;
+			case 'x':
+				//mission resume
+				drone->mission_resume();
+				break;
+			case 'y':
+				//mission cancel
+				drone->mission_cancel();
+				break;
+			case 'z':
+				//mission download
+				drone->mission_download();
+				break;
+			case '1':
+				//mission waypoint upload
+				break;
+			case '2':
+				//mission hotpoint upload
+				break;
+			case '3':
+				//mission followme upload
+				break;
+			case '4':
+				//mission waypoint set speed
+				drone->mission_waypoint_set_speed((float)5);
+				break;
+			case '5':
+				//mission waypoint get speed
+				printf("%f", drone->mission_waypoint_get_speed());
+				break;
+			case '6':
+				//mission hotpoint set speed
+				drone->mission_hotpoint_set_speed((float)5,(uint8_t)1);
+				break;
+			case '7':
+				//mission hotpoint set radiu
+				drone->mission_hotpoint_set_radiu((float)5);
+				break;
+			case '8':
+				//mission hotpoint reset yaw
+				drone->mission_hotpoint_reset_yaw();
+				break;
+			case '9':
+				//mission followme update target
+				break;
+			case '0':
                 return 0;
 
             default:

@@ -442,15 +442,23 @@ public:
 		return velocity_control_service.call(velocity_control) && velocity_control.response.result;
 	}
 
-	bool virtual_rc_enable_control(uint8_t enable)
+	bool virtual_rc_enable()
 	{
 		dji_sdk::VirtualRCEnableControl virtual_rc_enable_control;
-		virtual_rc_enable_control.request.enable = enable;
+		virtual_rc_enable_control.request.enable = 1;
 		
 		return virtual_rc_enable_control_service.call(virtual_rc_enable_control) && virtual_rc_enable_control.response.result;
 	}
 
-	bool virtual_rc_data_control(uint32_t channel_data[16])
+	bool virtual_rc_disable()
+	{
+		dji_sdk::VirtualRCEnableControl virtual_rc_enable_control;
+		virtual_rc_enable_control.request.enable = 0;
+		
+		return virtual_rc_enable_control_service.call(virtual_rc_enable_control) && virtual_rc_enable_control.response.result;
+	}
+
+	bool virtual_rc_control(uint32_t channel_data[16])
 	{
 		dji_sdk::VirtualRCDataControl virtual_rc_data_control;
 		std::vector<uint32_t> v(channel_data, channel_data + sizeof channel_data / sizeof channel_data[0]);
@@ -459,10 +467,17 @@ public:
 		return virtual_rc_data_control_service.call(virtual_rc_data_control) && virtual_rc_data_control.response.result;
 	}
 
-	bool drone_arm_control(uint8_t arm)
+	bool drone_arm()
 	{
 		dji_sdk::DroneArmControl drone_arm_control;
-		drone_arm_control.request.arm = arm;
+		drone_arm_control.request.arm = 1;
+		return drone_arm_control_service.call(drone_arm_control) && drone_arm_control.response.result;
+	}
+
+	bool drone_disarm()
+	{
+		dji_sdk::DroneArmControl drone_arm_control;
+		drone_arm_control.request.arm = 0;
 		return drone_arm_control_service.call(drone_arm_control) && drone_arm_control.response.result;
 	}
 
@@ -473,7 +488,7 @@ public:
 		return sync_flag_control_service.call(sync_flag_control) && sync_flag_control.response.result;
 	}
 
-	bool message_frequency_control(uint8_t frequency_data[16])
+	bool set_message_frequency(uint8_t frequency_data[16])
 	{
 		dji_sdk::MessageFrequencyControl message_frequency_control;
 		std::vector<uint8_t> v(frequency_data, frequency_data + sizeof frequency_data / sizeof frequency_data[0]);
@@ -683,10 +698,17 @@ public:
 		return mission_start_service.call(mission_start)&&mission_start.response.result;
 	}
 
-	bool mission_pause(uint8_t pause)
+	bool mission_pause()
 	{
 		dji_sdk::MissionPause mission_pause;
-		mission_pause.request.pause = pause;
+		mission_pause.request.pause = 0;
+		return mission_pause_service.call(mission_pause)&&mission_pause.response.result;
+	}
+
+	bool mission_resume()
+	{
+		dji_sdk::MissionPause mission_pause;
+		mission_pause.request.pause = 1;
 		return mission_pause_service.call(mission_pause)&&mission_pause.response.result;
 	}
 
@@ -702,35 +724,35 @@ public:
 		return mission_download_service.call(mission_download)&&mission_download.response.result;
 	}
 	
-	bool mission_wp_upload(dji_sdk::MissionWaypointTask waypoint_task)
+	bool mission_waypoint_upload(dji_sdk::MissionWaypointTask waypoint_task)
 	{
 		dji_sdk::MissionWpUpload mission_waypoint_task;
 		mission_waypoint_task.request.waypoint_task = waypoint_task;
 		return mission_wp_upload_service.call(mission_waypoint_task)&&mission_waypoint_task.response.result;
 	}
 
-	bool mission_wp_set_speed(float speed)
+	bool mission_waypoint_set_speed(float speed)
 	{
 		dji_sdk::MissionWpSetSpeed mission_waypoint_set_speed;
 		mission_waypoint_set_speed.request.speed = speed;
 		return mission_wp_set_speed_service.call(mission_waypoint_set_speed)&&mission_waypoint_set_speed.response.result;
 	}
 
-	float mission_wp_get_speed()
+	float mission_waypoint_get_speed()
 	{
 		dji_sdk::MissionWpGetSpeed mission_waypoint_get_speed;
 		mission_wp_get_speed_service.call(mission_waypoint_get_speed);
 		return mission_waypoint_get_speed.response.speed;
 	}
 
-	bool mission_hp_upload(dji_sdk::MissionHotpointTask hotpoint_task)
+	bool mission_hotpoint_upload(dji_sdk::MissionHotpointTask hotpoint_task)
 	{
 		dji_sdk::MissionHpUpload mission_hotpoint_upload;
 		mission_hotpoint_upload.request.hotpoint_task = hotpoint_task;
 		return mission_hp_upload_service.call(mission_hotpoint_upload)&&mission_hotpoint_upload.response.result;
 	}
 
-	bool mission_hp_set_speed(float speed, uint8_t direction)
+	bool mission_hotpoint_set_speed(float speed, uint8_t direction)
 	{
 		dji_sdk::MissionHpSetSpeed mission_hotpoint_set_speed;
 		mission_hotpoint_set_speed.request.speed = speed;
@@ -738,34 +760,32 @@ public:
 		return mission_hp_set_speed_service.call(mission_hotpoint_set_speed)&&mission_hotpoint_set_speed.response.result;
 	}
 
-	bool mission_hp_set_radiu(float radius)
+	bool mission_hotpoint_set_radiu(float radius)
 	{
 		dji_sdk::MissionHpSetRadiu mission_hotpoint_set_radiu;
 		mission_hotpoint_set_radiu.request.radius = radius;
 		return mission_hp_set_radiu_service.call(mission_hotpoint_set_radiu)&&mission_hotpoint_set_radiu.response.result;
 	}
 
-	bool mission_hp_reset_yaw()
+	bool mission_hotpoint_reset_yaw()
 	{
 		dji_sdk::MissionHpResetYaw mission_hotpoint_reset_yaw;
 		return mission_hp_reset_yaw_service.call(mission_hotpoint_reset_yaw)&&mission_hotpoint_reset_yaw.response.result;
 	}
 
-	bool mission_fm_upload(dji_sdk::MissionFollowmeTask followme_task)
+	bool mission_followme_upload(dji_sdk::MissionFollowmeTask followme_task)
 	{
 		dji_sdk::MissionFmUpload mission_followme_task;
 		mission_followme_task.request.followme_task = followme_task;
 		return mission_fm_upload_service.call(mission_followme_task)&&mission_followme_task.response.result;
 	}
 
-	bool mission_fm_set_target(dji_sdk::MissionFollowmeTarget followme_target)
+	bool mission_followme_update_target(dji_sdk::MissionFollowmeTarget followme_target)
 	{
 		dji_sdk::MissionFmSetTarget mission_followme_set_target;
 		mission_followme_set_target.request.followme_target = followme_target;
 		return mission_fm_set_target_service.call(mission_followme_set_target)&&mission_followme_set_target.response.result;
-
 	}
 
-	
 };
 

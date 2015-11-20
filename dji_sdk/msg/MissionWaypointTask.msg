@@ -1,4 +1,3 @@
-uint8 length
 float32 velocity_range
 float32 idle_velocity
 uint8 action_on_finish
