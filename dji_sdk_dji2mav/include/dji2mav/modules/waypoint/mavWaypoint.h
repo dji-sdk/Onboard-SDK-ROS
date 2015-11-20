@@ -234,6 +234,7 @@ namespace dji2mav{
 
                 mavlink_msg_mission_ack_decode(recvMsgPtr, &m_ackMsg);
                 printf("Mission ACK code: %d\n", m_ackMsg.type);
+                m_status = loaded;
                 m_wp.finishUpload();
                 m_wp.displayMissionDeg();
 
@@ -300,8 +301,11 @@ namespace dji2mav{
                 printf("In mission item with status: %d\n", (int)m_status);
 
                 switch(m_status) {
-                    case idle:
                     case loaded:
+                        //TODO: Wrong in the ground station!!!!
+                        reactToMissionSetCurrent(gcsIdx, recvMsgPtr);
+                        return;
+                    case idle:
                     case uploading:
                     case executing:
                     case paused:
@@ -341,6 +345,102 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
             }
 
 
+            void reactToMissionClearAll(uint16_t gcsIdx, 
+                    const mavlink_message_t* recvMsgPtr) {
+
+                if(gcsIdx != m_masterGcsIdx)
+                    return;
+
+                if(recvMsgPtr->compid != MAV_COMP_ID_MISSIONPLANNER) {
+                    printf("WARNNING! The compid is %u\n", recvMsgPtr->compid);
+                }
+
+                printf("In mission clear all with status: %d\n", (int)m_status);
+
+                switch(m_status) {
+                    case idle:
+                    case uploading:
+                    case downloading:
+                    case loaded:
+                    case error:
+                        m_status = idle;
+                        break;
+                    case executing:
+                    case paused:
+                        return;
+                }
+
+                m_ackMsg.target_system = recvMsgPtr->sysid;
+                m_ackMsg.target_component = recvMsgPtr->compid;
+                m_ackMsg.type = MAV_MISSION_ACCEPTED;
+                mavlink_msg_mission_ack_encode(m_hdlr->getSysid(), 
+                        MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, &m_ackMsg);
+                m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
+                        m_senderRecord[m_masterGcsIdx], &m_sendMsg);
+
+                m_wp.clearMission();
+
+                if(NULL != m_missionClearAllRsp)
+                    m_missionClearAllRsp();
+
+            }
+
+
+            void reactToMissionSetCurrent(uint16_t gcsIdx, 
+                    const mavlink_message_t* recvMsgPtr) {
+
+                if(gcsIdx != m_masterGcsIdx)
+                    return;
+
+                if(recvMsgPtr->compid != MAV_COMP_ID_MISSIONPLANNER) {
+                    printf("WARNNING! The compid is %u\n", recvMsgPtr->compid);
+                }
+
+                printf("In mission set current with status: %d\n", (int)m_status);
+
+                switch(m_status) {
+                    case idle:
+                    case uploading:
+                    case downloading:
+                    case error:
+                        return;
+                    case loaded:
+                    case paused:
+                        m_status = executing;
+                        break;
+                    case executing:
+                        break;
+                }
+
+                mavlink_msg_mission_set_current_decode(recvMsgPtr, &m_setCurrMsg);
+                if( m_wp.isValidIdx(m_setCurrMsg.seq) ) {
+
+                    m_wp.setTargetIdx(m_setCurrMsg.seq);
+
+                    if(NULL != m_targetRsp) {
+                        m_targetRsp( m_wp.getWaypointListRad(), 
+                                m_wp.getListSize(), 
+                                m_wp.getListSize() - m_setCurrMsg.seq );//TODO
+                    }
+                    mavlink_msg_mission_current_pack( m_hdlr->getSysid(), 
+                            MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, 
+                            m_wp.getTargetIdx() );
+                    m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
+                            m_senderRecord[m_masterGcsIdx], &m_sendMsg);
+
+                } else {
+                    m_status = paused;
+                    printf( "The current index %u is invalid! "
+                            "The size of list is %u.\n", m_setCurrMsg.seq, 
+                            m_wp.getListSize() );
+                }
+
+                if(NULL != m_missionSetCurrentRsp)
+                    m_missionSetCurrentRsp(m_setCurrMsg.seq);
+
+            }
+
+
             /**
              * @brief  React to sensors from all GCS and execute rsp
              * @return True if succeed or false if fail
@@ -350,7 +450,7 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
             }
 
 
-            inline void setMissionRequestRsp( void (*func)(uint16_t param) ) {
+            inline void setMissionRequestRsp( void (*func)(uint16_t) ) {
                 m_missionRequestRsp = func;
             }
 
@@ -360,13 +460,28 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
             }
 
 
-            inline void setMissionCountRsp( void (*func)(uint16_t param) ) {
+            inline void setMissionCountRsp( void (*func)(uint16_t) ) {
                 m_missionCountRsp = func;
             }
 
 
-            inline void setMissionItemRsp( void (*func)(uint16_t param) ) {
+            inline void setMissionItemRsp( void (*func)(uint16_t) ) {
                 m_missionItemRsp = func;
+            }
+
+
+            inline void setMissionClearAllRsp( void (*func)() ) {
+                m_missionClearAllRsp = func;
+            }
+
+
+            inline void setMissionSetCurrentRsp( void (*func)(uint16_t) ) {
+                m_missionSetCurrentRsp = func;
+            }
+
+
+            inline void setTargetRsp( void (*func)(const float[][3], uint16_t, uint16_t) ) {
+                m_targetRsp = func;
             }
 
 
@@ -428,6 +543,8 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
             mavlink_mission_count_t m_cntMsg;
             mavlink_mission_ack_t m_ackMsg;
             mavlink_mission_item_t m_itemMsg;
+            mavlink_mission_set_current_t m_setCurrMsg;
+            mavlink_mission_current_t m_currMsg;
 
             enum {
                 idle, 
@@ -440,10 +557,13 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
             } m_status;
 
             void (*m_missionRequestListRsp)();
-            void (*m_missionRequestRsp)(uint16_t param);
+            void (*m_missionRequestRsp)(uint16_t);
             void (*m_missionAckRsp)();
-            void (*m_missionCountRsp)(uint16_t param);
-            void (*m_missionItemRsp)(uint16_t param);
+            void (*m_missionCountRsp)(uint16_t);
+            void (*m_missionItemRsp)(uint16_t);
+            void (*m_missionClearAllRsp)();
+            void (*m_missionSetCurrentRsp)(uint16_t);
+            void (*m_targetRsp)(const float[][3], uint16_t, uint16_t);
 
 
     };

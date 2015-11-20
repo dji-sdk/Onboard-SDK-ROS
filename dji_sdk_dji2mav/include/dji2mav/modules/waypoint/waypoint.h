@@ -28,6 +28,11 @@ namespace dji2mav {
             }
 
 
+            inline const float ( *getWaypointListRad() )[3] {
+                return m_wpList_rad;
+            }
+
+
             inline uint16_t getListSize() {
                 return m_listSize;
             }
@@ -166,7 +171,7 @@ namespace dji2mav {
 
 
         private:
-            double m_wpList_rad[100][3];
+            float m_wpList_rad[100][3];
             uint16_t m_listSize;
             int m_targetIdx;
 

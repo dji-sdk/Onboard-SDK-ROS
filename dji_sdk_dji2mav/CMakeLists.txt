@@ -5,7 +5,7 @@ project(dji2mav)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  dji_ros
+  dji_sdk
   geometry_msgs
   roscpp
   rospy
@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
+set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -104,7 +105,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES dji2mav
-  CATKIN_DEPENDS dji_ros geometry_msgs roscpp rospy std_msgs
+  CATKIN_DEPENDS dji_sdk geometry_msgs roscpp rospy std_msgs
   DEPENDS system_lib
 )
 

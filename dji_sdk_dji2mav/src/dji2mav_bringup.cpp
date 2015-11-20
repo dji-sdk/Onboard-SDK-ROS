@@ -3,19 +3,22 @@
  * @Version 1.1
  * @Author  Chris Liu
  * @Create  2015/11/02
- * @Modify  2015/11/17
+ * @Modify  2015/11/19
  ****************************************************************************/
 
 #include <pthread.h>
 #include <string>
 
 #include <ros/ros.h>
+#include <dji_sdk/dji_drone.h>
 #include <dji_sdk/LocalPosition.h>
 #include <dji_sdk/Velocity.h>
 #include <dji_sdk/AttitudeQuaternion.h>
 
 #include "dji2mav/config.h"
 #include "dji2mav/modules/heartbeat/mavHeartbeat.h"
+
+DJIDrone* drone;
 
 /* A thread for sending heartbeat */
 void* sendHB_Period(void* args) {
@@ -65,10 +68,46 @@ void respondToMissionItem(uint16_t param) {
     ROS_INFO("+++ Get mission item %d +++", param);
 }
 
+
+void respondToMissionClearAll() {
+    ROS_INFO("Get mission clear all");
+}
+
+void respondToMissionSetCurrent(uint16_t param) {
+    ROS_INFO("Get mission set current %u", param);
+}
+
+void respondToTarget(const float mission[][3], uint16_t beginIdx, uint16_t endIdx) {
+    dji_sdk::WaypointList wpl;
+    dji_sdk::Waypoint wp;
+    for(int i = beginIdx; i < endIdx; ++i) {
+        // WARNNING: convert from float to double! QGround Station use float
+        wp.latitude = mission[i][0];
+        wp.longitude = mission[i][1];
+        wp.altitude = mission[i][2];
+        wpl.waypoint_list.push_back(wp);
+    }
+    ROS_INFO("Size of the wpl: %d", wpl.waypoint_list.size());
+    ROS_INFO("Going to wait for server...");
+    drone->waypoint_navigation_wait_server();
+    drone->waypoint_navigation_send_request(wpl);
+    ROS_INFO("Going to sleep 10 seconds");
+    ros::Duration(10).sleep();
+    ROS_INFO("Finish sleeping!");
+    if(drone->waypoint_navigation_wait_for_result()) {
+        ROS_INFO("Succeed to execute current task!");
+    } else {
+        ROS_INFO("Fail to execute current task in 10 seconds!");
+    }
+}
+
 int main(int argc, char* argv[]) {
 
     ros::init(argc, argv, "dji2mav_bringup");
-    ros::NodeHandle nh("~");
+    ros::NodeHandle nh;
+    DJIDrone drone_(nh);
+    drone = &drone_;
+    drone->request_sdk_permission_control();
 
 
     dji2mav::Config* config = dji2mav::Config::getInstance();
@@ -97,6 +136,9 @@ int main(int argc, char* argv[]) {
     dji2mav::MavWaypoint::getInstance()->setMissionAckRsp(respondToMissionAck);
     dji2mav::MavWaypoint::getInstance()->setMissionCountRsp(respondToMissionCount);
     dji2mav::MavWaypoint::getInstance()->setMissionItemRsp(respondToMissionItem);
+    dji2mav::MavWaypoint::getInstance()->setMissionClearAllRsp(respondToMissionClearAll);
+    dji2mav::MavWaypoint::getInstance()->setMissionSetCurrentRsp(respondToMissionSetCurrent);
+    dji2mav::MavWaypoint::getInstance()->setTargetRsp(respondToTarget);
 
     while( ros::ok() ) {
         dji2mav::MavSensors::getInstance()->sendSensorsData();

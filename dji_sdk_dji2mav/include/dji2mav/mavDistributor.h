@@ -129,6 +129,14 @@ namespace dji2mav{
                             m_moduleWp->reactToMissionItem(gcsIdx, 
                                     &m_recvMsgList[gcsIdx]);
                             break;
+                        case MAVLINK_MSG_ID_MISSION_CLEAR_ALL:
+                            m_moduleWp->reactToMissionItem(gcsIdx, 
+                                    &m_recvMsgList[gcsIdx]);
+                            break;
+                        case MAVLINK_MSG_ID_MISSION_SET_CURRENT:
+                            m_moduleWp->reactToMissionItem(gcsIdx, 
+                                    &m_recvMsgList[gcsIdx]);
+                            break;
                         default:
                             printf("Undistributed message with msgid %u!\n", 
                                     m_recvMsgList[gcsIdx].msgid);
