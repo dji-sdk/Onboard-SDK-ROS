@@ -16,7 +16,7 @@
 
 int main(int argc, char **argv)
 {
-	
+
 	ros::init(argc,argv,"ImageTrans");
 
 	ros::NodeHandle nh;
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
 	while(nState && ros::ok())
 	{
 		nState = djiCam_loop(pImg); /*DISPLAY_MODE | SAVEPICTURE_MODE | TRANSFER_MODE*/
-		
+
 		time=ros::Time::now();
 		out_Image.header.stamp = time;
 		out_Image.header.frame_id = "image";
@@ -51,9 +51,9 @@ int main(int argc, char **argv)
 
 	}
 
-    /*Ctrl+c to break*/
-    djiCam_exit();
-    printf("System exit ok!\n");
+	/*Ctrl+c to break*/
+	djiCam_exit();
+	printf("System exit ok!\n");
 
-    return 0;
+	return 0;
 }

@@ -12,7 +12,7 @@
  * You should have received a copy of the GNU Lesser General Public License.
  * If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 
 #include <stdio.h>
 #include <jpeglib.h>
@@ -114,22 +114,22 @@ typedef struct databuf{
 static databuf_t g_DataBuf;
 
 static struct usb_gadget_device device = {
-		.device = &loopback_device_descriptor,
-		.config = loopback_config,
-		.hs_config = loopback_hs_config,
-		.strings = &loopback_strings,
-	};
+	.device = &loopback_device_descriptor,
+	.config = loopback_config,
+	.hs_config = loopback_hs_config,
+	.strings = &loopback_strings,
+};
 static usb_gadget_dev_handle *handle;
 static struct pollfd fds;
 
 int av2ipl(AVFrame *src, IplImage *dst, int height, int width)
 {
-	
+
 	linesize[0] = dst->widthStep;
 	if (swscontext == 0)
 		return 0;
 	sws_scale(swscontext, src->data, src->linesize, 0, height, (uint8_t **) & (dst->imageData), linesize);
-		return 1;
+	return 1;
 }
 
 
@@ -177,7 +177,7 @@ static void *usbRead_loop(void *data)
 	sleep(1);
 	while(1)
 	{
-	
+
 		pthread_testcancel ();
 		if(1 == g_ForceBreak)
 		{
@@ -209,27 +209,27 @@ static void *usbRead_loop(void *data)
 			{
 				if(g_DataBuf.buf[w][i]==0x00 && g_DataBuf.buf[w][i+1]==0x00 && g_DataBuf.buf[w][i+2]==0x00 && g_DataBuf.buf[w][i+3]==0x01 && g_DataBuf.buf[w][i+4]==0x67)
 				{
-			    	found = 1;
-			    	printf("Found  header..........\n");
-			    	break;
+					found = 1;
+					printf("Found  header..........\n");
+					break;
 				}
 			}
 			if(found == 0)
 				continue;
 		}
-		
+
 		paserLength_In = ret;
 		pFrameBuff = g_DataBuf.buf[w];
 		g_DataBuf.len[w] = ret;
 		g_DataBuf.w = (w + 1) % (BUF_NUM);
-		
+
 		if(!g_trigger)  ++count;
 		if(2 == count)
 		{
 			count = 0;
 			g_trigger = 1;
 		}
-		
+
 		while(paserLength_In)
 		{
 			AVPacket avpkt;
@@ -237,7 +237,7 @@ static void *usbRead_loop(void *data)
 			paserLen = av_parser_parse2(g_pCodecPaser, g_pContext, &avpkt.data, &avpkt.size, pFrameBuff, paserLength_In, AV_NOPTS_VALUE, AV_NOPTS_VALUE, AV_NOPTS_VALUE);
 			paserLength_In -= paserLen;
 			pFrameBuff += paserLen;
-			
+
 			if(avpkt.size > 0)
 			{
 				pthread_mutex_lock(&frame_mutex);
@@ -252,18 +252,18 @@ static void *usbRead_loop(void *data)
 				{
 					av2ipl(g_pFrame,g_pImage,SCREEN_H,SCREEN_W);
 					g_nFrame++;
-					
+
 					if(!(g_nFrame % 100))
 					{
 						printf("*Frame %d\n", g_nFrame);
 					}
 				}
 				pthread_mutex_unlock(&frame_mutex);
-			
+
 			}
 			av_free_packet(&avpkt);
 		}
-	
+
 	}
 	pthread_cleanup_pop (1);
 }
