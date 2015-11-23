@@ -11,7 +11,8 @@
 
 
 #include "../../mavHandler.h"
-#include "waypoint.h"
+#include "waypointType.h"
+#include "waypointList.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -150,8 +151,8 @@ namespace dji2mav{
 
                 m_cntMsg.target_system = recvMsgPtr->sysid;
                 m_cntMsg.target_component = recvMsgPtr->compid;
-                m_cntMsg.count = m_wp.getListSize();
-                m_wp.readyToUpload();
+                m_cntMsg.count = m_wpl.getListSize();
+                m_wpl.readyToUpload();
                 mavlink_msg_mission_count_encode(m_hdlr->getSysid(), 
                         MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, &m_cntMsg);
                 m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
@@ -192,7 +193,7 @@ namespace dji2mav{
                 m_itemMsg.target_system = recvMsgPtr->sysid;
                 m_itemMsg.target_component = recvMsgPtr->compid;
                 m_itemMsg.seq = m_reqMsg.seq;
-                m_wp.getWaypointDeg(m_itemMsg.seq, m_itemMsg.x, m_itemMsg.y, 
+                m_wpl.getWaypointDeg(m_itemMsg.seq, m_itemMsg.x, m_itemMsg.y, 
                         m_itemMsg.z);
 
                 mavlink_msg_mission_item_encode(m_hdlr->getSysid(), 
@@ -235,8 +236,8 @@ namespace dji2mav{
                 mavlink_msg_mission_ack_decode(recvMsgPtr, &m_ackMsg);
                 printf("Mission ACK code: %d\n", m_ackMsg.type);
                 m_status = loaded;
-                m_wp.finishUpload();
-                m_wp.displayMissionDeg();
+                m_wpl.finishUpload();
+                m_wpl.displayMissionDeg();
 
                 if(NULL != m_missionAckRsp)
                     m_missionAckRsp();
@@ -270,8 +271,8 @@ namespace dji2mav{
                 }
 
                 mavlink_msg_mission_count_decode(recvMsgPtr, &m_cntMsg);
-                m_wp.setListSize(m_cntMsg.count);
-                m_wp.readyToDownload();
+                m_wpl.setListSize(m_cntMsg.count);
+                m_wpl.readyToDownload();
 
                 m_reqMsg.target_system = recvMsgPtr->sysid;
                 m_reqMsg.target_component = recvMsgPtr->compid;
@@ -302,12 +303,13 @@ namespace dji2mav{
 
                 switch(m_status) {
                     case loaded:
-                        //TODO: Wrong in the ground station!!!!
+                    case executing:
+                        //TODO: Wrong designed in GCS of Win32-Stable-V2.7.1
                         reactToMissionSetCurrent(gcsIdx, recvMsgPtr);
+                        m_status = loaded;
                         return;
                     case idle:
                     case uploading:
-                    case executing:
                     case paused:
                     case error:
                         return;
@@ -316,10 +318,11 @@ namespace dji2mav{
                 }
 
                 mavlink_msg_mission_item_decode(recvMsgPtr, &m_itemMsg);
-                m_wp.setWaypointDeg(m_itemMsg.seq, m_itemMsg.x, m_itemMsg.y, 
+                m_wpl.setWaypointDeg(m_itemMsg.seq, m_itemMsg.x, m_itemMsg.y, 
                         m_itemMsg.z);
+printf(">>>  Mission Item: \ntarget_system: %u, \ntarget_component: %u, \nseq: %u, \nframe: %u, \ncommand: %u, \ncurrent: %u, \nautocontinue: %u, \nparam1: %f, \nparam2: %f, \nparam3: %f, \nparam4: %f, \nx: %f, \ny: %f, \nz: %f \n\n", m_itemMsg.target_system, m_itemMsg.target_component, m_itemMsg.seq, m_itemMsg.frame, m_itemMsg.command, m_itemMsg.current, m_itemMsg.autocontinue, m_itemMsg.param1, m_itemMsg.param2, m_itemMsg.param3, m_itemMsg.param4, m_itemMsg.x, m_itemMsg.y, m_itemMsg.z);
 
-                if( m_wp.isDownloadFinished() ) {
+                if( m_wpl.isDownloadFinished() ) {
                     mavlink_msg_mission_ack_pack(m_hdlr->getSysid(), 
                             MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, 
                             recvMsgPtr->sysid, recvMsgPtr->compid, 
@@ -327,11 +330,11 @@ namespace dji2mav{
                     m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
                             m_senderRecord[m_masterGcsIdx], &m_sendMsg);
                     m_status = loaded;
-                    m_wp.displayMissionDeg();
+                    m_wpl.displayMissionDeg();
                 } else {
                     m_reqMsg.target_system = recvMsgPtr->sysid;
                     m_reqMsg.target_component = recvMsgPtr->compid;
-                    m_reqMsg.seq = m_wp.getTargetIdx();
+                    m_reqMsg.seq = m_wpl.getTargetIdx();
                     mavlink_msg_mission_request_encode(m_hdlr->getSysid(), 
                             MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, &m_reqMsg);
                     m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
@@ -378,7 +381,7 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
                 m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
                         m_senderRecord[m_masterGcsIdx], &m_sendMsg);
 
-                m_wp.clearMission();
+                m_wpl.clearMission();
 
                 if(NULL != m_missionClearAllRsp)
                     m_missionClearAllRsp();
@@ -413,26 +416,28 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
                 }
 
                 mavlink_msg_mission_set_current_decode(recvMsgPtr, &m_setCurrMsg);
-                if( m_wp.isValidIdx(m_setCurrMsg.seq) ) {
+                if( m_wpl.isValidIdx(m_setCurrMsg.seq) ) {
 
-                    m_wp.setTargetIdx(m_setCurrMsg.seq);
+                    m_wpl.setTargetIdx(m_setCurrMsg.seq);
 
                     if(NULL != m_targetRsp) {
-                        m_targetRsp( m_wp.getWaypointListRad(), 
-                                m_wp.getListSize(), 
-                                m_wp.getListSize() - m_setCurrMsg.seq );//TODO
+                        m_targetRsp( m_wpl.getWaypointListDeg(), 
+                                m_setCurrMsg.seq, 
+                                m_wpl.getListSize() );//TODO
                     }
                     mavlink_msg_mission_current_pack( m_hdlr->getSysid(), 
                             MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, 
-                            m_wp.getTargetIdx() );
+                            m_wpl.getTargetIdx() );
                     m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
                             m_senderRecord[m_masterGcsIdx], &m_sendMsg);
+
+                    m_status = loaded;//TODO finish the task
 
                 } else {
                     m_status = paused;
                     printf( "The current index %u is invalid! "
                             "The size of list is %u.\n", m_setCurrMsg.seq, 
-                            m_wp.getListSize() );
+                            m_wpl.getListSize() );
                 }
 
                 if(NULL != m_missionSetCurrentRsp)
@@ -536,7 +541,7 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
             int m_masterGcsIdx;
 
             MavHandler* m_hdlr;
-            Waypoint m_wp;
+            WaypointList m_wpl;
 
             mavlink_message_t m_sendMsg;
             mavlink_mission_request_t m_reqMsg;

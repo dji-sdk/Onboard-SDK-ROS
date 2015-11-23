@@ -16,16 +16,24 @@
 #include <dji_sdk/AttitudeQuaternion.h>
 
 #include "dji2mav/config.h"
-#include "dji2mav/modules/heartbeat/mavHeartbeat.h"
 
 DJIDrone* drone;
 
 /* A thread for sending heartbeat */
-void* sendHB_Period(void* args) {
+void* sendHb_Period(void* args) {
     int t_s = *((int*) args);
     while( ros::ok() ) {
         dji2mav::MavHeartbeat::getInstance()->sendHeartbeat();
         sleep(t_s);
+    }
+}
+
+/* A thread for sending sensor data */
+void* sendSs_Period(void* args) {
+    int t_ms = *((int*) args);
+    while( ros::ok() ) {
+        dji2mav::MavSensors::getInstance()->sendSensorsData();
+        usleep(t_ms);
     }
 }
 
@@ -42,6 +50,11 @@ void velCB(const dji_sdk::Velocity &msg) {
 void attCB(const dji_sdk::AttitudeQuaternion &msg) {
     dji2mav::MavSensors::getInstance()->setAttitudeQuaternion(&msg.ts, 
             &msg.q0, &msg.q1, &msg.q2, &msg.q3, &msg.wx, &msg.wy, &msg.wz);
+}
+
+void gloPosCB(const dji_sdk::GlobalPosition &msg) {
+    dji2mav::MavSensors::getInstance()->setGlobalPosition(&msg.ts, 
+            &msg.latitude, &msg.longitude, &msg.altitude, &msg.height);
 }
 
 void respondToHeartbeat() {
@@ -80,25 +93,27 @@ void respondToMissionSetCurrent(uint16_t param) {
 void respondToTarget(const float mission[][3], uint16_t beginIdx, uint16_t endIdx) {
     dji_sdk::WaypointList wpl;
     dji_sdk::Waypoint wp;
+    ROS_INFO("beginIdx %d, endIdx %d", beginIdx, endIdx);
     for(int i = beginIdx; i < endIdx; ++i) {
-        // WARNNING: convert from float to double! QGround Station use float
         wp.latitude = mission[i][0];
         wp.longitude = mission[i][1];
         wp.altitude = mission[i][2];
+        wp.staytime = 2;
         wpl.waypoint_list.push_back(wp);
     }
     ROS_INFO("Size of the wpl: %d", wpl.waypoint_list.size());
     ROS_INFO("Going to wait for server...");
-    drone->waypoint_navigation_wait_server();
+    /* Currently this is executed in main thread */
+    //drone->waypoint_navigation_wait_server();
     drone->waypoint_navigation_send_request(wpl);
-    ROS_INFO("Going to sleep 10 seconds");
-    ros::Duration(10).sleep();
+    /*ROS_INFO("Going to sleep 50 seconds");
+    ros::Duration(50).sleep();
     ROS_INFO("Finish sleeping!");
     if(drone->waypoint_navigation_wait_for_result()) {
         ROS_INFO("Succeed to execute current task!");
     } else {
         ROS_INFO("Fail to execute current task in 10 seconds!");
-    }
+    }*/
 }
 
 int main(int argc, char* argv[]) {
@@ -114,19 +129,28 @@ int main(int argc, char* argv[]) {
     /* set the sysid "1" and the number of GCS is also "1" */
     config->setup(1, 1);
     /* The index of first GCS is "0" */
-    config->start(0, "10.60.23.185", 14550, 14551);
+    config->start(0, "10.60.23.136", 14550, 14551);
 
     /* Register Subscribers */
     ros::Subscriber sub1 = nh.subscribe("/dji_sdk/local_position", 1, locPosCB);
     ros::Subscriber sub2 = nh.subscribe("/dji_sdk/velocity", 1, velCB);
     ros::Subscriber sub3 = nh.subscribe("/dji_sdk/attitude_quaternion", 1, attCB);
+    ros::Subscriber sub4 = nh.subscribe("/dji_sdk/global_position", 1, gloPosCB);
 
     /* Heartbeat send thread */
-    pthread_t tid;
-    int t_s = 1;
-    int thread_ret = pthread_create(&tid, NULL, sendHB_Period, (void*)&t_s);
-    if(0 != thread_ret) {
-        ROS_ERROR("Create pthread for sending heartbeat fail! Error code: %d", thread_ret);
+    pthread_t hbTid;
+    int hb_sec = 1;
+    int hb_thread_ret = pthread_create(&hbTid, NULL, sendHb_Period, (void*)&hb_sec);
+    if(0 != hb_thread_ret) {
+        ROS_ERROR("Create pthread for sending heartbeat fail! Error code: %d", hb_thread_ret);
+    }
+
+    /* Sensors data send thread */
+    pthread_t ssTid;
+    int ss_sec = 20000;
+    int ss_thread_ret = pthread_create(&ssTid, NULL, sendSs_Period, (void*)&ss_sec);
+    if(0 != ss_thread_ret) {
+        ROS_ERROR("Create pthread for sending sensors data fail! Error code: %d", ss_thread_ret);
     }
 
     /* Register rsp */
@@ -141,7 +165,6 @@ int main(int argc, char* argv[]) {
     dji2mav::MavWaypoint::getInstance()->setTargetRsp(respondToTarget);
 
     while( ros::ok() ) {
-        dji2mav::MavSensors::getInstance()->sendSensorsData();
         dji2mav::MavDistributor::getInstance()->distribute();
 
         ros::Duration(0.1).sleep();

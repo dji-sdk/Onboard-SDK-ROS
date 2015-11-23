@@ -13,6 +13,7 @@
 #include "../../mavHandler.h"
 #include "sensorLocPosNed.h"
 #include "sensorAtt.h"
+#include "sensorGloPosInt.h"
 
 #include <iostream>
 #include <stdio.h>
@@ -112,10 +113,10 @@ namespace dji2mav{
             void setVelocity(const int32_t* ts, const float* vx, 
                     const float* vy, const float* vz) {
 
-                m_locPos->setTimeBootMs(ts);
-                m_locPos->setVx(vx);
-                m_locPos->setVy(vy);
-                m_locPos->setVz(vz);
+                m_gloPos->setTimeBootMs(ts);
+                m_gloPos->setVx(vx);
+                m_gloPos->setVy(vy);
+                m_gloPos->setVz(vz);
 
             }
 
@@ -143,6 +144,20 @@ namespace dji2mav{
 
 
             /**
+             */
+            void setGlobalPosition(const int32_t* ts, const double* lat, 
+                    const double* lon, const float* alt, const float* height) {
+
+                m_gloPos->setTimeBootMs(ts);
+                m_gloPos->setLat(lat);
+                m_gloPos->setLon(lon);
+                m_gloPos->setAlt(alt);
+                m_gloPos->setRelativeAlt(height);
+
+            }
+
+
+            /**
              * @brief  Send sensors data to specific GCS. Compid is set to IMU
              * @param  gcsIdx : The index of GCS
              * @return True if succeed or false if fail
@@ -161,6 +176,14 @@ namespace dji2mav{
                 if( !m_hdlr->sendEncodedMsg(gcsIdx, m_senderRecord[gcsIdx], 
                         &m_sendMsg) ) {
                     printf("Sending attitude to GCS #%u fail!\n", gcsIdx);
+                    return false;
+                }
+
+                mavlink_msg_global_position_int_encode( m_hdlr->getSysid(), 
+                        MAV_COMP_ID_IMU, &m_sendMsg, m_gloPos->getDataPtr() );
+                if( !m_hdlr->sendEncodedMsg(gcsIdx, m_senderRecord[gcsIdx], 
+                        &m_sendMsg) ) {
+                    printf("Sending GloPosInt to GCS #%u fail!\n", gcsIdx);
                     return false;
                 }
 
@@ -239,6 +262,7 @@ namespace dji2mav{
                 try {
                     m_locPos = new SensorLocPosNed();
                     m_att = new SensorAtt();
+                    m_gloPos = new SensorGloPosInt();
                 } catch(std::bad_alloc& m) {
                     std::cerr << "Failed to alloc memory for sensor data : " 
                             << "at line: " << __LINE__ << ", func: " 
@@ -262,6 +286,10 @@ namespace dji2mav{
                     delete m_att;
                     m_att = NULL;
                 }
+                if(NULL != m_gloPos) {
+                    delete m_gloPos;
+                    m_gloPos = NULL;
+                }
                 m_hdlr = NULL;
                 printf("Finish to destruct Sensors module\n");
             }
@@ -278,6 +306,7 @@ namespace dji2mav{
 
             SensorLocPosNed* m_locPos;
             SensorAtt* m_att;
+            SensorGloPosInt* m_gloPos;
 
             void (*m_rsp)();
 

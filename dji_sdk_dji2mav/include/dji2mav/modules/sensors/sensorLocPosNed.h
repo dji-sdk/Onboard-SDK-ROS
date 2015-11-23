@@ -22,7 +22,7 @@ namespace dji2mav {
             }
 
 
-            inline mavlink_local_position_ned_t* getDataPtr() {
+            inline const mavlink_local_position_ned_t* getDataPtr() {
                 return &m_data;
             }
 
