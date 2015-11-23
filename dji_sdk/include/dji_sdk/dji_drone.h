@@ -6,57 +6,6 @@
 #include <actionlib/client/terminal_state.h> 
 #include <string>
 
-typedef struct 
-{
-	uint8_t mission_type;
-	uint8_t target_waypoint;
-	uint8_t current_state;
-	uint8_t error_code;
-}waypoint_mission_push_info_t;
-
-typedef struct
-{
-	uint8_t mission_type;
-	uint8_t mission_state;
-	uint16_t hotpoint_radius;
-	uint8_t error_code;
-	uint8_t hotpoint_velocity;
-}hotpoint_mission_push_info_t;
-
-typedef struct
-{
-	uint8_t mission_type;
-}followme_mission_push_info_t;
-
-typedef struct 
-{
-	uint8_t mission_type;
-	uint8_t last_mission_type;
-	uint8_t is_broken:1;
-	uint8_t reserved: 7;
-	uint8_t error_code;
-}other_mission_push_info_t;
-
-typedef struct
-{
-	uint8_t incident_type;
-	uint8_t mission_valid;
-	uint16_t estimated_runtime;
-}waypoint_upload_push_info_t;
-
-typedef struct
-{
-	uint8_t incident_type;
-	uint8_t repeat;
-}waypoint_finish_action_push_info_t;
-
-typedef struct
-{
-	uint8_t incident_type;
-	uint8_t waypoint_index;
-	uint8_t current_state;
-}waypoint_reached_push_info_t;
-
 
 class DJIDrone
 {
