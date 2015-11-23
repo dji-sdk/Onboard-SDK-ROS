@@ -28,14 +28,14 @@ int g_hostGet_endpoint_out = 0, g_hostGet_endpoint_in = 0;
 
 int usb_sync_read(unsigned char *buffer, int len, int endpoint)
 {
-    int actural_length = 0;
-    int ret;
+	int actural_length = 0;
+	int ret;
 	if(!g_hdev)
 	{
 		printf("hdev NULL!  %s %d\n",__FILE__,__LINE__);
 		return -1;
 	}
-		
+
 	ret = libusb_bulk_transfer(g_hdev, endpoint, (unsigned char*)buffer, len, &actural_length, 0);
 	if ( 0 == ret )
 		return actural_length;
@@ -45,15 +45,15 @@ int usb_sync_read(unsigned char *buffer, int len, int endpoint)
 
 int usb_sync_write(const char *buffer, int len , int endpoint)
 {
-    int actural_length = 0;
-    int ret;
+	int actural_length = 0;
+	int ret;
 	if(!g_hdev)
 	{
 		printf("hdev NULL!  %s %d\n",__FILE__,__LINE__);
 		return -1;
 	}
 
-    ret = libusb_bulk_transfer(g_hdev, endpoint, (unsigned char*)buffer, len, &actural_length, 0);
+	ret = libusb_bulk_transfer(g_hdev, endpoint, (unsigned char*)buffer, len, &actural_length, 0);
 	if ( 0 == ret )
 		return actural_length;
 	else
@@ -64,8 +64,8 @@ int GetEndPoint(libusb_device *dev)
 {
 	struct libusb_config_descriptor *pConfig;
 	int interface_idx;
-    int ep_idx;
-    int altsetting_idx;
+	int ep_idx;
+	int altsetting_idx;
 	int r = libusb_get_active_config_descriptor(dev, &pConfig);
 	if (r < 0)
 		return -1;
@@ -76,23 +76,23 @@ int GetEndPoint(libusb_device *dev)
 
 		for (altsetting_idx = 0; altsetting_idx < pInterface->num_altsetting; altsetting_idx++) 
 		{
-	        const struct libusb_interface_descriptor *pAltsetting = &pInterface->altsetting[altsetting_idx];
-	        for (ep_idx = 0; ep_idx < pAltsetting->bNumEndpoints; ep_idx++)
-	        {
-		        const struct libusb_endpoint_descriptor *pEndpoint = &pAltsetting->endpoint[ep_idx];
+			const struct libusb_interface_descriptor *pAltsetting = &pInterface->altsetting[altsetting_idx];
+			for (ep_idx = 0; ep_idx < pAltsetting->bNumEndpoints; ep_idx++)
+			{
+				const struct libusb_endpoint_descriptor *pEndpoint = &pAltsetting->endpoint[ep_idx];
 
-		        if(IS_TO_DEVICE == ( pEndpoint->bEndpointAddress & 0x80 ) && IS_BULK == (pEndpoint->bmAttributes & 0x03))
-		        {
-			        g_hostGet_endpoint_out = pEndpoint->bEndpointAddress;
-			        printf("Usb Host get EndPoint_out:[%x]\n",g_hostGet_endpoint_out);
-		        }
-		        if(IS_TO_HOST == ( pEndpoint->bEndpointAddress & 0x80 ) && IS_BULK == (pEndpoint->bmAttributes & 0x03))
-		        {
-			        g_hostGet_endpoint_in = pEndpoint->bEndpointAddress;
-			        printf("Usb Host get EndPoint_in:[%x]\n",g_hostGet_endpoint_in);
-		        }
-	        }
-        }
+				if(IS_TO_DEVICE == ( pEndpoint->bEndpointAddress & 0x80 ) && IS_BULK == (pEndpoint->bmAttributes & 0x03))
+				{
+					g_hostGet_endpoint_out = pEndpoint->bEndpointAddress;
+					printf("Usb Host get EndPoint_out:[%x]\n",g_hostGet_endpoint_out);
+				}
+				if(IS_TO_HOST == ( pEndpoint->bEndpointAddress & 0x80 ) && IS_BULK == (pEndpoint->bmAttributes & 0x03))
+				{
+					g_hostGet_endpoint_in = pEndpoint->bEndpointAddress;
+					printf("Usb Host get EndPoint_in:[%x]\n",g_hostGet_endpoint_in);
+				}
+			}
+		}
 
 	}
 	libusb_free_config_descriptor(pConfig);
@@ -115,17 +115,17 @@ void print_devs(libusb_device **devs)
 		}
 
 		printf("%04x:%04x (bus %d, device %d)\n", desc.idVendor, 
-		                                          desc.idProduct,
-			                                      libusb_get_bus_number(dev),
-				                                  libusb_get_device_address(dev));
+				desc.idProduct,
+				libusb_get_bus_number(dev),
+				libusb_get_device_address(dev));
 	}
 }
 
 int init_usbHost()
 {
-    bool success = 1;
+	bool success = 1;
 	int i;
-	
+
 	int result = libusb_init(NULL);
 	if(result != LIBUSB_SUCCESS)
 	{
@@ -145,7 +145,7 @@ int init_usbHost()
 		printf("Found %d usb device: \n",ret);
 		print_devs(devs);
 	}
-	
+
 	for (i = 0;  devs[i] != NULL; ++i )
 	{
 		libusb_device *dev = devs[i];
@@ -186,7 +186,7 @@ int init_usbHost()
 			}
 			result = GetEndPoint(dev);
 			if(result < 0)
-			    return 1;
+				return 1;
 			success = 0;
 			break;
 		}
@@ -198,6 +198,6 @@ int init_usbHost()
 void ReleaseUsb()
 {
 	libusb_exit(NULL);
-    printf( "release usb,%s %d\n", __FILE__, __LINE__ );
+	printf( "release usb,%s %d\n", __FILE__, __LINE__ );
 }
 

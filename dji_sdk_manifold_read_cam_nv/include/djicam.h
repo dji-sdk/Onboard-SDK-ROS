@@ -9,9 +9,9 @@
 extern "C" {
 #endif
 
-int manifold_decode_start(unsigned char *buffer, unsigned int *size, unsigned int *nframe);
-int manifold_cam_init(int mode);
-int manifold_cam_exit();
+	int manifold_decode_start(unsigned char *buffer, unsigned int *size, unsigned int *nframe);
+	int manifold_cam_init(int mode);
+	int manifold_cam_exit();
 #ifdef __cplusplus
 }
 #endif

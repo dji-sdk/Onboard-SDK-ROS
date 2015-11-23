@@ -18,8 +18,6 @@
 #include "cv.h"
 #include "highgui.h"
 
-//using namespace cv;
-
 #ifndef __DJICAM_H
 #define __DJICAM_H
 
@@ -31,10 +29,9 @@ extern IplImage * g_pImage;
 #ifdef __cplusplus
 extern "C" {
 #endif
-//void  Imagetransf(AVFrame *pFrame,int width,int height,int time);
-int djiCam_init();
-void djiCam_exit();
-int djiCam_loop(IplImage* pImg);
+	int djiCam_init();
+	void djiCam_exit();
+	int djiCam_loop(IplImage* pImg);
 
 #ifdef __cplusplus
 }
