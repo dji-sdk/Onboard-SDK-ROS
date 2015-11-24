@@ -1,6 +1,6 @@
 /*****************************************************************************
  * @Brief     Manage msg senders and receiver. ROS-free and mav-free
- * @Version   1.1
+ * @Version   0.2.1
  * @Author    Chris Liu
  * @Created   2015/10/30
  * @Modified  2015/11/16

@@ -1,6 +1,6 @@
 /*****************************************************************************
  * @Brief     Waypoint module. Implement waypoint protocol here
- * @Version   1.1
+ * @Version   0.2.1
  * @Author    Chris Liu
  * @Created   2015/11/18
  * @Modified  2015/11/18
@@ -320,6 +320,8 @@ namespace dji2mav{
                 mavlink_msg_mission_item_decode(recvMsgPtr, &m_itemMsg);
                 m_wpl.setWaypointDeg(m_itemMsg.seq, m_itemMsg.x, m_itemMsg.y, 
                         m_itemMsg.z);
+                m_wpl.setWpStaytime(m_itemMsg.seq, m_itemMsg.param1);
+                m_wpl.setWpHeading(m_itemMsg.seq, m_itemMsg.param4);// TODO:CHRIS Begin from here
 printf(">>>  Mission Item: \ntarget_system: %u, \ntarget_component: %u, \nseq: %u, \nframe: %u, \ncommand: %u, \ncurrent: %u, \nautocontinue: %u, \nparam1: %f, \nparam2: %f, \nparam3: %f, \nparam4: %f, \nx: %f, \ny: %f, \nz: %f \n\n", m_itemMsg.target_system, m_itemMsg.target_component, m_itemMsg.seq, m_itemMsg.frame, m_itemMsg.command, m_itemMsg.current, m_itemMsg.autocontinue, m_itemMsg.param1, m_itemMsg.param2, m_itemMsg.param3, m_itemMsg.param4, m_itemMsg.x, m_itemMsg.y, m_itemMsg.z);
 
                 if( m_wpl.isDownloadFinished() ) {
@@ -487,6 +489,35 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
 
             inline void setTargetRsp( void (*func)(const float[][3], uint16_t, uint16_t) ) {
                 m_targetRsp = func;
+            }
+
+
+            /**
+             * @brief  Interface for targetRsp to get the waypoint data
+             * @param  idx      : The index of specific waypoint in the list
+             * @param  lat      : Latitude data, double in dji_sdk
+             * @param  lon      : Longitude data, double in dji_sdk
+             * @param  alt      : Altitude data, float in dji_sdk
+             * @param  heading  : Heading data, int16 in dji_sdk
+             * @param  staytime : Staytime data, uint16 in dji_sdk
+             * @return True for valid index or false for invalid index
+             */
+            //TODO: Any better idea of sovling this?
+            bool getWaypoint(uint16_t idx, double lat, double lon, float alt, 
+                    int16_t heading, uint16_t staytime) {
+
+                if( m_wpl->isValidIdx(idx) ) {
+                    lat = m_wpl->getWaypointLat(idx);
+                    lon = m_wpl->getWaypointLon(idx);
+                    alt = m_wpl->getWaypointAlt(idx);
+                    heading = m_wpl->getWpHeading(idx);
+                    staytime = m_wpl->getWpStaytime(idx);
+                    return true;
+                } else {
+                    printf("Invalid index when getting waypoint!\n");
+                    return false;
+                }
+
             }
 
 

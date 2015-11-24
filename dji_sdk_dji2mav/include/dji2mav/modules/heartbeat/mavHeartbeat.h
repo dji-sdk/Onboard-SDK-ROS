@@ -1,6 +1,6 @@
 /*****************************************************************************
  * @Brief     Heartbeat module. Mav-depended and ROS-free
- * @Version   1.1
+ * @Version   0.2.1
  * @Author    Chris Liu
  * @Created   2015/11/16
  * @Modified  2015/11/16

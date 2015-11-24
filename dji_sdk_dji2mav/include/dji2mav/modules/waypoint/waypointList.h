@@ -1,6 +1,6 @@
 /*****************************************************************************
  * @Brief     Functional class for waypoint. Mav-free and ROS-free singleton
- * @Version   1.1
+ * @Version   0.2.1
  * @Author    Chris Liu
  * @Created   2015/11/18
  * @Modified  2015/11/18
@@ -30,7 +30,7 @@ namespace dji2mav {
             }
 
 
-            inline const float ( *getWaypointListDeg() )[3] {
+            inline const WaypointType* getWaypointListDeg() {
                 return m_wpList_deg;
             }
 
@@ -90,9 +90,9 @@ namespace dji2mav {
 
             bool getWaypointRad(uint16_t idx, float &x, float &y, float &z) {
                 if( isValidIdx(idx) ) {
-                    x = m_wpList_deg[idx][0] / 180.0 * M_PI;
-                    y = m_wpList_deg[idx][1] / 180.0 * M_PI;
-                    z = m_wpList_deg[idx][2];
+                    x = m_wpList_deg[idx].lat / 180.0 * M_PI;
+                    y = m_wpList_deg[idx].lon / 180.0 * M_PI;
+                    z = m_wpList_deg[idx].alt;
                     ++m_targetIdx;
                     return true;
                 } else {
@@ -104,9 +104,9 @@ namespace dji2mav {
 
             bool getWaypointDeg(uint16_t idx, float &x, float &y, float &z) {
                 if( isValidIdx(idx) ) {
-                    x = m_wpList_deg[idx][0];
-                    y = m_wpList_deg[idx][1];
-                    z = m_wpList_deg[idx][2];
+                    x = m_wpList_deg[idx].lat;
+                    y = m_wpList_deg[idx].lon;
+                    z = m_wpList_deg[idx].alt;
                     ++m_targetIdx;
                     return true;
                 } else {
@@ -118,9 +118,9 @@ namespace dji2mav {
 
             bool setWaypointRad(uint16_t idx, float x, float y, float z) {
                 if( isValidIdx(idx) ) {
-                    m_wpList_deg[idx][0] = x * 180.0 / M_PI;
-                    m_wpList_deg[idx][1] = y * 180.0 / M_PI;
-                    m_wpList_deg[idx][2] = z;
+                    m_wpList_deg[idx].lat = x * 180.0 / M_PI;
+                    m_wpList_deg[idx].lon = y * 180.0 / M_PI;
+                    m_wpList_deg[idx].alt = z;
                     ++m_targetIdx;
                     return true;
                 } else {
@@ -132,9 +132,9 @@ namespace dji2mav {
 
             bool setWaypointDeg(uint16_t idx, float x, float y, float z) {
                 if( isValidIdx(idx) ) {
-                    m_wpList_deg[idx][0] = x;
-                    m_wpList_deg[idx][1] = y;
-                    m_wpList_deg[idx][2] = z;
+                    m_wpList_deg[idx].lat = x;
+                    m_wpList_deg[idx].lon = y;
+                    m_wpList_deg[idx].alt = z;
                     ++m_targetIdx;
                     return true;
                 } else {
@@ -144,87 +144,63 @@ namespace dji2mav {
             }
 
 
-            bool setCmdTakeoff(uint16_t idx) {
-                if( isValidIdx(idx) ) {
-                    m_cmd = takeoff;
-                    return true;
-                } else {
-                    printf("Invalid waypoint index %u\n", idx);
-                    return false;
-                }
+            inline WaypointType getWaypointCmd(uint16_t idx) {
+                return m_wpList_deg[idx].cmd;
             }
 
 
-            bool setCmdLand(uint16_t idx) {
-                if( isValidIdx(idx) ) {
-                    m_cmd = land;
-                    return true;
-                } else {
-                    printf("Invalid waypoint index %u\n", idx);
-                    return false;
-                }
+            inline void setWaypointCmd(uint16_t idx, WaypointCmd cmd) {
+                m_wpList_deg[idx].cmd = cmd;
             }
 
 
-            bool setCmdGohome(uint16_t idx) {
-                if( isValidIdx(idx) ) {
-                    m_cmd = gohome;
-                    return true;
-                } else {
-                    printf("Invalid waypoint index %u\n", idx);
-                    return false;
-                }
+            inline double getWaypointLat(uint16_t idx) {
+                return (double)m_wpList_deg[idx].lat;
             }
 
 
-            bool setCmdWaypoint(uint16_t idx) {
-                if( isValidIdx(idx) ) {
-                    m_cmd = waypoint;
-                    return true;
-                } else {
-                    printf("Invalid waypoint index %u\n", idx);
-                    return false;
-                }
+            inline void setWaypointLat(uint16_t idx, float lat) {
+                m_wpList_deg[idx].lat = lat;
             }
 
 
-            bool isCmdTakeoff(uint16_t idx) {
-                if( isValidIdx(idx) ) {
-                    return (m_cmd[idx] == takeoff) ? true : false;
-                } else {
-                    printf("Invalid waypoint index %u\n", idx);
-                    return false;
-                }
+            inline double getWaypointLon(uint16_t idx) {
+                return (double)m_wpList_deg[idx].lon;
             }
 
 
-            bool isCmdLand(uint16_t idx) {
-                if( isValidIdx(idx) ) {
-                    return (m_cmd[idx] == land) ? true : false;
-                } else {
-                    printf("Invalid waypoint index %u\n", idx);
-                    return false;
-                }
+            inline void setWaypointLon(uint16_t idx, float lon) {
+                m_wpList_deg[idx].lon = lon;
             }
 
 
-            bool isCmdGohome(uint16_t idx) {
-                if( isValidIdx(idx) ) {
-                    return (m_cmd[idx] == gohome) ? true : false;
-                } else {
-                    printf("Invalid waypoint index %u\n", idx);
-                    return false;
-                }
+            inline float getWaypointAlt(uint16_t idx) {
+                return m_wpList_deg[idx].alt;
             }
 
 
-            bool isCmdWaypoint(uint16_t idx) {
-                if( isValidIdx(idx) ) {
-                    return (m_cmd[idx] == waypoint) ? true : false;
-                } else {
-                    printf("Invalid waypoint index %u\n", idx);
-                    return false;
-                }
+            inline void setWaypointAlt(uint16_t idx, float alt) {
+                m_wpList_deg[idx].alt = alt;
+            }
+
+
+            inline int16_t getWpHeading(uint16_t idx) {
+                return (int16_t)m_wpList_deg[idx].heading;
+            }
+
+
+            inline void setWpHeading(uint16_t idx, float heading) {
+                m_wpList_deg[idx].heading = heading;
+            }
+
+
+            inline uint16_t getWpStaytime(uint16_t idx) {
+                return (uint16_t)m_wpList_deg[idx].staytime;
+            }
+
+
+            inline void setWpStaytime(uint16_t idx, float staytime) {
+                m_wpList_deg[idx].staytime = staytime;
             }
 
 
@@ -238,9 +214,9 @@ namespace dji2mav {
                 printf("Display the full mission:\n");
                 for(uint16_t i = 0; i < m_listSize; ++i) {
                     printf("%d: %f, %f, %f\n", i, 
-                            m_wpList_deg[i][0] / 180.0 * M_PI, 
-                            m_wpList_deg[i][1] / 180.0 * M_PI, 
-                            m_wpList_deg[i][2]);
+                            m_wpList_deg[i].lat / 180.0 * M_PI, 
+                            m_wpList_deg[i].lon / 180.0 * M_PI, 
+                            m_wpList_deg[i].alt);
                 }
                 printf("--- End of display ---\n\n");
             }
@@ -250,8 +226,8 @@ namespace dji2mav {
                 printf("Display the full mission:\n");
                 for(uint16_t i = 0; i < m_listSize; ++i) {
                     printf("%d: %f, %f, %f\n", i, 
-                            m_wpList_deg[i][0], m_wpList_deg[i][1], 
-                            m_wpList_deg[i][2]);
+                            m_wpList_deg[i].lat, m_wpList_deg[i].lon, 
+                            m_wpList_deg[i].alt);
                 }
                 printf("--- End of display ---\n\n");
             }

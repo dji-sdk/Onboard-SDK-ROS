@@ -1,6 +1,6 @@
 /*****************************************************************************
  * @Brief     Handle mng list. A mng is related to a GCS. ROS-free singleton
- * @Version   1.1
+ * @Version   0.2.1
  * @Author    Chris Liu
  * @Created   2015/10/31
  * @Modified  2015/11/16

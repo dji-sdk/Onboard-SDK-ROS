@@ -1,6 +1,6 @@
 /*****************************************************************************
  * @Brief     ROS-free and MavLink-free low-level socket communicator class
- * @Version   1.1
+ * @Version   0.2.1
  * @Author    Chris Liu
  * @Created   2015/10/29
  * @Modified  2015/11/15
@@ -16,6 +16,7 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <time.h>
 #include <stdio.h>
 #include <iostream>
 #include <string>
@@ -83,6 +84,7 @@ namespace dji2mav {
                 }
 
                 printf("Connection Succeed!\n");
+                m_timer = time(NULL);
                 return true;
             }
 
@@ -130,10 +132,13 @@ namespace dji2mav {
                 int ret = recvfrom( m_sock, recvBuf, maxBufLen, MSG_DONTWAIT, 
                         (struct sockaddr *)&m_gcsAddr, &l );
                 if(ret == -1) {
-                    if(errno != EAGAIN)
+                    if(errno != EAGAIN) {
                         perror("Fail to receive message");
-                    else
-                        printf("No datagram received.\n");
+                    }
+                    else if( m_timer + 10 > time(NULL) ) {
+                        printf("No datagram received in last 10 sec.\n");
+                        m_timer = time(NULL);
+                    }
                 }
                 return ret;
             }
@@ -143,6 +148,7 @@ namespace dji2mav {
             struct sockaddr_in m_gcsAddr;
             struct sockaddr_in m_locAddr;
             int m_sock;
+            long m_timer;
     };
 
 } //namespace dji2mav

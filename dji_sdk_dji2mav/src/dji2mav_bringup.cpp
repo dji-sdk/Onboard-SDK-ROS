@@ -1,9 +1,9 @@
 /****************************************************************************
  * @Brief   A bringup node for dji2mav. Using dji2mav interface v1.x
- * @Version 1.1
+ * @Version 0.2.1
  * @Author  Chris Liu
  * @Create  2015/11/02
- * @Modify  2015/11/19
+ * @Modify  2015/11/24
  ****************************************************************************/
 
 #include <pthread.h>
@@ -90,15 +90,19 @@ void respondToMissionSetCurrent(uint16_t param) {
     ROS_INFO("Get mission set current %u", param);
 }
 
-void respondToTarget(const float mission[][3], uint16_t beginIdx, uint16_t endIdx) {
+void respondToTarget(const float mission[][3], uint16_t beginIdx, 
+        uint16_t endIdx) {
+
     dji_sdk::WaypointList wpl;
     dji_sdk::Waypoint wp;
     ROS_INFO("beginIdx %d, endIdx %d", beginIdx, endIdx);
     for(int i = beginIdx; i < endIdx; ++i) {
-        wp.latitude = mission[i][0];
+        dji2mav::MavWaypoint::getInstance()->getWaypoint(i, wp.latitude, 
+                wp.longitude, wp.altitude, wp.heading, wp.staytime);
+        /*wp.latitude = mission[i][0];
         wp.longitude = mission[i][1];
         wp.altitude = mission[i][2];
-        wp.staytime = 2;
+        wp.staytime = 2;*/
         wpl.waypoint_list.push_back(wp);
     }
     ROS_INFO("Size of the wpl: %d", wpl.waypoint_list.size());
@@ -114,6 +118,7 @@ void respondToTarget(const float mission[][3], uint16_t beginIdx, uint16_t endId
     } else {
         ROS_INFO("Fail to execute current task in 10 seconds!");
     }*/
+
 }
 
 int main(int argc, char* argv[]) {

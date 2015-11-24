@@ -1,6 +1,6 @@
 /*****************************************************************************
  * @Brief     Storage attitude data and provide setter and getter methods
- * @Version   1.1
+ * @Version   0.2.1
  * @Author    Chris Liu
  * @Created   2015/11/17
  * @Modified  2015/11/17

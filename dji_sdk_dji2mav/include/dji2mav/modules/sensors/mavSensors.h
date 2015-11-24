@@ -1,6 +1,6 @@
 /*****************************************************************************
  * @Brief     Sensors module. Handler all the sensors date. ROS-free singleton
- * @Version   1.1
+ * @Version   0.2.1
  * @Author    Chris Liu
  * @Created   2015/11/17
  * @Modified  2015/11/17
