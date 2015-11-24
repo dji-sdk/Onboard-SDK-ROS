@@ -193,8 +193,17 @@ namespace dji2mav{
                 m_itemMsg.target_system = recvMsgPtr->sysid;
                 m_itemMsg.target_component = recvMsgPtr->compid;
                 m_itemMsg.seq = m_reqMsg.seq;
-                m_wpl.getWaypointDeg(m_itemMsg.seq, m_itemMsg.x, m_itemMsg.y, 
-                        m_itemMsg.z);
+                if( m_wpl.isValidIdx(m_itemMsg.seq) ) {
+
+                    m_wpl.getWaypointData(m_itemMsg.seq, 
+                            (WaypointCmd)m_itemMsg.command, m_itemMsg.x, 
+                            m_itemMsg.y, m_itemMsg.z, m_itemMsg.param4, 
+                            m_itemMsg.param1);
+
+                } else {
+                    printf("Invalid index of waypoint in waypoint module!\n");
+                    return;
+                }
 
                 mavlink_msg_mission_item_encode(m_hdlr->getSysid(), 
                         MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, &m_itemMsg);
@@ -318,10 +327,34 @@ namespace dji2mav{
                 }
 
                 mavlink_msg_mission_item_decode(recvMsgPtr, &m_itemMsg);
-                m_wpl.setWaypointDeg(m_itemMsg.seq, m_itemMsg.x, m_itemMsg.y, 
-                        m_itemMsg.z);
-                m_wpl.setWpStaytime(m_itemMsg.seq, m_itemMsg.param1);
-                m_wpl.setWpHeading(m_itemMsg.seq, m_itemMsg.param4);// TODO:CHRIS Begin from here
+                if( m_wpl.isValidIdx(idx) ) {
+                    WaypointCmd wpCmd;
+                    switch(m_itemMsg.command) {
+                        case MAV_CMD_NAV_WAYPOINT:
+                            wpCmd = WaypointCmd::waypoint;
+                            break;
+                        case MAV_CMD_NAV_TAKEOFF:
+                            wpCmd = WaypointCmd::takeoff;
+                            break;
+                        case MAV_CMD_NAV_LAND:
+                            wpCmd = WaypointCmd::land;
+                            break;
+                        case MAV_CMD_NAV_RETURN_TO_LAUNCH:
+                            wpCmd = WaypointCmd::gohome;
+                            break;
+                        default:
+                            printf("Undefined MAV_CMD received by waypoint module!\n");
+                            wpCmd = WaypointCmd::none;
+                            break;
+                    }
+
+                    m_wpl.setWaypoint(m_itemMsg.seq, wpCmd, m_itemMsg.x, 
+                            m_itemMsg.y, m_itemMsg.z, m_itemMsg.param4, 
+                            m_itemMsg.param1);
+                } else {
+                    printf{"Invalid index of waypoint in waypoint module!\n"};
+                    return;
+                }
 printf(">>>  Mission Item: \ntarget_system: %u, \ntarget_component: %u, \nseq: %u, \nframe: %u, \ncommand: %u, \ncurrent: %u, \nautocontinue: %u, \nparam1: %f, \nparam2: %f, \nparam3: %f, \nparam4: %f, \nx: %f, \ny: %f, \nz: %f \n\n", m_itemMsg.target_system, m_itemMsg.target_component, m_itemMsg.seq, m_itemMsg.frame, m_itemMsg.command, m_itemMsg.current, m_itemMsg.autocontinue, m_itemMsg.param1, m_itemMsg.param2, m_itemMsg.param3, m_itemMsg.param4, m_itemMsg.x, m_itemMsg.y, m_itemMsg.z);
 
                 if( m_wpl.isDownloadFinished() ) {
@@ -503,15 +536,16 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
              * @return True for valid index or false for invalid index
              */
             //TODO: Any better idea of sovling this?
-            bool getWaypoint(uint16_t idx, double lat, double lon, float alt, 
-                    int16_t heading, uint16_t staytime) {
+            bool getWaypoint(uint16_t idx, double &lat, double &lon, 
+                    float &alt, int16_t &heading, 
+                    uint16_t &staytime) {
 
                 if( m_wpl->isValidIdx(idx) ) {
-                    lat = m_wpl->getWaypointLat(idx);
-                    lon = m_wpl->getWaypointLon(idx);
-                    alt = m_wpl->getWaypointAlt(idx);
-                    heading = m_wpl->getWpHeading(idx);
-                    staytime = m_wpl->getWpStaytime(idx);
+                    lat = (double)m_wpl.getWaypointLat(idx);
+                    lon = (double)m_wpl.getWaypointLon(idx);
+                    alt = (float)m_wpl.getWaypointAlt(idx);
+                    heading = (int16_t)m_wpl.getWpHeading(idx);
+                    staytime = (uint16_t)m_wpl.getWpStaytime(idx);
                     return true;
                 } else {
                     printf("Invalid index when getting waypoint!\n");

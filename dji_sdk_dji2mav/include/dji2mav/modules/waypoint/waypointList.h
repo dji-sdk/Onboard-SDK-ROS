@@ -88,7 +88,7 @@ namespace dji2mav {
             }
 
 
-            bool getWaypointRad(uint16_t idx, float &x, float &y, float &z) {
+/*            bool getWaypointRad(uint16_t idx, float &x, float &y, float &z) {
                 if( isValidIdx(idx) ) {
                     x = m_wpList_deg[idx].lat / 180.0 * M_PI;
                     y = m_wpList_deg[idx].lon / 180.0 * M_PI;
@@ -142,6 +142,34 @@ namespace dji2mav {
                     return false;
                 }
             }
+*/
+
+            void getWaypointData(uint16_t idx, WaypointType &cmd,
+                    float &lat, float &lon, float &alt, float &heading, 
+                    float &staytime) {
+
+                cmd = m_wpl_deg[idx].cmd;
+		lat = m_wpl_deg[idx].lat;
+                lon = m_wpl_deg[idx].lon;
+                alt = m_wpl_deg[idx].alt;
+                heading = m_wpl_deg[idx].heading;
+                staytime = m_wpl_deg[idx].staytime;
+
+            }
+
+
+            void setWaypointData(uint16_t idx, WaypointType cmd, 
+                    float lat, float lon, float alt, float heading, 
+                    float staytime) {
+
+                m_wpList_deg[idx].cmd = cmd;
+                m_wpList_deg[idx].lat = lat;
+                m_wpList_deg[idx].lon = lon;
+                m_wpList_deg[idx].alt = alt;
+                m_wpList_deg[idx].heading = heading;
+                m_wpList_deg[idx].staytime = staytime;
+
+            }
 
 
             inline WaypointType getWaypointCmd(uint16_t idx) {
@@ -154,8 +182,8 @@ namespace dji2mav {
             }
 
 
-            inline double getWaypointLat(uint16_t idx) {
-                return (double)m_wpList_deg[idx].lat;
+            inline float getWaypointLat(uint16_t idx) {
+                return m_wpList_deg[idx].lat;
             }
 
 
@@ -164,8 +192,8 @@ namespace dji2mav {
             }
 
 
-            inline double getWaypointLon(uint16_t idx) {
-                return (double)m_wpList_deg[idx].lon;
+            inline float getWaypointLon(uint16_t idx) {
+                return m_wpList_deg[idx].lon;
             }
 
 
@@ -184,7 +212,7 @@ namespace dji2mav {
             }
 
 
-            inline int16_t getWpHeading(uint16_t idx) {
+            inline float getWpHeading(uint16_t idx) {
                 return (int16_t)m_wpList_deg[idx].heading;
             }
 
@@ -194,7 +222,7 @@ namespace dji2mav {
             }
 
 
-            inline uint16_t getWpStaytime(uint16_t idx) {
+            inline float getWpStaytime(uint16_t idx) {
                 return (uint16_t)m_wpList_deg[idx].staytime;
             }
 

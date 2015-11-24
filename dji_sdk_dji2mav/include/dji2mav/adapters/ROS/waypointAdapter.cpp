@@ -1,9 +1,9 @@
 /*****************************************************************************
- * @Brief     An struct with enum type for a waypoint inside the list
+ * @Brief     ROS-depended and dji2mav-depended. An adapter for waypoint
  * @Version   0.2.1
  * @Author    Chris Liu
- * @Created   2015/11/23
- * @Modified  2015/11/23
+ * @Created   2015/11/24
+ * @Modified  2015/11/24
  *****************************************************************************/
 
 #ifndef _DJI2MAV_WAYPOINTTYPE_H_
@@ -31,4 +31,3 @@ struct WaypointType {
 
 
 #endif
-

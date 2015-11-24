@@ -121,6 +121,16 @@ void respondToTarget(const float mission[][3], uint16_t beginIdx,
 
 }
 
+/*void addWaypoint(float lat, float lon, float alt, float heading, float staytime) {
+    dji_sdk::Waypoint wp;
+    wp.latitude = lat;
+    wp.longitude = lon;
+    wp.altitude = alt;
+    wp.heading = heading;
+    wp.staytime = staytime;
+    g_wpl.waypoint_list.pushback(wp);
+}*/
+
 int main(int argc, char* argv[]) {
 
     ros::init(argc, argv, "dji2mav_bringup");
@@ -168,7 +178,13 @@ int main(int argc, char* argv[]) {
     dji2mav::MavWaypoint::getInstance()->setMissionClearAllRsp(respondToMissionClearAll);
     dji2mav::MavWaypoint::getInstance()->setMissionSetCurrentRsp(respondToMissionSetCurrent);
     dji2mav::MavWaypoint::getInstance()->setTargetRsp(respondToTarget);
-
+/*
+    dji2mav::MavWaypoint::getInstance()->setTakeoffExec(drone->takeoff);
+    dji2mav::MavWaypoint::getInstance()->setLandExec(drone->landing);
+    dji2mav::MavWaypoint::getInstance()->setGohomeExec(drone->gohome);
+    dji2mav::MavWaypoint::getInstance()->setAddwaypointExec(addWaypoint);
+    dji2mav::MavWaypoint::getInstance()->setStartWaypointNavExec(startWaypointNav);
+*/
     while( ros::ok() ) {
         dji2mav::MavDistributor::getInstance()->distribute();
 
