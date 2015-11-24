@@ -1,7 +1,7 @@
-float64 hotpoint_latitude
-float64 hotpoint_longitude
-float64 hotpoint_altitude
-float64 hotpoint_radius
+float64 latitude
+float64 longitude
+float64 altitude
+float64 radius
 float32 angular_speed
 uint8 is_clockwise
 uint8 start_point

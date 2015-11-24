@@ -531,8 +531,8 @@ typedef struct
 {
 	unsigned char version;
 	
-	fp64 hp_latitude;
-	fp64 hp_longitude;
+	fp64 latitude;
+	fp64 longitude;
 	fp64 altitude;
 	
 	fp64 radius;

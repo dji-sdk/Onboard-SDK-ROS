@@ -46,10 +46,10 @@ bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& reque
 			//upload hp task info
 			cmd_mission_hotpoint_setting_t new_hotpoint;
 
-			new_hotpoint.hp_latitude = hotpoint_task.hotpoint_latitude;
-			new_hotpoint.hp_longitude = hotpoint_task.hotpoint_longitude;
-			new_hotpoint.altitude = hotpoint_task.hotpoint_altitude;
-			new_hotpoint.radius = hotpoint_task.hotpoint_radius;
+			new_hotpoint.latitude = hotpoint_task.latitude;
+			new_hotpoint.longitude = hotpoint_task.longitude;
+			new_hotpoint.altitude = hotpoint_task.altitude;
+			new_hotpoint.radius = hotpoint_task.radius;
 			new_hotpoint.angular_rate = hotpoint_task.angular_speed;
 			new_hotpoint.is_clockwise = hotpoint_task.is_clockwise;
 			new_hotpoint.start_point = hotpoint_task.start_point;
@@ -265,7 +265,7 @@ bool DJISDKMission::mission_hp_set_speed_callback(dji_sdk::MissionHpSetSpeed::Re
 	return true;
 
 }
-bool DJISDKMission::mission_hp_set_radiu_callback(dji_sdk::MissionHpSetRadiu::Request& request, dji_sdk::MissionHpSetRadiu::Response& response)
+bool DJISDKMission::mission_hp_set_radius_callback(dji_sdk::MissionHpSetRadius::Request& request, dji_sdk::MissionHpSetRadius::Response& response)
 {
 	if (current_type != MissionType::HOTPOINT)
 		return false;

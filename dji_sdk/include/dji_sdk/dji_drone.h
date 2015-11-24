@@ -45,7 +45,7 @@ private:
 	ros::ServiceClient mission_wp_get_speed_service;
 	ros::ServiceClient mission_hp_upload_service;
 	ros::ServiceClient mission_hp_set_speed_service;
-	ros::ServiceClient mission_hp_set_radiu_service;
+	ros::ServiceClient mission_hp_set_radius_service;
 	ros::ServiceClient mission_hp_reset_yaw_service;
 	ros::ServiceClient mission_fm_upload_service;
 	ros::ServiceClient mission_fm_set_target_service;
@@ -709,11 +709,11 @@ public:
 		return mission_hp_set_speed_service.call(mission_hotpoint_set_speed)&&mission_hotpoint_set_speed.response.result;
 	}
 
-	bool mission_hotpoint_set_radiu(float radius)
+	bool mission_hotpoint_set_radius(float radius)
 	{
-		dji_sdk::MissionHpSetRadiu mission_hotpoint_set_radiu;
-		mission_hotpoint_set_radiu.request.radius = radius;
-		return mission_hp_set_radiu_service.call(mission_hotpoint_set_radiu)&&mission_hotpoint_set_radiu.response.result;
+		dji_sdk::MissionHpSetRadius mission_hotpoint_set_radius;
+		mission_hotpoint_set_radius.request.radius = radius;
+		return mission_hp_set_radius_service.call(mission_hotpoint_set_radius)&&mission_hotpoint_set_radius.response.result;
 	}
 
 	bool mission_hotpoint_reset_yaw()

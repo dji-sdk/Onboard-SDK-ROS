@@ -40,7 +40,7 @@ static void Display_Main_Menu(void)
     printf("[4] Mission Wp Set Speed\n");
     printf("[5] Mission Wp Get Speed\n");
     printf("[6] Mission Hp Set Speed\n");
-    printf("[7] Mission Hp Set Radiu\n");
+    printf("[7] Mission Hp Set Radius\n");
     printf("[8] Mission Hp Reset Yaw\n");
     printf("[9] Mission Fm Set Target\n");
     printf("[0] Exit\n");
@@ -60,8 +60,11 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     DJIDrone* drone = new DJIDrone(nh);
 
+	//virtual RC test data
 	uint32_t virtual_rc_data[16];
+	//set frequency test data
 	uint8_t  msg_frequency_data[16] = {2};
+	//waypoint action test data
     dji_sdk::WaypointList newWaypointList;
     dji_sdk::Waypoint waypoint0;
     dji_sdk::Waypoint waypoint1;
@@ -69,11 +72,13 @@ int main(int argc, char **argv)
     dji_sdk::Waypoint waypoint3;
     dji_sdk::Waypoint waypoint4;
 
+	//groundstation test data
 	dji_sdk::MissionWaypointTask waypoint_task;
+	dji_sdk::MissionWaypoint 	 waypoint;
 	dji_sdk::MissionHotpointTask hotpoint_task;
 	dji_sdk::MissionFollowmeTask followme_task;
 	dji_sdk::MissionFollowmeTarget followme_target;
-
+	
     Display_Main_Menu();
     while(1)
     {
@@ -379,7 +384,7 @@ int main(int argc, char **argv)
 				virtual_rc_data[1] = 1024-600;	//1-> pitch    	[1024-600,1024+600]
 				virtual_rc_data[2] = 1024-600;	//2-> throttle 	[1024-600,1024+600]
 				virtual_rc_data[3] = 1024-600;	//3-> yaw      	[1024-600,1024+600]
-				virtual_rc_data[6] = 1552;    	//6-> mode     	{1552(P), 1024(A), 496(F)}
+				virtual_rc_data[6] = 496;    	//6-> mode     	{1552(P), 1024(A), 496(F)}
 				virtual_rc_data[4] = 1684;	 	//4-> gear		{1684(UP), 1324(DOWN)}
 
 				for(int i = 0; i < 10; i++) {
@@ -394,7 +399,7 @@ int main(int argc, char **argv)
 				virtual_rc_data[1] = 1024;		//1-> pitch    	[1024-600,1024+600]
 				virtual_rc_data[2] = 1024;		//2-> throttle 	[1024-600,1024+600]
 				virtual_rc_data[3] = 1024-600;	//3-> yaw      	[1024-600,1024+600]
-				virtual_rc_data[6] = 1552;    	//6-> mode     	{1552(P), 1024(A), 496(F)}
+				virtual_rc_data[6] = 496;    	//6-> mode     	{1552(P), 1024(A), 496(F)}
 				virtual_rc_data[4] = 1684;	 	//4-> gear		{1684(UP), 1324(DOWN)}
 
 				for(int i = 0; i < 10; i++) {
@@ -432,12 +437,70 @@ int main(int argc, char **argv)
 				break;
 			case '1':
 				//mission waypoint upload
+				waypoint_task.velocity_range = 15;
+				waypoint_task.idle_velocity = 10;
+				waypoint_task.action_on_finish = 0;
+				waypoint_task.mission_exec_times = 2;
+				waypoint_task.yaw_mode = 1;
+				waypoint_task.trace_mode = 0;
+				waypoint_task.action_on_rc_lost = 0;
+				waypoint_task.gimbal_pitch_mode = 0;
+
+				waypoint.latitude = 22.540091;
+				waypoint.longitude = 113.946593;
+				waypoint.altitude = 100;
+				waypoint.damping_distance = 2;
+				waypoint.target_yaw = 0;
+				waypoint.target_gimbal_pitch = 0;
+				waypoint.turn_mode = 0;
+				waypoint.has_action = 1;
+				waypoint.action_time_limit = 10;
+				waypoint.waypoint_action.action_repeat = 1;
+				waypoint.waypoint_action.command_list[0] = 1;
+				waypoint.waypoint_action.command_parameter[0] = 1;
+
+				waypoint_task.mission_waypoint.push_back(waypoint);
+
+				waypoint.latitude = 22.540015;
+				waypoint.longitude = 113.94659;
+				waypoint.altitude = 120;
+				waypoint.damping_distance = 2;
+				waypoint.target_yaw = 180;
+				waypoint.target_gimbal_pitch = 0;
+				waypoint.turn_mode = 0;
+				waypoint.has_action = 1;
+				waypoint.action_time_limit = 10;
+				waypoint.waypoint_action.action_repeat = 1;
+				waypoint.waypoint_action.command_list[0] = 1;
+				waypoint.waypoint_action.command_parameter[0] = 1;
+
+				waypoint_task.mission_waypoint.push_back(waypoint);
+
+				drone->mission_waypoint_upload(waypoint_task);
 				break;
 			case '2':
 				//mission hotpoint upload
+				hotpoint_task.latitude = 22.540091;
+				hotpoint_task.longitude = 113.946593;
+				hotpoint_task.altitude = 20;
+				hotpoint_task.radius = 10;
+				hotpoint_task.angular_speed = 10;
+				hotpoint_task.is_clockwise = 0;
+				hotpoint_task.start_point = 0;
+				hotpoint_task.yaw_mode = 0;
+
+				drone->mission_hotpoint_upload(hotpoint_task);
 				break;
 			case '3':
 				//mission followme upload
+				followme_task.mode = 0;
+				followme_task.yaw_mode = 0;
+				followme_task.initial_latitude = 23.540091;
+				followme_task.initial_longitude = 113.946593;
+				followme_task.initial_altitude = 10;
+				followme_task.sensitivity = 1;
+
+				drone->mission_followme_upload(followme_task);
 				break;
 			case '4':
 				//mission waypoint set speed
@@ -452,8 +515,8 @@ int main(int argc, char **argv)
 				drone->mission_hotpoint_set_speed((float)5,(uint8_t)1);
 				break;
 			case '7':
-				//mission hotpoint set radiu
-				drone->mission_hotpoint_set_radiu((float)5);
+				//mission hotpoint set radius
+				drone->mission_hotpoint_set_radius((float)5);
 				break;
 			case '8':
 				//mission hotpoint reset yaw
@@ -461,6 +524,14 @@ int main(int argc, char **argv)
 				break;
 			case '9':
 				//mission followme update target
+				for (int i = 0; i < 20; i++)
+				{
+					followme_target.latitude = 22.540091 + i*0.000001;
+					followme_target.longitude = 113.946593 + i*0.000001;
+					followme_target.altitude = 100;
+					drone->mission_followme_update_target(followme_target);
+					usleep(20000);
+				}
 				break;
 			case '0':
                 return 0;

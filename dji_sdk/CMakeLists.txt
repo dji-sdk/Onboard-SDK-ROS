@@ -104,7 +104,7 @@ add_service_files(
   MissionWpGetSpeed.srv
   MissionHpUpload.srv
   MissionHpSetSpeed.srv
-  MissionHpSetRadiu.srv
+  MissionHpSetRadius.srv
   MissionHpResetYaw.srv
   MissionFmUpload.srv
   MissionFmSetTarget.srv

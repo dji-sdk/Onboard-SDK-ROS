@@ -217,6 +217,8 @@ int DJISDKNode::init_parameters_and_activate(ros::NodeHandle& nh_private)
     std::string app_bundle_id;
     std::string enc_key;
 
+	int uart_or_usb;
+
     nh_private.param("serial_name", serial_name, std::string("/dev/cu.usbserial-A603T4HK"));
     nh_private.param("baud_rate", baud_rate, 230400);
     nh_private.param("app_id", app_id, 1022384);
@@ -225,6 +227,8 @@ int DJISDKNode::init_parameters_and_activate(ros::NodeHandle& nh_private)
     nh_private.param("app_bundle_id", app_bundle_id, std::string("12345678901234567890123456789012"));
     nh_private.param("enc_key", enc_key,
             std::string("e7bad64696529559318bb35d0a8c6050d3b88e791e1808cfe8f7802150ee6f0d"));
+
+    nh_private.param("uart_or_usb", uart_or_usb, 0);//chosse uart as default
 
     // activation
     user_act_data.app_id = app_id;
@@ -241,6 +245,15 @@ int DJISDKNode::init_parameters_and_activate(ros::NodeHandle& nh_private)
     printf("app key: %s\n", user_act_data.app_key);
     printf("=================================================\n");
 
+	if(uart_or_usb) //use usb port for SDK
+	{
+		//A hand-shaking protocol
+		Pro_Hw_Setup(serial_name.c_str(),38400);
+		Pro_Hw_Setup(serial_name.c_str(),19200);
+		Pro_Hw_Setup(serial_name.c_str(),38400);
+		Pro_Hw_Setup(serial_name.c_str(),19200);
+	}
+
     if (DJI_Setup(serial_name.c_str(), baud_rate) < 0) {
         printf("Serial Port Cannot Open\n");
         return -1;
@@ -254,10 +267,18 @@ int DJISDKNode::init_parameters_and_activate(ros::NodeHandle& nh_private)
 
 DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
 {
+
     init_publishers(nh);
     init_services(nh);
     init_actions(nh);
-	DJISDKMission dji_sdk_mission(nh);
+
+	int groundstation_enable; 
+    nh_private.param("groundstation_enable", groundstation_enable, 1);
+	if(groundstation_enable)
+	{
+		DJISDKMission* dji_sdk_mission = new DJISDKMission(nh);
+	}
+
     init_parameters_and_activate(nh_private);
 }
 

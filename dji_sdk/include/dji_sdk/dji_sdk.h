@@ -61,7 +61,7 @@
 #include <dji_sdk/MissionFmSetTarget.h>
 #include <dji_sdk/MissionFmUpload.h>
 #include <dji_sdk/MissionHpResetYaw.h>
-#include <dji_sdk/MissionHpSetRadiu.h>
+#include <dji_sdk/MissionHpSetRadius.h>
 #include <dji_sdk/MissionHpSetSpeed.h>
 #include <dji_sdk/MissionHpUpload.h>
 #include <dji_sdk/MissionPause.h>
