@@ -26,6 +26,7 @@
 #include <dji_sdk/TimeStamp.h>
 
 //srvs
+#include <dji_sdk/Activation.h>
 #include <dji_sdk/AttitudeControl.h>
 #include <dji_sdk/CameraActionControl.h>
 #include <dji_sdk/DroneTaskControl.h>
@@ -35,6 +36,7 @@
 #include <dji_sdk/LocalPositionControl.h>
 #include <dji_sdk/SDKPermissionControl.h>
 #include <dji_sdk/VelocityControl.h>
+#include <dji_sdk/VersionCheck.h>
 
 #include <dji_sdk/DroneArmControl.h>
 #include <dji_sdk/SyncFlagControl.h>

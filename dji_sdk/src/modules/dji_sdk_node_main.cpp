@@ -207,7 +207,7 @@ int DJI_Setup(std::string serial_port, int baudrate) {
     DJI_Pro_Setup(NULL);
     return 0;
 }
-int DJISDKNode::init_parameters_and_activate(ros::NodeHandle& nh_private)
+int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
 {
     std::string serial_name;
     int baud_rate;
@@ -259,11 +259,12 @@ int DJISDKNode::init_parameters_and_activate(ros::NodeHandle& nh_private)
         return -1;
     }
     
-    DJI_Pro_Activate_API(&user_act_data, NULL);
+    //DJI_Pro_Activate_API(&user_act_data, NULL);
     DJI_Pro_Register_Broadcast_Callback(std::bind(&DJISDKNode::broadcast_callback, this));
 
     return 0;
 }
+
 
 DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
 {
@@ -279,7 +280,7 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
 		DJISDKMission* dji_sdk_mission = new DJISDKMission(nh);
 	}
 
-    init_parameters_and_activate(nh_private);
+    init_parameters(nh_private);
 }
 
 inline void DJISDKNode::gps_convert_ned(float &ned_x, float &ned_y,

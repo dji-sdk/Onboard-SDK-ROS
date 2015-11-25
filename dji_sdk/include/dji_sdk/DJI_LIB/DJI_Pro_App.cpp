@@ -268,7 +268,7 @@ static void * Get_API_Version_Thread_Func(void * arg)
     unsigned retry_time = 3;
     unsigned char cmd_data = 0;
 
-    DJI_Pro_App_Send_Data(2,1,MY_ACTIVATION_SET, API_VER_QUERY,(unsigned char*)&cmd_data,
+    DJI_Pro_App_Send_Data(2,0,MY_ACTIVATION_SET, API_VER_QUERY,(unsigned char*)&cmd_data,
               1,DJI_Pro_Get_API_Version_CallBack,cmd_timeout, retry_time);
 
     usleep((cmd_timeout + 50) * retry_time * 1000);

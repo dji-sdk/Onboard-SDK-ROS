@@ -1,5 +1,12 @@
 #include <dji_sdk/dji_sdk_node.h>
 
+bool DJISDKNode::activation_callback(dji_sdk::Activation::Request& request, dji_sdk::Activation::Response& response)
+{
+	DJI_Pro_Activate_API(&user_act_data, NULL);
+	response.result = true;
+	return true;
+}
+
 bool DJISDKNode::attitude_control_callback(dji_sdk::AttitudeControl::Request& request, dji_sdk::AttitudeControl::Response& response)
 {
     attitude_data_t user_ctrl_data;
@@ -165,6 +172,13 @@ bool DJISDKNode::velocity_control_callback(dji_sdk::VelocityControl::Request& re
     response.result = true;
 
     return true;
+}
+
+bool DJISDKNode::version_check_callback(dji_sdk::VersionCheck::Request& request, dji_sdk::VersionCheck::Response& response)
+{
+	DJI_Pro_Get_API_Version(NULL);
+	response.result = true;
+	return true;
 }
 
 bool DJISDKNode::virtual_rc_enable_control_callback(dji_sdk::VirtualRCEnableControl::Request& request, dji_sdk::VirtualRCEnableControl::Response& response)

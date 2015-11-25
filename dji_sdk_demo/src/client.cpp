@@ -8,42 +8,42 @@ static void Display_Main_Menu(void)
 {
     printf("\r\n");
     printf("----------- < Main menu > ----------\r\n\r\n");
-    printf("[a] Request to obtain control\n");
-    printf("[b] Release control\n");
-    printf("[c] Takeoff\n");
-    printf("[d] Landing\n");
-    printf("[e] Go home\n");
-    printf("[f] Gimbal control sample\n");
-    printf("[g] Attitude control sample\n");
-    printf("[h] Draw circle sample\n");
-    printf("[i] Draw square sample\n");
-    printf("[j] Take a picture\n");
-    printf("[k] Start video\n");
-    printf("[l] Stop video\n");
-    printf("[m] Local Navi Test\n");
-    printf("[n] GPS Navi Test\n");
-    printf("[o] Waypoint List Test\n");
-    printf("[p] Drone Arm\n");
-    printf("[q] Drone Disarm\n");
-    printf("[r] Virtual RC Test 1\n");
-    printf("[s] Virtual RC Test 2\n");
-    printf("[t] Sync Flag Test\n");
-    printf("[u] Set Msg Frequency Test\n");
-    printf("[v] Mission Start\n");
-    printf("[w] Mission Pause\n");
-    printf("[x] Mission Resume\n");
-    printf("[y] Mission Cancel\n");
-    printf("[z] Mission Download\n");
-    printf("[1] Mission Wp Upload\n");
-    printf("[2] Mission Hp Upload\n");
-    printf("[3] Mission Fm Upload\n");
-    printf("[4] Mission Wp Set Speed\n");
-    printf("[5] Mission Wp Get Speed\n");
-    printf("[6] Mission Hp Set Speed\n");
-    printf("[7] Mission Hp Set Radius\n");
-    printf("[8] Mission Hp Reset Yaw\n");
-    printf("[9] Mission Fm Set Target\n");
-    printf("[0] Exit\n");
+    printf("[a] SDK Version Query\n");
+    printf("[b] Activation\n");
+    printf("[c] Request to obtain control\n");
+    printf("[d] Release control\n");
+    printf("[e] Takeoff\n");
+    printf("[f] Landing\n");
+    printf("[g] Go home\n");
+    printf("[h] Gimbal control sample\n");
+    printf("[i] Attitude control sample\n");
+    printf("[j] Draw circle sample\n");
+    printf("[k] Draw square sample\n");
+    printf("[l] Take a picture\n");
+    printf("[m] Start video\n");
+    printf("[n] Stop video\n");
+    printf("[o] Local Navi Test\n");
+    printf("[p] GPS Navi Test\n");
+    printf("[q] Waypoint List Test\n");
+    printf("[r] Drone Arm\n");
+    printf("[s] Drone Disarm\n");
+    printf("[t] Virtual RC Test\n");
+    printf("[u] Sync Flag Test\n");
+    printf("[v] Set Msg Frequency Test\n");
+    printf("[w] Mission Start\n");
+    printf("[x] Mission Pause\n");
+    printf("[y] Mission Resume\n");
+    printf("[z] Mission Cancel\n");
+    printf("[1] Mission Download\n");
+    printf("[2] Mission Wp Upload\n");
+    printf("[3] Mission Hp Upload\n");
+    printf("[4] Mission Fm Upload\n");
+    printf("[5] Mission Wp Set Speed\n");
+    printf("[6] Mission Wp Get Speed\n");
+    printf("[7] Mission Hp Set Speed\n");
+    printf("[8] Mission Hp Set Radius\n");
+    printf("[9] Mission Hp Reset Yaw\n");
+    printf("[0] Mission Fm Set Target\n");
     printf("\ninput a/b/c etc..then press enter key\r\n");
     printf("\nuse `rostopic echo` to query drone status\r\n");
     printf("----------------------------------------\r\n");
@@ -108,27 +108,34 @@ int main(int argc, char **argv)
         }
         switch(main_operate_code)
         {
-            case 'a':
+			case 'a':
+				/* SDK version query*/
+				drone->check_version();
+				break;
+			case 'b':
+				drone->activate();
+				break;
+            case 'c':
                 /* request control ability*/
                 drone->request_sdk_permission_control();
                 break;
-            case 'b':
+            case 'd':
                 /* release control ability*/
                 drone->release_sdk_permission_control();
                 break;
-            case 'c':
+            case 'e':
                 /* take off */
                 drone->takeoff();
                 break;
-            case 'd':
+            case 'f':
                 /* landing*/
                 drone->landing();
                 break;
-            case 'e':
+            case 'g':
                 /* go home*/
                 drone->gohome();
                 break;
-            case 'f':
+            case 'h':
                 /*gimbal test*/
 
                 drone->gimbal_angle_control(0, 0, 1800, 20);
@@ -158,7 +165,7 @@ int main(int argc, char **argv)
                 drone->gimbal_angle_control(0, 0, 0, 20);
                 break;
 
-            case 'g':
+            case 'i':
                 /* attitude control sample*/
                 drone->takeoff();
                 sleep(8);
@@ -258,7 +265,7 @@ int main(int argc, char **argv)
 
                 break;
 
-            case 'h':
+            case 'j':
                 /*draw circle sample*/
                 static float time = 0;
                 static float R = 2;
@@ -277,7 +284,7 @@ int main(int argc, char **argv)
                 }
                 break;
 
-            case 'i':
+            case 'k':
                 /*draw square sample*/
                 for(int i = 0;i < 60;i++)
                 {
@@ -300,27 +307,27 @@ int main(int argc, char **argv)
                     usleep(20000);
                 }
                 break;
-            case 'j':
+            case 'l':
                 /*take a picture*/
                 drone->take_picture();
                 break;
-            case 'k':
+            case 'm':
                 /*start video*/
                 drone->start_video();
                 break;
-            case 'l':
+            case 'n':
                 /*stop video*/
                 drone->stop_video();
                 break;
-            case 'm':
+            case 'o':
                 /* Local Navi Test */
                 drone->local_position_navigation_send_request(-100, -100, 100);
                 break;
-            case 'n':
+            case 'p':
                 /* GPS Navi Test */
                 drone->global_position_navigation_send_request(22.535, 113.95, 100);
                 break;
-            case 'o':
+            case 'q':
                 /* Waypoint List Navi Test */
                 {
                     waypoint0.latitude = 22.535;
@@ -369,15 +376,15 @@ int main(int argc, char **argv)
 
                 drone->waypoint_navigation_send_request(newWaypointList);
                 break;
-			case 'p':
+			case 'r':
 				//drone arm
 				drone->drone_arm();
                 break;
-			case 'q':
+			case 's':
 				//drone disarm
 				drone->drone_disarm();
                 break;
-			case 'r':
+			case 't':
 				//virtual rc test 1: arm & disarm
 				drone->virtual_rc_enable();
 				virtual_rc_data[0] = 1024+600;	//0-> roll     	[1024-600,1024+600] 
@@ -391,9 +398,8 @@ int main(int argc, char **argv)
 					drone->virtual_rc_control(virtual_rc_data);
 					usleep(20000);
 				}
-				break;
-			case 's':
-				//virtual rc test 2: a circle path
+
+				//virtual rc test 2: yaw 
 				drone->virtual_rc_enable();
 				virtual_rc_data[0] = 1024;		//0-> roll     	[1024-600,1024+600] 
 				virtual_rc_data[1] = 1024;		//1-> pitch    	[1024-600,1024+600]
@@ -407,35 +413,35 @@ int main(int argc, char **argv)
 					usleep(20000);
 				}
 				break;
-			case 't':
+			case 'u':
 				//sync flag
 				drone->sync_flag_control(1);
 				break;
-			case 'u':
+			case 'v':
 				//set msg frequency
 				drone->set_message_frequency(msg_frequency_data);
 				break;
-			case 'v':
+			case 'w':
 				//mission start
 				drone->mission_start();
 				break;
-			case 'w':
+			case 'x':
 				//mission pause
 				drone->mission_pause();
 				break;
-			case 'x':
+			case 'y':
 				//mission resume
 				drone->mission_resume();
 				break;
-			case 'y':
+			case 'z':
 				//mission cancel
 				drone->mission_cancel();
 				break;
-			case 'z':
+			case '1':
 				//mission download
 				drone->mission_download();
 				break;
-			case '1':
+			case '2':
 				//mission waypoint upload
 				waypoint_task.velocity_range = 15;
 				waypoint_task.idle_velocity = 10;
@@ -478,7 +484,7 @@ int main(int argc, char **argv)
 
 				drone->mission_waypoint_upload(waypoint_task);
 				break;
-			case '2':
+			case '3':
 				//mission hotpoint upload
 				hotpoint_task.latitude = 22.540091;
 				hotpoint_task.longitude = 113.946593;
@@ -491,7 +497,7 @@ int main(int argc, char **argv)
 
 				drone->mission_hotpoint_upload(hotpoint_task);
 				break;
-			case '3':
+			case '4':
 				//mission followme upload
 				followme_task.mode = 0;
 				followme_task.yaw_mode = 0;
@@ -502,27 +508,27 @@ int main(int argc, char **argv)
 
 				drone->mission_followme_upload(followme_task);
 				break;
-			case '4':
+			case '5':
 				//mission waypoint set speed
 				drone->mission_waypoint_set_speed((float)5);
 				break;
-			case '5':
+			case '6':
 				//mission waypoint get speed
 				printf("%f", drone->mission_waypoint_get_speed());
 				break;
-			case '6':
+			case '7':
 				//mission hotpoint set speed
 				drone->mission_hotpoint_set_speed((float)5,(uint8_t)1);
 				break;
-			case '7':
+			case '8':
 				//mission hotpoint set radius
 				drone->mission_hotpoint_set_radius((float)5);
 				break;
-			case '8':
+			case '9':
 				//mission hotpoint reset yaw
 				drone->mission_hotpoint_reset_yaw();
 				break;
-			case '9':
+			case '0':
 				//mission followme update target
 				for (int i = 0; i < 20; i++)
 				{
@@ -533,8 +539,6 @@ int main(int argc, char **argv)
 					usleep(20000);
 				}
 				break;
-			case '0':
-                return 0;
 
             default:
                 break;

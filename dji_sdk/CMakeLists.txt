@@ -79,6 +79,7 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
+  Activation.srv
   AttitudeControl.srv
   CameraActionControl.srv
   DroneTaskControl.srv
@@ -88,6 +89,7 @@ add_service_files(
   LocalPositionControl.srv
   SDKPermissionControl.srv
   VelocityControl.srv
+  VersionCheck.srv
 
   DroneArmControl.srv
   SyncFlagControl.srv

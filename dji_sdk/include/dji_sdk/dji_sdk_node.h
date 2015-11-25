@@ -80,6 +80,7 @@ private:
     }
 
 //Services:
+	ros::ServiceServer activation_service;
     ros::ServiceServer attitude_control_service;
     ros::ServiceServer camera_action_control_service;
     ros::ServiceServer drone_task_control_service;
@@ -89,12 +90,15 @@ private:
     ros::ServiceServer local_position_control_service;
     ros::ServiceServer sdk_permission_control_service;
     ros::ServiceServer velocity_control_service;
+	ros::ServiceServer version_check_service;
+
 	ros::ServiceServer virtual_rc_enable_control_service;
 	ros::ServiceServer virtual_rc_data_control_service;
 	ros::ServiceServer drone_arm_control_service;
 	ros::ServiceServer sync_flag_control_service;
 	ros::ServiceServer message_frequency_control_service;
 
+	bool activation_callback(dji_sdk::Activation::Request& request, dji_sdk::Activation::Response& response);
     bool attitude_control_callback(dji_sdk::AttitudeControl::Request& request, dji_sdk::AttitudeControl::Response& response);
     bool camera_action_control_callback(dji_sdk::CameraActionControl::Request& request, dji_sdk::CameraActionControl::Response& response);
     bool drone_task_control_callback(dji_sdk::DroneTaskControl::Request& request, dji_sdk::DroneTaskControl::Response& response);
@@ -109,9 +113,11 @@ private:
 	bool drone_arm_control_callback(dji_sdk::DroneArmControl::Request& request, dji_sdk::DroneArmControl::Response& response);
 	bool sync_flag_control_callback(dji_sdk::SyncFlagControl::Request& request, dji_sdk::SyncFlagControl::Response& response);
 	bool message_frequency_control_callback(dji_sdk::MessageFrequencyControl::Request& request, dji_sdk::MessageFrequencyControl::Response& response);
+	bool version_check_callback(dji_sdk::VersionCheck::Request& requset, dji_sdk::VersionCheck::Response& response);
 
     void init_services(ros::NodeHandle& nh)
     {
+		activation_service = nh.advertiseService("dji_sdk/activation", &DJISDKNode::activation_callback, this);
         attitude_control_service = nh.advertiseService("dji_sdk/attitude_control", &DJISDKNode::attitude_control_callback, this);
         camera_action_control_service = nh.advertiseService("dji_sdk/camera_action_control",&DJISDKNode::camera_action_control_callback, this);
         drone_task_control_service = nh.advertiseService("dji_sdk/drone_task_control", &DJISDKNode::drone_task_control_callback, this);
@@ -121,6 +127,7 @@ private:
         local_position_control_service = nh.advertiseService("dji_sdk/local_position_control", &DJISDKNode::local_position_control_callback, this);
         sdk_permission_control_service = nh.advertiseService("dji_sdk/sdk_permission_control", &DJISDKNode::sdk_permission_control_callback, this);
         velocity_control_service = nh.advertiseService("dji_sdk/velocity_control", &DJISDKNode::velocity_control_callback, this);
+		version_check_service = nh.advertiseService("dji_sdk/version_check", &DJISDKNode::version_check_callback, this);
 		virtual_rc_enable_control_service = nh.advertiseService("dji_sdk/virtual_rc_enable_control", &DJISDKNode::virtual_rc_enable_control_callback, this);
 		virtual_rc_data_control_service = nh.advertiseService("dji_sdk/virtual_rc_data_control", &DJISDKNode::virtual_rc_data_control_callback,this);
 		drone_arm_control_service = nh.advertiseService("dji_sdk/drone_arm_control", &DJISDKNode::drone_arm_control_callback, this);
@@ -181,7 +188,7 @@ public:
     DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private);
 
 private:
-    int init_parameters_and_activate(ros::NodeHandle& nh_private);
+    int init_parameters(ros::NodeHandle& nh_private);
     void broadcast_callback();
 
     bool process_waypoint(dji_sdk::Waypoint new_waypoint);

@@ -21,6 +21,7 @@ private:
 	GlobalPositionNavigationActionClient global_position_navigation_action_client;
 	WaypointNavigationActionClient waypoint_navigation_action_client;
 
+	ros::ServiceClient activation_service;
 	ros::ServiceClient attitude_control_service;
     ros::ServiceClient camera_action_control_service;
     ros::ServiceClient drone_task_control_service;
@@ -30,6 +31,7 @@ private:
     ros::ServiceClient local_position_control_service;
     ros::ServiceClient sdk_permission_control_service;
     ros::ServiceClient velocity_control_service;
+	ros::ServiceClient version_check_service;
 
 	ros::ServiceClient virtual_rc_enable_control_service;
 	ros::ServiceClient virtual_rc_data_control_service;
@@ -247,6 +249,7 @@ public:
 		global_position_navigation_action_client(nh, "dji_sdk/global_position_navigation_action", true),
 		waypoint_navigation_action_client(nh, "dji_sdk/waypoint_navigation_action", true)
 	{
+		activation_service = nh.serviceClient<dji_sdk::Activation>("dji_sdk/activation");
 	    attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
 	    camera_action_control_service = nh.serviceClient<dji_sdk::CameraActionControl>("dji_sdk/camera_action_control");
 	    drone_task_control_service = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
@@ -256,6 +259,7 @@ public:
 	    local_position_control_service = nh.serviceClient<dji_sdk::LocalPositionControl>("dji_sdk/local_position_control");
 	    sdk_permission_control_service = nh.serviceClient<dji_sdk::SDKPermissionControl>("dji_sdk/sdk_permission_control");
 	    velocity_control_service = nh.serviceClient<dji_sdk::VelocityControl>("dji_sdk/velocity_control");
+		version_check_service = nh.serviceClient<dji_sdk::VersionCheck>("dji_sdk/version_check");
 		virtual_rc_enable_control_service = nh.serviceClient<dji_sdk::VirtualRCEnableControl>("dji_sdk/virtual_rc_enable_control");
 		virtual_rc_data_control_service = nh.serviceClient<dji_sdk::VirtualRCDataControl>("dji_sdk/virtual_rc_data_control");
 		drone_arm_control_service = nh.serviceClient<dji_sdk::DroneArmControl>("dji_sdk/drone_arm_control");
@@ -279,6 +283,18 @@ public:
 		time_stamp_subscriber = nh.subscribe<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10, &DJIDrone::time_stamp_subscriber_callback,this);
 		mission_state_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/missino_state", 10, &DJIDrone::mission_state_push_info_callback, this);  
 		mission_event_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_event", 10, &DJIDrone::mission_event_push_info_callback, this);
+	}
+
+	bool activate()
+	{
+		dji_sdk::Activation activate;
+		return activation_service.call(activate) && activate.response.result;
+	}
+	
+	bool check_version()
+	{
+		dji_sdk::VersionCheck version_check;
+		return version_check_service.call(version_check) && version_check.response.result;
 	}
 
 	bool takeoff()
