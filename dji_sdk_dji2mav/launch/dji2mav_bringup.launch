@@ -1,0 +1,9 @@
+<launch>
+
+    <node name="dji2mav_bringup" pkg="dji_sdk_dji2mav" type="dji2mav_bringup" output="screen">
+        <param name="targetIp1" type="string" value="10.60.23.136" />
+        <param name="targetPort1" type="int" value="14550" />
+        <param name="srcPort" type="int" value="14551" />
+    </node>
+
+</launch>
