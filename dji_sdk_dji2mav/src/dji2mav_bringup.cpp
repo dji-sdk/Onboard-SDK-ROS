@@ -15,9 +15,13 @@
 #include <dji_sdk/Velocity.h>
 #include <dji_sdk/AttitudeQuaternion.h>
 
-#include "dji2mav/config.h"
+#include "dji_sdk_dji2mav/config.h"
+
+
 
 DJIDrone* drone;
+
+
 
 /* A thread for sending heartbeat */
 void* sendHb_Period(void* args) {
@@ -36,6 +40,8 @@ void* sendSs_Period(void* args) {
         usleep(t_ms);
     }
 }
+
+
 
 void locPosCB(const dji_sdk::LocalPosition &msg) {
     dji2mav::MavSensors::getInstance()->setLocalPosition(&msg.ts, &msg.x, 
@@ -57,16 +63,18 @@ void gloPosCB(const dji_sdk::GlobalPosition &msg) {
             &msg.latitude, &msg.longitude, &msg.altitude, &msg.height);
 }
 
+
+
 void respondToHeartbeat() {
-    printf("\n");
+    ROS_INFO("Get heartbeat\n");
 }
 
 void respondToMissionRequestList() {
-    ROS_INFO("Mission request list get\n");
+    ROS_INFO("Get mission request list\n");
 }
 
 void respondToMissionRequest(uint16_t param) {
-    ROS_INFO("--- Finally! Mission Request get %d! ---", param);
+    ROS_INFO("Get mission request %d", param);
 }
 
 void respondToMissionAck() {
@@ -74,13 +82,12 @@ void respondToMissionAck() {
 }
 
 void respondToMissionCount(uint16_t param) {
-    ROS_INFO("*** Get mission count %d! ***", param);
+    ROS_INFO("Get mission count %d", param);
 }
 
 void respondToMissionItem(uint16_t param) {
-    ROS_INFO("+++ Get mission item %d +++", param);
+    ROS_INFO("Get mission item %d", param);
 }
-
 
 void respondToMissionClearAll() {
     ROS_INFO("Get mission clear all");
@@ -90,61 +97,69 @@ void respondToMissionSetCurrent(uint16_t param) {
     ROS_INFO("Get mission set current %u", param);
 }
 
-void respondToTarget(const float mission[][3], uint16_t beginIdx, 
+
+
+void respondToTarget(const float mission[][7], uint16_t beginIdx, 
         uint16_t endIdx) {
 
     dji_sdk::WaypointList wpl;
     dji_sdk::Waypoint wp;
     ROS_INFO("beginIdx %d, endIdx %d", beginIdx, endIdx);
     for(int i = beginIdx; i < endIdx; ++i) {
-        dji2mav::MavWaypoint::getInstance()->getWaypoint(i, wp.latitude, 
-                wp.longitude, wp.altitude, wp.heading, wp.staytime);
-        /*wp.latitude = mission[i][0];
-        wp.longitude = mission[i][1];
-        wp.altitude = mission[i][2];
-        wp.staytime = 2;*/
+        wp.latitude = mission[i][4];
+        wp.longitude = mission[i][5];
+        wp.altitude = mission[i][6];
+        wp.staytime = (uint16_t)mission[i][0];
+        wp.heading = (int16_t)mission[i][3];
         wpl.waypoint_list.push_back(wp);
     }
     ROS_INFO("Size of the wpl: %d", wpl.waypoint_list.size());
+
+    /**
+     * Currently this is executed in main thread, So don't wait for server or 
+     * result in case of blocking the distribution process. A new coming 
+     * version will bring up a better architecture soon
+     */
+/*
     ROS_INFO("Going to wait for server...");
-    /* Currently this is executed in main thread */
-    //drone->waypoint_navigation_wait_server();
+    drone->waypoint_navigation_wait_server();
+*/
+
     drone->waypoint_navigation_send_request(wpl);
-    /*ROS_INFO("Going to sleep 50 seconds");
-    ros::Duration(50).sleep();
-    ROS_INFO("Finish sleeping!");
+
+/*
+    ROS_INFO("Going to wait for result");
     if(drone->waypoint_navigation_wait_for_result()) {
         ROS_INFO("Succeed to execute current task!");
     } else {
         ROS_INFO("Fail to execute current task in 10 seconds!");
-    }*/
+    }
+*/
 
 }
 
-/*void addWaypoint(float lat, float lon, float alt, float heading, float staytime) {
-    dji_sdk::Waypoint wp;
-    wp.latitude = lat;
-    wp.longitude = lon;
-    wp.altitude = alt;
-    wp.heading = heading;
-    wp.staytime = staytime;
-    g_wpl.waypoint_list.pushback(wp);
-}*/
+
 
 int main(int argc, char* argv[]) {
 
     ros::init(argc, argv, "dji2mav_bringup");
     ros::NodeHandle nh;
-    DJIDrone drone_(nh);
-    drone = &drone_;
-    drone->request_sdk_permission_control();
+    drone = new DJIDrone(nh);
 
+    std::string targetIp1;
+    int targetPort1;
+    int srcPort;
+    nh.param( "targetIp1", targetIp1, std::string("10.60.23.136") );
+    nh.param("targetPort1", targetPort1, 14550);
+    nh.param("srcPort", srcPort, 14551);
+
+    drone->request_sdk_permission_control();
 
     dji2mav::Config* config = dji2mav::Config::getInstance();
     /* set the sysid "1" and the number of GCS is also "1" */
     config->setup(1, 1);
     /* The index of first GCS is "0" */
-    config->start(0, "10.60.23.136", 14550, 14551);
+    config->start(0, targetIp1, (uint16_t)targetPort1, (uint16_t)srcPort);
 
     /* Register Subscribers */
     ros::Subscriber sub1 = nh.subscribe("/dji_sdk/local_position", 1, locPosCB);
@@ -168,8 +183,8 @@ int main(int argc, char* argv[]) {
         ROS_ERROR("Create pthread for sending sensors data fail! Error code: %d", ss_thread_ret);
     }
 
-    /* Register rsp */
-    dji2mav::MavHeartbeat::getInstance()->setHeartbeatRsp(respondToHeartbeat);
+    /* Register responser */
+//  dji2mav::MavHeartbeat::getInstance()->setHeartbeatRsp(respondToHeartbeat);
     dji2mav::MavWaypoint::getInstance()->setMissionRequestListRsp(respondToMissionRequestList);
     dji2mav::MavWaypoint::getInstance()->setMissionRequestRsp(respondToMissionRequest);
     dji2mav::MavWaypoint::getInstance()->setMissionAckRsp(respondToMissionAck);
@@ -178,21 +193,18 @@ int main(int argc, char* argv[]) {
     dji2mav::MavWaypoint::getInstance()->setMissionClearAllRsp(respondToMissionClearAll);
     dji2mav::MavWaypoint::getInstance()->setMissionSetCurrentRsp(respondToMissionSetCurrent);
     dji2mav::MavWaypoint::getInstance()->setTargetRsp(respondToTarget);
-/*
-    dji2mav::MavWaypoint::getInstance()->setTakeoffExec(drone->takeoff);
-    dji2mav::MavWaypoint::getInstance()->setLandExec(drone->landing);
-    dji2mav::MavWaypoint::getInstance()->setGohomeExec(drone->gohome);
-    dji2mav::MavWaypoint::getInstance()->setAddwaypointExec(addWaypoint);
-    dji2mav::MavWaypoint::getInstance()->setStartWaypointNavExec(startWaypointNav);
-*/
+
     while( ros::ok() ) {
+        /* Do distribution in loop */
         dji2mav::MavDistributor::getInstance()->distribute();
 
         ros::Duration(0.1).sleep();
         ros::spinOnce();
     }
 
+    ROS_INFO("Going to distruct the whole process...");
     config->distructor();
+    delete drone;
 
     return 0;
 }

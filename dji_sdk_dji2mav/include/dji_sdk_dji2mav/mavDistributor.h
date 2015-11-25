@@ -15,6 +15,7 @@
 #include "modules/sensors/mavSensors.h"
 #include "modules/waypoint/mavWaypoint.h"
 
+#include <mavlink/v1.0/common/mavlink.h>
 #include <iostream>
 #include <stdio.h>
 #include <new>
@@ -65,10 +66,6 @@ namespace dji2mav{
                             m_listSize * sizeof(mavlink_message_t));
                     memset(m_recvStatusList, 0, 
                             m_listSize * sizeof(mavlink_status_t));
-                    printf("XX m_recvMsgList %02x\n", (uint32_t)m_recvMsgList);
-                    printf("XX m_recvStatusList %02x\n", (uint32_t)m_recvStatusList);
-                    printf("XX m_listSize %d\n", m_listSize);
-                    printf("XX m_instance %02x\n", (uint32_t)m_instance);
                 } catch(std::bad_alloc& m) {
                     std::cerr << "Failed to alloc memory for recv lists: " 
                             << "at line: " << __LINE__ << ", func: " 
@@ -159,12 +156,6 @@ namespace dji2mav{
 
 
             void distructor() {
-                if(NULL != m_moduleHb)
-                    m_moduleHb->distructor();
-                if(NULL != m_moduleSs)
-                    m_moduleSs->distructor();
-                if(NULL != m_moduleWp)
-                    m_moduleWp->distructor();
                 delete m_instance;
             }
 
@@ -177,6 +168,17 @@ namespace dji2mav{
 
 
             ~MavDistributor() {
+                printf("Going to distruct Distributor and the modules...\n");
+
+                if(NULL != m_moduleHb)
+                    m_moduleHb->distructor();
+                if(NULL != m_moduleSs)
+                    m_moduleSs->distructor();
+                if(NULL != m_moduleWp)
+                    m_moduleWp->distructor();
+
+                printf("Finish destructing all modules\n");
+
                 if(NULL != m_recvMsgList) {
                     delete []m_recvMsgList;
                     m_recvMsgList = NULL;
@@ -191,7 +193,7 @@ namespace dji2mav{
                 m_moduleSs = NULL;
                 m_moduleWp = NULL;
 
-                printf("Finish to destruct Distributor\n");
+                printf("Finish destructing Distributor\n");
             }
 
 

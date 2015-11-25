@@ -198,8 +198,8 @@ namespace dji2mav {
              * @param  msg    : Get the received message
              */
             void reactToHeartbeat(uint16_t gcsIdx, const mavlink_message_t* msg) {
-                printf("-- Get heartbeat with sysid %u and compid %u "
-                        "from GCS #%u.\n", msg->sysid, msg->compid, gcsIdx);
+//              printf("-- Get heartbeat with sysid %u and compid %u "
+//                      "from GCS #%u.\n", msg->sysid, msg->compid, gcsIdx);
                 if(NULL != m_rsp) {
                     m_rsp();
                 }
@@ -227,6 +227,8 @@ namespace dji2mav {
 
                 try {
                     m_senderRecord = new int[m_hdlr->getMngListSize()];
+                    memset( m_senderRecord, 0, 
+                            m_hdlr->getMngListSize() * sizeof(int) );
                 } catch(std::bad_alloc& m) {
                     std::cerr << "Failed to alloc memory for senderRecord: " 
                             << "at line: " << __LINE__ << ", func: " 
@@ -252,8 +254,12 @@ namespace dji2mav {
 
 
             ~MavHeartbeat() {
+                if(m_senderRecord != NULL) {
+                    delete []m_senderRecord;
+                    m_senderRecord = NULL;
+                }
                 m_hdlr = NULL;
-                printf("Finish to destruct Heartbeat module\n");
+                printf("Finish destructing Heartbeat module\n");
             }
 
 

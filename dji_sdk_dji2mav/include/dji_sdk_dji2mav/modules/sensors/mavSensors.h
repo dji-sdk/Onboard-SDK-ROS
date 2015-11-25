@@ -18,6 +18,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <new>
+#include <assert.h>
+#include <limits.h>
 
 namespace dji2mav{
 
@@ -242,6 +244,8 @@ namespace dji2mav{
 
                 try {
                     m_senderRecord = new int[m_hdlr->getMngListSize()];
+                    memset( m_senderRecord, 0, 
+                            m_hdlr->getMngListSize() * sizeof(int) );
                 } catch(std::bad_alloc& m) {
                     std::cerr << "Failed to alloc memory for senderRecord: " 
                             << "at line: " << __LINE__ << ", func: " 
@@ -290,8 +294,12 @@ namespace dji2mav{
                     delete m_gloPos;
                     m_gloPos = NULL;
                 }
+                if(NULL != m_senderRecord) {
+                    delete []m_senderRecord;
+                    m_senderRecord = NULL;
+                }
                 m_hdlr = NULL;
-                printf("Finish to destruct Sensors module\n");
+                printf("Finish destructing Sensors module\n");
             }
 
 

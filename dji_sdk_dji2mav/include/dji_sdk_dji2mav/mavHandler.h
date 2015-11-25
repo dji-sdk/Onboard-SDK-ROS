@@ -127,11 +127,7 @@ namespace dji2mav {
 
                 try {
                     m_mngList = new MsgManager*[m_mngListSize];
-                    memset(m_mngList, 0, m_mngListSize * sizeof(MsgManager));
-                    printf("XX m_mngList %02x\n", (uint32_t)m_mngList);
-                    printf("XX size %02x\n", sizeof(m_mngList));
-                    printf("XX m_mngListSize %02x\n", m_mngListSize);
-                    printf("XX m_instance %02x\n", (uint32_t)m_instance);
+                    memset(m_mngList, 0, m_mngListSize * sizeof(MsgManager*));
                 } catch(std::bad_alloc& m) {
                     std::cerr << "Failed to alloc memory for mng list: " 
                             << "at line: " << __LINE__ << ", func: " 
@@ -290,16 +286,16 @@ namespace dji2mav {
                     return false;
                 }
                 if(bytes_recv > 0) {
-                    printf("Datagram: ");
+//                  printf("Datagram: ");
                     uint8_t* bufPtr = m_mngList[mngIdx]->getRecvBuf();
                     for(int i = 0; i < bytes_recv; ++i, ++bufPtr) {
-                        printf("%02x", *bufPtr);
+//                      printf("%02x", *bufPtr);
                         if( mavlink_parse_char(MAVLINK_COMM_0, *bufPtr, 
                                 &recvMsg, &recvStatus) ) {
                             ret = true;
                         }
                     }
-                    printf("\n");
+//                  printf("\n");
                 }
                 return ret;
 
@@ -336,7 +332,7 @@ namespace dji2mav {
 
 
             ~MavHandler() {
-                printf("Going to destruct Handler\n");
+                printf("Going to destruct Handler...\n");
 
                 if(NULL != m_mngList) {
                     for(uint16_t i = 0; i < m_mngListSize; ++i) {
@@ -345,11 +341,11 @@ namespace dji2mav {
                             m_mngList[i] = NULL;
                         }
                     }
-                    //delete []m_mngList;
+                    delete []m_mngList;
                     m_mngList = NULL;
                 }
 
-                printf("Finish to destruct Handler\n");
+                printf("Finish destructing Handler\n");
             }
 
 

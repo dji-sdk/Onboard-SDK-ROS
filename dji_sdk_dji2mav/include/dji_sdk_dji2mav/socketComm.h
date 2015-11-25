@@ -15,11 +15,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
+#include <unistd.h>
 #include <errno.h>
 #include <time.h>
 #include <stdio.h>
 #include <iostream>
-#include <string>
+#include <string.h>
 
 namespace dji2mav {
 
@@ -33,7 +34,7 @@ namespace dji2mav {
             ~SocketComm() {
                 printf("Going to disconnect socket...\n");
                 disconnect();
-                printf("Finish to disconnect socket\n");
+                printf("Finish disconnecting socket\n");
             }
 
 
@@ -135,10 +136,12 @@ namespace dji2mav {
                     if(errno != EAGAIN) {
                         perror("Fail to receive message");
                     }
-                    else if( m_timer + 10 > time(NULL) ) {
+                    else if( m_timer + 10 < time(NULL) ) {
                         printf("No datagram received in last 10 sec.\n");
                         m_timer = time(NULL);
                     }
+                } else {
+                    m_timer = time(NULL);
                 }
                 return ret;
             }

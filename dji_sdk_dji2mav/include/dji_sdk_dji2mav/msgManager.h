@@ -33,19 +33,18 @@ namespace dji2mav{
 
                 try {
                     m_senderList = new MsgSender*[m_maxListSize];
-                    memset(m_senderList, 0, m_maxListSize);
-                    printf("XX m_senderList %02x\n", (uint32_t)m_senderList);
+                    memset(m_senderList, 0, m_maxListSize * sizeof(MsgSender*));
+                    m_currListSize = 0;
+                    m_comm = new SocketComm();
+                    m_receiver = new MsgReceiver(recvBufSize);
                 } catch(std::bad_alloc& m) {
-                    std::cerr << "Failed to alloc memory for sender list: " 
+                    std::cerr << "Failed to alloc memory for manager: " 
                             << "at line: " << __LINE__ << ", func: " 
                             << __func__ << ", file: " << __FILE__ 
                             << std::endl;
                     perror( m.what() );
                     exit(EXIT_FAILURE);
                 }
-                m_currListSize = 0;
-                m_comm = new SocketComm();
-                m_receiver = new MsgReceiver(recvBufSize);
 
                 m_generalSenderIdx = registerSender();
                 if(-1 == m_generalSenderIdx) {
@@ -75,7 +74,7 @@ namespace dji2mav{
                     m_comm = NULL;
                 }
 
-                printf("Finish to destruct Manager\n");
+                printf("Finish destructing Manager\n");
             }
 
 

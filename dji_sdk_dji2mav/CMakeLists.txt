@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(dji2mav)
+project(dji_sdk_dji2mav)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -104,7 +104,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES dji2mav
+  LIBRARIES dji_sdk_dji2mav
   CATKIN_DEPENDS dji_sdk geometry_msgs roscpp rospy std_msgs
   DEPENDS system_lib
 )
@@ -122,14 +122,14 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(dji2mav
-#   src/${PROJECT_NAME}/dji2mav.cpp
+# add_library(dji_sdk_dji2mav
+#   src/${PROJECT_NAME}/dji_sdk_dji2mav.cpp
 # )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(dji2mav ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(dji_sdk_dji2mav ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 add_executable(minimal src/minimal.cpp)
@@ -163,7 +163,7 @@ target_link_libraries(dji2mav_bringup
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS dji2mav dji2mav_node
+# install(TARGETS dji_sdk_dji2mav dji_sdk_dji2mav_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -188,7 +188,7 @@ target_link_libraries(dji2mav_bringup
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_dji2mav.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_dji_sdk_dji2mav.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

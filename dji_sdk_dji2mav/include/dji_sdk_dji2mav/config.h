@@ -54,9 +54,6 @@ namespace dji2mav {
              * @return True if succeed or false if fail
              */
             inline bool setup(uint8_t mavSysid, uint16_t num) {
-                    printf("XX m_instance %02x\n", (uint32_t)m_instance);
-                    printf("XX m_hdlr %02x\n", (uint32_t)m_hdlr);
-                    printf("XX m_dstb %02x\n", (uint32_t)m_dstb);
                 return ( m_hdlr->setHandlerConf(mavSysid, num) 
                         && m_dstb->setDistributorConf(num) );
             }
@@ -85,6 +82,9 @@ namespace dji2mav {
                         locPort);
                 if(ret) {
                     m_dstb->startModules();
+                    printf("\n===========================\n"
+                            "Succeed to bringup dji2mav!\n"
+                            "===========================\n\n");
                 }
                 return ret;
 
@@ -92,6 +92,7 @@ namespace dji2mav {
 
 
             void distructor() {
+                printf("\n-------- Exit Log --------\n");
                 m_hdlr->distructor();
                 m_dstb->distructor();
                 delete m_instance;
@@ -108,7 +109,7 @@ namespace dji2mav {
             ~Config() {
                 m_hdlr = NULL;
                 m_dstb = NULL;
-                printf("Finish to destruct Config\n");
+                printf("Finish destructing Config\n");
             }
 
 

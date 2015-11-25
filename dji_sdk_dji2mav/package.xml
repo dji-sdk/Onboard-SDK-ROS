@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>dji2mav</name>
+  <name>dji_sdk_dji2mav</name>
   <version>0.0.1</version>
-  <description>The dji2mav package</description>
+  <description>The dji_sdk_dji2mav package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
@@ -19,7 +19,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/dji2mav</url> -->
+  <!-- <url type="website">http://wiki.ros.org/dji_sdk_dji2mav</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->

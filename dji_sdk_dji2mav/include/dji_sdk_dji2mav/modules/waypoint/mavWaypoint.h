@@ -3,7 +3,7 @@
  * @Version   0.2.1
  * @Author    Chris Liu
  * @Created   2015/11/18
- * @Modified  2015/11/18
+ * @Modified  2015/11/24
  *****************************************************************************/
 
 #ifndef _MAV2DJI_MAVWAYPOINT_H_
@@ -11,12 +11,13 @@
 
 
 #include "../../mavHandler.h"
-#include "waypointType.h"
 #include "waypointList.h"
 
 #include <iostream>
 #include <stdio.h>
 #include <new>
+#include <assert.h>
+#include <limits.h>
 
 namespace dji2mav{
 
@@ -195,10 +196,11 @@ namespace dji2mav{
                 m_itemMsg.seq = m_reqMsg.seq;
                 if( m_wpl.isValidIdx(m_itemMsg.seq) ) {
 
-                    m_wpl.getWaypointData(m_itemMsg.seq, 
-                            (WaypointCmd)m_itemMsg.command, m_itemMsg.x, 
-                            m_itemMsg.y, m_itemMsg.z, m_itemMsg.param4, 
-                            m_itemMsg.param1);
+                    m_wpl.getWaypointData(m_itemMsg.seq, m_itemMsg.command, 
+                            m_itemMsg.param1, m_itemMsg.param2, 
+                            m_itemMsg.param3, m_itemMsg.param4, 
+                            m_itemMsg.x, m_itemMsg.y, m_itemMsg.z);
+
 
                 } else {
                     printf("Invalid index of waypoint in waypoint module!\n");
@@ -246,7 +248,7 @@ namespace dji2mav{
                 printf("Mission ACK code: %d\n", m_ackMsg.type);
                 m_status = loaded;
                 m_wpl.finishUpload();
-                m_wpl.displayMissionDeg();
+                m_wpl.displayMission();
 
                 if(NULL != m_missionAckRsp)
                     m_missionAckRsp();
@@ -327,32 +329,13 @@ namespace dji2mav{
                 }
 
                 mavlink_msg_mission_item_decode(recvMsgPtr, &m_itemMsg);
-                if( m_wpl.isValidIdx(idx) ) {
-                    WaypointCmd wpCmd;
-                    switch(m_itemMsg.command) {
-                        case MAV_CMD_NAV_WAYPOINT:
-                            wpCmd = WaypointCmd::waypoint;
-                            break;
-                        case MAV_CMD_NAV_TAKEOFF:
-                            wpCmd = WaypointCmd::takeoff;
-                            break;
-                        case MAV_CMD_NAV_LAND:
-                            wpCmd = WaypointCmd::land;
-                            break;
-                        case MAV_CMD_NAV_RETURN_TO_LAUNCH:
-                            wpCmd = WaypointCmd::gohome;
-                            break;
-                        default:
-                            printf("Undefined MAV_CMD received by waypoint module!\n");
-                            wpCmd = WaypointCmd::none;
-                            break;
-                    }
-
-                    m_wpl.setWaypoint(m_itemMsg.seq, wpCmd, m_itemMsg.x, 
-                            m_itemMsg.y, m_itemMsg.z, m_itemMsg.param4, 
-                            m_itemMsg.param1);
+                if( m_wpl.isValidIdx(m_itemMsg.seq) ) {
+                    m_wpl.setWaypointData(m_itemMsg.seq, m_itemMsg.command, 
+                            m_itemMsg.param1, m_itemMsg.param2, 
+                            m_itemMsg.param3, m_itemMsg.param4, m_itemMsg.x, 
+                            m_itemMsg.y, m_itemMsg.z);
                 } else {
-                    printf{"Invalid index of waypoint in waypoint module!\n"};
+                    printf("Invalid index of waypoint in waypoint module!\n");
                     return;
                 }
 printf(">>>  Mission Item: \ntarget_system: %u, \ntarget_component: %u, \nseq: %u, \nframe: %u, \ncommand: %u, \ncurrent: %u, \nautocontinue: %u, \nparam1: %f, \nparam2: %f, \nparam3: %f, \nparam4: %f, \nx: %f, \ny: %f, \nz: %f \n\n", m_itemMsg.target_system, m_itemMsg.target_component, m_itemMsg.seq, m_itemMsg.frame, m_itemMsg.command, m_itemMsg.current, m_itemMsg.autocontinue, m_itemMsg.param1, m_itemMsg.param2, m_itemMsg.param3, m_itemMsg.param4, m_itemMsg.x, m_itemMsg.y, m_itemMsg.z);
@@ -365,7 +348,7 @@ printf(">>>  Mission Item: \ntarget_system: %u, \ntarget_component: %u, \nseq: %
                     m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
                             m_senderRecord[m_masterGcsIdx], &m_sendMsg);
                     m_status = loaded;
-                    m_wpl.displayMissionDeg();
+                    m_wpl.displayMission();
                 } else {
                     m_reqMsg.target_system = recvMsgPtr->sysid;
                     m_reqMsg.target_component = recvMsgPtr->compid;
@@ -456,7 +439,7 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
                     m_wpl.setTargetIdx(m_setCurrMsg.seq);
 
                     if(NULL != m_targetRsp) {
-                        m_targetRsp( m_wpl.getWaypointListDeg(), 
+                        m_targetRsp( m_wpl.getWaypointList(), 
                                 m_setCurrMsg.seq, 
                                 m_wpl.getListSize() );//TODO
                     }
@@ -520,7 +503,7 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
             }
 
 
-            inline void setTargetRsp( void (*func)(const float[][3], uint16_t, uint16_t) ) {
+            inline void setTargetRsp( void (*func)(const float[][7], uint16_t, uint16_t) ) {
                 m_targetRsp = func;
             }
 
@@ -540,7 +523,7 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
                     float &alt, int16_t &heading, 
                     uint16_t &staytime) {
 
-                if( m_wpl->isValidIdx(idx) ) {
+                if( m_wpl.isValidIdx(idx) ) {
                     lat = (double)m_wpl.getWaypointLat(idx);
                     lon = (double)m_wpl.getWaypointLon(idx);
                     alt = (float)m_wpl.getWaypointAlt(idx);
@@ -572,6 +555,8 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
 
                 try {
                     m_senderRecord = new int[m_hdlr->getMngListSize()];
+                    memset( m_senderRecord, 0, 
+                            m_hdlr->getMngListSize() * sizeof(int) );
                 } catch(std::bad_alloc& m) {
                     std::cerr << "Failed to alloc memory for senderRecord: " 
                             << "at line: " << __LINE__ << ", func: " 
@@ -596,8 +581,12 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
 
 
             ~MavWaypoint() {
+                if(m_senderRecord != NULL) {
+                    delete []m_senderRecord;
+                    m_senderRecord = NULL;
+                }
                 m_hdlr = NULL;
-                printf("Finish to destruct Waypoint module\n");
+                printf("Finish destructing Waypoint module\n");
             }
 
 
@@ -633,7 +622,7 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
             void (*m_missionItemRsp)(uint16_t);
             void (*m_missionClearAllRsp)();
             void (*m_missionSetCurrentRsp)(uint16_t);
-            void (*m_targetRsp)(const float[][3], uint16_t, uint16_t);
+            void (*m_targetRsp)(const float[][7], uint16_t, uint16_t);
 
 
     };

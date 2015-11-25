@@ -26,6 +26,7 @@ namespace dji2mav {
 
                 try {
                     m_recvBuf = new uint8_t[m_bufSize];
+                    memset(m_recvBuf, 0, m_bufSize * sizeof(uint8_t));
                 } catch(std::bad_alloc &m) {
                     std::cerr << "Fail to alloc memory for MsgReceiver buf: " 
                             << "at line: " << __LINE__ << ", func: " 
@@ -39,9 +40,9 @@ namespace dji2mav {
 
 
             ~MsgReceiver() {
-                printf("Going to destruct Receiver\n");
                 delete []m_recvBuf;
                 m_recvBuf = NULL;
+                printf("Finish destructing Receiver\n");
             }
 
 
