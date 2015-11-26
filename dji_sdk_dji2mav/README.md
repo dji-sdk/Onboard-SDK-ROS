@@ -1,25 +1,28 @@
-## DJI SDK DJI2MAV 0.2.1
+# DJI SDK DJI2MAV 0.2.1
 ##### A package for connecting onboard computer with ground control station using mavlink protocal
 
 ---
-dji2mav: 
-    Version: 0.2.1
-    Updated Date: 2015/11/26
+Version: 0.2.1
 
-Documentation:
-    Updated Date: 2015/11/26
+Author: Chris Liu
+
+Updated Date: 2015/11/26
+
 ---
 
 
-### Introduction
+## Introduction
 This package is designed as a library and can be included in various platforms. It is implemented in C++ and depended on mavlink library. A simple ROS node is provided to bringup the dji2mav package.
+
 Dji2mav connects the onboard computer with ground control station using UDP. And it is required to call functions to send heartbeat and sensors data. All the mavlink status and message encode/decode will be handled inside the dji2mav package. So far it is tested on Ubuntu 14.0 with ROS indigo.
 
 
-### Quick Start
+## Quick Start
 Since a ROS node is provided inside this package, it is easy to put the dji2mav to use.
+
 #### 1. Connection
 Connect onboard computer with your ground control station. Any ground control station using mavlink protocol is fitted. Please do sufficient tests on simulator before a real flight. We will be appreciated if you put forward any bug.
+
 Make sure the onboard computer and ground control station are in the same LAN and can successfully ping each other.
 
 #### 2. Launch
@@ -35,13 +38,15 @@ roslaunch dji_sdk_dji2mav dji2mav_bringup.launch
 If the output of this ROS node prompts that every thing goes okay, you can see your ground control station has received the heartbeat and some sensors data from the vehicle. Now you can do some simple waypoint test on simulator.
 
 
-### Functional Specification
+## Functional Specification
 In waypoint function module, users can set latitude, longitude, altitude, heading and staytime for the waypoint. Users can upload waypoint list to the vehicle. The vehicle will wait till a current target is set by the users in the ground control station. The vehicle will directly go to that target waypoint and automatically carry out the rest of the waypoint list mission.
 
 
-### Architecture
-The dji2mav is designed to meet multi ground control stations and easy expansibility demands. Some class is designed as lazy-mode singleton.
+## Architecture
+The dji2mav is designed to meet multi ground control stations and easy expansibility demands. Some classes are designed as lazy-mode singleton.
+
 ![dji2mav architecture](/dji_sdk_dji2mav/doc/img/arch.bmp?raw=true)
+
 #### 1. Setup
 It is easy to access dji2mav interface by getting instance of Config. There are two important methods in config:
 ```
@@ -70,9 +75,9 @@ bool start(uint16_t gcsIdx, std::string gcsIP,
         uint16_t sendBufSize = DEFAULT_SEND_BUF_SIZE, 
         uint16_t recvBufSize = DEFAULT_RECV_BUF_SIZE);
 ```
-This two methods must be called BEFORE any data transporting between ground control station and onboard computer. They can be called like this:
+This two methods must be called **BEFORE** any data transporting between ground control station and onboard computer. They can be called like this:
 ```
-/* set the sysid "1". There is only one ground control system so the number of GCS is also "1" */
+/* Set the ID of system "1". There is only one ground control system so the number of GCS is also "1" */
 dji2mav::Config::getInstance()->setup(1, 1);
 /* The index of first GCS is "0". Set the first GCS IP and port */
 dji2mav::Config::getInstance()->start(0, targetIp1, (uint16_t)targetPort1, (uint16_t)srcPort);
@@ -87,10 +92,11 @@ To send heartbeat to specific GCS, use the corresponding GCS index:
 ```
 dji2mav::MavHeartbeat::getInstance()->sendHeartbeat(gcsIdx);
 ```
-The send buffer of heartbeat module is particular. So it is safe to be called in another thread and it is recommanded to do so.
+The send buffer of heartbeat module is particular. So it is safe to be called in a thread that periodically send heartbeat and it is recommanded to do so.
 
 #### 3. Update Sensors Data
 The sending process of sensors data is similar to the heartbeat module. To update the data, please use setters. All the data are stored inside the relative sensor class.
+
 Take ROS platform as an example. Since all the sensors data are published to specific topics, we can update data in the callback function:
 ```
 void locPosCB(const dji_sdk::LocalPosition &msg) {
@@ -115,7 +121,7 @@ void gloPosCB(const dji_sdk::GlobalPosition &msg) {
 ```
 
 #### 4. Use Waypoint Module
-Once waypoint module has been fire up, it is ready to communicate with ground control station. All you need to do is keeping the distribution running:
+Once waypoint module has been launched, it is ready to receive command from ground control station and reply automatically. All you need to do is keeping the distribution process running(an example of ROS platform):
 ```
 while( ros::ok() ) {
     dji2mav::MavDistributor::getInstance()->distribute();
