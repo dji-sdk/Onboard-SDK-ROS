@@ -144,14 +144,15 @@ int main(int argc, char* argv[]) {
 
     ros::init(argc, argv, "dji2mav_bringup");
     ros::NodeHandle nh;
+    ros::NodeHandle nh_private("~");
     drone = new DJIDrone(nh);
 
     std::string targetIp1;
     int targetPort1;
     int srcPort;
-    nh.param( "targetIp1", targetIp1, std::string("10.60.23.136") );
-    nh.param("targetPort1", targetPort1, 14550);
-    nh.param("srcPort", srcPort, 14551);
+    nh_private.param( "targetIp1", targetIp1, std::string("10.60.23.136") );
+    nh_private.param("targetPort1", targetPort1, 14550);
+    nh_private.param("srcPort", srcPort, 14551);
 
     drone->request_sdk_permission_control();
 
