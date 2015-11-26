@@ -233,7 +233,15 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     // activation
     user_act_data.app_id = app_id;
     user_act_data.app_api_level = app_api_level;
-    user_act_data.app_ver = SDK_VERSION;
+	if(uart_or_usb)
+	{
+		user_act_data.app_ver = 0x03006400;
+	}
+	else
+	{
+		user_act_data.app_ver = 0x03000a00;
+
+	}
     strcpy((char*) user_act_data.app_bundle_id, app_bundle_id.c_str());
     user_act_data.app_key = app_key;
     strcpy(user_act_data.app_key, enc_key.c_str());
