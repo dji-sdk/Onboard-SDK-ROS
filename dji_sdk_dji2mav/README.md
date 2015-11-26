@@ -41,7 +41,7 @@ In waypoint function module, users can set latitude, longitude, altitude, headin
 
 ### Architecture
 The dji2mav is designed to meet multi ground control stations and easy expansibility demands. Some class is designed as lazy-mode singleton.
-![dji2mav architecture](/doc/img/arch.bmp?raw=true)
+![dji2mav architecture](/dji_sdk_dji2mav/doc/img/arch.bmp?raw=true)
 #### 1. Setup
 It is easy to access dji2mav interface by getting instance of Config. There are two important methods in config:
 ```
