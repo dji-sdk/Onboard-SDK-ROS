@@ -185,6 +185,7 @@ bool DJISDKNode::virtual_rc_enable_control_callback(dji_sdk::VirtualRCEnableCont
 {
 	virtual_rc_manager_t virtual_rc_manager;
 	virtual_rc_manager.enable = request.enable;
+	virtual_rc_manager.if_back_to_real = request.if_back_to_real;
 	DJI_Pro_Virtual_RC_Manage(&virtual_rc_manager);
 
 	response.result = true;
