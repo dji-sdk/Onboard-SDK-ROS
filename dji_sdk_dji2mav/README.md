@@ -6,7 +6,7 @@ Version: 0.2.1
 
 Author: Chris Liu
 
-Updated Date: 2015/11/26
+Updated Date: 2015/11/27
 
 ---
 
@@ -20,12 +20,16 @@ Dji2mav connects the onboard computer with ground control station using UDP. And
 ## Quick Start
 Since a ROS node is provided inside this package, it is easy to put the dji2mav to use.
 
-#### 1. Connection
+#### 1. Start Simulator
+It is recommanded to do sufficient tests on simulator first.
+Please turn on your drone, connect your drone to the PC and properly set the *API Control* to *Enable* on N1-Assistant. Remember to switch to "P" mode on RC. Then open DJISimulator, click *Start Simulation* and *Display simulator*. You should see M100 on the ground in simulator.
+
+#### 2. Connection
 Connect onboard computer with your ground control station. Any ground control station using mavlink protocol is fitted. Please do sufficient tests on simulator before a real flight. We will be appreciated if you put forward any bug.
 
 Make sure the onboard computer and ground control station are in the same LAN and can successfully ping each other.
 
-#### 2. Launch
+#### 3. Launch
 Firstly, fire up dji sdk main launch:
 ```
 roslaunch dji_sdk sdk_manifold.launch
@@ -35,14 +39,32 @@ Then run:
 ```
 roslaunch dji_sdk_dji2mav dji2mav_bringup.launch
 ```
-If the output of this ROS node prompts that every thing goes okay, you can see your ground control station has received the heartbeat and some sensors data from the vehicle. Now you can do some simple waypoint test on simulator.
+If the output of this ROS node prompts that every thing goes okay, please move to next step.
+
+#### 4. Setup Ground Control Station
+Now please turn on your mavlink-protocol-adapted ground control station, Taking QGround Control v2.7.1 for example. Before clicking *Connect*, please check the connection settings. The *Link Type* should be UDP, and the *Listening Port* should be consistent with the port number that is set on the launch file which is mentioned on step 2.
+
+Then click *Connect*. If everything is ready, you can see your ground control station receives the heartbeat. On *Analyze* tag some sensors data from the vehicle are also displayed.
+
+Now you can do some simple waypoint test on simulator. 
+
+#### 5. Waypoint Test
+Before test waypoint module, please unlock the drone and takeoff using RC. On *Plan* tag inside QGround Station, you should see a marker on the map to show the current position of drone(You can set the initial location in DJISimulator).
+
+Double click on the map to lay markers of the waypoint. On the dashboard, please set the type of waypoint to *Global/Abs. Alt*(global position with absolute altitude). And choose *NAV: Waypoint* to be the navigation type.
+
+Check *lat*, *lon* and *alt* data of every waypoint. Be careful that there is a default value of *alt*. Make sure it is what you expect. You can also set desired yaw angle and stay time for every waypoint.
+
+After the confirmation of the waypoint data in dashboard, you should click *Set* to send the whole mission to onboard computer. And a downloading process will be automatically execute after the uploading. You should double check the waypoint data which are downloaded from onboard device. A double check is necessary because there is no "Stop" buttom on the QGround Station. Repeated uploading process is allowed and a newer mission will cover the old one.
+
+To start the mission, click the first ckeck box of the waypoint list. This action will send a "set current target" command to the onboard computer. The vehicle will start from the current target to the end of the waypoint list.
 
 
 ## Functional Specification
 In waypoint function module, users can set latitude, longitude, altitude, heading and staytime for the waypoint. Users can upload waypoint list to the vehicle. The vehicle will wait till a current target is set by the users in the ground control station. The vehicle will directly go to that target waypoint and automatically carry out the rest of the waypoint list mission.
 
 
-## Architecture
+## Code Architecture
 The dji2mav is designed to meet multi ground control stations and easy expansibility demands. Some classes are designed as lazy-mode singleton.
 
 ![dji2mav architecture](/dji_sdk_dji2mav/doc/img/arch.png?raw=true)
@@ -75,7 +97,7 @@ bool start(uint16_t gcsIdx, std::string gcsIP,
         uint16_t sendBufSize = DEFAULT_SEND_BUF_SIZE, 
         uint16_t recvBufSize = DEFAULT_RECV_BUF_SIZE);
 ```
-This two methods must be called **BEFORE** any data transporting between ground control station and onboard computer. They can be called like this:
+These two methods must be called **BEFORE** any data transporting between ground control station and onboard computer. They can be called like this:
 ```
 /* Set the ID of system "1". There is only one ground control system so the number of GCS is also "1" */
 dji2mav::Config::getInstance()->setup(1, 1);
@@ -120,7 +142,7 @@ void gloPosCB(const dji_sdk::GlobalPosition &msg) {
 }
 ```
 
-#### 4. Use Waypoint Module
+#### 4. Run Waypoint Module
 Once waypoint module has been launched, it is ready to receive command from ground control station and reply automatically. All you need to do is keeping the distribution process running(an example of ROS platform):
 ```
 while( ros::ok() ) {
