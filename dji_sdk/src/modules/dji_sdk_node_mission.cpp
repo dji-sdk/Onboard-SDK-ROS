@@ -140,11 +140,11 @@ bool DJISDKMission::mission_cancel_callback(dji_sdk::MissionCancel::Request& req
 			return false;
 
 	}
-	current_state == ServerState::READY;
+	current_state = ServerState::READY;
 	printf("current_state -> READY\n");
 	return true;
-
 }
+
 bool DJISDKMission::mission_download_callback(dji_sdk::MissionDownload::Request& request, dji_sdk::MissionDownload::Response& response)
 {
 	//the download cmd cannot run while ready
@@ -178,7 +178,6 @@ bool DJISDKMission::mission_download_callback(dji_sdk::MissionDownload::Request&
 bool DJISDKMission::mission_wp_upload_callback(dji_sdk::MissionWpUpload::Request& request, dji_sdk::MissionWpUpload::Response& response)
 {
 	//the upload cmd should run while ready
-	printf("current_state: %d\n", current_state);
 	if (current_state != ServerState::READY)
 		return false;
 

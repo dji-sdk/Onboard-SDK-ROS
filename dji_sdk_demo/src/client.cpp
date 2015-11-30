@@ -443,7 +443,9 @@ int main(int argc, char **argv)
 				waypoint.action_time_limit = 10;
 				waypoint.waypoint_action.action_repeat = 1;
 				waypoint.waypoint_action.command_list[0] = 1;
+				waypoint.waypoint_action.command_list[1] = 1;
 				waypoint.waypoint_action.command_parameter[0] = 1;
+				waypoint.waypoint_action.command_parameter[1] = 1;
 
 				waypoint_task.mission_waypoint.push_back(waypoint);
 

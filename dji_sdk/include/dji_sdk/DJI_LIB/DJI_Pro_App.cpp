@@ -691,7 +691,7 @@ int DJI_Pro_Virtual_RC_Send_Value(virtual_rc_data_t *p_rc_value)
  * interface: init waypoint interface
  */
 static void DJI_Pro_Mission_Waypoint_Upload_Task_CallBack(ProHeader *header) {
-	unsigned short ack_data = 0xFFFF;
+	unsigned short ack_data = 0xFF;
 	if (header->length - EXC_DATA_SIZE<= 2) {
 		memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 		printf("ACK of waypoint init: %x\n", ack_data);
@@ -717,7 +717,7 @@ int DJI_Pro_Mission_Waypoint_Upload_Task(cmd_mission_wp_task_info_comm_t *p_task
  */
 
 static void DJI_Pro_Mission_Waypoint_Upload_Waypoint_CallBack(ProHeader *header) {
-	unsigned short ack_data = 0xFFFF;
+	unsigned short ack_data = 0xFF;
 	if (header->length - EXC_DATA_SIZE<= 2) {
 		memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 		printf("ACK of waypoint upload: %x\n", ack_data);
@@ -741,7 +741,7 @@ int DJI_Pro_Mission_Waypoint_Upload_Waypoint(cmd_mission_wp_waypoint_upload_comm
  */
 
 static void DJI_Pro_Mission_Waypoint_Start_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of start waypoint: %x\n", ack_data);
@@ -755,7 +755,7 @@ static void DJI_Pro_Mission_Waypoint_Start_CallBack(ProHeader *header) {
 
 int DJI_Pro_Mission_Waypoint_Start(unsigned char start_cmd)
 {
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_WP_START,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_WP_START,
 						&start_cmd, sizeof(start_cmd), 
 						DJI_Pro_Mission_Waypoint_Start_CallBack, 100, 1);
     return 0;
@@ -765,7 +765,7 @@ int DJI_Pro_Mission_Waypoint_Start(unsigned char start_cmd)
  * interface: pause/resume waypoint interface
  */
 static void DJI_Pro_Mission_Waypoint_Pause_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of pause waypoint: %x\n", ack_data);
@@ -779,7 +779,7 @@ static void DJI_Pro_Mission_Waypoint_Pause_CallBack(ProHeader *header) {
 
 int DJI_Pro_Mission_Waypoint_Pause(unsigned char pause_cmd)
 {
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_WP_PAUSE,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_WP_PAUSE,
 						&pause_cmd, sizeof(pause_cmd), 
 						DJI_Pro_Mission_Waypoint_Pause_CallBack, 100, 1);
     return 0;
@@ -789,7 +789,7 @@ int DJI_Pro_Mission_Waypoint_Pause(unsigned char pause_cmd)
  */
 
 static void DJI_Pro_Mission_Waypoint_Download_Task_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 		memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	//TODO test
@@ -810,7 +810,7 @@ static void DJI_Pro_Mission_Waypoint_Download_Task_CallBack(ProHeader *header) {
 int DJI_Pro_Mission_Waypoint_Download_Task()
 {
 	unsigned char temp = 1;
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_TASK_DOWNLOAD,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_TASK_DOWNLOAD,
 						&temp, sizeof(temp), 
 						DJI_Pro_Mission_Waypoint_Download_Task_CallBack, 100, 1);
     return 0;
@@ -820,7 +820,7 @@ int DJI_Pro_Mission_Waypoint_Download_Task()
  */
 
 static void DJI_Pro_Mission_Waypoint_Download_Waypoint_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 		//TODO test, memcpy wp->memcpy action->memcpy action param
@@ -839,7 +839,7 @@ static void DJI_Pro_Mission_Waypoint_Download_Waypoint_CallBack(ProHeader *heade
 
 int DJI_Pro_Mission_Waypoint_Download_Waypoint(unsigned char index)
 {
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_WP_DOWNLOAD,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_WP_DOWNLOAD,
 						&index, sizeof(index), 
 						DJI_Pro_Mission_Waypoint_Download_Waypoint_CallBack, 100, 1);
     return 0;
@@ -849,7 +849,7 @@ int DJI_Pro_Mission_Waypoint_Download_Waypoint(unsigned char index)
  */
 
 static void DJI_Pro_Mission_Waypoint_Set_Idle_Speed_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of set speed: %x\n", ack_data);
@@ -863,7 +863,7 @@ static void DJI_Pro_Mission_Waypoint_Set_Idle_Speed_CallBack(ProHeader *header) 
 
 int DJI_Pro_Mission_Waypoint_Set_Idle_Speed(fp32 vel)
 {
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_SET_IDLE_SPEED,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_SET_IDLE_SPEED,
 						(unsigned char*)&vel, sizeof(vel), 
 						DJI_Pro_Mission_Waypoint_Set_Idle_Speed_CallBack, 100, 1);
     return 0;
@@ -873,7 +873,7 @@ int DJI_Pro_Mission_Waypoint_Set_Idle_Speed(fp32 vel)
  */ 
 
 static void DJI_Pro_Mission_Waypoint_Get_Idle_Speed_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   unsigned char ack;
@@ -895,7 +895,7 @@ static void DJI_Pro_Mission_Waypoint_Get_Idle_Speed_CallBack(ProHeader *header) 
 int DJI_Pro_Mission_Waypoint_Get_Idle_Speed()
 {
 	unsigned char temp = 1;
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_GET_IDLE_SPEED,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_GET_IDLE_SPEED,
 						&temp, sizeof(temp), 
 						DJI_Pro_Mission_Waypoint_Get_Idle_Speed_CallBack, 100, 1);
     return 0;
@@ -904,7 +904,7 @@ int DJI_Pro_Mission_Waypoint_Get_Idle_Speed()
  * interface: start hot point interface
  */
 static void DJI_Pro_Mission_Hotpoint_Start_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of start hotpoint: %x\n", ack_data);
@@ -918,7 +918,7 @@ static void DJI_Pro_Mission_Hotpoint_Start_CallBack(ProHeader *header) {
 
 int DJI_Pro_Mission_Hotpoint_Start(cmd_mission_hotpoint_setting_t *p_hotpoint_data)
 {
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_HP_START,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_HP_START,
 						(unsigned char*)p_hotpoint_data, sizeof(cmd_mission_hotpoint_setting_t), 
 						DJI_Pro_Mission_Hotpoint_Start_CallBack, 100, 1);
     return 0;
@@ -928,7 +928,7 @@ int DJI_Pro_Mission_Hotpoint_Start(cmd_mission_hotpoint_setting_t *p_hotpoint_da
  */ 
 
 static void DJI_Pro_Mission_Hotpoint_Stop_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of stop hotpoint: %x\n", ack_data);
@@ -943,7 +943,7 @@ static void DJI_Pro_Mission_Hotpoint_Stop_CallBack(ProHeader *header) {
 int DJI_Pro_Mission_Hotpoint_Stop()
 {
 	unsigned char temp = 1;
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_HP_STOP,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_HP_STOP,
 						&temp, sizeof(temp), 
 						DJI_Pro_Mission_Hotpoint_Stop_CallBack, 100, 1);
     return 0;
@@ -953,7 +953,7 @@ int DJI_Pro_Mission_Hotpoint_Stop()
  */
 
 static void DJI_Pro_Mission_Hotpoint_Pause_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of pause hotpoint: %x\n", ack_data);
@@ -967,7 +967,7 @@ static void DJI_Pro_Mission_Hotpoint_Pause_CallBack(ProHeader *header) {
 
 int DJI_Pro_Mission_Hotpoint_Pause(unsigned char pause_action)
 {
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_HP_PAUSE,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_HP_PAUSE,
 						&pause_action, sizeof(pause_action), 
 						DJI_Pro_Mission_Hotpoint_Pause_CallBack, 100, 1);
     return 0;
@@ -976,7 +976,7 @@ int DJI_Pro_Mission_Hotpoint_Pause(unsigned char pause_action)
  * interface: set default velocity interface
  */
 static void DJI_Pro_Mission_Hotpoint_Set_Speed_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of set hp speed: %x\n", ack_data);
@@ -990,7 +990,7 @@ static void DJI_Pro_Mission_Hotpoint_Set_Speed_CallBack(ProHeader *header) {
 
 int DJI_Pro_Mission_Hotpoint_Set_Speed(cmd_mission_hotpoint_velocity_t *p_hp_velocity)
 {
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_HP_SET_SPEED,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_HP_SET_SPEED,
 						(unsigned char*)p_hp_velocity, sizeof(cmd_mission_hotpoint_velocity_t), 
 						DJI_Pro_Mission_Hotpoint_Set_Speed_CallBack, 100, 1);
     return 0;
@@ -1000,7 +1000,7 @@ int DJI_Pro_Mission_Hotpoint_Set_Speed(cmd_mission_hotpoint_velocity_t *p_hp_vel
  */
 
 static void DJI_Pro_Mission_Hotpoint_Set_Radius_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of set hp radius: %x\n", ack_data);
@@ -1014,7 +1014,7 @@ static void DJI_Pro_Mission_Hotpoint_Set_Radius_CallBack(ProHeader *header) {
 
 int DJI_Pro_Mission_Hotpoint_Set_Radius(fp32 radius)
 {
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_HP_SET_RADIU,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_HP_SET_RADIU,
 						(unsigned char*)&radius, sizeof(radius), 
 						DJI_Pro_Mission_Hotpoint_Set_Radius_CallBack, 100, 1);
     return 0;
@@ -1024,7 +1024,7 @@ int DJI_Pro_Mission_Hotpoint_Set_Radius(fp32 radius)
  */
 
 static void DJI_Pro_Mission_Hotpoint_Reset_Yaw_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of set hp reset yaw: %x\n", ack_data);
@@ -1039,7 +1039,7 @@ static void DJI_Pro_Mission_Hotpoint_Reset_Yaw_CallBack(ProHeader *header) {
 int DJI_Pro_Mission_Hotpoint_Reset_Yaw()
 {
 	unsigned char temp = 1;
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_HP_RESET_YAW,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_HP_RESET_YAW,
 						&temp, sizeof(temp), 
 						DJI_Pro_Mission_Hotpoint_Reset_Yaw_CallBack, 100, 1);
     return 0;
@@ -1049,7 +1049,7 @@ int DJI_Pro_Mission_Hotpoint_Reset_Yaw()
  */
 
 static void DJI_Pro_Mission_Hotpoint_Download_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	    memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 
@@ -1070,7 +1070,7 @@ static void DJI_Pro_Mission_Hotpoint_Download_CallBack(ProHeader *header) {
 int DJI_Pro_Mission_Hotpoint_Download()
 {
 	unsigned char temp = 1;
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_HP_DOWNLOAD,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_HP_DOWNLOAD,
 						&temp, sizeof(temp), 
 						DJI_Pro_Mission_Hotpoint_Download_CallBack, 100, 1);
     return 0;
@@ -1080,7 +1080,7 @@ int DJI_Pro_Mission_Hotpoint_Download()
  */
 
 static void DJI_Pro_Mission_Followme_Start_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of set followme start: %x\n", ack_data);
@@ -1094,7 +1094,7 @@ static void DJI_Pro_Mission_Followme_Start_CallBack(ProHeader *header) {
 
 int DJI_Pro_Mission_Followme_Start(cmd_mission_follow_setting_t *p_follow_data)
 {
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_FM_START,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_FM_START,
 						(unsigned char*)p_follow_data, sizeof(cmd_mission_follow_setting_t), 
 						DJI_Pro_Mission_Followme_Start_CallBack, 100, 1);
     return 0;
@@ -1104,7 +1104,7 @@ int DJI_Pro_Mission_Followme_Start(cmd_mission_follow_setting_t *p_follow_data)
  */
 
 static void DJI_Pro_Mission_Followme_Stop_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of set followme stop: %x\n", ack_data);
@@ -1119,7 +1119,7 @@ static void DJI_Pro_Mission_Followme_Stop_CallBack(ProHeader *header) {
 int DJI_Pro_Mission_Followme_Stop()
 {
 	unsigned char temp = 1;
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_FM_STOP,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_FM_STOP,
 						&temp, sizeof(temp), 
 						DJI_Pro_Mission_Followme_Stop_CallBack, 100, 1);
     return 0;
@@ -1129,7 +1129,7 @@ int DJI_Pro_Mission_Followme_Stop()
  */
 
 static void DJI_Pro_Mission_Followme_Pause_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 	   printf("ACK of set followme pause: %x\n", ack_data);
@@ -1143,7 +1143,7 @@ static void DJI_Pro_Mission_Followme_Pause_CallBack(ProHeader *header) {
 
 int DJI_Pro_Mission_Followme_Pause(unsigned char pause)
 {
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_FM_PAUSE,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_FM_PAUSE,
 						&pause, sizeof(pause), 
 						DJI_Pro_Mission_Followme_Pause_CallBack, 100, 1);
     return 0;
@@ -1153,7 +1153,7 @@ int DJI_Pro_Mission_Followme_Pause(unsigned char pause)
  */
 
 static void DJI_Pro_Mission_Followme_Update_Target_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFFFF;
+   unsigned short ack_data = 0xFF;
    if (header->length - EXC_DATA_SIZE<= 2) {
 		memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 
@@ -1173,7 +1173,7 @@ static void DJI_Pro_Mission_Followme_Update_Target_CallBack(ProHeader *header) {
 
 int DJI_Pro_Mission_Followme_Update_Target(cmd_mission_follow_target_t *target_update)
 {
-	DJI_Pro_App_Send_Data(2,1,MY_CTRL_CMD_SET, API_MISSION_FM_TARGET,
+	DJI_Pro_App_Send_Data(2,1,MY_MISSION_CMD_SET, API_MISSION_FM_TARGET,
 						(unsigned char*)target_update, sizeof(cmd_mission_follow_target_t), 
 						DJI_Pro_Mission_Followme_Update_Target_CallBack, 100, 1);
     return 0;
