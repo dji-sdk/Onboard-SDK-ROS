@@ -6,7 +6,7 @@ Version: 0.2.1
 
 Author: Chris Liu
 
-Updated Date: 2015/11/27
+Updated Date: 2015/11/30
 
 ---
 
@@ -39,10 +39,20 @@ Then run:
 ```
 roslaunch dji_sdk_dji2mav dji2mav_bringup.launch
 ```
-If the output of this ROS node prompts that every thing goes okay, please move to next step.
+In the terminal that launched sdk_manifold, you should see the log information that the drone has been successfully activated and the control of the drone has got, as the picture shows below.
+
+![Activation and Request Control](/dji_sdk_dji2mav/doc/img/activation_and_request_control.png?raw=true)
+
+In the terminal that launched dji2mav_bringup, you should see it notifies that the connection to specific IP and port succeeds and all the modules is launched, as the picture shows below.
+
+![Bringup Dji2mav](/dji_sdk_dji2mav/doc/img/bringup_dji2mav.png?raw=true)
+
+If the output of these ROS nodes prompt that every thing goes okay, please move to next step.
 
 #### 4. Setup Ground Control Station
-Now please turn on your mavlink-protocol-adapted ground control station, Taking QGround Control v2.7.1 for example. Before clicking *Connect*, please check the connection settings. The *Link Type* should be UDP, and the *Listening Port* should be consistent with the port number that is set on the launch file which is mentioned on step 2.
+Now please turn on your mavlink-protocol-adapted ground control station. Let's take QGround Control v2.7.1 for win32 as an example. Before clicking *Connect*, please check the connection settings. The *Link Type* should be UDP, and the *Listening Port* should be consistent with the port number that is set on the launch file which is mentioned on step 2. A UDP setting example is shown below.
+
+![UDP Settings](/dji_sdk_dji2mav/doc/img/udp_settings.png?raw=true)
 
 Then click *Connect*. If everything is ready, you can see your ground control station receives the heartbeat. On *Analyze* tag some sensors data from the vehicle are also displayed.
 
@@ -53,15 +63,21 @@ Before test waypoint module, please unlock the drone and takeoff using RC. On *P
 
 Double click on the map to lay markers of the waypoint. On the dashboard, please set the type of waypoint to *Global/Abs. Alt*(global position with absolute altitude). And choose *NAV: Waypoint* to be the navigation type.
 
-Check *lat*, *lon* and *alt* data of every waypoint. Be careful that there is a default value of *alt*. Make sure it is what you expect. You can also set desired yaw angle and stay time for every waypoint.
+Check *lat*, *lon* and *alt* data of every waypoint. Be careful that there is a default value of *alt*. Make sure it is what you expect. You can also set desired yaw angle and stay time for every waypoint. An example of creating waypoint task is shown below.
+
+![Create Waypoint Task](/dji_sdk_dji2mav/doc/img/create_waypoint_task.png?raw=true)
 
 After the confirmation of the waypoint data in dashboard, you should click *Set* to send the whole mission to onboard computer. And a downloading process will be automatically execute after the uploading. You should double check the waypoint data which are downloaded from onboard device. A double check is necessary because there is no "Stop" buttom on the QGround Station. Repeated uploading process is allowed and a newer mission will cover the old one.
 
-To start the mission, click the first ckeck box of the waypoint list. This action will send a "set current target" command to the onboard computer. The vehicle will start from the current target to the end of the waypoint list.
+To start the mission, click the first ckeck box of the waypoint list. This action will send a "set current target" command to the onboard computer. The vehicle will start from the current target to the end of the waypoint list. The picture shown below displays the results of downloading waypoint task from onboard computer. The "set current target" check box is on the right of every point.
+
+![Set Current Target](/dji_sdk_dji2mav/doc/img/set_current_target.png?raw=true)
 
 
 ## Functional Specification
-In waypoint function module, users can set latitude, longitude, altitude, heading and staytime for the waypoint. Users can upload waypoint list to the vehicle. The vehicle will wait till a current target is set by the users in the ground control station. The vehicle will directly go to that target waypoint and automatically carry out the rest of the waypoint list mission.
+In waypoint function module, users can set latitude, longitude, altitude, heading and staytime for the waypoint. Users can upload waypoint list to the vehicle. The vehicle will wait till a current target is set by the users in the ground control station. After that, the vehicle will directly go to that target waypoint and automatically carry out the rest of the waypoint list mission, as the picture shown below.
+
+![Auto Execution](/dji_sdk_dji2mav/doc/img/auto_execution.png?raw=true)
 
 
 ## Code Architecture
