@@ -8,8 +8,8 @@ static void Display_Main_Menu(void)
 {
     printf("\r\n");
     printf("----------- < Main menu > ----------\r\n\r\n");
-    printf("[a] SDK Version Query\n");
-    printf("[b] Activation\n");
+    printf("[a] Exit\n");
+    printf("[b] SDK Version Query\n");
     printf("[c] Request to obtain control\n");
     printf("[d] Release control\n");
     printf("[e] Takeoff\n");
@@ -109,11 +109,11 @@ int main(int argc, char **argv)
         switch(main_operate_code)
         {
 			case 'a':
+				//drone->activate();
+				return 0;
+			case 'b':
 				/* SDK version query*/
 				drone->check_version();
-				break;
-			case 'b':
-				drone->activate();
 				break;
             case 'c':
                 /* request control ability*/

@@ -218,6 +218,7 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     std::string enc_key;
 
 	int uart_or_usb;
+	int A3_or_M100;
 
     nh_private.param("serial_name", serial_name, std::string("/dev/cu.usbserial-A603T4HK"));
     nh_private.param("baud_rate", baud_rate, 230400);
@@ -233,7 +234,14 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     // activation
     user_act_data.app_id = app_id;
     user_act_data.app_api_level = app_api_level;
-	if(uart_or_usb)
+
+	if((uart_or_usb)&&(A3_or_M100))
+	{
+		printf("M100 does not support USB API.\n");
+		return -1;
+	}
+
+	if(A3_or_M100)
 	{
 		user_act_data.app_ver = 0x03006400;
 	}
@@ -267,7 +275,7 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
         return -1;
     }
     
-    //DJI_Pro_Activate_API(&user_act_data, NULL);
+    DJI_Pro_Activate_API(&user_act_data, NULL);
     DJI_Pro_Register_Broadcast_Callback(std::bind(&DJISDKNode::broadcast_callback, this));
 
     return 0;
