@@ -266,6 +266,20 @@ public:
 		sync_flag_control_service = nh.serviceClient<dji_sdk::SyncFlagControl>("dji_sdk/sync_flag_control");
 		message_frequency_control_service = nh.serviceClient<dji_sdk::MessageFrequencyControl>("dji_sdk/message_frequency_control");
 
+		mission_start_service = nh.serviceClient<dji_sdk::MissionStart>("dji_sdk/mission_start");
+		mission_pause_service = nh.serviceClient<dji_sdk::MissionPause>("dji_sdk/mission_pause");
+		mission_cancel_service = nh.serviceClient<dji_sdk::MissionCancel>("dji_sdk/mission_cancel");
+		mission_download_service = nh.serviceClient<dji_sdk::MissionDownload>("dji_sdk/mission_download");
+		mission_wp_upload_service = nh.serviceClient<dji_sdk::MissionWpUpload>("dji_sdk/mission_waypoint_upload");
+		mission_wp_set_speed_service = nh.serviceClient<dji_sdk::MissionWpSetSpeed>("dji_sdk/mission_waypoint_set_speed");
+		mission_wp_get_speed_service = nh.serviceClient<dji_sdk::MissionWpGetSpeed>("dji_sdk/mission_waypoint_get_speed");
+		mission_hp_upload_service = nh.serviceClient<dji_sdk::MissionHpUpload>("dji_sdk/mission_hotpoint_upload");
+		mission_hp_set_speed_service = nh.serviceClient<dji_sdk::MissionHpSetSpeed>("dji_sdk/mission_hotpoint_set_speed");
+		mission_hp_set_radius_service = nh.serviceClient<dji_sdk::MissionHpSetRadius>("dji_sdk/mission_hotpoint_set_radius");
+		mission_hp_reset_yaw_service = nh.serviceClient<dji_sdk::MissionHpResetYaw>("dji_sdk/mission_hotpoint_reset_yaw");
+		mission_fm_upload_service = nh.serviceClient<dji_sdk::MissionFmUpload>("dji_sdk/mission_followme_upload");
+		mission_fm_set_target_service = nh.serviceClient<dji_sdk::MissionFmSetTarget>("dji_sdk/mission_followme_set_target");
+
         acceleration_subscriber = nh.subscribe<dji_sdk::Acceleration>("dji_sdk/acceleration", 10, &DJIDrone::acceleration_subscriber_callback, this);
         attitude_quaternion_subscriber = nh.subscribe<dji_sdk::AttitudeQuaternion>("dji_sdk/attitude_quaternion", 10, &DJIDrone::attitude_quaternion_subscriber_callback, this);
         compass_subscriber = nh.subscribe<dji_sdk::Compass>("dji_sdk/compass", 10, &DJIDrone::compass_subscriber_callback, this);
@@ -411,6 +425,7 @@ public:
 	{
 		dji_sdk::VirtualRCEnableControl virtual_rc_enable_control;
 		virtual_rc_enable_control.request.enable = 1;
+		virtual_rc_enable_control.request.if_back_to_real = 1;
 		
 		return virtual_rc_enable_control_service.call(virtual_rc_enable_control) && virtual_rc_enable_control.response.result;
 	}
@@ -419,6 +434,7 @@ public:
 	{
 		dji_sdk::VirtualRCEnableControl virtual_rc_enable_control;
 		virtual_rc_enable_control.request.enable = 0;
+		virtual_rc_enable_control.request.if_back_to_real = 1;
 		
 		return virtual_rc_enable_control_service.call(virtual_rc_enable_control) && virtual_rc_enable_control.response.result;
 	}
@@ -426,8 +442,11 @@ public:
 	bool virtual_rc_control(uint32_t channel_data[16])
 	{
 		dji_sdk::VirtualRCDataControl virtual_rc_data_control;
-		std::vector<uint32_t> v(channel_data, channel_data + sizeof channel_data / sizeof channel_data[0]);
-		std::copy(v.begin(), v.end(), virtual_rc_data_control.request.channel_data.begin());
+
+		for (int i = 0; i < 16; i ++) 
+		{
+			virtual_rc_data_control.request.channel_data[i] = channel_data[i];
+		}
 
 		return virtual_rc_data_control_service.call(virtual_rc_data_control) && virtual_rc_data_control.response.result;
 	}
@@ -456,8 +475,12 @@ public:
 	bool set_message_frequency(uint8_t frequency_data[16])
 	{
 		dji_sdk::MessageFrequencyControl message_frequency_control;
-		std::vector<uint8_t> v(frequency_data, frequency_data + sizeof frequency_data / sizeof frequency_data[0]);
-		std::copy(v.begin(), v.end(), message_frequency_control.request.frequency.begin());
+
+		for (int i = 0; i < 16; i++)
+		{
+			message_frequency_control.request.frequency[i] = frequency_data[i];
+		}
+
 		return message_frequency_control_service.call(message_frequency_control) && message_frequency_control.response.result;
 	}
 

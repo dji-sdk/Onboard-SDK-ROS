@@ -78,7 +78,7 @@ bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& reque
 
 	}
 	current_state = ServerState::RUNNING;
-	
+	printf("current_state -> RUNNING \n");
 
 }
 bool DJISDKMission::mission_pause_callback(dji_sdk::MissionPause::Request& request, dji_sdk::MissionPause::Response& response)
@@ -106,7 +106,12 @@ bool DJISDKMission::mission_pause_callback(dji_sdk::MissionPause::Request& reque
 			break;
 
 	}
- 	current_state = request.pause?ServerState::PAUSED:ServerState::RUNNING;
+ 	current_state = request.pause?ServerState::RUNNING:ServerState::PAUSED;
+	if(request.pause)
+		printf("current_state -> RUNNING\n");
+	else
+		printf("current_state -> PAUSED\n");
+
 	return true;
 
 }
@@ -136,6 +141,7 @@ bool DJISDKMission::mission_cancel_callback(dji_sdk::MissionCancel::Request& req
 
 	}
 	current_state == ServerState::READY;
+	printf("current_state -> READY\n");
 	return true;
 
 }
@@ -172,6 +178,7 @@ bool DJISDKMission::mission_download_callback(dji_sdk::MissionDownload::Request&
 bool DJISDKMission::mission_wp_upload_callback(dji_sdk::MissionWpUpload::Request& request, dji_sdk::MissionWpUpload::Response& response)
 {
 	//the upload cmd should run while ready
+	printf("current_state: %d\n", current_state);
 	if (current_state != ServerState::READY)
 		return false;
 
@@ -225,6 +232,7 @@ bool DJISDKMission::mission_wp_upload_callback(dji_sdk::MissionWpUpload::Request
 	}
 	
 	current_type = MissionType::WAYPOINT;
+	printf("current_type -> WP\n");
 	return true;
 
 }
@@ -251,6 +259,7 @@ bool DJISDKMission::mission_hp_upload_callback(dji_sdk::MissionHpUpload::Request
 		return false;
 	hotpoint_task = request.hotpoint_task;
 	current_type = MissionType::HOTPOINT;
+	printf("current_type -> HP\n");
 	return true;
 
 }
@@ -288,6 +297,7 @@ bool DJISDKMission::mission_fm_upload_callback(dji_sdk::MissionFmUpload::Request
 		return false;
 	followme_task = request.followme_task;
 	current_type = MissionType::FOLLOWME;
+	printf("current_type -> FM\n");
 	return true;
 
 }

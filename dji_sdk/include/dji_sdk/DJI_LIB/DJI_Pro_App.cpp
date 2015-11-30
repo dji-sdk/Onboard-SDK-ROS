@@ -1311,8 +1311,9 @@ static void DJI_Pro_App_Recv_Req_Data(ProHeader *header)
 		else if (DJI_Pro_Get_CmdSet_Id(header) == MY_BROADCAST_CMD_SET
 				&& DJI_Pro_Get_CmdCode_Id(header) == API_MISSION_DATA)
 		{
-			pthread_mutex_lock(&mission_event_lock);
+			pthread_mutex_lock(&mission_state_lock);
 			memcpy((unsigned char*)&mission_state_data, (unsigned char*)header->magic,(header->length - EXC_DATA_SIZE));
+			pthread_mutex_unlock(&mission_state_lock);
 			if (p_mission_state_handler_func)
 				p_mission_state_handler_func();
 		}
@@ -1320,7 +1321,9 @@ static void DJI_Pro_App_Recv_Req_Data(ProHeader *header)
 		else if (DJI_Pro_Get_CmdSet_Id(header) == MY_BROADCAST_CMD_SET
 				&& DJI_Pro_Get_CmdCode_Id(header) == API_WAYPOINT_DATA)
 		{
+			pthread_mutex_lock(&mission_event_lock);
 			memcpy((unsigned char*)&mission_event_data, (unsigned char*)header->magic,(header->length - EXC_DATA_SIZE));
+			pthread_mutex_unlock(&mission_event_lock);
 			if (p_mission_event_handler_func)
 				p_mission_event_handler_func();
 		}
