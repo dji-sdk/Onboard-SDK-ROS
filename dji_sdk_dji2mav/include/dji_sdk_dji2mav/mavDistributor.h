@@ -15,7 +15,7 @@
 #include "modules/sensors/mavSensors.h"
 #include "modules/waypoint/mavWaypoint.h"
 
-#include <mavlink/v1.0/common/mavlink.h>
+#include "../mavlink/common/mavlink.h"
 #include <iostream>
 #include <stdio.h>
 #include <new>

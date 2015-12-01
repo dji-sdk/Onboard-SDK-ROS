@@ -12,7 +12,7 @@
 
 #include "msgManager.h"
 
-#include <mavlink/v1.0/common/mavlink.h>
+#include "../mavlink/common/mavlink.h"
 #include <stdio.h>
 #include <iostream>
 #include <new>

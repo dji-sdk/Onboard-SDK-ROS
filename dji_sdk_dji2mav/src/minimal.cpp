@@ -1,6 +1,6 @@
 #include <ros/ros.h>
 
-#include <mavlink/v1.0/common/mavlink.h>
+#include "mavlink/common/mavlink.h"
 
 #include <sys/socket.h>
 #include <sys/types.h>
