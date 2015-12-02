@@ -230,6 +230,7 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
             std::string("e7bad64696529559318bb35d0a8c6050d3b88e791e1808cfe8f7802150ee6f0d"));
 
     nh_private.param("uart_or_usb", uart_or_usb, 0);//chosse uart as default
+    nh_private.param("A3_or_M100", A3_or_M100, 1);//chosse M100 as default
 
     // activation
     user_act_data.app_id = app_id;
@@ -243,11 +244,11 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
 
 	if(A3_or_M100)
 	{
-		user_act_data.app_ver = 0x03006400;
+		user_act_data.app_ver = 0x03000a00;
 	}
 	else
 	{
-		user_act_data.app_ver = 0x03000a00;
+		user_act_data.app_ver = 0x03006400;
 
 	}
     strcpy((char*) user_act_data.app_bundle_id, app_bundle_id.c_str());

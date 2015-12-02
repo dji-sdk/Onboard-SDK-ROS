@@ -199,8 +199,9 @@ bool DJISDKMission::mission_wp_upload_callback(dji_sdk::MissionWpUpload::Request
 	new_task.gimbal_pitch_mode = waypoint_task.gimbal_pitch_mode;
 	
 	DJI_Pro_Mission_Waypoint_Upload_Task(&new_task);
+	printf("uploaded the task with %d waypoints\n", new_task.length);
 
-	usleep(20000);
+	usleep(200000);
 
 	int i = 0;
 	for (auto waypoint:waypoint_task.mission_waypoint)
@@ -226,8 +227,9 @@ bool DJISDKMission::mission_wp_upload_callback(dji_sdk::MissionWpUpload::Request
 		new_upload.waypoint = new_waypoint;
 
 		DJI_Pro_Mission_Waypoint_Upload_Waypoint(&new_upload);
+		printf("uploaded the %dth waypoint\n", new_upload.waypoint_index);
 		i+=1;
-		usleep(20000);
+		usleep(200000);
 	}
 	
 	current_type = MissionType::WAYPOINT;

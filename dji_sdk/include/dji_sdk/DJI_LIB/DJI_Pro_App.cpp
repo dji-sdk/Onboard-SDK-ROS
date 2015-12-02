@@ -717,10 +717,10 @@ int DJI_Pro_Mission_Waypoint_Upload_Task(cmd_mission_wp_task_info_comm_t *p_task
  */
 
 static void DJI_Pro_Mission_Waypoint_Upload_Waypoint_CallBack(ProHeader *header) {
-	unsigned short ack_data = 0xFF;
-	if (header->length - EXC_DATA_SIZE<= 2) {
-		memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
-		printf("ACK of waypoint upload: %x\n", ack_data);
+	cmd_mission_wp_upload_ack_t upload_ack;
+	if (header->length - EXC_DATA_SIZE<= sizeof(cmd_mission_wp_upload_ack_t)) {
+		memcpy((unsigned char*)&upload_ack, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
+		printf("ACK of waypoint upload: %x with index %d\n", upload_ack.ack, upload_ack.index);
 	}
 	else
 	{
@@ -789,16 +789,11 @@ int DJI_Pro_Mission_Waypoint_Pause(unsigned char pause_cmd)
  */
 
 static void DJI_Pro_Mission_Waypoint_Download_Task_CallBack(ProHeader *header) {
+	cmd_mission_wp_task_download_ack_t task_ack;
    unsigned short ack_data = 0xFF;
-   if (header->length - EXC_DATA_SIZE<= 2) {
-		memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
-	//TODO test
-		unsigned char ack;
-	    memcpy((unsigned char*)&ack, (unsigned char*) &ack_data, sizeof(ack));
-		cmd_mission_wp_task_info_comm_t mission_info;
-		memcpy((unsigned char*)&mission_info, (unsigned char*) &ack_data, sizeof(mission_info));
-
-	    printf("ACK of download task: %x\n", ack_data);
+   if (header->length - EXC_DATA_SIZE<= sizeof(cmd_mission_wp_task_download_ack_t)) {
+		memcpy((unsigned char*)&task_ack, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
+	    printf("ACK of download task: %x\n", task_ack.ack);
    }
 	else
     {
@@ -820,15 +815,10 @@ int DJI_Pro_Mission_Waypoint_Download_Task()
  */
 
 static void DJI_Pro_Mission_Waypoint_Download_Waypoint_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFF;
-   if (header->length - EXC_DATA_SIZE<= 2) {
-	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
-		//TODO test, memcpy wp->memcpy action->memcpy action param
-		unsigned char ack;
-	    memcpy((unsigned char*)&ack, (unsigned char*) &ack_data, sizeof(ack));
-		cmd_mission_wp_waypoint_info_comm_t waypoint_info;
-		memcpy((unsigned char*)&waypoint_info, (unsigned char*) &ack_data, sizeof(waypoint_info));
-		printf("ACK of download wp: %x\n", ack_data);
+	cmd_mission_wp_info_download_ack_t waypoint_ack;
+   if (header->length - EXC_DATA_SIZE<= sizeof(cmd_mission_wp_info_download_ack_t)) {
+	   memcpy((unsigned char*)&waypoint_ack, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
+		printf("ACK of download wp: %x\n", waypoint_ack.ack);
    }
 	else
     {
@@ -849,10 +839,10 @@ int DJI_Pro_Mission_Waypoint_Download_Waypoint(unsigned char index)
  */
 
 static void DJI_Pro_Mission_Waypoint_Set_Idle_Speed_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFF;
-   if (header->length - EXC_DATA_SIZE<= 2) {
-	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
-	   printf("ACK of set speed: %x\n", ack_data);
+	cmd_mission_wp_velocity_ack_t velocity_ack;
+   if (header->length - EXC_DATA_SIZE<= sizeof(cmd_mission_wp_velocity_ack_t)) {
+	   memcpy((unsigned char*)&velocity_ack, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
+	   printf("ACK of set speed: %x with value %f\n", velocity_ack.ack, velocity_ack.idle_vel);
    }
 	else
     {
@@ -873,17 +863,11 @@ int DJI_Pro_Mission_Waypoint_Set_Idle_Speed(fp32 vel)
  */ 
 
 static void DJI_Pro_Mission_Waypoint_Get_Idle_Speed_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFF;
-   if (header->length - EXC_DATA_SIZE<= 2) {
-	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
-	   unsigned char ack;
-	   memcpy((unsigned char*)&ack, (unsigned char*) &ack_data, sizeof(ack));
-	   fp32 idle_vel;
-	   memcpy((unsigned char*)&idle_vel, (unsigned char*) &ack_data+1, sizeof(idle_vel));
+	cmd_mission_wp_velocity_ack_t velocity_ack;
+   if (header->length - EXC_DATA_SIZE<= sizeof(cmd_mission_wp_velocity_ack_t)) {
+	   memcpy((unsigned char*)&velocity_ack, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
 		
-	   printf("ACK of get speed: %x with value: %f\n", ack_data,idle_vel);
-		//TODO test
-
+	   printf("ACK of get speed: %x with value: %f\n", velocity_ack.ack,velocity_ack.idle_vel);
    }
 	else
     {
@@ -904,10 +888,10 @@ int DJI_Pro_Mission_Waypoint_Get_Idle_Speed()
  * interface: start hot point interface
  */
 static void DJI_Pro_Mission_Hotpoint_Start_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFF;
-   if (header->length - EXC_DATA_SIZE<= 2) {
-	   memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
-	   printf("ACK of start hotpoint: %x\n", ack_data);
+	cmd_mission_hp_start_ack_t hp_start_ack;
+   if (header->length - EXC_DATA_SIZE<= sizeof(cmd_mission_hp_start_ack_t)) {
+	   memcpy((unsigned char*)&hp_start_ack, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
+	   printf("ACK of start hotpoint: %x\n", hp_start_ack.ack);
    }
 	else
     {
@@ -1049,16 +1033,10 @@ int DJI_Pro_Mission_Hotpoint_Reset_Yaw()
  */
 
 static void DJI_Pro_Mission_Hotpoint_Download_CallBack(ProHeader *header) {
-   unsigned short ack_data = 0xFF;
-   if (header->length - EXC_DATA_SIZE<= 2) {
-	    memcpy((unsigned char*)&ack_data, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
-
-		unsigned char ack;
-	    memcpy((unsigned char*)&ack, (unsigned char*) &ack_data, sizeof(ack));
-		cmd_mission_hotpoint_setting_t hotpoint_info;
-		memcpy((unsigned char*)&hotpoint_info, (unsigned char*) &ack_data, sizeof(hotpoint_info));
-
-	    printf("ACK of hp download: %x\n", ack_data); //TODO test
+	cmd_mission_hp_download_ack_t hp_download_ack;
+   if (header->length - EXC_DATA_SIZE<= sizeof(cmd_mission_hp_download_ack_t)) {
+	    memcpy((unsigned char*)&hp_download_ack, (unsigned char*) &header -> magic, (header -> length -EXC_DATA_SIZE));
+	    printf("ACK of hp download: %x\n", hp_download_ack.ack); 
    }
 	else
     {
