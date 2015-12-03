@@ -5,7 +5,7 @@ This package is a specified video decoding package for Manifold.
 ###How to use
 1. Install the necessary library: refer [here](https://github.com/dji-sdk/manifold_cam)
 2. Delete the `CATKIN_IGNORE` file inside package and `catkin_make`.
-3. `rosrun dji_sdk_manifold_read_cam_nv dji_sdk_manifold_read_cam_nv`
+3. `sudo -s` first, then `rosrun dji_sdk_read_cam_nv dji_sdk_read_cam_nv`
 4. The image will be published into topic `/dji_sdk/image_raw`
 
 
