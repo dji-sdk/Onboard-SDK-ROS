@@ -4,6 +4,8 @@
 #include <ros/ros.h>
 #include <dji_sdk/dji_sdk.h>
 
+#define C_PI (double) 3.141592653589793
+
 //the state machine is based on the command run definitely successfully assumption.
 enum class ServerState 
 {

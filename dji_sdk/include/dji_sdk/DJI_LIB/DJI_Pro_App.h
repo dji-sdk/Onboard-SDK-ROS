@@ -480,7 +480,7 @@ typedef struct
 	unsigned char gimbal_pitch_mode;
 	fp64	hp_lati;
 	fp64	hp_longti;
-	fp64	hp_altitude;
+	fp32	hp_altitude;
 	unsigned char reserve[16];
 }cmd_mission_wp_task_info_comm_t;
 

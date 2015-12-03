@@ -298,6 +298,8 @@ bool DJISDKMission::mission_fm_upload_callback(dji_sdk::MissionFmUpload::Request
 	if (current_state != ServerState::READY)
 		return false;
 	followme_task = request.followme_task;
+	followme_task.initial_latitude = followme_task.initial_latitude*C_PI/180;
+	followme_task.initial_longitude = followme_task.initial_longitude*C_PI/180;
 	current_type = MissionType::FOLLOWME;
 	printf("current_type -> FM\n");
 	return true;
