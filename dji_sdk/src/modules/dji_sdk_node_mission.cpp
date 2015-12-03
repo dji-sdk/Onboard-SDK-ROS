@@ -39,7 +39,6 @@ bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& reque
 		case MissionType::WAYPOINT:
 			//send start command 
 			DJI_Pro_Mission_Waypoint_Start(0);
-
 			break;
 		
 		case MissionType::HOTPOINT:
@@ -74,11 +73,12 @@ bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& reque
 
 		default:
 			//empty
-			break;
+			return false;
 
 	}
 	current_state = ServerState::RUNNING;
 	printf("current_state -> RUNNING \n");
+	return true;
 
 }
 bool DJISDKMission::mission_pause_callback(dji_sdk::MissionPause::Request& request, dji_sdk::MissionPause::Response& response)
@@ -103,7 +103,6 @@ bool DJISDKMission::mission_pause_callback(dji_sdk::MissionPause::Request& reque
 			break;
 		default:
 			return false;
-			break;
 
 	}
  	current_state = request.pause?ServerState::RUNNING:ServerState::PAUSED;
@@ -201,13 +200,13 @@ bool DJISDKMission::mission_wp_upload_callback(dji_sdk::MissionWpUpload::Request
 	DJI_Pro_Mission_Waypoint_Upload_Task(&new_task);
 	printf("uploaded the task with %d waypoints\n", new_task.length);
 
-	usleep(200000);
+	sleep(2);
 
 	int i = 0;
 	for (auto waypoint:waypoint_task.mission_waypoint)
 	{
-		new_waypoint.latitude = waypoint.latitude;
-		new_waypoint.longitude = waypoint.longitude;
+		new_waypoint.latitude = waypoint.latitude*C_PI/180;
+		new_waypoint.longitude = waypoint.longitude*C_PI/180;
 		new_waypoint.altitude = waypoint.altitude;
 		new_waypoint.damping_dis = waypoint.damping_distance;
 		new_waypoint.tgt_yaw = waypoint.target_yaw;
@@ -229,7 +228,7 @@ bool DJISDKMission::mission_wp_upload_callback(dji_sdk::MissionWpUpload::Request
 		DJI_Pro_Mission_Waypoint_Upload_Waypoint(&new_upload);
 		printf("uploaded the %dth waypoint\n", new_upload.waypoint_index);
 		i+=1;
-		usleep(200000);
+		sleep(2);
 	}
 	
 	current_type = MissionType::WAYPOINT;
@@ -259,6 +258,8 @@ bool DJISDKMission::mission_hp_upload_callback(dji_sdk::MissionHpUpload::Request
 	if (current_state != ServerState::READY)
 		return false;
 	hotpoint_task = request.hotpoint_task;
+	hotpoint_task.latitude = hotpoint_task.latitude*C_PI/180;
+	hotpoint_task.longitude = hotpoint_task.longitude*C_PI/180;
 	current_type = MissionType::HOTPOINT;
 	printf("current_type -> HP\n");
 	return true;

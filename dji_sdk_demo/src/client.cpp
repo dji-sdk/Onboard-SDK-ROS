@@ -8,26 +8,26 @@
 static void Display_Main_Menu(void)
 {
     printf("\r\n");
-    printf("+-------------------------- < Main menu > ------------------------+\n ");
-	printf("| [a] SDK Version Query         | [s] Virtual RC Test             |\n ");
-	printf("| [b] Request Control           | [t] Set Sync Flag Test          |\n ");	
-	printf("| [c] Release Control           | [u] Set Msg Frequency Test      |\n ");	
-	printf("| [d] Takeoff                   | [v] Waypoint Mission Upload     |\n ");	
-	printf("| [e] Landing                   | [w] Hotpoint Mission Upload     |\n ");	
-	printf("| [f] Go Home                   | [x] Followme Mission Upload     |\n ");	
-	printf("| [g] Gimbal Control Sample     | [y] Mission Start               |\n ");	
-	printf("| [h] Attitude Control Sample   | [z] Mission Pause               |\n ");	
-	printf("| [i] Draw Circle Sample        | [1] Mission Resume              |\n ");	
-	printf("| [j] Draw Square Sample        | [2] Mission Cancel              |\n ");	
-	printf("| [k] Take a Picture            | [3] Mission Download            |\n ");	
-	printf("| [l] Start Record Video        | [4] Mission Waypoint Set Speed  |\n ");	 
-	printf("| [m] Stop Record Video         | [5] Mission Waypoint Get Speed  |\n ");	
-	printf("| [n] Local Navigation Test     | [6] Mission Hotpoint Set Speed  |\n ");	
-	printf("| [o] Global Navigation Test    | [7] Mission Hotpoint Set Radius |\n ");	
-	printf("| [p] Waypoint Navigation Test  | [8] Mission Hotpoint Reset Yaw  |\n ");	
-	printf("| [q] Arm the Drone             | [9] Mission Followme Set Target |\n ");	
-	printf("| [r] Disarm the Drone          | [0] Exit                        |\n ");
-    printf("+-----------------------------------------------------------------+\n ");
+    printf("+-------------------------- < Main menu > ------------------------+\n");
+	printf("| [a] SDK Version Query         | [s] Virtual RC Test             |\n");
+	printf("| [b] Request Control           | [t] Set Sync Flag Test          |\n");	
+	printf("| [c] Release Control           | [u] Set Msg Frequency Test      |\n");	
+	printf("| [d] Takeoff                   | [v] Waypoint Mission Upload     |\n");	
+	printf("| [e] Landing                   | [w] Hotpoint Mission Upload     |\n");	
+	printf("| [f] Go Home                   | [x] Followme Mission Upload     |\n");	
+	printf("| [g] Gimbal Control Sample     | [y] Mission Start               |\n");	
+	printf("| [h] Attitude Control Sample   | [z] Mission Pause               |\n");	
+	printf("| [i] Draw Circle Sample        | [1] Mission Resume              |\n");	
+	printf("| [j] Draw Square Sample        | [2] Mission Cancel              |\n");	
+	printf("| [k] Take a Picture            | [3] Mission Download            |\n");	
+	printf("| [l] Start Record Video        | [4] Mission Waypoint Set Speed  |\n");	 
+	printf("| [m] Stop Record Video         | [5] Mission Waypoint Get Speed  |\n");	
+	printf("| [n] Local Navigation Test     | [6] Mission Hotpoint Set Speed  |\n");	
+	printf("| [o] Global Navigation Test    | [7] Mission Hotpoint Set Radius |\n");	
+	printf("| [p] Waypoint Navigation Test  | [8] Mission Hotpoint Reset Yaw  |\n");	
+	printf("| [q] Arm the Drone             | [9] Mission Followme Set Target |\n");	
+	printf("| [r] Disarm the Drone          | [0] Exit                        |\n");
+    printf("+-----------------------------------------------------------------+\n");
     printf("input a/b/c etc..then press enter key\r\n");
     printf("use `rostopic echo` to query drone status\r\n");
     printf("----------------------------------------\r\n");
@@ -408,11 +408,11 @@ int main(int argc, char **argv)
 
 			case 'v':
 				//mission waypoint upload
-				waypoint_task.velocity_range = 15;
-				waypoint_task.idle_velocity = 10;
+				waypoint_task.velocity_range = 10;
+				waypoint_task.idle_velocity = 3;
 				waypoint_task.action_on_finish = 0;
-				waypoint_task.mission_exec_times = 2;
-				waypoint_task.yaw_mode = 1;
+				waypoint_task.mission_exec_times = 1;
+				waypoint_task.yaw_mode = 4;
 				waypoint_task.trace_mode = 0;
 				waypoint_task.action_on_rc_lost = 0;
 				waypoint_task.gimbal_pitch_mode = 0;
@@ -420,15 +420,17 @@ int main(int argc, char **argv)
 				waypoint.latitude = 22.540091;
 				waypoint.longitude = 113.946593;
 				waypoint.altitude = 100;
-				waypoint.damping_distance = 2;
+				waypoint.damping_distance = 0;
 				waypoint.target_yaw = 0;
 				waypoint.target_gimbal_pitch = 0;
 				waypoint.turn_mode = 0;
-				waypoint.has_action = 1;
+				waypoint.has_action = 0;
+				/*
 				waypoint.action_time_limit = 10;
 				waypoint.waypoint_action.action_repeat = 1;
 				waypoint.waypoint_action.command_list[0] = 1;
 				waypoint.waypoint_action.command_parameter[0] = 1;
+				*/
 
 				waypoint_task.mission_waypoint.push_back(waypoint);
 
@@ -439,13 +441,15 @@ int main(int argc, char **argv)
 				waypoint.target_yaw = 180;
 				waypoint.target_gimbal_pitch = 0;
 				waypoint.turn_mode = 0;
-				waypoint.has_action = 1;
+				waypoint.has_action = 0;
+				/*
 				waypoint.action_time_limit = 10;
 				waypoint.waypoint_action.action_repeat = 1;
 				waypoint.waypoint_action.command_list[0] = 1;
 				waypoint.waypoint_action.command_list[1] = 1;
 				waypoint.waypoint_action.command_parameter[0] = 1;
 				waypoint.waypoint_action.command_parameter[1] = 1;
+				*/
 
 				waypoint_task.mission_waypoint.push_back(waypoint);
 

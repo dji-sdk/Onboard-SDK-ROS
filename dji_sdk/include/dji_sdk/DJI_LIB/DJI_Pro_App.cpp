@@ -709,6 +709,7 @@ int DJI_Pro_Mission_Waypoint_Upload_Task(cmd_mission_wp_task_info_comm_t *p_task
 	DJI_Pro_App_Send_Data(2,1, MY_MISSION_CMD_SET, API_MISSION_TASK_UPLOAD,
 			(unsigned char*)p_task_info, sizeof(cmd_mission_wp_task_info_comm_t),
 			DJI_Pro_Mission_Waypoint_Upload_Task_CallBack, 500, 1);
+	printf("waypoint task uploaded\n");
 	return 0;
 }
 
@@ -734,6 +735,7 @@ int DJI_Pro_Mission_Waypoint_Upload_Waypoint(cmd_mission_wp_waypoint_upload_comm
 	DJI_Pro_App_Send_Data(2,1, MY_MISSION_CMD_SET, API_MISSION_WP_UPLOAD,
 						(unsigned char*)p_waypoint_upload, sizeof(cmd_mission_wp_waypoint_upload_comm_t),
 						DJI_Pro_Mission_Waypoint_Upload_Waypoint_CallBack,500,1);
+	printf("waypoint uploaded\n");
 	return 0;
 }
 /* 

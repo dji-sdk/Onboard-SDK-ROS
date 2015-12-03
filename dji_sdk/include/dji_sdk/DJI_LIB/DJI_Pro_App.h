@@ -492,8 +492,8 @@ typedef struct
 {
 	unsigned char action_num 	:4;
 	unsigned char action_rpt	:4;
-	unsigned char command_list [15];
-	int16_t command_param[15];
+	unsigned char command_list [16];
+	int16_t command_param[16];
 }cmd_mission_wp_action_comm_t;
 
 /*
