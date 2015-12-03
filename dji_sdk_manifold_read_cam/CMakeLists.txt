@@ -128,40 +128,15 @@ add_executable(dji_sdk_read_cam  src/CamMain.cpp src/djiCam.c src/usbHost.c incl
 link_directories(/usr/local/lib /usr/lib/arm-linux-gnueabihf)
 target_link_libraries(dji_sdk_read_cam
 	pthread
-	avdevice	
+	avdevice
 	avfilter
 	usb-1.0
 	avformat
 	avcodec
-	xcb-shm
-	xcb-xfixes
-	xcb-render
-	xcb-shape
-	xcb
-	X11
-	dl
-	vpx
-	vorbisenc
-	vorbis
-	theoraenc
-	theoradec
-	ogg
-	rtmp
-	gnutls
-	opencore-amrwb
-	opencore-amrnb
-	mp3lame
-	faac
-	bz2
-	z
-	swresample
 	swscale
 	avutil
-	m
 	SDLmain
 	SDL
-	jpeg
-	x264
 	
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
