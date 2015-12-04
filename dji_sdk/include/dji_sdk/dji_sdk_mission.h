@@ -6,14 +6,6 @@
 
 #define C_PI (double) 3.141592653589793
 
-//the state machine is based on the command run definitely successfully assumption.
-enum class ServerState 
-{
-	READY,
-	RUNNING,
-	PAUSED
-};
-
 enum class MissionType 
 {
 	EMPTY,
@@ -57,7 +49,6 @@ private:
 	ros::ServiceServer mission_fm_upload_service;
 	ros::ServiceServer mission_fm_set_target_service;
 	
-	ServerState current_state = ServerState::READY;
 	MissionType current_type = MissionType::EMPTY;
 
 	bool mission_start_callback(dji_sdk::MissionStart::Request& request, dji_sdk::MissionStart::Response& response);

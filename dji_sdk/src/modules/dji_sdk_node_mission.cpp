@@ -1,5 +1,8 @@
 #include <dji_sdk/dji_sdk_mission.h>
 
+cmd_mission_hotpoint_setting_t new_hotpoint = {0};
+cmd_mission_follow_setting_t new_follow = {0};
+
 void DJISDKMission::mission_state_callback()
 {
 	cmd_mission_common_data_t mission_state_data;
@@ -30,10 +33,6 @@ void DJISDKMission::mission_event_callback()
 
 bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& request, dji_sdk::MissionStart::Response& response)
 {
-	//the start cmd should run while ready
-	if (current_state != ServerState::READY)
-		return false;
-
 	switch(current_type)
 	{	
 		case MissionType::WAYPOINT:
@@ -43,7 +42,6 @@ bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& reque
 		
 		case MissionType::HOTPOINT:
 			//upload hp task info
-			cmd_mission_hotpoint_setting_t new_hotpoint;
 
 			new_hotpoint.latitude = hotpoint_task.latitude;
 			new_hotpoint.longitude = hotpoint_task.longitude;
@@ -59,7 +57,6 @@ bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& reque
 
 		case MissionType::FOLLOWME:
 			//upload fm task info
-			cmd_mission_follow_setting_t new_follow;
 
 			new_follow.mode = followme_task.mode;
 			new_follow.yaw_mode = followme_task.yaw_mode;
@@ -76,16 +73,11 @@ bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& reque
 			return false;
 
 	}
-	current_state = ServerState::RUNNING;
-	printf("current_state -> RUNNING \n");
 	return true;
 
 }
 bool DJISDKMission::mission_pause_callback(dji_sdk::MissionPause::Request& request, dji_sdk::MissionPause::Response& response)
 {
-	//the pause cmd should run while running
-	if (current_state == ServerState::READY)
-		return false;
 
 	switch(current_type)
 	{	
@@ -105,20 +97,12 @@ bool DJISDKMission::mission_pause_callback(dji_sdk::MissionPause::Request& reque
 			return false;
 
 	}
- 	current_state = request.pause?ServerState::RUNNING:ServerState::PAUSED;
-	if(request.pause)
-		printf("current_state -> RUNNING\n");
-	else
-		printf("current_state -> PAUSED\n");
 
 	return true;
 
 }
 bool DJISDKMission::mission_cancel_callback(dji_sdk::MissionCancel::Request& request, dji_sdk::MissionCancel::Response& response)
 {
-	//the cancel cmd cannot run while ready
-	if (current_state == ServerState::READY)
-		return false;
 
 	switch(current_type)
 	{	
@@ -139,16 +123,11 @@ bool DJISDKMission::mission_cancel_callback(dji_sdk::MissionCancel::Request& req
 			return false;
 
 	}
-	current_state = ServerState::READY;
-	printf("current_state -> READY\n");
 	return true;
 }
 
 bool DJISDKMission::mission_download_callback(dji_sdk::MissionDownload::Request& request, dji_sdk::MissionDownload::Response& response)
 {
-	//the download cmd cannot run while ready
-	if (current_state == ServerState::READY)
-		return false;
 
 	switch(current_type)
 	{	
@@ -168,7 +147,6 @@ bool DJISDKMission::mission_download_callback(dji_sdk::MissionDownload::Request&
 
 		default:
 			return false;
-			break;
 	}
 
 	return true;
@@ -176,16 +154,13 @@ bool DJISDKMission::mission_download_callback(dji_sdk::MissionDownload::Request&
 }
 bool DJISDKMission::mission_wp_upload_callback(dji_sdk::MissionWpUpload::Request& request, dji_sdk::MissionWpUpload::Response& response)
 {
-	//the upload cmd should run while ready
-	if (current_state != ServerState::READY)
-		return false;
 
 	waypoint_task = request.waypoint_task;
 
-	cmd_mission_wp_task_info_comm_t new_task;
-	cmd_mission_wp_waypoint_info_comm_t new_waypoint;
-	cmd_mission_wp_action_comm_t new_action;
-	cmd_mission_wp_waypoint_upload_comm_t new_upload;
+	cmd_mission_wp_task_info_comm_t new_task = {0};
+	cmd_mission_wp_waypoint_info_comm_t new_waypoint = {0};
+	cmd_mission_wp_action_comm_t new_action = {0};
+	cmd_mission_wp_waypoint_upload_comm_t new_upload = {0};
 	
 	new_task.length = waypoint_task.mission_waypoint.size();
 	new_task.vel_cmd_range = waypoint_task.velocity_range;
@@ -239,7 +214,10 @@ bool DJISDKMission::mission_wp_upload_callback(dji_sdk::MissionWpUpload::Request
 bool DJISDKMission::mission_wp_get_speed_callback(dji_sdk::MissionWpGetSpeed::Request& request, dji_sdk::MissionWpGetSpeed::Response& response)
 {
 	if (current_type != MissionType::WAYPOINT)
+	{
+		printf("Not in Waypoint Mode!\n");
 		return false;
+	}
 	DJI_Pro_Mission_Waypoint_Get_Idle_Speed();
 	return true;
 
@@ -247,16 +225,16 @@ bool DJISDKMission::mission_wp_get_speed_callback(dji_sdk::MissionWpGetSpeed::Re
 bool DJISDKMission::mission_wp_set_speed_callback(dji_sdk::MissionWpSetSpeed::Request& request, dji_sdk::MissionWpSetSpeed::Response& response)
 {
 	if (current_type != MissionType::WAYPOINT)
+	{
+		printf("Not in Waypoint Mode!\n");
 		return false;
+	}
 	DJI_Pro_Mission_Waypoint_Set_Idle_Speed(request.speed);
 	return true;
 
 }
 bool DJISDKMission::mission_hp_upload_callback(dji_sdk::MissionHpUpload::Request& request, dji_sdk::MissionHpUpload::Response& response)
 {
-	//the upload cmd should run while ready
-	if (current_state != ServerState::READY)
-		return false;
 	hotpoint_task = request.hotpoint_task;
 	hotpoint_task.latitude = hotpoint_task.latitude*C_PI/180;
 	hotpoint_task.longitude = hotpoint_task.longitude*C_PI/180;
@@ -268,7 +246,10 @@ bool DJISDKMission::mission_hp_upload_callback(dji_sdk::MissionHpUpload::Request
 bool DJISDKMission::mission_hp_set_speed_callback(dji_sdk::MissionHpSetSpeed::Request& request, dji_sdk::MissionHpSetSpeed::Response& response)
 {
 	if (current_type != MissionType::HOTPOINT)
+	{
+		printf("Not in Hotpoint Mode!\n");
 		return false;
+	}
 	cmd_mission_hotpoint_velocity_t new_velocity;
 	new_velocity.is_clockwise = request.direction;
 	new_velocity.speed = request.speed;
@@ -279,7 +260,10 @@ bool DJISDKMission::mission_hp_set_speed_callback(dji_sdk::MissionHpSetSpeed::Re
 bool DJISDKMission::mission_hp_set_radius_callback(dji_sdk::MissionHpSetRadius::Request& request, dji_sdk::MissionHpSetRadius::Response& response)
 {
 	if (current_type != MissionType::HOTPOINT)
+	{
+		printf("Not in Hotpoint Mode!\n");
 		return false;
+	}
 	DJI_Pro_Mission_Hotpoint_Set_Radius(request.radius);
 	return true;
 
@@ -287,16 +271,16 @@ bool DJISDKMission::mission_hp_set_radius_callback(dji_sdk::MissionHpSetRadius::
 bool DJISDKMission::mission_hp_reset_yaw_callback(dji_sdk::MissionHpResetYaw::Request& request, dji_sdk::MissionHpResetYaw::Response& response)
 {
 	if (current_type != MissionType::HOTPOINT)
+	{
+		printf("Not in Hotpoint Mode!\n");
 		return false;
+	}
 	DJI_Pro_Mission_Hotpoint_Reset_Yaw();
 	return true;
 
 }
 bool DJISDKMission::mission_fm_upload_callback(dji_sdk::MissionFmUpload::Request& request, dji_sdk::MissionFmUpload::Response& response)
 {
-	//the upload cmd should run while ready
-	if (current_state != ServerState::READY)
-		return false;
 	followme_task = request.followme_task;
 	followme_task.initial_latitude = followme_task.initial_latitude*C_PI/180;
 	followme_task.initial_longitude = followme_task.initial_longitude*C_PI/180;
@@ -308,7 +292,10 @@ bool DJISDKMission::mission_fm_upload_callback(dji_sdk::MissionFmUpload::Request
 bool DJISDKMission::mission_fm_set_target_callback(dji_sdk::MissionFmSetTarget::Request& request, dji_sdk::MissionFmSetTarget::Response& response)
 {
 	if (current_type != MissionType::FOLLOWME)
+	{
+		printf("Not in Followme Mode!\n");
 		return false;
+	}
 	cmd_mission_follow_target_t target_info;
 	target_info.latitude = request.followme_target.latitude;
 	target_info.longitude = request.followme_target.longitude;
