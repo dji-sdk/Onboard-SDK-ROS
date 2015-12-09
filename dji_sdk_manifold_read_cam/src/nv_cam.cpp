@@ -24,6 +24,7 @@ typedef unsigned char   BYTE;
 #define IMAGE_H 720
 #define FRAME_SIZE              IMAGE_W*IMAGE_H*3
 
+#define RGB
 
 unsigned char buffer[FRAME_SIZE] = {0};
 unsigned int frame_size = 0;
@@ -179,9 +180,14 @@ int main(int argc, char **argv)
 	int ret,nKey;
 	int nState = 1;
 	int nCount = 1;
-	cvNamedWindow("Video", CV_WINDOW_AUTOSIZE);
+#ifdef RGB
+	IplImage * pRawImg = cvCreateImage(cvSize(IMAGE_W, IMAGE_H),IPL_DEPTH_8U,3);
+	IplImage * pImg = cvCreateImage(cvSize(640, 480),IPL_DEPTH_8U,3);
+	unsigned char * pData  = new unsigned char[1280 * 720 * 3];
+#else
 	IplImage * pRawImg = cvCreateImage(cvSize(IMAGE_W, IMAGE_H),IPL_DEPTH_8U,1);
 	IplImage * pImg = cvCreateImage(cvSize(640, 480),IPL_DEPTH_8U,1);
+#endif
 
 	ros::NodeHandle node;
 	image_transport::ImageTransport transport(node);
@@ -226,17 +232,27 @@ int main(int argc, char **argv)
 
 	while(1)
 	{
-		ret = manifold_decode_start(buffer, &frame_size, &nframe);
+		ret = manifold_cam_read(buffer, &nframe, 1);
 
-		if(ret == 1)
+		if(ret != -1)
 		{
+
+#ifdef RGB
+			NV12ToRGB(buffer,pData,1280,720);
+			memcpy(pRawImg->imageData,pData,FRAME_SIZE);
+#else
 			memcpy(pRawImg->imageData,buffer,FRAME_SIZE/3);
+#endif
 			cvResize(pRawImg,pImg,CV_INTER_LINEAR);
 
 			time=ros::Time::now();
 			cvi.header.stamp = time;
 			cvi.header.frame_id = "image";
+#ifdef RGB
+			cvi.encoding = "bgr8";
+#else
 			cvi.encoding = "mono8";
+#endif
 			cvi.image = pImg;
 			cvi.toImageMsg(im);
 			cam_info.header.seq = nCount;
@@ -247,9 +263,8 @@ int main(int argc, char **argv)
 			ros::spinOnce();
 			nCount++;
 
-			cvShowImage("Video", pRawImg);
 		}
-		else if(ret == -1)
+		else 
 			break;
 		usleep(1000);
 	}
