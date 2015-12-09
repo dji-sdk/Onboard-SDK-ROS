@@ -1,6 +1,6 @@
 ##DJI Onboard SDK ROS Package for Video Decoding on Manifold
 
-This video-decoding package is a specifically desiged for Manifold to read the X3 video stream.
+This video-decoding package is a specifically desiged package for Manifold to read the X3 video stream.
 
 ###How to use
 1. Install the necessary library: refer [here](https://github.com/dji-sdk/manifold_cam)
@@ -21,3 +21,6 @@ The default video stream is in RGB format.
 
 Comment the `#define RGB` in `nv_cam.cpp` if you prefer the grayscale.
 ![image](../dji_sdk_doc/readcam.png)
+
+
+Note: frame size is 640x480, no matter RGB or Grayscale
