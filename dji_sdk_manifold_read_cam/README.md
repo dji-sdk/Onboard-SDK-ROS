@@ -17,7 +17,7 @@ This video-decoding package is a specifically desiged for Manifold to read the X
 
 
 The default video stream is in RGB format.
-![image](../dji_sdk_doc/readcam.png)
+![image](../dji_sdk_doc/readcam_nv.png)
 
 Comment the `#define RGB` in `nv_cam.cpp` if you prefer the grayscale.
-![image](../dji_sdk_doc/readcam_nv.png)
+![image](../dji_sdk_doc/readcam.png)
