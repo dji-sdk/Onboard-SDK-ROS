@@ -50,6 +50,7 @@ int main(int argc, char **argv)
     Display_Main_Menu();
     while(1)
     {
+		ros::spinOnce();
         temp32 = getchar();
         if(temp32 != 10)
         {
