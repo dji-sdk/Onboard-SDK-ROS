@@ -1,6 +1,0 @@
-# This is a Kbuild file to build some modules outside of the kernel source.
-EXTRA_CFLAGS += -DDEBUG
-
-obj-m	:= dummy_hcd.o gadgetfs.o
-gadgetfs-y := inode.o
-

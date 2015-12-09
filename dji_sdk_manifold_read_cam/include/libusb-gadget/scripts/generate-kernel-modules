@@ -1,9 +1,0 @@
-#!/bin/sh
-
-if test $# != 1; then
-    echo "Usage: $0 KERNELSRC" 1>&2
-    exit 1
-fi
-
-make -f Makefile.Linux KERNELSRC="$1"
-make -f Makefile.Linux clean
