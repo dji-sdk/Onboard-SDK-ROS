@@ -12,6 +12,8 @@
 #define C_EARTH (double) 6378137.0
 #define C_PI (double) 3.141592653589793
 
+extern DJI::onboardSDK::ROSAdapter *rosAdapter;
+
 class DJISDKNode
 {
 private:
@@ -40,7 +42,8 @@ private:
 
 //internal variables
     char app_key[65];
-    activate_data_t user_act_data;
+    //activate_data_t user_act_data; //TODO: [__CHRIS__6]
+    ActivateData user_act_data;
 
 //Publishers:
     ros::Publisher acceleration_publisher;
@@ -187,6 +190,8 @@ private:
 public:
     DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private);
 
+    //void broadcast_callback(); //TODO: [__CHIS__10]
+
 private:
     int init_parameters(ros::NodeHandle& nh_private);
     void broadcast_callback();
@@ -198,6 +203,10 @@ private:
             double gps_r_lon, double gps_r_lat);
 
     dji_sdk::LocalPosition gps_convert_ned(dji_sdk::GlobalPosition loc);
+
+    //DJI::onboardSDK::ROSAdapter rosAdapter;//TODO: [__CHRIS__1]
+    //TODO LOOK TODO ANOTHER TODO FILE!
+
 };
 
 #endif

@@ -6,6 +6,8 @@
 
 #define C_PI (double) 3.141592653589793
 
+extern DJI::onboardSDK::ROSAdapter *rosAdapter;
+
 enum class MissionType 
 {
 	EMPTY,
@@ -84,7 +86,7 @@ private:
 		mission_hp_set_speed_service = nh.advertiseService("dji_sdk/mission_hotpoint_set_speed", &DJISDKMission::mission_hp_set_speed_callback ,this);
 		mission_hp_set_radius_service = nh.advertiseService("dji_sdk/mission_hotpoint_set_radius", &DJISDKMission::mission_hp_set_radius_callback ,this);
 		mission_hp_reset_yaw_service = nh.advertiseService("dji_sdk/mission_hotpoint_reset_yaw", &DJISDKMission::mission_hp_reset_yaw_callback ,this);
-		mission_fm_upload_service = nh.advertiseService("dji_sdk/mission_follome_upload", &DJISDKMission::mission_fm_upload_callback ,this);
+		mission_fm_upload_service = nh.advertiseService("dji_sdk/mission_followme_upload", &DJISDKMission::mission_fm_upload_callback ,this);
 		mission_fm_set_target_service = nh.advertiseService("dji_sdk/mission_followme_set_target", &DJISDKMission::mission_fm_set_target_callback ,this);
 
 	}

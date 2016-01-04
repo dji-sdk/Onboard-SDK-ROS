@@ -93,17 +93,17 @@ public:
 
 	uint8_t mission_type;
 
-	waypoint_mission_push_info_t waypoint_mission_push_info;
-	hotpoint_mission_push_info_t hotpoint_mission_push_info;
-	followme_mission_push_info_t followme_mission_push_info;
-	other_mission_push_info_t other_mission_push_info;
+	////waypoint_mission_push_info_t waypoint_mission_push_info;
+	////hotpoint_mission_push_info_t hotpoint_mission_push_info;
+	////followme_mission_push_info_t followme_mission_push_info;
+	////other_mission_push_info_t other_mission_push_info;
 
 
 	uint8_t incident_type;
 	
-	waypoint_upload_push_info_t waypoint_upload_result;
-	waypoint_finish_action_push_info_t waypoint_action_result;
-	waypoint_reached_push_info_t waypoint_reached_result;
+	////waypoint_upload_push_info_t waypoint_upload_result;
+	////waypoint_finish_action_push_info_t waypoint_action_result;
+	////waypoint_reached_push_info_t waypoint_reached_result;
 
 private:
 	void acceleration_subscriber_callback(dji_sdk::Acceleration acceleration)
@@ -180,7 +180,8 @@ private:
 	{
 		this->time_stamp = time_stamp;
 	}
-
+////
+/*
 	void mission_state_push_info_callback(dji_sdk::MissionPushInfo state_push_info)
 	{
 		this->mission_type = state_push_info.type;
@@ -241,7 +242,8 @@ private:
 				break;
 		}
 	}
-
+*/
+////
 public:
 	DJIDrone(ros::NodeHandle& nh):
 		drone_task_action_client(nh, "dji_sdk/drone_task_action", true),
@@ -295,8 +297,12 @@ public:
         odometry_subscriber = nh.subscribe<nav_msgs::Odometry>("dji_sdk/odometry",10, &DJIDrone::odometry_subscriber_callback, this);
         sdk_permission_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/sdk_permission", 10, &DJIDrone::sdk_permission_subscriber_callback, this);
 		time_stamp_subscriber = nh.subscribe<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10, &DJIDrone::time_stamp_subscriber_callback,this);
+////
+/*
 		mission_state_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_state", 10, &DJIDrone::mission_state_push_info_callback, this);  
 		mission_event_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_event", 10, &DJIDrone::mission_event_push_info_callback, this);
+*/
+////
 	}
 
 	bool activate()
