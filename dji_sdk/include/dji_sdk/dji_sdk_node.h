@@ -166,7 +166,7 @@ private:
 
     bool process_waypoint(dji_sdk::Waypoint new_waypoint);
 
-    inline void gps_convert_ned(float &ned_x, float &ned_y,
+    void gps_convert_ned(float &ned_x, float &ned_y,
             double gps_t_lon, double gps_t_lat,
             double gps_r_lon, double gps_r_lat);
 
