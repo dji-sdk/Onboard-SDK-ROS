@@ -7,9 +7,11 @@
 #include <boost/bind.hpp>
 #include <dji_sdk/dji_sdk.h>
 #include <actionlib/server/simple_action_server.h>
+#include <functional>
 
 #define C_EARTH (double) 6378137.0
 #define C_PI (double) 3.141592653589793
+#define DEG2RAD(DEG) ((DEG)*((C_PI)/(180.0)))
 
 class DJISDKNode
 {
@@ -166,9 +168,15 @@ private:
 
     bool process_waypoint(dji_sdk::Waypoint new_waypoint);
 
-    void gps_convert_ned(float &ned_x, float &ned_y,
-            double gps_t_lon, double gps_t_lat,
-            double gps_r_lon, double gps_r_lat);
+    inline void gps_convert_ned(float &ned_x, float &ned_y,
+                                double gps_t_lon, double gps_t_lat,
+                                double gps_r_lon, double gps_r_lat)
+    {
+      double d_lon = gps_t_lon - gps_r_lon;
+      double d_lat = gps_t_lat - gps_r_lat;
+      ned_x = DEG2RAD(d_lat) * C_EARTH;
+      ned_y = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
+    }
 
     dji_sdk::LocalPosition gps_convert_ned(dji_sdk::GlobalPosition loc);
 };

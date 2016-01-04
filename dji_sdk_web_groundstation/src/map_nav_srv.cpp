@@ -117,7 +117,7 @@ void goalCB() {
             }
         }
 
-        bool isFinished; //flag for task result
+        bool isFinished = false; //flag for task result
         int cnt; //feedback count
         switch(stage_) {
             case 0: //"0" for waiting for waypointList

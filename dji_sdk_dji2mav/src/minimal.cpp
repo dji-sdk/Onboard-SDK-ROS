@@ -91,6 +91,10 @@ void send_thread(const int &sock){
         }
         if(bytes_recv > 0) {
             mavlink_message_t recvMsg;
+            recvMsg.compid = 0;
+            recvMsg.len = 0;
+            recvMsg.msgid = 0;
+            recvMsg.sysid = 0;
             mavlink_status_t recvStatus;
 
             ROS_INFO("Bytes Received: %d bytes.", bytes_recv);
