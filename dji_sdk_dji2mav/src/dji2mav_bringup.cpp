@@ -28,12 +28,14 @@ DJIDrone* drone;
 
 
 /* A thread for sending heartbeat */
+// Error: no pointer returned
 void* sendHb_Period(void* args) {
     int t_s = *((int*) args);
     while( ros::ok() ) {
         dji2mav::MavHeartbeat::getInstance()->sendHeartbeat();
         sleep(t_s);
     }
+    return NULL;
 }
 
 /* A thread for sending sensor data */
@@ -43,6 +45,7 @@ void* sendSs_Period(void* args) {
         dji2mav::MavSensors::getInstance()->sendSensorsData();
         usleep(t_ms);
     }
+    return NULL;
 }
 
 

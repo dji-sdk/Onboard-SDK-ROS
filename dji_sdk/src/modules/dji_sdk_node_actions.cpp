@@ -238,7 +238,7 @@ bool DJISDKNode::waypoint_navigation_action_callback(const dji_sdk::WaypointNavi
     new_waypoint_list = goal->waypoint_list;
 
     bool isSucceeded;
-    for (int i = 0; i < new_waypoint_list.waypoint_list.size(); i++) {
+    for (size_t i = 0; i < new_waypoint_list.waypoint_list.size(); i++) {
      const dji_sdk::Waypoint new_waypoint = new_waypoint_list.waypoint_list[i];  
      waypoint_navigation_feedback.index_progress = i;
      isSucceeded = process_waypoint(new_waypoint);

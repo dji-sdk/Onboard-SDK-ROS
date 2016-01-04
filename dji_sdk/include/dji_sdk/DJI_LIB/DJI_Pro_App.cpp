@@ -435,10 +435,10 @@ int DJI_Pro_Activate_API(activate_data_t *p_user_data,
     return 0;
 }
 
-static void DJI_Pro_User_Activate_Callback(unsigned short ack)
+/*static void DJI_Pro_User_Activate_Callback(unsigned short ack)
 {
     printf("%s,ack=0x%X\n",__func__,ack);
-}
+}*/
 
 /*
  *  interface: transparent transmission interface
