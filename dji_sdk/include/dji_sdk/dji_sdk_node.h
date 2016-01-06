@@ -11,6 +11,8 @@
 #define C_EARTH (double) 6378137.0
 #define C_PI (double) 3.141592653589793
 
+extern DJI::onboardSDK::ROSAdapter *rosAdapter;
+
 class DJISDKNode
 {
 private:
@@ -38,7 +40,7 @@ private:
 
 //internal variables
     char app_key[65];
-    activate_data_t user_act_data;
+    ActivateData user_act_data;
 
 //Publishers:
     ros::Publisher acceleration_publisher;
