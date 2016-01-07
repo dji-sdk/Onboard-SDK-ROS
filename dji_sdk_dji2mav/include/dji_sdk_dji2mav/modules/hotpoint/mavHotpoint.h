@@ -1,13 +1,13 @@
 /*****************************************************************************
- * @Brief     Waypoint module. Implement waypoint protocol here
+ * @Brief     Hotpoint module. Implement hotpoint protocol here 
  * @Version   0.3.0
  * @Author    Chris Liu
- * @Created   2015/11/18
+ * @Created   2015/12/11
  * @Modified  2015/12/25
  *****************************************************************************/
 
-#ifndef _MAV2DJI_MAVWAYPOINT_H_
-#define _MAV2DJI_MAVWAYPOINT_H_
+#ifndef _DJI2MAV_MAVHOTPOINT_H_
+#define _DJI2MAV_MAVHOTPOINT_H_
 
 
 #include <mavlink/common/mavlink.h>
@@ -16,24 +16,24 @@
 #include <cstdarg>
 
 #include "dji_sdk_dji2mav/modules/mavModule.h"
-#include "waypointList.h"
+#include "hotpointData.h"
 #include "dji_sdk_dji2mav/log.h"
 
 namespace dji2mav{
 
-    class MavWaypoint : public MavModule{
+    class MavHotpoint : public MavModule {
         public:
             /**
-             * @brief Constructor for Waypoint Module. Recv buf size 4096
+             * @brief Constructor for Hotpoint Module. Recv buf size 4096
              * @param handler : The reference of MavHandler Object
              * @param name    : The name of this module
              * @param gcsNum  : The number of GCS that the module employs
              * @param ...     : The indexes of GCS list, should be uint16_t
              */
-            MavWaypoint(MavHandler &handler, std::string name, 
+            MavHotpoint(MavHandler &handler, std::string name, 
                     uint16_t gcsNum, ...) : MavModule(handler, name, 4096) {
 
-                DJI2MAV_DEBUG("Going to construct Waypoint module with name " 
+                DJI2MAV_DEBUG("Going to construct Hotpoint module with name " 
                         "%s and gcsNum %u...", name.c_str(), gcsNum);
 
                 setMissionRequestListHook(NULL);
@@ -55,21 +55,21 @@ namespace dji2mav{
                 }
                 va_end(arg);
 
-                //TODO: Also set the MOI here
+                //TODO: Set the MOI here
 
-                DJI2MAV_DEBUG("...finish constructing Waypoint module.");
+                DJI2MAV_DEBUG("...finish constructing Hotpoint module.");
 
             }
 
 
-            ~MavWaypoint() {
-                DJI2MAV_DEBUG("Going to destruct Waypoint module...");
-                DJI2MAV_DEBUG("...finish destructing Waypoint moduel.");
+            ~MavHotpoint() {
+                DJI2MAV_DEBUG("Going to destruct Hotpoint module...");
+                DJI2MAV_DEBUG("...finish destructing Hotpoint module.");
             }
 
 
             /**
-             * @brief Implement the messages passively handling function
+             * @brief Implement the messages passive handling function
              * @param msg : The reference of received message
              */
             void passivelyReceive(mavlink_message_t &msg) {
@@ -116,11 +116,11 @@ namespace dji2mav{
                     const mavlink_message_t &recvMsg) {
 
                 if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    DJI2MAV_DEBUG("In Waypoint the compid is %u.", 
+                    DJI2MAV_DEBUG("In Hotpoint the compid is %u.", 
                             recvMsg.compid);
                 }
 
-                DJI2MAV_DEBUG("In Waypoint mission request list with status: " 
+                DJI2MAV_DEBUG("In Hotpoint mission request list with status: " 
                         "%d.", (int)m_status);
 
                 switch(m_status) {
@@ -140,8 +140,7 @@ namespace dji2mav{
                 mavlink_mission_count_t cntMsg;
                 cntMsg.target_system = recvMsg.sysid;
                 cntMsg.target_component = recvMsg.compid;
-                cntMsg.count = m_wpl.getListSize();
-                m_wpl.readyToUpload();
+                cntMsg.count = 1;//one single unit in the list
 
                 mavlink_message_t sendMsg;
                 mavlink_msg_mission_count_encode(getMySysid(), 
@@ -158,12 +157,12 @@ namespace dji2mav{
                     const mavlink_message_t &recvMsg) {
 
                 if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    DJI2MAV_DEBUG("In Waypoint the compid is %u.", 
+                    DJI2MAV_DEBUG("In Hotpoint the compid is %u.", 
                             recvMsg.compid);
                 }
 
-                DJI2MAV_DEBUG("In Waypoint mission request with status: " 
-                        "%d.", (int)m_status);
+                DJI2MAV_DEBUG("In Hotpoint mission request with status: %d.", 
+                        (int)m_status);
 
                 switch(m_status) {
                     case idle:
@@ -181,18 +180,16 @@ namespace dji2mav{
                 mavlink_msg_mission_request_decode(&recvMsg, &reqMsg);
 
                 mavlink_mission_item_t itemMsg;
-                itemMsg.target_system = recvMsg.sysid;
-                itemMsg.target_component = recvMsg.compid;
-                itemMsg.seq = reqMsg.seq;
-                if( m_wpl.isValidIdx(itemMsg.seq) ) {
-
-                    m_wpl.getWaypointData(itemMsg.seq, itemMsg.command, 
+                if(reqMsg.seq == 0) {
+                    itemMsg.target_system = recvMsg.sysid;
+                    itemMsg.target_component = recvMsg.compid;
+                    itemMsg.seq = reqMsg.seq;
+                    m_hp.getHotpointData(itemMsg.seq, itemMsg.command, 
                             itemMsg.param1, itemMsg.param2, itemMsg.param3, 
                             itemMsg.param4, itemMsg.x, itemMsg.y, itemMsg.z);
-
                 } else {
-                    DJI2MAV_ERROR("Invalid sequence %u of mission request in" 
-                            "Waypoint!", reqMsg.seq);
+                    DJI2MAV_ERROR("Invalid sequence %u of mission request in " 
+                            "Hotpoint!", reqMsg.seq);
                     return;
                 }
 
@@ -211,12 +208,12 @@ namespace dji2mav{
                     const mavlink_message_t &recvMsg) {
 
                 if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    DJI2MAV_DEBUG("In Wotpoint the compid is %u.", 
+                    DJI2MAV_DEBUG("In Hotpoint the compid is %u.", 
                             recvMsg.compid);
                 }
 
-                DJI2MAV_DEBUG("In Waypoint mission ack with status: %d.", 
-                        (int)m_status);
+                DJI2MAV_DEBUG("In Hotpoint mission ack with status: %d.", 
+                            (int)m_status);
 
                 switch(m_status) {
                     case idle:
@@ -234,10 +231,9 @@ namespace dji2mav{
 
                 mavlink_mission_ack_t ackMsg;
                 mavlink_msg_mission_ack_decode(&recvMsg, &ackMsg);
-                DJI2MAV_DEBUG("In Waypoint mission ACK code: %d.", ackMsg.type);
+                DJI2MAV_DEBUG("In Hotpoint mission ACK code: %d.", ackMsg.type);
                 m_status = loaded;
-                m_wpl.finishUpload();
-                m_wpl.displayMission();
+                m_hp.display();
 
                 if(NULL != m_missionAckHook)
                     m_missionAckHook();
@@ -253,7 +249,7 @@ namespace dji2mav{
                             recvMsg.compid);
                 }
 
-                DJI2MAV_DEBUG("In Waypoint mission count with status: %d.", 
+                DJI2MAV_DEBUG("In Hotpoint mission count with status: %d.", 
                         (int)m_status);
 
                 switch(m_status) {
@@ -271,8 +267,6 @@ namespace dji2mav{
 
                 mavlink_mission_count_t cntMsg;
                 mavlink_msg_mission_count_decode(&recvMsg, &cntMsg);
-                m_wpl.setListSize(cntMsg.count);
-                m_wpl.readyToDownload();
 
                 mavlink_mission_request_t reqMsg;
                 reqMsg.target_system = recvMsg.sysid;
@@ -294,7 +288,7 @@ namespace dji2mav{
                     const mavlink_message_t &recvMsg) {
 
                 if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    DJI2MAV_DEBUG("In Waypoint the compid is %u.", 
+                    DJI2MAV_DEBUG("In Hotpoint the compid is %u.", 
                             recvMsg.compid);
                 }
 
@@ -315,39 +309,26 @@ namespace dji2mav{
 
                 mavlink_mission_item_t itemMsg;
                 mavlink_msg_mission_item_decode(&recvMsg, &itemMsg);
-                if( m_wpl.isValidIdx(itemMsg.seq) ) {
+                if(itemMsg.seq == 0) {
 
-                    m_wpl.setWaypointData(itemMsg.seq, itemMsg.command, 
+                    m_hp.setHotpointData(itemMsg.seq, itemMsg.command, 
                             itemMsg.param1, itemMsg.param2, itemMsg.param3, 
                             itemMsg.param4, itemMsg.x, itemMsg.y, itemMsg.z);
 
                 } else {
                     DJI2MAV_ERROR("Invalid sequence %u of mission item in " 
-                            "Waypoint!", itemMsg.seq);
+                            "Hotpoint!", itemMsg.seq);
                     return;
                 }
 
                 mavlink_message_t sendMsg;
-                if( m_wpl.isDownloadFinished() ) {
-                    mavlink_msg_mission_ack_pack(getMySysid(), 
-                            MAV_COMP_ID_MISSIONPLANNER, &sendMsg, 
-                            recvMsg.sysid, recvMsg.compid, 
-                            MAV_MISSION_ACCEPTED);
-                    sendMsgToMaster(sendMsg);
-                    m_status = loaded;
-                    m_wpl.displayMission();
-                } else {
-                    mavlink_mission_request_t reqMsg;
-                    reqMsg.target_system = recvMsg.sysid;
-                    reqMsg.target_component = recvMsg.compid;
-                    reqMsg.seq = m_wpl.getTargetIdx();
-                    mavlink_msg_mission_request_encode(getMySysid(), 
-                            MAV_COMP_ID_MISSIONPLANNER, &sendMsg, &reqMsg);
-                    sendMsgToMaster(sendMsg);
-                    DJI2MAV_TRACE("In Waypoint send request %u, %u, %u.", 
-                            reqMsg.target_system, reqMsg.target_component, 
-                            reqMsg.seq);
-                }
+                mavlink_msg_mission_ack_pack(getMySysid(), 
+                        MAV_COMP_ID_MISSIONPLANNER, &sendMsg, 
+                        recvMsg.sysid, recvMsg.compid, 
+                        MAV_MISSION_ACCEPTED);
+                sendMsgToMaster(sendMsg);
+                m_status = loaded;
+                m_hp.display();
 
                 if(NULL != m_missionItemHook)
                     m_missionItemHook(itemMsg.seq);
@@ -359,11 +340,11 @@ namespace dji2mav{
                     const mavlink_message_t &recvMsg) {
 
                 if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    DJI2MAV_DEBUG("In Waypoint the compid is %u\n", 
+                    DJI2MAV_DEBUG("In Hotpoint the compid is %u.", 
                             recvMsg.compid);
                 }
 
-                DJI2MAV_DEBUG("In Waypoint mission clear all with status: %d", 
+                DJI2MAV_DEBUG("In Hotpoint mission clear all with status: %d.", 
                         (int)m_status);
 
                 switch(m_status) {
@@ -389,7 +370,7 @@ namespace dji2mav{
                         MAV_COMP_ID_MISSIONPLANNER, &sendMsg, &ackMsg);
                 sendMsgToMaster(sendMsg);
 
-                m_wpl.clearMission();
+                m_hp.clear();
 
                 if(NULL != m_missionClearAllHook)
                     m_missionClearAllHook();
@@ -401,11 +382,11 @@ namespace dji2mav{
                     const mavlink_message_t &recvMsg) {
 
                 if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    DJI2MAV_DEBUG("In Waypoint the compid is %u.", 
+                    DJI2MAV_DEBUG("In Hotpoint the compid is %u.", 
                             recvMsg.compid);
                 }
 
-                DJI2MAV_DEBUG("In Waypoint mission set current with status: " 
+                DJI2MAV_DEBUG("In Hotpoint mission set current with status: " 
                         "%d.", (int)m_status);
 
                 switch(m_status) {
@@ -424,34 +405,29 @@ namespace dji2mav{
 
                 mavlink_mission_set_current_t setCurrMsg;
                 mavlink_msg_mission_set_current_decode(&recvMsg, &setCurrMsg);
-                if( m_wpl.isValidIdx(setCurrMsg.seq) ) {
-
-                    m_wpl.setTargetIdx(setCurrMsg.seq);
+                if(0 == setCurrMsg.seq) {
 
                     if(NULL != m_targetHook) {
-                        m_targetHook( m_wpl.getWaypointList(), 
-                                setCurrMsg.seq, 
-                                m_wpl.getListSize() );
+                        m_targetHook( m_hp.getHotpoint(), 7, m_hp.getCmd() );
+                        DJI2MAV_DEBUG("Finish running target hook.");
                         //It is slow to send mission to FC. Now there should be
                         //duplicate cmd msg in the buffer. Clear them
                         clearBuf();
                     } else {
-                        DJI2MAV_WARN("In Waypoint no target hook is set.");
+                        DJI2MAV_WARN("In Hotpoint no target hook is set.");
                     }
 
                     mavlink_message_t sendMsg;
                     mavlink_msg_mission_current_pack( getMySysid(), 
-                            MAV_COMP_ID_MISSIONPLANNER, &sendMsg, 
-                            m_wpl.getTargetIdx() );
+                            MAV_COMP_ID_MISSIONPLANNER, &sendMsg, 0 );
                     sendMsgToMaster(sendMsg);
 
-                    m_status = loaded;//TODO finish the task
+                    m_status = loaded;
 
                 } else {
-                    m_status = paused;
-                    DJI2MAV_ERROR( "The sequence %u of set current message is " 
-                            "invalid in Waypoint! The size of list is %u!", 
-                            setCurrMsg.seq, m_wpl.getListSize() );
+                    m_status = idle;
+                    DJI2MAV_ERROR("The sequence %u of set current message is " 
+                            "invalid in Hotpoint!", setCurrMsg.seq);
                 }
 
                 if(NULL != m_missionSetCurrentHook)
@@ -460,60 +436,57 @@ namespace dji2mav{
             }
 
 
-            /**
-             * @brief  React to sensors from all GCS and execute rsp
-             * @return True if succeed or false if fail
-             */
-            inline void setMissionRequestListHook( void (*func)() ) {
+            void setMissionRequestListHook(void (*func)()) {
                 m_missionRequestListHook = func;
             }
 
 
-            inline void setMissionRequestHook( void (*func)(uint16_t) ) {
+            void setMissionRequestHook(void (*func)(uint16_t)) {
                 m_missionRequestHook = func;
             }
 
 
-            inline void setMissionAckHook( void (*func)() ) {
+            void setMissionAckHook(void (*func)()) {
                 m_missionAckHook = func;
             }
 
 
-            inline void setMissionCountHook( void (*func)(uint16_t) ) {
+            void setMissionCountHook(void (*func)(uint16_t)) {
                 m_missionCountHook = func;
             }
 
 
-            inline void setMissionItemHook( void (*func)(uint16_t) ) {
+            void setMissionItemHook(void (*func)(uint16_t)) {
                 m_missionItemHook = func;
             }
 
 
-            inline void setMissionClearAllHook( void (*func)() ) {
+            void setMissionClearAllHook(void (*func)()) {
                 m_missionClearAllHook = func;
             }
 
 
-            inline void setMissionSetCurrentHook( void (*func)(uint16_t) ) {
+            void setMissionSetCurrentHook(void (*func)(uint16_t)) {
                 m_missionSetCurrentHook = func;
             }
 
 
-            inline void setTargetHook( void (*func)(const float[][7], uint16_t, uint16_t) ) {
+            void setTargetHook(void (*func)(const float[], uint16_t, uint16_t)) {
                 m_targetHook = func;
             }
 
 
+
         private:
-            WaypointList m_wpl;
+            HotpointData m_hp;
 
             enum {
-                idle, 
-                uploading, 
-                downloading, 
-                loaded, 
-                executing, 
-                paused, 
+                idle,
+                uploading,
+                downloading,
+                loaded,
+                executing,
+                paused,
                 error
             } m_status;
 
@@ -524,7 +497,7 @@ namespace dji2mav{
             void (*m_missionItemHook)(uint16_t);
             void (*m_missionClearAllHook)();
             void (*m_missionSetCurrentHook)(uint16_t);
-            void (*m_targetHook)(const float[][7], uint16_t, uint16_t);
+            void (*m_targetHook)(const float[], uint16_t, uint16_t);
 
 
     };

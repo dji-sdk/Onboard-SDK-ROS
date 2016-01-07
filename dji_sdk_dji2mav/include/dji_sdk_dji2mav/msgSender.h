@@ -1,22 +1,20 @@
 /*****************************************************************************
  * @Brief     Messages sender. Alloc send buffer here and manager it.
- * @Version   0.2.1
+ * @Version   0.3.0
  * @Author    Chris Liu
  * @Created   2015/10/30
- * @Modified  2015/11/15
+ * @Modified  2015/12/16
  *****************************************************************************/
 
-#ifndef _MSGSENDER_H_
-#define _MSGSENDER_H_
+#ifndef _DJI2MAV_MSGSENDER_H_
+#define _DJI2MAV_MSGSENDER_H_
 
 
-#include "socketComm.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <iostream>
 #include <string>
 #include <new>
+
+#include "socketComm.h"
+#include "log.h"
 
 namespace dji2mav {
 
@@ -24,25 +22,27 @@ namespace dji2mav {
         public:
             MsgSender(uint16_t bufSize) : m_bufSize(bufSize) {
 
+                DJI2MAV_DEBUG("Going to construct MsgSender...");
+
                 try {
                     m_sendBuf = new uint8_t[m_bufSize];
                     memset(m_sendBuf, 0, m_bufSize * sizeof(uint8_t));
                 } catch(std::bad_alloc &m) {
-                    std::cerr << "Fail to alloc memory for MsgSender buf: " 
-                            << "at line: " << __LINE__ << ", func: " 
-                            << __func__ << ", file: " << __FILE__ 
-                            << std::endl;
-                    perror( m.what() );
+                    DJI2MAV_FATAL( "Fail to alloc memory for MsgSender buf! " 
+                            "Exception: %s!", m.what() );
                     exit(EXIT_FAILURE);
                 }
+
+                DJI2MAV_DEBUG("...finish constructing MsgSender.");
 
             }
 
 
             ~MsgSender() {
+                DJI2MAV_DEBUG("Going to destruct MsgSender...");
                 delete []m_sendBuf;
                 m_sendBuf = NULL;
-                printf("Finish destructing Sender\n");
+                DJI2MAV_DEBUG("...finish destructing MsgSender.");
             }
 
 

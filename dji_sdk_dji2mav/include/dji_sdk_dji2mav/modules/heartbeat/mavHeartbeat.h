@@ -1,84 +1,66 @@
 /*****************************************************************************
  * @Brief     Heartbeat module. Mav-depended and ROS-free
- * @Version   0.2.1
+ * @Version   0.3.0
  * @Author    Chris Liu
  * @Created   2015/11/16
- * @Modified  2015/11/16
+ * @Modified  2015/12/25
  *****************************************************************************/
 
 #ifndef _DJI2MAV_MAVHEARTBEAT_H_
 #define _DJI2MAV_MAVHEARTBEAT_H_
 
 
-#include "../../mavHandler.h"
-
-#include <iostream>
-#include <stdio.h>
+#include <mavlink/common/mavlink.h>
 #include <new>
+#include <string>
+#include <cstdarg>
+
+#include "dji_sdk_dji2mav/modules/mavModule.h"
+#include "dji_sdk_dji2mav/log.h"
 
 namespace dji2mav {
 
-    class MavHeartbeat {
+    class MavHeartbeat : public MavModule {
         public:
             /**
-             * @brief   Get the only instance. Lazy mode singleton
-             * @return  The only instance of MavHeartbeat
-             * @warning UNSAFE FOR MULTI-THREAD! Should be called BEFORE fork
+             * @brief Constructor for Heartbeat Module. Recv buf size 4096
+             * @param handler : The reference of MavHandler Object
+             * @param name    : The name of this module
+             * @param gcsNum  : The number of GCS that the module employs
+             * @param ...     : The indexes of GCS list, should be uint16_t
              */
-            static MavHeartbeat* getInstance() {
-                if(NULL == m_instance) {
-                    try {
-                        m_instance = new MavHeartbeat();
-                    } catch(std::bad_alloc &m) {
-                        std::cerr << "New instance of MavHeartbeat fail: " 
-                                << "at line: " << __LINE__ << ", func: " 
-                                << __func__ << ", file: " << __FILE__ 
-                                << std::endl;
-                        perror( m.what() );
-                        exit(EXIT_FAILURE);
+            MavHeartbeat(MavHandler &handler, std::string name, 
+                    uint16_t gcsNum, ...) : MavModule(handler, name, 4096) {
+
+                DJI2MAV_DEBUG("Going to construct Heartbeat module with name " 
+                        "%s and gcsNum %u...", name.c_str(), gcsNum);
+
+                setHeartbeatData(MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, 
+                        MAV_MODE_GUIDED_DISARMED, 0, MAV_STATE_STANDBY, 3);
+
+                setHeartbeatHook(NULL);
+
+                va_list arg;
+                va_start(arg, gcsNum);
+                if(1 == gcsNum) {
+                    setMasterGcsIdx( (uint16_t)va_arg(arg, int) );
+                } else {
+                    for(uint16_t i = 0; i < gcsNum; ++i) {
+                        employGcsSender( (uint16_t)va_arg(arg, int) );
                     }
                 }
-                return m_instance;
+                va_end(arg);
+
+                //TODO: Set the MOI here
+
+                DJI2MAV_DEBUG("...finish constructing Heartbeat module.");
+
             }
 
 
-            /**
-             * @brief  Get the senderRecord array address
-             * @return The address of senderRecord
-             */
-            inline const int* getSenderRecord() {
-                return m_senderRecord;
-            }
-
-
-            /**
-             * @brief  Set the sender index of specific GCS
-             * @param  gcsIdx    : The index of GCS
-             * @param  senderIdx : The index of sender
-             * @return True if succeed or false if fail
-             */
-            bool setSenderIdx(uint16_t gcsIdx, int senderIdx) {
-                if( !m_hdlr->isValidIdx(gcsIdx, senderIdx) )
-                    return false;
-                m_senderRecord[gcsIdx] = senderIdx;
-                return true;
-            }
-
-
-            /**
-             * @brief  Register new sender and use it for specific GCS
-             * @param  gcsIdx : The index of GCS
-             * @return True if succeed or false if fail
-             */
-            bool applyNewSender(uint16_t gcsIdx) {
-                int newSender = m_hdlr->registerSender(gcsIdx);
-                if( newSender < 0 ) {
-                    printf("Fail to register sender for heartbeat in GCS #%u! "
-                            "Did you set sender list too small?\n", gcsIdx);
-                    return false;
-                }
-                m_senderRecord[gcsIdx] = newSender;
-                return true;
+            ~MavHeartbeat() {
+                DJI2MAV_DEBUG("Going to destruct Heartbeat module...");
+                DJI2MAV_DEBUG("...finish destructing Heartbeat module.");
             }
 
 
@@ -165,17 +147,18 @@ namespace dji2mav {
              * @param  gcsIdx : The index of GCS
              * @return True if succeed or false if fail
              */
-            bool sendHeartbeat(uint16_t gcsIdx) {
-                mavlink_msg_heartbeat_encode(m_hdlr->getSysid(), 
+            bool sendHeartbeatToGcs(uint16_t gcsIdx) {
+
+                mavlink_msg_heartbeat_encode(getMySysid(), 
                         MAV_COMP_ID_ALL, &m_sendMsg, &m_hbMsg);
 
-                if( m_hdlr->sendEncodedMsg(gcsIdx, m_senderRecord[gcsIdx], 
-                        &m_sendMsg) ) {
+                if( sendMsgToGcs(gcsIdx, m_sendMsg) ) {
                     return true;
                 } else {
-                    printf("Sending heartbeat to GCS #%u fail!\n", gcsIdx);
+                    DJI2MAV_ERROR("Fail to send Heartbeat to GCS #%u!", gcsIdx);
                     return false;
                 }
+
             }
 
 
@@ -183,25 +166,29 @@ namespace dji2mav {
              * @brief  Send heartbeat to all GCS
              * @return True if succeed or false if fail
              */
-            inline bool sendHeartbeat() {
-                bool ret = true;
-                for(uint16_t i = 0; i < m_hdlr->getMngListSize(); ++i) {
-                    ret &= sendHeartbeat(i);
+            bool sendHeartbeatToAll() {
+
+                mavlink_msg_heartbeat_encode(getMySysid(),      
+                        MAV_COMP_ID_ALL, &m_sendMsg, &m_hbMsg);
+
+                if( sendMsgToAll(m_sendMsg) ) {
+                    return true;
+                } else {
+                    DJI2MAV_ERROR("Fail to send Heartbeat to some GCS!");
+                    return false;
                 }
-                return ret;
+
             }
 
 
             /**
-             * @brief  React to heartbeat from specific GCS and execute rsp
+             * @brief  React to heartbeat from specific GCS and execute hook
              * @param  gcsIdx : Get the index of GCS
              * @param  msg    : Get the received message
              */
             void reactToHeartbeat(uint16_t gcsIdx, const mavlink_message_t* msg) {
-//              printf("-- Get heartbeat with sysid %u and compid %u "
-//                      "from GCS #%u.\n", msg->sysid, msg->compid, gcsIdx);
-                if(NULL != m_rsp) {
-                    m_rsp();
+                if(NULL != m_hook) {
+                    m_hook();
                 }
             }
 
@@ -210,72 +197,35 @@ namespace dji2mav {
              * @brief Set the responser function pointer for the heartbeat
              * @param The function pointer that is to be set
              */
-            inline void setHeartbeatRsp( void (*func)() ) {
-                m_rsp = func;
+            inline void setHeartbeatHook( void (*func)() ) {
+                m_hook = func;
             }
 
 
-            void distructor() {
-                delete m_instance;
+            /**
+             * @brief Implement the messages passively handling function
+             * @param msg : The reference of received message
+             */
+            void passivelyReceive(mavlink_message_t &msg) {
+            }
+
+
+            /**
+             * @brief Implement the messages actively sending function
+             */
+            void activelySend() {
+                sendHeartbeatToAll();
+                sleep(1); //1Hz
             }
 
 
         private:
-            MavHeartbeat() {
-
-                m_hdlr = MavHandler::getInstance();
-
-                try {
-                    m_senderRecord = new int[m_hdlr->getMngListSize()];
-                    memset( m_senderRecord, 0, 
-                            m_hdlr->getMngListSize() * sizeof(int) );
-                } catch(std::bad_alloc& m) {
-                    std::cerr << "Failed to alloc memory for senderRecord: " 
-                            << "at line: " << __LINE__ << ", func: " 
-                            << __func__ << ", file: " << __FILE__ 
-                            << std::endl;
-                    perror( m.what() );
-                    exit(EXIT_FAILURE);
-                }
-                for(uint16_t i = 0; i < m_hdlr->getMngListSize(); ++i) {
-                    // register new sender for heartbeat in every GCS
-                    if( applyNewSender(i) < 0)
-                        printf("Fail to register new sender for heartbeat!\n");
-                }
-
-                setHeartbeatData(MAV_TYPE_QUADROTOR, MAV_AUTOPILOT_GENERIC, 
-                        MAV_MODE_GUIDED_DISARMED, 0, MAV_STATE_STANDBY, 3);
-
-                setHeartbeatRsp(NULL);
-
-                printf("Succeed to construct Heartbeat module\n");
-
-            }
-
-
-            ~MavHeartbeat() {
-                if(m_senderRecord != NULL) {
-                    delete []m_senderRecord;
-                    m_senderRecord = NULL;
-                }
-                m_hdlr = NULL;
-                printf("Finish destructing Heartbeat module\n");
-            }
-
-
-            static MavHeartbeat* m_instance;
-            int* m_senderRecord;
-
-            MavHandler* m_hdlr;
-
             mavlink_message_t m_sendMsg;
             mavlink_heartbeat_t m_hbMsg;
 
-            void (*m_rsp)();
+            void (*m_hook)();
 
     };
-
-    MavHeartbeat* MavHeartbeat::m_instance = NULL;
 
 } //namespace dji2mav
 
