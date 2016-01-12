@@ -78,7 +78,7 @@ void send_thread(const int &sock){
                 0, //uint_32, custom_mode, defined by user/adopter
                 MAV_STATE_STANDBY); //vehicle is grounded and on standby
         uint16_t len = mavlink_msg_to_send_buffer(sendBuf, &msg);
-        bytes_sent = sendto(sock, sendBuf, len, MSG_DONTWAIT, (struct sockaddr *)&gcAddr, 
+        bytes_sent = sendto(sock, sendBuf, len, MSG_DONTWAIT, (struct sockaddr *)&gcAddr,
                 sizeof(struct sockaddr_in));
         //memset(sendBuf, 0, BUFFER_LENGTH);
 
@@ -86,8 +86,15 @@ void send_thread(const int &sock){
         socklen_t fromlen;
         bytes_recv = recvfrom(sock, (void *)recvBuf, BUFFER_LENGTH, MSG_DONTWAIT, 
                 (struct sockaddr *)&gcAddr, &fromlen);
+        if(bytes_sent > 0) {
+            ROS_INFO("Sent %d bytes.", bytes_sent);
+        }
         if(bytes_recv > 0) {
             mavlink_message_t recvMsg;
+            recvMsg.compid = 0;
+            recvMsg.len = 0;
+            recvMsg.msgid = 0;
+            recvMsg.sysid = 0;
             mavlink_status_t recvStatus;
 
             ROS_INFO("Bytes Received: %d bytes.", bytes_recv);

@@ -9,6 +9,10 @@
 #include <pthread.h>
 #include <string>
 
+// Allow portable printing of fixed width types.
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
 #include <ros/ros.h>
 #include <dji_sdk/dji_drone.h>
 #include <dji_sdk/LocalPosition.h>
@@ -24,12 +28,14 @@ DJIDrone* drone;
 
 
 /* A thread for sending heartbeat */
+// Error: no pointer returned
 void* sendHb_Period(void* args) {
     int t_s = *((int*) args);
     while( ros::ok() ) {
         dji2mav::MavHeartbeat::getInstance()->sendHeartbeat();
         sleep(t_s);
     }
+    return NULL;
 }
 
 /* A thread for sending sensor data */
@@ -39,6 +45,7 @@ void* sendSs_Period(void* args) {
         dji2mav::MavSensors::getInstance()->sendSensorsData();
         usleep(t_ms);
     }
+    return NULL;
 }
 
 
@@ -74,7 +81,7 @@ void respondToMissionRequestList() {
 }
 
 void respondToMissionRequest(uint16_t param) {
-    ROS_INFO("Get mission request %d", param);
+    ROS_INFO("Get mission request %" PRIu16, param);
 }
 
 void respondToMissionAck() {
@@ -82,11 +89,11 @@ void respondToMissionAck() {
 }
 
 void respondToMissionCount(uint16_t param) {
-    ROS_INFO("Get mission count %d", param);
+    ROS_INFO("Get mission count %" PRIu16, param);
 }
 
 void respondToMissionItem(uint16_t param) {
-    ROS_INFO("Get mission item %d", param);
+    ROS_INFO("Get mission item %" PRIu16, param);
 }
 
 void respondToMissionClearAll() {
@@ -94,7 +101,7 @@ void respondToMissionClearAll() {
 }
 
 void respondToMissionSetCurrent(uint16_t param) {
-    ROS_INFO("Get mission set current %u", param);
+    ROS_INFO("Get mission set current %" PRIu16, param);
 }
 
 
@@ -104,7 +111,7 @@ void respondToTarget(const float mission[][7], uint16_t beginIdx,
 
     dji_sdk::WaypointList wpl;
     dji_sdk::Waypoint wp;
-    ROS_INFO("beginIdx %d, endIdx %d", beginIdx, endIdx);
+    ROS_INFO("beginIdx %" PRIu16", endIdx %" PRIu16, beginIdx, endIdx);
     for(int i = beginIdx; i < endIdx; ++i) {
         wp.latitude = mission[i][4];
         wp.longitude = mission[i][5];
@@ -113,7 +120,9 @@ void respondToTarget(const float mission[][7], uint16_t beginIdx,
         wp.heading = (int16_t)mission[i][3];
         wpl.waypoint_list.push_back(wp);
     }
-    ROS_INFO("Size of the wpl: %d", wpl.waypoint_list.size());
+    // Print size_t: fine until the value in size_t exceeds unsigned long long
+    ROS_INFO("Size of the wpl: %llu",
+             static_cast<unsigned long long>(wpl.waypoint_list.size()));
 
     /**
      * Currently this is executed in main thread, So don't wait for server or 

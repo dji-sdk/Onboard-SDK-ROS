@@ -225,6 +225,7 @@ namespace dji2mav {
             bool clearMission() {
                 m_listSize = 0;
                 m_targetIdx = -1;
+                return false;
             }
 
 

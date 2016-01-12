@@ -6,6 +6,9 @@
 #include <dji_sdk_web_groundstation/WebWaypointReceiveAction.h>
 #include <dji_sdk_web_groundstation/MapNavSrvCmd.h>
 #include <dji_sdk/WaypointNavigationAction.h>
+// Allow portable printing of fixed width types.
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 using namespace actionlib;
 
@@ -78,27 +81,27 @@ void goalCB() {
     while(ros::ok()) {
         if(cmdCode_ == 'c') { //"c" for cancel
             //cmdCode_ = 0; //eliminate effect of next task
-            ROS_INFO("Cancel task with tid %llu", tid_);
+            ROS_INFO("Cancel task with tid %" PRIu64, tid_);
             stage_ = 4;
             fb.stage = stage_;
             asPtr_->publishFeedback(fb);
         } else if(tid_ == cmdTid_){
             if(cmdCode_ == 's' && stage_ == 1) { //"s" for start
-                ROS_INFO("Start task with tid %llu", tid_);
+                ROS_INFO("Start task with tid %" PRIu64, tid_);
                 stage_ = 2;
                 fb.stage = stage_;
                 asPtr_->publishFeedback(fb);
                 continue;
             }
             if(cmdCode_ == 'p' && stage_ == 2) { //"p" for pause
-                ROS_INFO("Pause task with tid %llu", tid_);
+                ROS_INFO("Pause task with tid %" PRIu64, tid_);
                 stage_ = 3;
                 fb.stage = stage_;
                 asPtr_->publishFeedback(fb);
                 continue;
             }
             if(cmdCode_ == 'r' && stage_ == 3) { //"r" for resume
-                ROS_INFO("Resume task with tid %llu", tid_);
+                ROS_INFO("Resume task with tid %" PRIu64, tid_);
                 stage_ = 2;
                 fb.stage = stage_;
                 asPtr_->publishFeedback(fb);
@@ -107,18 +110,14 @@ void goalCB() {
         } else {
             if(cmdCode_ == 'n') { //"n" for newer waypointLine arrived
                 ROS_INFO("A latest task arrived.");
-                ROS_INFO("Set task(if any) with tid %llu preemted", newGoal.tid);
+                ROS_INFO("Set task(if any) with tid %" PRIu64 " preemted", newGoal.tid);
                 stage_ = 4;
                 fb.stage = stage_;
                 asPtr_->publishFeedback(fb);
             }
         }
 
-        /*ROS_INFO_ONCE("Stage: %d", stage_);
-        ROS_INFO_ONCE("CmdCode: %d", cmdCode_);
-        ROS_INFO_ONCE("tid: %llu", tid_);*/
-
-        bool isFinished; //flag for task result
+        bool isFinished = false; //flag for task result
         int cnt; //feedback count
         switch(stage_) {
             case 0: //"0" for waiting for waypointList
@@ -198,7 +197,7 @@ void preemptCB() {
 }
 
 void cmdCB(const dji_sdk_web_groundstation::MapNavSrvCmdConstPtr& msg) {
-    ROS_INFO("Received command \"%c\" of tid %llu", msg->cmdCode, msg->tid);
+    ROS_INFO("Received command \"%c\" of tid %" PRIu64, msg->cmdCode, msg->tid);
     cmdCode_ = msg->cmdCode;
     cmdTid_ = msg->tid;
 }

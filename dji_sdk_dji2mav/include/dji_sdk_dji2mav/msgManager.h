@@ -46,8 +46,10 @@ namespace dji2mav{
                     exit(EXIT_FAILURE);
                 }
 
-                m_generalSenderIdx = registerSender();
-                if(-1 == m_generalSenderIdx) {
+                int generalSenderIdx = registerSender();
+                m_generalSenderIdx = static_cast<uint16_t>(generalSenderIdx);
+                // Never can be true.
+                if(-1 == generalSenderIdx) {
                     printf("Fail to register a general sender. "
                             "Did you set sender list size 0?\n");
                     exit(EXIT_FAILURE);

@@ -60,7 +60,7 @@ bool DJISDKNode::drone_task_control_callback(dji_sdk::DroneTaskControl::Request&
 
 bool DJISDKNode::gimbal_angle_control_callback(dji_sdk::GimbalAngleControl::Request& request, dji_sdk::GimbalAngleControl::Response& response) 
 {
-    gimbal_custom_control_angle_t gimbal_angle = {0};
+    gimbal_custom_control_angle_t gimbal_angle;
     gimbal_angle.yaw_angle = request.yaw;
     gimbal_angle.roll_angle = request.roll;
     gimbal_angle.pitch_angle = request.pitch;
@@ -77,7 +77,7 @@ bool DJISDKNode::gimbal_angle_control_callback(dji_sdk::GimbalAngleControl::Requ
 
 bool DJISDKNode::gimbal_speed_control_callback(dji_sdk::GimbalSpeedControl::Request& request, dji_sdk::GimbalSpeedControl::Response& response)
 {
-    gimbal_custom_speed_t gimbal_speed = {0};
+    gimbal_custom_speed_t gimbal_speed;
     gimbal_speed.yaw_angle_rate = request.yaw_rate;
     gimbal_speed.roll_angle_rate = request.roll_rate;
     gimbal_speed.pitch_angle_rate = request.pitch_rate;

@@ -497,7 +497,7 @@ unsigned int sdk_stream_crc32_calc(const unsigned char* pMsg, unsigned int nLen)
 //////////////////////////////////////////////////////////////////////////
 
 
-SDKFilter serial_sdk = { 0 };
+SDKFilter serial_sdk;
 ptr_filter_hook serial_hook = (ptr_filter_hook)Pro_Link_Recv_Hook;
 // if there more than one input device, you can
 // SDKFilter_t can_sdk; ??
