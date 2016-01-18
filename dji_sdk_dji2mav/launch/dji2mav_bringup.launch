@@ -1,0 +1,21 @@
+<launch>
+
+    <arg name="targetIp1" default="10.60.23.136" />
+    <arg name="targetPort1" default="14550" />
+    <arg name="srcPort1" default="14551" />
+
+    <arg name="targetIp2" default="10.60.23.136" />
+    <arg name="targetPort2" default="14548" />
+    <arg name="srcPort2" default="14549" />
+
+    <node name="dji2mav_bringup" pkg="dji_sdk_dji2mav" type="dji2mav_bringup" output="screen">
+        <param name="targetIp1" type="string" value="$(arg targetIp1)" />
+        <param name="targetPort1" type="int" value="$(arg targetPort1)" />
+        <param name="srcPort1" type="int" value="$(arg srcPort1)" />
+
+        <param name="targetIp2" type="string" value="$(arg targetIp2)" />
+        <param name="targetPort2" type="int" value="$(arg targetPort2)" />
+        <param name="srcPort2" type="int" value="$(arg srcPort2)" />
+    </node>
+
+</launch>
