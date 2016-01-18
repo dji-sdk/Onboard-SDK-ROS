@@ -5,6 +5,8 @@
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 
+using namespace DJI::onboardSDK;
+
 static void Display_Main_Menu(void)
 {
     printf("\r\n");
@@ -260,7 +262,12 @@ int main(int argc, char **argv)
                     vx = V * sin((V/R)*time/50.0f);
                     vy = V * cos((V/R)*time/50.0f);
         
-                    drone->attitude_control(HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|STABLE_FLAG_ENABLE, vx, vy, 0, 0);
+                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSSITION |
+                            Flight::VerticalLogic::VERTICAL_VELOCITY |
+                            Flight::YawLogic::YAW_ANGLE |
+                            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                            Flight::SmoothMode::SMOOTH_ENABLE,
+                            vx, vy, 0, 0 );
                     usleep(20000);
                     time++;
                 }
@@ -270,22 +277,42 @@ int main(int argc, char **argv)
                 /*draw square sample*/
                 for(int i = 0;i < 60;i++)
                 {
-                    drone->attitude_control(HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|STABLE_FLAG_ENABLE, 3, 3, 0, 0);
+                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSSITION |
+                            Flight::VerticalLogic::VERTICAL_VELOCITY |
+                            Flight::YawLogic::YAW_ANGLE |
+                            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                            Flight::SmoothMode::SMOOTH_ENABLE,
+                            3, 3, 0, 0 );
                     usleep(20000);
                 }
                 for(int i = 0;i < 60;i++)
                 {
-                    drone->attitude_control(HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|STABLE_FLAG_ENABLE, -3, 3, 0, 0);
+                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSSITION |
+                            Flight::VerticalLogic::VERTICAL_VELOCITY |
+                            Flight::YawLogic::YAW_ANGLE |
+                            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                            Flight::SmoothMode::SMOOTH_ENABLE,
+                            -3, 3, 0, 0);
                     usleep(20000);
                 }
                 for(int i = 0;i < 60;i++)
                 {
-                    drone->attitude_control(HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|STABLE_FLAG_ENABLE, -3, -3, 0, 0);
+                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSSITION |
+                            Flight::VerticalLogic::VERTICAL_VELOCITY |
+                            Flight::YawLogic::YAW_ANGLE |
+                            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                            Flight::SmoothMode::SMOOTH_ENABLE,
+                            -3, -3, 0, 0);
                     usleep(20000);
                 }
                 for(int i = 0;i < 60;i++)
                 {
-                    drone->attitude_control(HORIZ_POS|VERT_VEL|YAW_ANG|HORIZ_BODY|STABLE_FLAG_ENABLE, 3, -3, 0, 0);
+                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSSITION |
+                            Flight::VerticalLogic::VERTICAL_VELOCITY |
+                            Flight::YawLogic::YAW_ANGLE |
+                            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+                            Flight::SmoothMode::SMOOTH_ENABLE,
+                            3, -3, 0, 0);
                     usleep(20000);
                 }
                 break;
