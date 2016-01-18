@@ -21,16 +21,7 @@ bool DJISDKNode::process_waypoint(dji_sdk::Waypoint new_waypoint)
     double det_x,det_y;
     float det_z;
 
-////
-/*
-    attitude_data_t user_ctrl_data;
-    user_ctrl_data.ctrl_flag = 0x90;
-    user_ctrl_data.thr_z = dst_altitude;
-    user_ctrl_data.yaw = new_waypoint.heading;
-*/
-////
 
-//TODO:[__CHRIS__a2]
     DJI::onboardSDK::FlightData flight_ctrl_data;
     flight_ctrl_data.ctrl_flag = 0x90;
     flight_ctrl_data.thr_z = dst_altitude;
@@ -46,44 +37,33 @@ bool DJISDKNode::process_waypoint(dji_sdk::Waypoint new_waypoint)
             return false;
         }
 
-		double d_lon = dst_longitude - global_position.longitude;
-		double d_lat = dst_latitude - global_position.latitude;
-////
-/*
-		user_ctrl_data.roll_or_x = ((d_lat) *C_PI/180) * C_EARTH;
-		user_ctrl_data.pitch_or_y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
-*/
-////
+        double d_lon = dst_longitude - global_position.longitude;
+        double d_lat = dst_latitude - global_position.latitude;
 
-        ////DJI_Pro_Attitude_Control(&user_ctrl_data);
-
-//TODO: [__CHRIS__a3]
         flight_ctrl_data.roll_or_x = ((d_lat) *C_PI/180) * C_EARTH;
         flight_ctrl_data.pitch_or_y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
         rosAdapter->flight->setFlight(&flight_ctrl_data);
-
 
         det_x = (100 * (dst_latitude - global_position.latitude))/dis_x;
         det_y = (100 * (dst_longitude - global_position.longitude))/dis_y;
         det_z = (100 * (dst_altitude - global_position.altitude))/dis_z;
 
-
         latitude_progress = 100 - std::abs((int) det_x);
         longitude_progress = 100 - std::abs((int) det_y);
         altitude_progress = 100 - std::abs((int) det_z);
 
-     //lazy evaluation
-     //need to find a better way
-     if (std::abs(dst_latitude - global_position.latitude) < 0.00001) latitude_progress = 100;
-     if (std::abs(dst_longitude - global_position.longitude) < 0.00001) longitude_progress = 100;
-     if (std::abs(dst_altitude - global_position.altitude) < 0.12) altitude_progress = 100;
+        //lazy evaluation
+        //need to find a better way
+        if (std::abs(dst_latitude - global_position.latitude) < 0.00001) latitude_progress = 100;
+        if (std::abs(dst_longitude - global_position.longitude) < 0.00001) longitude_progress = 100;
+        if (std::abs(dst_altitude - global_position.altitude) < 0.12) altitude_progress = 100;
 
-     waypoint_navigation_feedback.latitude_progress = latitude_progress;
-     waypoint_navigation_feedback.longitude_progress = longitude_progress;
-     waypoint_navigation_feedback.altitude_progress = altitude_progress;
-     waypoint_navigation_action_server->publishFeedback(waypoint_navigation_feedback);
+        waypoint_navigation_feedback.latitude_progress = latitude_progress;
+        waypoint_navigation_feedback.longitude_progress = longitude_progress;
+        waypoint_navigation_feedback.altitude_progress = altitude_progress;
+        waypoint_navigation_action_server->publishFeedback(waypoint_navigation_feedback);
 
-     usleep(20000);
+        usleep(20000);
 
     }
     ros::Duration(new_waypoint.staytime).sleep();
@@ -97,21 +77,17 @@ bool DJISDKNode::drone_task_action_callback(const dji_sdk::DroneTaskGoalConstPtr
 
   if (request_action == 1)
   {
-     //takeoff
-     ////DJI_Pro_Status_Ctrl(4, 0);
-//TODO: [__CHRIS__a4]
+    //takeoff
     rosAdapter->flight->task(DJI::onboardSDK::Flight::TASK::TASK_TAKEOFF);
   }
   else if (request_action == 2)
   {
-     //landing
-     ////DJI_Pro_Status_Ctrl(6, 0);
+    //landing
     rosAdapter->flight->task(DJI::onboardSDK::Flight::TASK::TASK_LANDING);
   }
   else if (request_action == 3)
   {
-     //gohome
-     ////DJI_Pro_Status_Ctrl(1, 0);
+    //gohome
     rosAdapter->flight->task(DJI::onboardSDK::Flight::TASK::TASK_GOHOME);
   }
 
@@ -121,6 +97,7 @@ bool DJISDKNode::drone_task_action_callback(const dji_sdk::DroneTaskGoalConstPtr
   
   return true;
 }
+
 
 bool DJISDKNode::local_position_navigation_action_callback(const dji_sdk::LocalPositionNavigationGoalConstPtr& goal)
 {
@@ -146,16 +123,7 @@ bool DJISDKNode::local_position_navigation_action_callback(const dji_sdk::LocalP
   float dis_z = dst_z - org_z; 
 
   float det_x, det_y, det_z;
-////
-/*
-  attitude_data_t user_ctrl_data;
-  user_ctrl_data.ctrl_flag = 0x90;
-  user_ctrl_data.thr_z = dst_z;
-  user_ctrl_data.yaw = 0;
-*/
-////
 
-//TODO: [__CHRIS__a5]
   DJI::onboardSDK::FlightData flight_ctrl_data;
   flight_ctrl_data.ctrl_flag = 0x90;
   flight_ctrl_data.thr_z = dst_z;
@@ -166,19 +134,9 @@ bool DJISDKNode::local_position_navigation_action_callback(const dji_sdk::LocalP
   int z_progress = 0; 
   while (x_progress < 100 || y_progress < 100 || z_progress <100) {
 
-////
-/*
-     user_ctrl_data.roll_or_x = dst_x - local_position.x;
-     user_ctrl_data.pitch_or_y = dst_y - local_position.y;
-*/
-////
-
-     ////DJI_Pro_Attitude_Control(&user_ctrl_data);
-//TODO: [__CHRIS__a6]
      flight_ctrl_data.roll_or_x = dst_x - local_position.x;
      flight_ctrl_data.pitch_or_y = dst_y - local_position.y;
      rosAdapter->flight->setFlight(&flight_ctrl_data);
-
 
      det_x = (100 * (dst_x - local_position.x)) / dis_x;
      det_y = (100 * (dst_y - local_position.y)) / dis_y;
@@ -207,6 +165,7 @@ bool DJISDKNode::local_position_navigation_action_callback(const dji_sdk::LocalP
   return true;
 }
 
+
 bool DJISDKNode::global_position_navigation_action_callback(const dji_sdk::GlobalPositionNavigationGoalConstPtr& goal)
 {
     double dst_latitude = goal->latitude;
@@ -227,15 +186,6 @@ bool DJISDKNode::global_position_navigation_action_callback(const dji_sdk::Globa
     double det_x, det_y;
     float det_z;
 
-////
-/*
-    attitude_data_t user_ctrl_data;
-    user_ctrl_data.ctrl_flag = 0x90;
-    user_ctrl_data.thr_z = dst_altitude;
-    user_ctrl_data.yaw = 0;
-*/
-////
-//TODO: [__CHRIS__a6]
     DJI::onboardSDK::FlightData flight_ctrl_data;
     flight_ctrl_data.ctrl_flag = 0x90;
     flight_ctrl_data.thr_z = dst_altitude;
@@ -248,43 +198,34 @@ bool DJISDKNode::global_position_navigation_action_callback(const dji_sdk::Globa
 
     while (latitude_progress < 100 || longitude_progress < 100 || altitude_progress < 100) {
 
-		double d_lon = dst_longitude - global_position.longitude;
-		double d_lat = dst_latitude - global_position.latitude;
-////
-/*
-		user_ctrl_data.roll_or_x = ((d_lat) *C_PI/180) * C_EARTH;
-		user_ctrl_data.pitch_or_y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
-*/
-////
+        double d_lon = dst_longitude - global_position.longitude;
+        double d_lat = dst_latitude - global_position.latitude;
 
-         ////DJI_Pro_Attitude_Control(&user_ctrl_data);
-//TODO: [__CHRIS__a7]
-         flight_ctrl_data.roll_or_x = ((d_lat) *C_PI/180) * C_EARTH;
-         flight_ctrl_data.pitch_or_y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
-         rosAdapter->flight->setFlight(&flight_ctrl_data);
+        flight_ctrl_data.roll_or_x = ((d_lat) *C_PI/180) * C_EARTH;
+        flight_ctrl_data.pitch_or_y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
+        rosAdapter->flight->setFlight(&flight_ctrl_data);
+
+        det_x = (100* (dst_latitude - global_position.latitude))/dis_x;
+        det_y = (100* (dst_longitude - global_position.longitude))/dis_y;
+        det_z = (100* (dst_altitude - global_position.altitude))/dis_z;
 
 
-         det_x = (100* (dst_latitude - global_position.latitude))/dis_x;
-         det_y = (100* (dst_longitude - global_position.longitude))/dis_y;
-         det_z = (100* (dst_altitude - global_position.altitude))/dis_z;
+        latitude_progress = 100 - (int)det_x;
+        longitude_progress = 100 - (int)det_y;
+        altitude_progress = 100 - (int)det_z;
+
+        //lazy evaluation
+        if (std::abs(dst_latitude - global_position.latitude) < 0.00001) latitude_progress = 100;
+        if (std::abs(dst_longitude - global_position.longitude) < 0.00001) longitude_progress = 100;
+        if (std::abs(dst_altitude - global_position.altitude) < 0.12) altitude_progress = 100;
 
 
-         latitude_progress = 100 - (int)det_x;
-         longitude_progress = 100 - (int)det_y;
-         altitude_progress = 100 - (int)det_z;
+        global_position_navigation_feedback.latitude_progress = latitude_progress;
+        global_position_navigation_feedback.longitude_progress = longitude_progress;
+        global_position_navigation_feedback.altitude_progress = altitude_progress;
+        global_position_navigation_action_server->publishFeedback(global_position_navigation_feedback);
 
-         //lazy evaluation
-         if (std::abs(dst_latitude - global_position.latitude) < 0.00001) latitude_progress = 100;
-         if (std::abs(dst_longitude - global_position.longitude) < 0.00001) longitude_progress = 100;
-         if (std::abs(dst_altitude - global_position.altitude) < 0.12) altitude_progress = 100;
-
-
-         global_position_navigation_feedback.latitude_progress = latitude_progress;
-         global_position_navigation_feedback.longitude_progress = longitude_progress;
-         global_position_navigation_feedback.altitude_progress = altitude_progress;
-         global_position_navigation_action_server->publishFeedback(global_position_navigation_feedback);
-
-         usleep(20000);
+        usleep(20000);
 
     }
 
@@ -294,6 +235,7 @@ bool DJISDKNode::global_position_navigation_action_callback(const dji_sdk::Globa
     return true;
 }
 
+
 bool DJISDKNode::waypoint_navigation_action_callback(const dji_sdk::WaypointNavigationGoalConstPtr& goal)
 {
     dji_sdk::WaypointList new_waypoint_list;
@@ -301,14 +243,14 @@ bool DJISDKNode::waypoint_navigation_action_callback(const dji_sdk::WaypointNavi
 
     bool isSucceeded;
     for (int i = 0; i < new_waypoint_list.waypoint_list.size(); i++) {
-     const dji_sdk::Waypoint new_waypoint = new_waypoint_list.waypoint_list[i];  
-     waypoint_navigation_feedback.index_progress = i;
-     isSucceeded = process_waypoint(new_waypoint);
-     if(!isSucceeded) {
-        waypoint_navigation_result.result = false;
-        waypoint_navigation_action_server->setPreempted(waypoint_navigation_result);
-        return false;
-     }
+        const dji_sdk::Waypoint new_waypoint = new_waypoint_list.waypoint_list[i];
+        waypoint_navigation_feedback.index_progress = i;
+        isSucceeded = process_waypoint(new_waypoint);
+        if(!isSucceeded) {
+            waypoint_navigation_result.result = false;
+            waypoint_navigation_action_server->setPreempted(waypoint_navigation_result);
+            return false;
+        }
     }
 
     waypoint_navigation_result.result = true;

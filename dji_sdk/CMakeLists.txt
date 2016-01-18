@@ -142,7 +142,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES dji_sdk
-  CATKIN_DEPENDS message_runtime actionlib actionlib_msgs geometry_msgs nav_msgs std_msgs 
+  CATKIN_DEPENDS message_runtime actionlib actionlib_msgs geometry_msgs nav_msgs std_msgs
 #  DEPENDS system_lib
 )
 
@@ -183,8 +183,7 @@ add_executable(dji_sdk_node
   include/dji_sdk/DJI_LIB/lib/src/DJI_Memory.cpp
   include/dji_sdk/DJI_LIB/lib/src/DJI_Mission.cpp
   include/dji_sdk/DJI_LIB/lib/src/DJI_VirtualRC.cpp
-  include/dji_sdk/DJI_LIB/lib/src/DJI_WayPoint.cpp
-  src/DJI_LIB_ROS_Adapter.cpp)
+  include/dji_sdk/DJI_LIB/lib/src/DJI_WayPoint.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

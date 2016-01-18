@@ -42,7 +42,6 @@ private:
 
 //internal variables
     char app_key[65];
-    //activate_data_t user_act_data; //TODO: [__CHRIS__6]
     ActivateData user_act_data;
 
 //Publishers:
@@ -60,7 +59,7 @@ private:
     ros::Publisher activation_publisher;
     ros::Publisher odometry_publisher;
     ros::Publisher sdk_permission_publisher;
-	ros::Publisher time_stamp_publisher;
+    ros::Publisher time_stamp_publisher;
 
     void init_publishers(ros::NodeHandle& nh)
     {
@@ -79,11 +78,11 @@ private:
         activation_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/activation", 10);
         odometry_publisher = nh.advertise<nav_msgs::Odometry>("dji_sdk/odometry",10);
         sdk_permission_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/sdk_permission", 10);
-		time_stamp_publisher = nh.advertise<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10);
+        time_stamp_publisher = nh.advertise<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10);
     }
 
 //Services:
-	ros::ServiceServer activation_service;
+    ros::ServiceServer activation_service;
     ros::ServiceServer attitude_control_service;
     ros::ServiceServer camera_action_control_service;
     ros::ServiceServer drone_task_control_service;
@@ -93,7 +92,7 @@ private:
     ros::ServiceServer local_position_control_service;
     ros::ServiceServer sdk_permission_control_service;
     ros::ServiceServer velocity_control_service;
-	ros::ServiceServer version_check_service;
+    ros::ServiceServer version_check_service;
 
 	ros::ServiceServer virtual_rc_enable_control_service;
 	ros::ServiceServer virtual_rc_data_control_service;
@@ -190,8 +189,6 @@ private:
 public:
     DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private);
 
-    //void broadcast_callback(); //TODO: [__CHIS__10]
-
 private:
     int init_parameters(ros::NodeHandle& nh_private);
     void broadcast_callback();
@@ -203,9 +200,6 @@ private:
             double gps_r_lon, double gps_r_lat);
 
     dji_sdk::LocalPosition gps_convert_ned(dji_sdk::GlobalPosition loc);
-
-    //DJI::onboardSDK::ROSAdapter rosAdapter;//TODO: [__CHRIS__1]
-    //TODO LOOK TODO ANOTHER TODO FILE!
 
 };
 

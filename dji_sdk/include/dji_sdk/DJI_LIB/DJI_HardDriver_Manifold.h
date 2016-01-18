@@ -37,7 +37,6 @@ class HardDriver_Manifold : public HardDriver {
 
 
         void init() {
-            printf("[CHRIS_DEBUG] init hw_manifold\n");
             API_LOG(this, STATUS_LOG, "going to open device %s with baudrate %u...\n", 
                     m_device.c_str(), m_baudrate);
             if( _serialStart(m_device.c_str(), m_baudrate) < 0 ) {
@@ -211,7 +210,7 @@ class HardDriver_Manifold : public HardDriver {
             /* config baudrate */
             j = sizeof(std_rate) / 4;
             for(i = 0; i < j; ++i) {
-		if(std_rate[i] == baudrate) {
+                if(std_rate[i] == baudrate) {
                     /* set standard baudrate */
                     cfsetispeed(&newtio, st_baud[i]);
                     cfsetospeed(&newtio, st_baud[i]);

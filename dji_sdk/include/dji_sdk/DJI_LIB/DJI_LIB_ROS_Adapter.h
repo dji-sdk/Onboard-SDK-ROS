@@ -54,6 +54,11 @@ class ROSAdapter {
 
 
         void init(std::string device, unsigned int baudrate) {
+            printf("--- Connection Info ---\n");
+            printf("Serial port: %s\n", device.c_str());
+            printf("Baudrate: %u\n", baudrate);
+            printf("-----\n");
+
             m_hd = new HardDriver_Manifold(device, baudrate);
             m_hd->init();
 
