@@ -19,8 +19,8 @@ void DJISDKNode::broadcast_callback()
         time_stamp.header.frame_id = "/time";
         time_stamp.header.stamp = current_time;
         time_stamp.time_ms = bc_data.timeStamp.time;
-        time_stamp.time_ns = bc_data.timeStamp.asr_ts;
-        time_stamp.sync_flag = bc_data.timeStamp.sync_flag;
+        time_stamp.time_ns = bc_data.timeStamp.nanoTime;
+        time_stamp.sync_flag = bc_data.timeStamp.syncFlag;
         time_stamp_publisher.publish(time_stamp);
     }
 
@@ -53,7 +53,7 @@ void DJISDKNode::broadcast_callback()
 
         //TODO:
         // FIX BUG about flying at lat = 0
-        if (global_position.ts != 0 && global_position_ref_seted == 0 && global_position.latitude != 0) {
+        if (global_position.ts != 0 && global_position_ref_seted == 0 && global_position.latitude != 0 && global_position.health > 3) {
             global_position_ref = global_position;
             global_position_ref_seted = 1;
         }
@@ -164,28 +164,23 @@ void DJISDKNode::broadcast_callback()
 
     //update battery msg
     if (msg_flags & HAS_BATTERY) {
-        power_status.percentage = bc_data.capacity;
+        power_status.percentage = bc_data.battery;
         power_status_publisher.publish(power_status);
     }
 
     //update flight control info
     if (msg_flags & HAS_DEVICE) {
-        flight_control_info.cur_ctrl_dev_in_navi_mode = bc_data.ctrl_info.cur_ctrl_dev_in_navi_mode;
-        flight_control_info.serial_req_status = bc_data.ctrl_info.serial_req_status;
+        flight_control_info.cur_ctrl_dev_in_navi_mode = bc_data.ctrlInfo.device;
+        flight_control_info.serial_req_status = bc_data.ctrlInfo.signature;
         flight_control_info_publisher.publish(flight_control_info);
     }
 
     //update obtaincontrol msg
     if (msg_flags & HAS_TIME) {
         std_msgs::UInt8 msg;
-        sdk_permission_opened = bc_data.ctrl_info.data;
-        msg.data = bc_data.ctrl_info.data;
+        sdk_permission_opened = bc_data.ctrlInfo.data;
+        msg.data = bc_data.ctrlInfo.data;
         sdk_permission_publisher.publish(msg);
-
-        //update activation msg
-        activated = bc_data.activation;
-        msg.data = bc_data.activation;
-        activation_publisher.publish(msg);
     }
 
 }
@@ -197,7 +192,6 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     std::string serial_name;
     int baud_rate;
     int app_id;
-    int app_api_level;
     int app_version;
     std::string app_bundle_id;
     std::string enc_key;
@@ -208,7 +202,6 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     nh_private.param("serial_name", serial_name, std::string("/dev/cu.usbserial-A603T4HK"));
     nh_private.param("baud_rate", baud_rate, 230400);
     nh_private.param("app_id", app_id, 1022384);
-    nh_private.param("app_api_level", app_api_level, 2);
     nh_private.param("app_version", app_version, 1);
     nh_private.param("app_bundle_id", app_bundle_id, std::string("12345678901234567890123456789012"));
     nh_private.param("enc_key", enc_key,
@@ -218,8 +211,7 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     nh_private.param("A3_or_M100", A3_or_M100, 1);//chosse M100 as default
 
     // activation
-    user_act_data.app_id = app_id;
-    user_act_data.app_api_level = app_api_level;
+    user_act_data.ID = app_id;
 
     if((uart_or_usb)&&(A3_or_M100))
     {
@@ -229,21 +221,20 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
 
     if(A3_or_M100)
     {
-        user_act_data.app_ver = 0x03010a00;
+        user_act_data.version = 0x03010a00;
     }
     else
     {
-        user_act_data.app_ver = 0x03016400;
+        user_act_data.version = 0x03016400;
     }
-    strcpy((char*) user_act_data.app_bundle_id, app_bundle_id.c_str());
-    user_act_data.app_key = app_key;
-    strcpy(user_act_data.app_key, enc_key.c_str());
+    strcpy( (char*) user_act_data.iosID, app_bundle_id.c_str() );
+    user_act_data.encKey = app_key;
+    strcpy(user_act_data.encKey, enc_key.c_str());
 
     printf("=================================================\n");
-    printf("app id: %d\n", user_act_data.app_id);
-    printf("api level: %d\n", user_act_data.app_api_level);
-    printf("app version: 0x0%X\n", user_act_data.app_ver);
-    printf("app key: %s\n", user_act_data.app_key);
+    printf("app id: %d\n", user_act_data.ID);
+    printf("app version: 0x0%X\n", user_act_data.version);
+    printf("app key: %s\n", user_act_data.encKey);
     printf("=================================================\n");
 
     if(uart_or_usb) //use usb port for SDK

@@ -60,7 +60,7 @@ bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& reque
 		case MissionType::HOTPOINT:
 			//upload hp task info
 			new_hotpoint.latitude = hotpoint_task.latitude;
-			new_hotpoint.longtitude = hotpoint_task.longitude;
+			new_hotpoint.longitude = hotpoint_task.longitude;
 			new_hotpoint.height = hotpoint_task.altitude;
 			new_hotpoint.radius = hotpoint_task.radius;
 			new_hotpoint.palstance = hotpoint_task.angular_speed;

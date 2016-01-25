@@ -12,10 +12,10 @@ bool DJISDKNode::activation_callback(dji_sdk::Activation::Request& request, dji_
 bool DJISDKNode::attitude_control_callback(dji_sdk::AttitudeControl::Request& request, dji_sdk::AttitudeControl::Response& response)
 {
     DJI::onboardSDK::FlightData flight_ctrl_data;
-    flight_ctrl_data.ctrl_flag = request.flag;
-    flight_ctrl_data.roll_or_x = request.x;
-    flight_ctrl_data.pitch_or_y = request.y;
-    flight_ctrl_data.thr_z = request.z;
+    flight_ctrl_data.flag = request.flag;
+    flight_ctrl_data.x = request.x;
+    flight_ctrl_data.y = request.y;
+    flight_ctrl_data.z = request.z;
     flight_ctrl_data.yaw = request.yaw;
 
     rosAdapter->flight->setFlight(&flight_ctrl_data);
@@ -72,15 +72,15 @@ bool DJISDKNode::drone_task_control_callback(dji_sdk::DroneTaskControl::Request&
 bool DJISDKNode::gimbal_angle_control_callback(dji_sdk::GimbalAngleControl::Request& request, dji_sdk::GimbalAngleControl::Response& response) 
 {
     DJI::onboardSDK::GimbalAngleData gimbal_angle;
-    gimbal_angle.yaw_angle = request.yaw;
-    gimbal_angle.roll_angle = request.roll;
-    gimbal_angle.pitch_angle = request.pitch;
+    gimbal_angle.yaw = request.yaw;
+    gimbal_angle.roll = request.roll;
+    gimbal_angle.pitch = request.pitch;
     gimbal_angle.duration = request.duration;
-    gimbal_angle.ctrl_byte = 0xF0;
-    gimbal_angle.ctrl_byte &= request.absolute_or_incremental ? 0xFF : 0x7F;
-    gimbal_angle.ctrl_byte &= request.yaw_cmd_ignore ? 0xFF : 0xBF;
-    gimbal_angle.ctrl_byte &= request.roll_cmd_ignore ? 0xFF : 0xDF;
-    gimbal_angle.ctrl_byte &= request.pitch_cmd_ignore ? 0xFF : 0xEF;
+    gimbal_angle.mode = 0xF0;
+    gimbal_angle.mode &= request.absolute_or_incremental ? 0xFF : 0x7F;
+    gimbal_angle.mode &= request.yaw_cmd_ignore ? 0xFF : 0xBF;
+    gimbal_angle.mode &= request.roll_cmd_ignore ? 0xFF : 0xDF;
+    gimbal_angle.mode &= request.pitch_cmd_ignore ? 0xFF : 0xEF;
 
     rosAdapter->camera->setGimbalAngle(&gimbal_angle);
 
@@ -92,9 +92,9 @@ bool DJISDKNode::gimbal_angle_control_callback(dji_sdk::GimbalAngleControl::Requ
 bool DJISDKNode::gimbal_speed_control_callback(dji_sdk::GimbalSpeedControl::Request& request, dji_sdk::GimbalSpeedControl::Response& response)
 {
     DJI::onboardSDK::GimbalSpeedData gimbal_speed;
-    gimbal_speed.yaw_angle_rate = request.yaw_rate;
-    gimbal_speed.roll_angle_rate = request.roll_rate;
-    gimbal_speed.pitch_angle_rate = request.pitch_rate;
+    gimbal_speed.yaw = request.yaw_rate;
+    gimbal_speed.roll = request.roll_rate;
+    gimbal_speed.pitch = request.pitch_rate;
     gimbal_speed.reserved = 0x80; //little endian. enable
 
     rosAdapter->camera->setGimbalSpeed(&gimbal_speed);
@@ -110,16 +110,23 @@ bool DJISDKNode::global_position_control_callback(dji_sdk::GlobalPositionControl
     float dst_y;
     float dst_z = request.altitude;
 
+    if(global_position_ref_seted == 0)
+    {
+        printf("Cannot run global position navigation because home position haven't set yet!");
+        response.result = false;
+        return false;
+    }
+
     gps_convert_ned(dst_x, 
             dst_y,
             request.longitude, request.latitude,
             global_position.longitude,  global_position.latitude);
 
     DJI::onboardSDK::FlightData flight_ctrl_data;
-    flight_ctrl_data.ctrl_flag = 0x90;
-    flight_ctrl_data.roll_or_x = dst_x - local_position.x;
-    flight_ctrl_data.pitch_or_y = dst_y - local_position.y;
-    flight_ctrl_data.thr_z = dst_z;
+    flight_ctrl_data.flag = 0x90;
+    flight_ctrl_data.x = dst_x - local_position.x;
+    flight_ctrl_data.y = dst_y - local_position.y;
+    flight_ctrl_data.z = dst_z;
     flight_ctrl_data.yaw = request.yaw;
 
     rosAdapter->flight->setFlight(&flight_ctrl_data);
@@ -135,11 +142,18 @@ bool DJISDKNode::local_position_control_callback(dji_sdk::LocalPositionControl::
     float dst_y = request.y;
     float dst_z = request.z;
 
+    if(global_position_ref_seted == 0)
+    {
+        printf("Cannot run local position navigation because home position haven't set yet!");
+        response.result = false;
+        return false;
+    }
+
     DJI::onboardSDK::FlightData flight_ctrl_data;
-    flight_ctrl_data.ctrl_flag = 0x90;
-    flight_ctrl_data.roll_or_x = dst_x - local_position.x;
-    flight_ctrl_data.pitch_or_y = dst_y - local_position.y;
-    flight_ctrl_data.thr_z = dst_z;
+    flight_ctrl_data.flag = 0x90;
+    flight_ctrl_data.x = dst_x - local_position.x;
+    flight_ctrl_data.y = dst_y - local_position.y;
+    flight_ctrl_data.z = dst_z;
     flight_ctrl_data.yaw = request.yaw;
 
     rosAdapter->flight->setFlight(&flight_ctrl_data);
@@ -173,14 +187,14 @@ bool DJISDKNode::velocity_control_callback(dji_sdk::VelocityControl::Request& re
     DJI::onboardSDK::FlightData flight_ctrl_data;
     if (request.frame)
         //world frame 
-        flight_ctrl_data.ctrl_flag = 0x40;
+        flight_ctrl_data.flag = 0x40;
     else
         //body frame
-        flight_ctrl_data.ctrl_flag = 0x42;
+        flight_ctrl_data.flag = 0x42;
 
-    flight_ctrl_data.roll_or_x = request.vx;
-    flight_ctrl_data.pitch_or_y = request.vy;
-    flight_ctrl_data.thr_z = request.vz;
+    flight_ctrl_data.x = request.vx;
+    flight_ctrl_data.y = request.vy;
+    flight_ctrl_data.z = request.vz;
     flight_ctrl_data.yaw = request.yawAngle;
 
     rosAdapter->flight->setFlight(&flight_ctrl_data);
