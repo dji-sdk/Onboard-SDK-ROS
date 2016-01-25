@@ -53,7 +53,7 @@ void DJISDKNode::broadcast_callback()
 
         //TODO:
         // FIX BUG about flying at lat = 0
-        if (global_position.ts != 0 && global_position_ref_seted == 0 && global_position.latitude != 0) {
+        if (global_position.ts != 0 && global_position_ref_seted == 0 && global_position.latitude != 0 && global_position.health > 3) {
             global_position_ref = global_position;
             global_position_ref_seted = 1;
         }
@@ -181,11 +181,6 @@ void DJISDKNode::broadcast_callback()
         sdk_permission_opened = bc_data.ctrlInfo.data;
         msg.data = bc_data.ctrlInfo.data;
         sdk_permission_publisher.publish(msg);
-
-        //update activation msg
-        activated = bc_data.activation;
-        msg.data = bc_data.activation;
-        activation_publisher.publish(msg);
     }
 
 }

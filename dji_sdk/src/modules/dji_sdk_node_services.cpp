@@ -110,6 +110,13 @@ bool DJISDKNode::global_position_control_callback(dji_sdk::GlobalPositionControl
     float dst_y;
     float dst_z = request.altitude;
 
+    if(global_position_ref_seted == 0)
+    {
+        printf("Cannot run global position navigation because home position haven't set yet!");
+        response.result = false;
+        return false;
+    }
+
     gps_convert_ned(dst_x, 
             dst_y,
             request.longitude, request.latitude,
@@ -134,6 +141,13 @@ bool DJISDKNode::local_position_control_callback(dji_sdk::LocalPositionControl::
     float dst_x = request.x;
     float dst_y = request.y;
     float dst_z = request.z;
+
+    if(global_position_ref_seted == 0)
+    {
+        printf("Cannot run local position navigation because home position haven't set yet!");
+        response.result = false;
+        return false;
+    }
 
     DJI::onboardSDK::FlightData flight_ctrl_data;
     flight_ctrl_data.flag = 0x90;
