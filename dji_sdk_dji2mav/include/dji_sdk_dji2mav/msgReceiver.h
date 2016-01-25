@@ -1,22 +1,20 @@
 /*****************************************************************************
  * @Brief     Singleton msg receiver. Alloc receive buffer here and manager it
- * @Version   0.2.1
+ * @Version   0.3.0
  * @Author    Chris Liu
  * @Created   2015/10/30
- * @Modified  2015/11/15
+ * @Modified  2015/12/16
  *****************************************************************************/
 
-#ifndef _MSGRECEIVER_H_
-#define _MSGRECEIVER_H_
+#ifndef _DJI2MAV_MSGRECEIVER_H_
+#define _DJI2MAV_MSGRECEIVER_H_
 
 
-#include "socketComm.h"
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <iostream>
 #include <string>
 #include <new>
+
+#include "socketComm.h"
+#include "log.h"
 
 namespace dji2mav {
 
@@ -24,25 +22,27 @@ namespace dji2mav {
         public:
             MsgReceiver(uint16_t bufSize) : m_bufSize(bufSize) {
 
+                DJI2MAV_DEBUG("Going to construct MsgReceiver...");
+
                 try {
                     m_recvBuf = new uint8_t[m_bufSize];
                     memset(m_recvBuf, 0, m_bufSize * sizeof(uint8_t));
                 } catch(std::bad_alloc &m) {
-                    std::cerr << "Fail to alloc memory for MsgReceiver buf: " 
-                            << "at line: " << __LINE__ << ", func: " 
-                            << __func__ << ", file: " << __FILE__ 
-                            << std::endl;
-                    perror( m.what() );
+                    DJI2MAV_FATAL("Fail to alloc memory for MsgReceiver buf! " 
+                            "Exception: %s!", m.what());
                     exit(EXIT_FAILURE);
                 }
+
+                DJI2MAV_DEBUG("...finish constructing MsgReceiver");
 
             }
 
 
             ~MsgReceiver() {
+                DJI2MAV_DEBUG("Going to destruct MsgReceiver...");
                 delete []m_recvBuf;
                 m_recvBuf = NULL;
-                printf("Finish destructing Receiver\n");
+                DJI2MAV_DEBUG("...finish destructing MsgReceiver.");
             }
 
 

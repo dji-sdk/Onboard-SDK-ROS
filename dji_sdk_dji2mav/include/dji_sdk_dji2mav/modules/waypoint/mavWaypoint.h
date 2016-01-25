@@ -1,140 +1,127 @@
 /*****************************************************************************
  * @Brief     Waypoint module. Implement waypoint protocol here
- * @Version   0.2.1
+ * @Version   0.3.0
  * @Author    Chris Liu
  * @Created   2015/11/18
- * @Modified  2015/11/24
+ * @Modified  2015/12/25
  *****************************************************************************/
 
 #ifndef _MAV2DJI_MAVWAYPOINT_H_
 #define _MAV2DJI_MAVWAYPOINT_H_
 
 
-#include "../../mavHandler.h"
-#include "waypointList.h"
-
-#include <iostream>
-#include <stdio.h>
+#include <mavlink/common/mavlink.h>
 #include <new>
-#include <assert.h>
-#include <limits.h>
+#include <string>
+#include <cstdarg>
+
+#include "dji_sdk_dji2mav/modules/mavModule.h"
+#include "waypointList.h"
+#include "dji_sdk_dji2mav/log.h"
 
 namespace dji2mav{
 
-    class MavWaypoint {
+    class MavWaypoint : public MavModule{
         public:
             /**
-             * @brief   Get the only instance. Lazy mode singleton
-             * @return  The only instance of MavWaypoint
-             * @warning UNSAFE FOR MULTI-THREAD! Should be called BEFORE fork
+             * @brief Constructor for Waypoint Module. Recv buf size 4096
+             * @param handler : The reference of MavHandler Object
+             * @param name    : The name of this module
+             * @param gcsNum  : The number of GCS that the module employs
+             * @param ...     : The indexes of GCS list, should be uint16_t
              */
-            static MavWaypoint* getInstance() {
-                if(NULL == m_instance) {
-                    try {
-                        m_instance = new MavWaypoint();
-                    } catch(std::bad_alloc &m) {
-                        std::cerr << "New instance of MavWaypoint fail: " 
-                                << "at line: " << __LINE__ << ", func: " 
-                                << __func__ << ", file: " << __FILE__ 
-                                << std::endl;
-                        perror( m.what() );
-                        exit(EXIT_FAILURE);
+            MavWaypoint(MavHandler &handler, std::string name, 
+                    uint16_t gcsNum, ...) : MavModule(handler, name, 4096) {
+
+                DJI2MAV_DEBUG("Going to construct Waypoint module with name " 
+                        "%s and gcsNum %u...", name.c_str(), gcsNum);
+
+                setMissionRequestListHook(NULL);
+                setMissionRequestHook(NULL);
+                setMissionAckHook(NULL);
+                setMissionCountHook(NULL);
+                setMissionItemHook(NULL);
+                setMissionClearAllHook(NULL);
+                setMissionSetCurrentHook(NULL);
+
+                va_list arg;
+                va_start(arg, gcsNum);
+                if(1 == gcsNum) {
+                    setMasterGcsIdx( (uint16_t)va_arg(arg, int) );
+                } else {
+                    for(uint16_t i = 0; i < gcsNum; ++i) {
+                        employGcsSender( (uint16_t)va_arg(arg, int) );
                     }
                 }
-                return m_instance;
+                va_end(arg);
+
+                //TODO: Also set the MOI here
+
+                DJI2MAV_DEBUG("...finish constructing Waypoint module.");
+
+            }
+
+
+            ~MavWaypoint() {
+                DJI2MAV_DEBUG("Going to destruct Waypoint module...");
+                DJI2MAV_DEBUG("...finish destructing Waypoint moduel.");
             }
 
 
             /**
-             * @brief  Get the senderRecord array address
-             * @return The address of senderRecord
+             * @brief Implement the messages passively handling function
+             * @param msg : The reference of received message
              */
-            inline const int* getSenderRecord() {
-                return m_senderRecord;
-            }
-
-
-            /**
-             * @brief  Set the sender index of specific GCS
-             * @param  gcsIdx    : The index of GCS
-             * @param  senderIdx : The index of sender
-             * @return True if succeed or false if fail
-             */
-            bool setSenderIdx(uint16_t gcsIdx, int senderIdx) {
-                if( !m_hdlr->isValidIdx(gcsIdx, senderIdx) )
-                    return false;
-                m_senderRecord[gcsIdx] = senderIdx;
-                return true;
-            }
-
-
-            /**
-             * @brief  Set the master with its gcsIdx and senderIdx
-             * @param  gcsIdx    : The index of GCS that is to be set
-             * @param  senderIdx : The index of sender of GCS
-             * @return True if succeed or false if fail
-             */
-            bool setMasterGcsIdx(uint16_t gcsIdx, uint16_t senderIdx) {
-                if( m_hdlr->isValidIdx(gcsIdx, senderIdx) ) {
-                    m_senderRecord[m_masterGcsIdx] = -1;
-                    m_masterGcsIdx = gcsIdx;
-                    m_senderRecord[m_masterGcsIdx] = senderIdx;
-                    return true;
-                } else {
-                    printf("Invalid master GCS index %u "
-                            "and sender index %u.\n", gcsIdx, senderIdx);
-                    return false;
+            void passivelyReceive(mavlink_message_t &msg) {
+                switch(msg.msgid) {
+                    //TODO: shrink the processors?
+                    case MAVLINK_MSG_ID_MISSION_REQUEST_LIST:
+                        reactToMissionRequestList(getMasterGcsIdx(), msg);
+                        break;
+                    case MAVLINK_MSG_ID_MISSION_REQUEST:
+                        reactToMissionRequest(getMasterGcsIdx(), msg);
+                        break;
+                    case MAVLINK_MSG_ID_MISSION_ACK:
+                        reactToMissionAck(getMasterGcsIdx(), msg);
+                        break;
+                    case MAVLINK_MSG_ID_MISSION_COUNT:
+                        reactToMissionCount(getMasterGcsIdx(), msg);
+                        break;
+                    case MAVLINK_MSG_ID_MISSION_ITEM:
+                        reactToMissionItem(getMasterGcsIdx(), msg);
+                        break;
+                    case MAVLINK_MSG_ID_MISSION_CLEAR_ALL:
+                        reactToMissionClearAll(getMasterGcsIdx(), msg);
+                        break;
+                    case MAVLINK_MSG_ID_MISSION_SET_CURRENT:
+                        reactToMissionSetCurrent(getMasterGcsIdx(), msg);
+                        break;
+                    default:
+                        DJI2MAV_WARN("No execution is defined for msgid #%u "
+                                "in Hotpoint module.", msg.msgid);
+                        break;
                 }
+                usleep(20000); //50Hz
             }
 
 
             /**
-             * @brief  Register new sender and use it for specific GCS
-             * @param  gcsIdx : The index of GCS
-             * @return True if succeed or false if fail
+             * @brief Implement the messages actively sending function
              */
-            bool applyNewSender(uint16_t gcsIdx) {
-                int newSender = m_hdlr->registerSender(gcsIdx);
-                if( newSender < 0 ) {
-                    printf("Fail to regiser sender for waypoint in GCS #%u! "
-                            "Did you set sender list too small?\n", gcsIdx);
-                    return false;
-                }
-                m_senderRecord[gcsIdx] = newSender;
-                return true;
-            }
-
-
-            inline bool applyNewSender() {
-                return applyNewSender(m_masterGcsIdx);
-            }
-
-
-            /**
-             * @brief Use the general sender
-             * @param  gcsIdx : The index of GCS
-             */
-            inline void applyGeneralSender(uint16_t gcsIdx) {
-                m_senderRecord[gcsIdx] = m_hdlr->getGeneralSenderIdx(gcsIdx);
-            }
-
-
-            inline void applyGeneralSender() {
-                applyGeneralSender(m_masterGcsIdx);
+            void activelySend() {
             }
 
 
             void reactToMissionRequestList(uint16_t gcsIdx, 
-                    const mavlink_message_t* recvMsgPtr) {
+                    const mavlink_message_t &recvMsg) {
 
-                if(gcsIdx != m_masterGcsIdx)
-                    return;
-
-                if(recvMsgPtr->compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    printf("WARNNING! The compid is %u\n", recvMsgPtr->compid);
+                if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
+                    DJI2MAV_DEBUG("In Waypoint the compid is %u.", 
+                            recvMsg.compid);
                 }
 
-                printf("In mission request list with status: %d\n", (int)m_status);
+                DJI2MAV_DEBUG("In Waypoint mission request list with status: " 
+                        "%d.", (int)m_status);
 
                 switch(m_status) {
                     case idle:
@@ -150,32 +137,33 @@ namespace dji2mav{
                         break;
                 }
 
-                m_cntMsg.target_system = recvMsgPtr->sysid;
-                m_cntMsg.target_component = recvMsgPtr->compid;
-                m_cntMsg.count = m_wpl.getListSize();
+                mavlink_mission_count_t cntMsg;
+                cntMsg.target_system = recvMsg.sysid;
+                cntMsg.target_component = recvMsg.compid;
+                cntMsg.count = m_wpl.getListSize();
                 m_wpl.readyToUpload();
-                mavlink_msg_mission_count_encode(m_hdlr->getSysid(), 
-                        MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, &m_cntMsg);
-                m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
-                        m_senderRecord[m_masterGcsIdx], &m_sendMsg);
 
-                if(NULL != m_missionRequestListRsp)
-                    m_missionRequestListRsp();
+                mavlink_message_t sendMsg;
+                mavlink_msg_mission_count_encode(getMySysid(), 
+                        MAV_COMP_ID_MISSIONPLANNER, &sendMsg, &cntMsg);
+                sendMsgToMaster(sendMsg);
+
+                if(NULL != m_missionRequestListHook)
+                    m_missionRequestListHook();
 
             }
 
 
             void reactToMissionRequest(uint16_t gcsIdx, 
-                    const mavlink_message_t* recvMsgPtr) {
+                    const mavlink_message_t &recvMsg) {
 
-                if(gcsIdx != m_masterGcsIdx)
-                    return;
-
-                if(recvMsgPtr->compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    printf("WARNNING! The compid is %u\n", recvMsgPtr->compid);
+                if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
+                    DJI2MAV_DEBUG("In Waypoint the compid is %u.", 
+                            recvMsg.compid);
                 }
 
-                printf("In mission request with status: %d\n", (int)m_status);
+                DJI2MAV_DEBUG("In Waypoint mission request with status: " 
+                        "%d.", (int)m_status);
 
                 switch(m_status) {
                     case idle:
@@ -189,46 +177,46 @@ namespace dji2mav{
                         break;
                 }
 
-                mavlink_msg_mission_request_decode(recvMsgPtr, &m_reqMsg);
+                mavlink_mission_request_t reqMsg;
+                mavlink_msg_mission_request_decode(&recvMsg, &reqMsg);
 
-                m_itemMsg.target_system = recvMsgPtr->sysid;
-                m_itemMsg.target_component = recvMsgPtr->compid;
-                m_itemMsg.seq = m_reqMsg.seq;
-                if( m_wpl.isValidIdx(m_itemMsg.seq) ) {
+                mavlink_mission_item_t itemMsg;
+                itemMsg.target_system = recvMsg.sysid;
+                itemMsg.target_component = recvMsg.compid;
+                itemMsg.seq = reqMsg.seq;
+                if( m_wpl.isValidIdx(itemMsg.seq) ) {
 
-                    m_wpl.getWaypointData(m_itemMsg.seq, m_itemMsg.command, 
-                            m_itemMsg.param1, m_itemMsg.param2, 
-                            m_itemMsg.param3, m_itemMsg.param4, 
-                            m_itemMsg.x, m_itemMsg.y, m_itemMsg.z);
-
+                    m_wpl.getWaypointData(itemMsg.seq, itemMsg.command, 
+                            itemMsg.param1, itemMsg.param2, itemMsg.param3, 
+                            itemMsg.param4, itemMsg.x, itemMsg.y, itemMsg.z);
 
                 } else {
-                    printf("Invalid index of waypoint in waypoint module!\n");
+                    DJI2MAV_ERROR("Invalid sequence %u of mission request in" 
+                            "Waypoint!", reqMsg.seq);
                     return;
                 }
 
-                mavlink_msg_mission_item_encode(m_hdlr->getSysid(), 
-                        MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, &m_itemMsg);
-                m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
-                        m_senderRecord[m_masterGcsIdx], &m_sendMsg);
+                mavlink_message_t sendMsg;
+                mavlink_msg_mission_item_encode(getMySysid(), 
+                        MAV_COMP_ID_MISSIONPLANNER, &sendMsg, &itemMsg);
+                sendMsgToMaster(sendMsg);
 
-                if(NULL != m_missionRequestRsp)
-                    m_missionRequestRsp(m_reqMsg.seq);
+                if(NULL != m_missionRequestHook)
+                    m_missionRequestHook(reqMsg.seq);
 
             }
 
 
             void reactToMissionAck(uint16_t gcsIdx, 
-                    const mavlink_message_t* recvMsgPtr) {
+                    const mavlink_message_t &recvMsg) {
 
-                if(gcsIdx != m_masterGcsIdx)
-                    return;
-
-                if(recvMsgPtr->compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    printf("WARNNING! The compid is %u\n", recvMsgPtr->compid);
+                if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
+                    DJI2MAV_DEBUG("In Wotpoint the compid is %u.", 
+                            recvMsg.compid);
                 }
 
-                printf("In mission ack with status: %d\n", (int)m_status);
+                DJI2MAV_DEBUG("In Waypoint mission ack with status: %d.", 
+                        (int)m_status);
 
                 switch(m_status) {
                     case idle:
@@ -244,29 +232,29 @@ namespace dji2mav{
                         break;
                 }
 
-                mavlink_msg_mission_ack_decode(recvMsgPtr, &m_ackMsg);
-                printf("Mission ACK code: %d\n", m_ackMsg.type);
+                mavlink_mission_ack_t ackMsg;
+                mavlink_msg_mission_ack_decode(&recvMsg, &ackMsg);
+                DJI2MAV_DEBUG("In Waypoint mission ACK code: %d.", ackMsg.type);
                 m_status = loaded;
                 m_wpl.finishUpload();
                 m_wpl.displayMission();
 
-                if(NULL != m_missionAckRsp)
-                    m_missionAckRsp();
+                if(NULL != m_missionAckHook)
+                    m_missionAckHook();
 
             }
 
 
             void reactToMissionCount(uint16_t gcsIdx, 
-                    const mavlink_message_t* recvMsgPtr) {
+                    const mavlink_message_t &recvMsg) {
 
-                if(gcsIdx != m_masterGcsIdx)
-                    return;
-
-                if(recvMsgPtr->compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    printf("WARNNING! The compid is %u\n", recvMsgPtr->compid);
+                if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
+                    DJI2MAV_DEBUG("In Hotpoint the compid is %u.", 
+                            recvMsg.compid);
                 }
 
-                printf("In mission count with status: %d\n", (int)m_status);
+                DJI2MAV_DEBUG("In Waypoint mission count with status: %d.", 
+                        (int)m_status);
 
                 switch(m_status) {
                     case idle:
@@ -281,44 +269,41 @@ namespace dji2mav{
                         return;
                 }
 
-                mavlink_msg_mission_count_decode(recvMsgPtr, &m_cntMsg);
-                m_wpl.setListSize(m_cntMsg.count);
+                mavlink_mission_count_t cntMsg;
+                mavlink_msg_mission_count_decode(&recvMsg, &cntMsg);
+                m_wpl.setListSize(cntMsg.count);
                 m_wpl.readyToDownload();
 
-                m_reqMsg.target_system = recvMsgPtr->sysid;
-                m_reqMsg.target_component = recvMsgPtr->compid;
-                m_reqMsg.seq = 0;
+                mavlink_mission_request_t reqMsg;
+                reqMsg.target_system = recvMsg.sysid;
+                reqMsg.target_component = recvMsg.compid;
+                reqMsg.seq = 0;
 
-                mavlink_msg_mission_request_encode(m_hdlr->getSysid(), 
-                        MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, &m_reqMsg);
-                m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
-                        m_senderRecord[m_masterGcsIdx], &m_sendMsg);
+                mavlink_message_t sendMsg;
+                mavlink_msg_mission_request_encode(getMySysid(), 
+                        MAV_COMP_ID_MISSIONPLANNER, &sendMsg, &reqMsg);
+                sendMsgToMaster(sendMsg);
 
-                if(NULL != m_missionCountRsp)
-                    m_missionCountRsp(m_cntMsg.count);
+                if(NULL != m_missionCountHook)
+                    m_missionCountHook(cntMsg.count);
 
             }
 
 
             void reactToMissionItem(uint16_t gcsIdx, 
-                    const mavlink_message_t* recvMsgPtr) {
+                    const mavlink_message_t &recvMsg) {
 
-                if(gcsIdx != m_masterGcsIdx)
-                    return;
-
-                if(recvMsgPtr->compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    printf("WARNNING! The compid is %u\n", recvMsgPtr->compid);
+                if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
+                    DJI2MAV_DEBUG("In Waypoint the compid is %u.", 
+                            recvMsg.compid);
                 }
 
-                printf("In mission item with status: %d\n", (int)m_status);
+                DJI2MAV_DEBUG("In Hotpoint mission item with status: %d.", 
+                        (int)m_status);
 
                 switch(m_status) {
                     case loaded:
                     case executing:
-                        //TODO: Wrong designed in GCS of Win32-Stable-V2.7.1
-                        reactToMissionSetCurrent(gcsIdx, recvMsgPtr);
-                        m_status = loaded;
-                        return;
                     case idle:
                     case uploading:
                     case paused:
@@ -328,55 +313,58 @@ namespace dji2mav{
                         break;
                 }
 
-                mavlink_msg_mission_item_decode(recvMsgPtr, &m_itemMsg);
-                if( m_wpl.isValidIdx(m_itemMsg.seq) ) {
-                    m_wpl.setWaypointData(m_itemMsg.seq, m_itemMsg.command, 
-                            m_itemMsg.param1, m_itemMsg.param2, 
-                            m_itemMsg.param3, m_itemMsg.param4, m_itemMsg.x, 
-                            m_itemMsg.y, m_itemMsg.z);
+                mavlink_mission_item_t itemMsg;
+                mavlink_msg_mission_item_decode(&recvMsg, &itemMsg);
+                if( m_wpl.isValidIdx(itemMsg.seq) ) {
+
+                    m_wpl.setWaypointData(itemMsg.seq, itemMsg.command, 
+                            itemMsg.param1, itemMsg.param2, itemMsg.param3, 
+                            itemMsg.param4, itemMsg.x, itemMsg.y, itemMsg.z);
+
                 } else {
-                    printf("Invalid index of waypoint in waypoint module!\n");
+                    DJI2MAV_ERROR("Invalid sequence %u of mission item in " 
+                            "Waypoint!", itemMsg.seq);
                     return;
                 }
-printf(">>>  Mission Item: \ntarget_system: %u, \ntarget_component: %u, \nseq: %u, \nframe: %u, \ncommand: %u, \ncurrent: %u, \nautocontinue: %u, \nparam1: %f, \nparam2: %f, \nparam3: %f, \nparam4: %f, \nx: %f, \ny: %f, \nz: %f \n\n", m_itemMsg.target_system, m_itemMsg.target_component, m_itemMsg.seq, m_itemMsg.frame, m_itemMsg.command, m_itemMsg.current, m_itemMsg.autocontinue, m_itemMsg.param1, m_itemMsg.param2, m_itemMsg.param3, m_itemMsg.param4, m_itemMsg.x, m_itemMsg.y, m_itemMsg.z);
 
+                mavlink_message_t sendMsg;
                 if( m_wpl.isDownloadFinished() ) {
-                    mavlink_msg_mission_ack_pack(m_hdlr->getSysid(), 
-                            MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, 
-                            recvMsgPtr->sysid, recvMsgPtr->compid, 
+                    mavlink_msg_mission_ack_pack(getMySysid(), 
+                            MAV_COMP_ID_MISSIONPLANNER, &sendMsg, 
+                            recvMsg.sysid, recvMsg.compid, 
                             MAV_MISSION_ACCEPTED);
-                    m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
-                            m_senderRecord[m_masterGcsIdx], &m_sendMsg);
+                    sendMsgToMaster(sendMsg);
                     m_status = loaded;
                     m_wpl.displayMission();
                 } else {
-                    m_reqMsg.target_system = recvMsgPtr->sysid;
-                    m_reqMsg.target_component = recvMsgPtr->compid;
-                    m_reqMsg.seq = m_wpl.getTargetIdx();
-                    mavlink_msg_mission_request_encode(m_hdlr->getSysid(), 
-                            MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, &m_reqMsg);
-                    m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
-                            m_senderRecord[m_masterGcsIdx], &m_sendMsg);
-printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_component, m_reqMsg.seq);
+                    mavlink_mission_request_t reqMsg;
+                    reqMsg.target_system = recvMsg.sysid;
+                    reqMsg.target_component = recvMsg.compid;
+                    reqMsg.seq = m_wpl.getTargetIdx();
+                    mavlink_msg_mission_request_encode(getMySysid(), 
+                            MAV_COMP_ID_MISSIONPLANNER, &sendMsg, &reqMsg);
+                    sendMsgToMaster(sendMsg);
+                    DJI2MAV_TRACE("In Waypoint send request %u, %u, %u.", 
+                            reqMsg.target_system, reqMsg.target_component, 
+                            reqMsg.seq);
                 }
 
-                if(NULL != m_missionItemRsp)
-                    m_missionItemRsp(m_itemMsg.seq);
+                if(NULL != m_missionItemHook)
+                    m_missionItemHook(itemMsg.seq);
 
             }
 
 
             void reactToMissionClearAll(uint16_t gcsIdx, 
-                    const mavlink_message_t* recvMsgPtr) {
+                    const mavlink_message_t &recvMsg) {
 
-                if(gcsIdx != m_masterGcsIdx)
-                    return;
-
-                if(recvMsgPtr->compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    printf("WARNNING! The compid is %u\n", recvMsgPtr->compid);
+                if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
+                    DJI2MAV_DEBUG("In Waypoint the compid is %u\n", 
+                            recvMsg.compid);
                 }
 
-                printf("In mission clear all with status: %d\n", (int)m_status);
+                DJI2MAV_DEBUG("In Waypoint mission clear all with status: %d", 
+                        (int)m_status);
 
                 switch(m_status) {
                     case idle:
@@ -391,33 +379,34 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
                         return;
                 }
 
-                m_ackMsg.target_system = recvMsgPtr->sysid;
-                m_ackMsg.target_component = recvMsgPtr->compid;
-                m_ackMsg.type = MAV_MISSION_ACCEPTED;
-                mavlink_msg_mission_ack_encode(m_hdlr->getSysid(), 
-                        MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, &m_ackMsg);
-                m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
-                        m_senderRecord[m_masterGcsIdx], &m_sendMsg);
+                mavlink_mission_ack_t ackMsg;
+                ackMsg.target_system = recvMsg.sysid;
+                ackMsg.target_component = recvMsg.compid;
+                ackMsg.type = MAV_MISSION_ACCEPTED;
+
+                mavlink_message_t sendMsg;
+                mavlink_msg_mission_ack_encode(getMySysid(), 
+                        MAV_COMP_ID_MISSIONPLANNER, &sendMsg, &ackMsg);
+                sendMsgToMaster(sendMsg);
 
                 m_wpl.clearMission();
 
-                if(NULL != m_missionClearAllRsp)
-                    m_missionClearAllRsp();
+                if(NULL != m_missionClearAllHook)
+                    m_missionClearAllHook();
 
             }
 
 
             void reactToMissionSetCurrent(uint16_t gcsIdx, 
-                    const mavlink_message_t* recvMsgPtr) {
+                    const mavlink_message_t &recvMsg) {
 
-                if(gcsIdx != m_masterGcsIdx)
-                    return;
-
-                if(recvMsgPtr->compid != MAV_COMP_ID_MISSIONPLANNER) {
-                    printf("WARNNING! The compid is %u\n", recvMsgPtr->compid);
+                if(recvMsg.compid != MAV_COMP_ID_MISSIONPLANNER) {
+                    DJI2MAV_DEBUG("In Waypoint the compid is %u.", 
+                            recvMsg.compid);
                 }
 
-                printf("In mission set current with status: %d\n", (int)m_status);
+                DJI2MAV_DEBUG("In Waypoint mission set current with status: " 
+                        "%d.", (int)m_status);
 
                 switch(m_status) {
                     case idle:
@@ -433,33 +422,40 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
                         break;
                 }
 
-                mavlink_msg_mission_set_current_decode(recvMsgPtr, &m_setCurrMsg);
-                if( m_wpl.isValidIdx(m_setCurrMsg.seq) ) {
+                mavlink_mission_set_current_t setCurrMsg;
+                mavlink_msg_mission_set_current_decode(&recvMsg, &setCurrMsg);
+                if( m_wpl.isValidIdx(setCurrMsg.seq) ) {
 
-                    m_wpl.setTargetIdx(m_setCurrMsg.seq);
+                    m_wpl.setTargetIdx(setCurrMsg.seq);
 
-                    if(NULL != m_targetRsp) {
-                        m_targetRsp( m_wpl.getWaypointList(), 
-                                m_setCurrMsg.seq, 
-                                m_wpl.getListSize() );//TODO
+                    if(NULL != m_targetHook) {
+                        m_targetHook( m_wpl.getWaypointList(), 
+                                setCurrMsg.seq, 
+                                m_wpl.getListSize() );
+                        //It is slow to send mission to FC. Now there should be
+                        //duplicate cmd msg in the buffer. Clear them
+                        clearBuf();
+                    } else {
+                        DJI2MAV_WARN("In Waypoint no target hook is set.");
                     }
-                    mavlink_msg_mission_current_pack( m_hdlr->getSysid(), 
-                            MAV_COMP_ID_MISSIONPLANNER, &m_sendMsg, 
+
+                    mavlink_message_t sendMsg;
+                    mavlink_msg_mission_current_pack( getMySysid(), 
+                            MAV_COMP_ID_MISSIONPLANNER, &sendMsg, 
                             m_wpl.getTargetIdx() );
-                    m_hdlr->sendEncodedMsg(m_masterGcsIdx, 
-                            m_senderRecord[m_masterGcsIdx], &m_sendMsg);
+                    sendMsgToMaster(sendMsg);
 
                     m_status = loaded;//TODO finish the task
 
                 } else {
                     m_status = paused;
-                    printf( "The current index %u is invalid! "
-                            "The size of list is %u.\n", m_setCurrMsg.seq, 
-                            m_wpl.getListSize() );
+                    DJI2MAV_ERROR( "The sequence %u of set current message is " 
+                            "invalid in Waypoint! The size of list is %u!", 
+                            setCurrMsg.seq, m_wpl.getListSize() );
                 }
 
-                if(NULL != m_missionSetCurrentRsp)
-                    m_missionSetCurrentRsp(m_setCurrMsg.seq);
+                if(NULL != m_missionSetCurrentHook)
+                    m_missionSetCurrentHook(setCurrMsg.seq);
 
             }
 
@@ -468,142 +464,48 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
              * @brief  React to sensors from all GCS and execute rsp
              * @return True if succeed or false if fail
              */
-            inline void setMissionRequestListRsp( void (*func)() ) {
-                m_missionRequestListRsp = func;
+            inline void setMissionRequestListHook( void (*func)() ) {
+                m_missionRequestListHook = func;
             }
 
 
-            inline void setMissionRequestRsp( void (*func)(uint16_t) ) {
-                m_missionRequestRsp = func;
+            inline void setMissionRequestHook( void (*func)(uint16_t) ) {
+                m_missionRequestHook = func;
             }
 
 
-            inline void setMissionAckRsp( void (*func)() ) {
-                m_missionAckRsp = func;
+            inline void setMissionAckHook( void (*func)() ) {
+                m_missionAckHook = func;
             }
 
 
-            inline void setMissionCountRsp( void (*func)(uint16_t) ) {
-                m_missionCountRsp = func;
+            inline void setMissionCountHook( void (*func)(uint16_t) ) {
+                m_missionCountHook = func;
             }
 
 
-            inline void setMissionItemRsp( void (*func)(uint16_t) ) {
-                m_missionItemRsp = func;
+            inline void setMissionItemHook( void (*func)(uint16_t) ) {
+                m_missionItemHook = func;
             }
 
 
-            inline void setMissionClearAllRsp( void (*func)() ) {
-                m_missionClearAllRsp = func;
+            inline void setMissionClearAllHook( void (*func)() ) {
+                m_missionClearAllHook = func;
             }
 
 
-            inline void setMissionSetCurrentRsp( void (*func)(uint16_t) ) {
-                m_missionSetCurrentRsp = func;
+            inline void setMissionSetCurrentHook( void (*func)(uint16_t) ) {
+                m_missionSetCurrentHook = func;
             }
 
 
-            inline void setTargetRsp( void (*func)(const float[][7], uint16_t, uint16_t) ) {
-                m_targetRsp = func;
-            }
-
-
-            /**
-             * @brief  Interface for targetRsp to get the waypoint data
-             * @param  idx      : The index of specific waypoint in the list
-             * @param  lat      : Latitude data, double in dji_sdk
-             * @param  lon      : Longitude data, double in dji_sdk
-             * @param  alt      : Altitude data, float in dji_sdk
-             * @param  heading  : Heading data, int16 in dji_sdk
-             * @param  staytime : Staytime data, uint16 in dji_sdk
-             * @return True for valid index or false for invalid index
-             */
-            //TODO: Any better idea of sovling this?
-            bool getWaypoint(uint16_t idx, double &lat, double &lon, 
-                    float &alt, int16_t &heading, 
-                    uint16_t &staytime) {
-
-                if( m_wpl.isValidIdx(idx) ) {
-                    lat = (double)m_wpl.getWaypointLat(idx);
-                    lon = (double)m_wpl.getWaypointLon(idx);
-                    alt = (float)m_wpl.getWaypointAlt(idx);
-                    heading = (int16_t)m_wpl.getWpHeading(idx);
-                    staytime = (uint16_t)m_wpl.getWpStaytime(idx);
-                    return true;
-                } else {
-                    printf("Invalid index when getting waypoint!\n");
-                    return false;
-                }
-
-            }
-
-
-            void distructor() {
-                delete m_instance;
+            inline void setTargetHook( void (*func)(const float[][7], uint16_t, uint16_t) ) {
+                m_targetHook = func;
             }
 
 
         private:
-            MavWaypoint() {
-
-                assert(CHAR_BIT * sizeof(float) == 32);
-                assert(CHAR_BIT * sizeof(double) == 64);
-
-                m_hdlr = MavHandler::getInstance();
-
-                m_masterGcsIdx = 0;
-
-                try {
-                    m_senderRecord = new int[m_hdlr->getMngListSize()];
-                    memset( m_senderRecord, 0, 
-                            m_hdlr->getMngListSize() * sizeof(int) );
-                } catch(std::bad_alloc& m) {
-                    std::cerr << "Failed to alloc memory for senderRecord: " 
-                            << "at line: " << __LINE__ << ", func: " 
-                            << __func__ << ", file: " << __FILE__ 
-                            << std::endl;
-                    perror( m.what() );
-                    exit(EXIT_FAILURE);
-                }
-
-                // default #0 GCS send the waypoint cmd to the vehicle
-                setMasterGcsIdx(0, m_hdlr->getGeneralSenderIdx(0));
-
-                setMissionRequestListRsp(NULL);
-                setMissionRequestRsp(NULL);
-                setMissionAckRsp(NULL);
-                setMissionCountRsp(NULL);
-                setMissionItemRsp(NULL);
-
-                printf("Succeed to construct Waypoint module\n");
-
-            }
-
-
-            ~MavWaypoint() {
-                if(m_senderRecord != NULL) {
-                    delete []m_senderRecord;
-                    m_senderRecord = NULL;
-                }
-                m_hdlr = NULL;
-                printf("Finish destructing Waypoint module\n");
-            }
-
-
-            static MavWaypoint* m_instance;
-            int* m_senderRecord;
-            int m_masterGcsIdx;
-
-            MavHandler* m_hdlr;
             WaypointList m_wpl;
-
-            mavlink_message_t m_sendMsg;
-            mavlink_mission_request_t m_reqMsg;
-            mavlink_mission_count_t m_cntMsg;
-            mavlink_mission_ack_t m_ackMsg;
-            mavlink_mission_item_t m_itemMsg;
-            mavlink_mission_set_current_t m_setCurrMsg;
-            mavlink_mission_current_t m_currMsg;
 
             enum {
                 idle, 
@@ -615,19 +517,17 @@ printf("Send request %u, %u, %u\n", m_reqMsg.target_system, m_reqMsg.target_comp
                 error
             } m_status;
 
-            void (*m_missionRequestListRsp)();
-            void (*m_missionRequestRsp)(uint16_t);
-            void (*m_missionAckRsp)();
-            void (*m_missionCountRsp)(uint16_t);
-            void (*m_missionItemRsp)(uint16_t);
-            void (*m_missionClearAllRsp)();
-            void (*m_missionSetCurrentRsp)(uint16_t);
-            void (*m_targetRsp)(const float[][7], uint16_t, uint16_t);
+            void (*m_missionRequestListHook)();
+            void (*m_missionRequestHook)(uint16_t);
+            void (*m_missionAckHook)();
+            void (*m_missionCountHook)(uint16_t);
+            void (*m_missionItemHook)(uint16_t);
+            void (*m_missionClearAllHook)();
+            void (*m_missionSetCurrentHook)(uint16_t);
+            void (*m_targetHook)(const float[][7], uint16_t, uint16_t);
 
 
     };
-
-    MavWaypoint* MavWaypoint::m_instance = NULL;
 
 } //namespace dji2mav
 

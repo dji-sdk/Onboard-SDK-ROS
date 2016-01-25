@@ -1,16 +1,14 @@
 /*****************************************************************************
  * @Brief     Storage GPS data and provide setter and getter methods
- * @Version   0.2.1
+ * @Version   0.3.0
  * @Author    Chris Liu
  * @Created   2015/11/20
- * @Modified  2015/11/20
+ * @Modified  2015/12/25
  *****************************************************************************/
 
-#ifndef _MAV2DJI_SENSORGLOPOSINT_H_
-#define _MAV2DJI_SENSORGLOPOSINT_H_
+#ifndef _DJI2MAV_SENSORGLOPOSINT_H_
+#define _DJI2MAV_SENSORGLOPOSINT_H_
 
-
-#include "math.h"
 
 namespace dji2mav {
 

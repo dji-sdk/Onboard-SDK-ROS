@@ -1,13 +1,13 @@
 /*****************************************************************************
  * @Brief     Storage locPosNed data and provide setter and getter methods
- * @Version   0.2.1
+ * @Version   0.3.0
  * @Author    Chris Liu
  * @Created   2015/11/17
- * @Modified  2015/11/17
+ * @Modified  2015/12/25
  *****************************************************************************/
 
-#ifndef _MAV2DJI_SENSORLOCPOSNED_H_
-#define _MAV2DJI_SENSORLOCPOSNED_H_
+#ifndef _DJI2MAV_SENSORLOCPOSNED_H_
+#define _DJI2MAV_SENSORLOCPOSNED_H_
 
 
 namespace dji2mav {

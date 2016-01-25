@@ -1,12 +1,15 @@
 /****************************************************************************
- * @Brief   A bringup node for dji2mav. Using dji2mav interface v1.x
- * @Version 0.2.1
+ * @Brief   A bringup node for dji2mav. Using dji2mav interface v0.3.x
+ * @Version 0.3.0
  * @Author  Chris Liu
  * @Create  2015/11/02
- * @Modify  2015/11/24
+ * @Modify  2015/12/25
  ****************************************************************************/
 
-#include <pthread.h>
+#define DJI2MAV_LOG_INFO
+//#define GCS_NUM 2
+//#define MAVLINK_COMM_NUM_BUFFERS GCS_NUM
+
 #include <string>
 
 #include <ros/ros.h>
@@ -15,62 +18,45 @@
 #include <dji_sdk/Velocity.h>
 #include <dji_sdk/AttitudeQuaternion.h>
 
-#include "dji_sdk_dji2mav/config.h"
-
+#include "dji_sdk_dji2mav/mavHandler.h"
+#include "dji_sdk_dji2mav/mavContainer.h"
+#include "dji_sdk_dji2mav/modules/heartbeat/mavHeartbeat.h"
+#include "dji_sdk_dji2mav/modules/sensors/mavSensors.h"
+#include "dji_sdk_dji2mav/modules/waypoint/mavWaypoint.h"
+#include "dji_sdk_dji2mav/modules/hotpoint/mavHotpoint.h"
 
 
 DJIDrone* drone;
-
-
-
-/* A thread for sending heartbeat */
-void* sendHb_Period(void* args) {
-    int t_s = *((int*) args);
-    while( ros::ok() ) {
-        dji2mav::MavHeartbeat::getInstance()->sendHeartbeat();
-        sleep(t_s);
-    }
-}
-
-/* A thread for sending sensor data */
-void* sendSs_Period(void* args) {
-    int t_ms = *((int*) args);
-    while( ros::ok() ) {
-        dji2mav::MavSensors::getInstance()->sendSensorsData();
-        usleep(t_ms);
-    }
-}
-
+dji2mav::MavSensors* g_sensors;
 
 
 void locPosCB(const dji_sdk::LocalPosition &msg) {
-    dji2mav::MavSensors::getInstance()->setLocalPosition(&msg.ts, &msg.x, 
-            &msg.y, &msg.z);
+    g_sensors->setLocalPosition(&msg.ts, &msg.x, &msg.y, &msg.z);
 }
 
 void velCB(const dji_sdk::Velocity &msg) {
-    dji2mav::MavSensors::getInstance()->setVelocity(&msg.ts, &msg.vx, 
+    g_sensors->setVelocity(&msg.ts, &msg.vx, 
             &msg.vy, &msg.vz);
 }
 
 void attCB(const dji_sdk::AttitudeQuaternion &msg) {
-    dji2mav::MavSensors::getInstance()->setAttitudeQuaternion(&msg.ts, 
-            &msg.q0, &msg.q1, &msg.q2, &msg.q3, &msg.wx, &msg.wy, &msg.wz);
+    g_sensors->setAttitudeQuaternion(&msg.ts, &msg.q0, &msg.q1, &msg.q2, 
+            &msg.q3, &msg.wx, &msg.wy, &msg.wz);
 }
 
 void gloPosCB(const dji_sdk::GlobalPosition &msg) {
-    dji2mav::MavSensors::getInstance()->setGlobalPosition(&msg.ts, 
-            &msg.latitude, &msg.longitude, &msg.altitude, &msg.height);
+    g_sensors->setGlobalPosition(&msg.ts, &msg.latitude, &msg.longitude, 
+            &msg.altitude, &msg.height);
 }
 
 
 
 void respondToHeartbeat() {
-    ROS_INFO("Get heartbeat\n");
+    ROS_INFO("Get heartbeat");
 }
 
 void respondToMissionRequestList() {
-    ROS_INFO("Get mission request list\n");
+    ROS_INFO("Get mission request list");
 }
 
 void respondToMissionRequest(uint16_t param) {
@@ -78,7 +64,7 @@ void respondToMissionRequest(uint16_t param) {
 }
 
 void respondToMissionAck() {
-    ROS_INFO("Mission ack get\n");
+    ROS_INFO("Mission ack get");
 }
 
 void respondToMissionCount(uint16_t param) {
@@ -99,7 +85,7 @@ void respondToMissionSetCurrent(uint16_t param) {
 
 
 
-void respondToTarget(const float mission[][7], uint16_t beginIdx, 
+void respondToWpTarget(const float mission[][7], uint16_t beginIdx, 
         uint16_t endIdx) {
 
     dji_sdk::WaypointList wpl;
@@ -115,15 +101,9 @@ void respondToTarget(const float mission[][7], uint16_t beginIdx,
     }
     ROS_INFO("Size of the wpl: %d", wpl.waypoint_list.size());
 
-    /**
-     * Currently this is executed in main thread, So don't wait for server or 
-     * result in case of blocking the distribution process. A new coming 
-     * version will bring up a better architecture soon
-     */
-/*
     ROS_INFO("Going to wait for server...");
     drone->waypoint_navigation_wait_server();
-*/
+    ROS_INFO("...get response!");
 
     drone->waypoint_navigation_send_request(wpl);
 
@@ -147,20 +127,52 @@ int main(int argc, char* argv[]) {
     ros::NodeHandle nh_private("~");
     drone = new DJIDrone(nh);
 
-    std::string targetIp1;
-    int targetPort1;
-    int srcPort;
+    std::string targetIp1, targetIp2;
+    int targetPort1, targetPort2;
+    int srcPort1, srcPort2;
     nh_private.param( "targetIp1", targetIp1, std::string("10.60.23.136") );
     nh_private.param("targetPort1", targetPort1, 14550);
-    nh_private.param("srcPort", srcPort, 14551);
+    nh_private.param( "targetIp2", targetIp2, std::string("10.60.23.136") );
+    nh_private.param("targetPort2", targetPort2, 14548);
+    nh_private.param("srcPort1", srcPort1, 14551);
+    nh_private.param("srcPort2", srcPort2, 14549);
 
+    //drone->activate();
+    ros::Duration(1.0).sleep();
     drone->request_sdk_permission_control();
 
-    dji2mav::Config* config = dji2mav::Config::getInstance();
-    /* set the sysid "1" and the number of GCS is also "1" */
-    config->setup(1, 1);
-    /* The index of first GCS is "0" */
-    config->start(0, targetIp1, (uint16_t)targetPort1, (uint16_t)srcPort);
+    /* set the sysid "1" and the number of GCS is 2 */
+    dji2mav::MavHandler handler(1, 2);
+    handler.establish(0, targetIp1, (uint16_t)targetPort1, srcPort1);
+    handler.establish(1, targetIp2, (uint16_t)targetPort2, srcPort2);
+
+    /* set heartbeat module and employ senders for it on GCS 0 and 1 */
+    dji2mav::MavHeartbeat heartbeat(handler, "heartbeat", 2, 0, 1);
+    dji2mav::MavSensors sensors(handler, "sensors", 2, 0, 1);
+    dji2mav::MavWaypoint waypoint(handler, "waypoint", 1, 0);
+
+    g_sensors = &sensors;
+
+    /* Register responser */
+//  heartbeat.setHeartbeatHook(respondToHeartbeat);
+
+    waypoint.setMissionRequestListHook(respondToMissionRequestList);
+    waypoint.setMissionRequestHook(respondToMissionRequest);
+    waypoint.setMissionAckHook(respondToMissionAck);
+    waypoint.setMissionCountHook(respondToMissionCount);
+    waypoint.setMissionItemHook(respondToMissionItem);
+    waypoint.setMissionClearAllHook(respondToMissionClearAll);
+    waypoint.setMissionSetCurrentHook(respondToMissionSetCurrent);
+    waypoint.setTargetHook(respondToWpTarget);
+
+    /* set the module container and register module with its MOI */
+    dji2mav::MavContainer container(handler);
+    container.registerModule(heartbeat, 1, MAVLINK_MSG_ID_HEARTBEAT);
+    container.registerModule(sensors, 0);
+    container.registerModule(waypoint, 7, MAVLINK_MSG_ID_MISSION_REQUEST_LIST, 
+            MAVLINK_MSG_ID_MISSION_REQUEST, MAVLINK_MSG_ID_MISSION_ACK, 
+            MAVLINK_MSG_ID_MISSION_COUNT, MAVLINK_MSG_ID_MISSION_ITEM, 
+            MAVLINK_MSG_ID_MISSION_CLEAR_ALL, MAVLINK_MSG_ID_MISSION_SET_CURRENT);
 
     /* Register Subscribers */
     ros::Subscriber sub1 = nh.subscribe("/dji_sdk/local_position", 1, locPosCB);
@@ -168,44 +180,17 @@ int main(int argc, char* argv[]) {
     ros::Subscriber sub3 = nh.subscribe("/dji_sdk/attitude_quaternion", 1, attCB);
     ros::Subscriber sub4 = nh.subscribe("/dji_sdk/global_position", 1, gloPosCB);
 
-    /* Heartbeat send thread */
-    pthread_t hbTid;
-    int hb_sec = 1;
-    int hb_thread_ret = pthread_create(&hbTid, NULL, sendHb_Period, (void*)&hb_sec);
-    if(0 != hb_thread_ret) {
-        ROS_ERROR("Create pthread for sending heartbeat fail! Error code: %d", hb_thread_ret);
-    }
-
-    /* Sensors data send thread */
-    pthread_t ssTid;
-    int ss_sec = 20000;
-    int ss_thread_ret = pthread_create(&ssTid, NULL, sendSs_Period, (void*)&ss_sec);
-    if(0 != ss_thread_ret) {
-        ROS_ERROR("Create pthread for sending sensors data fail! Error code: %d", ss_thread_ret);
-    }
-
-    /* Register responser */
-//  dji2mav::MavHeartbeat::getInstance()->setHeartbeatRsp(respondToHeartbeat);
-    dji2mav::MavWaypoint::getInstance()->setMissionRequestListRsp(respondToMissionRequestList);
-    dji2mav::MavWaypoint::getInstance()->setMissionRequestRsp(respondToMissionRequest);
-    dji2mav::MavWaypoint::getInstance()->setMissionAckRsp(respondToMissionAck);
-    dji2mav::MavWaypoint::getInstance()->setMissionCountRsp(respondToMissionCount);
-    dji2mav::MavWaypoint::getInstance()->setMissionItemRsp(respondToMissionItem);
-    dji2mav::MavWaypoint::getInstance()->setMissionClearAllRsp(respondToMissionClearAll);
-    dji2mav::MavWaypoint::getInstance()->setMissionSetCurrentRsp(respondToMissionSetCurrent);
-    dji2mav::MavWaypoint::getInstance()->setTargetRsp(respondToTarget);
+    container.run();
 
     while( ros::ok() ) {
-        /* Do distribution in loop */
-        dji2mav::MavDistributor::getInstance()->distribute();
-
-        ros::Duration(0.1).sleep();
+        ros::Duration(0.02).sleep();
         ros::spinOnce();
     }
 
-    ROS_INFO("Going to distruct the whole process...");
-    config->distructor();
+    ROS_INFO("Going to destruct the ROS node...");
+    drone->release_sdk_permission_control();
     delete drone;
+    ROS_INFO("...finish. Exit...");
 
     return 0;
 }

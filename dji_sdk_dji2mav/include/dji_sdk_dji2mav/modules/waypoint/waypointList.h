@@ -1,18 +1,16 @@
 /*****************************************************************************
  * @Brief     Functional class for waypoint. Mav-free and ROS-free singleton
- * @Version   0.2.1
+ * @Version   0.3.0
  * @Author    Chris Liu
  * @Created   2015/11/18
- * @Modified  2015/11/24
+ * @Modified  2015/11/25
  *****************************************************************************/
 
 #ifndef _DJI2MAV_WAYPOINTLIST_H_
 #define _DJI2MAV_WAYPOINTLIST_H_
 
 
-#include <iostream>
-#include <new>
-#include <stdio.h>
+#include "dji_sdk_dji2mav/log.h"
 
 namespace dji2mav {
 
@@ -65,7 +63,9 @@ namespace dji2mav {
 
             inline void finishUpload() {
                 if(m_targetIdx != m_listSize) {
-                    printf("Uploaded waypoint list size doesn't matched!\n");
+                    DJI2MAV_ERROR("Uploaded waypoint list size %u doesn't " 
+                            "matched the one %u that is set while init!", 
+                             m_targetIdx, m_listSize);
                 }
                 m_targetIdx = -1;
             }
@@ -82,7 +82,7 @@ namespace dji2mav {
 
 
             inline bool isValidIdx(uint16_t idx) {
-                return (idx < m_listSize) ? true : false;
+                return (idx < m_listSize);
             }
 
 
@@ -229,15 +229,15 @@ namespace dji2mav {
 
 
             void displayMission() {
-                printf("Display the full mission:\n");
+                DJI2MAV_INFO("Display the full waypoint mission:");
                 for(uint16_t i = 0; i < m_listSize; ++i) {
-                    printf("Index %d: param1 %f, param2 %f, param3 %f, "
-                            "param4 %f, lat %f, lon %f, alt %f\n", i, 
+                    DJI2MAV_INFO("Index %d: param1 %f, param2 %f, param3 %f, "
+                            "param4 %f, lat %f, lon %f, alt %f", i, 
                             m_wpList[i][0], m_wpList[i][1], m_wpList[i][2], 
                             m_wpList[i][3], m_wpList[i][4], m_wpList[i][5], 
                             m_wpList[i][6]);
                 }
-                printf("--- End of display ---\n\n");
+                DJI2MAV_INFO("--- End of display ---");
             }
 
 
@@ -249,7 +249,7 @@ namespace dji2mav {
 
     };
 
-}
+} //namespace dji2mav
 
 
 #endif
