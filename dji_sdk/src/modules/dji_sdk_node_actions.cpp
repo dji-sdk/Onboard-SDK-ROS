@@ -23,8 +23,8 @@ bool DJISDKNode::process_waypoint(dji_sdk::Waypoint new_waypoint)
 
 
     DJI::onboardSDK::FlightData flight_ctrl_data;
-    flight_ctrl_data.ctrl_flag = 0x90;
-    flight_ctrl_data.thr_z = dst_altitude;
+    flight_ctrl_data.flag = 0x90;
+    flight_ctrl_data.z = dst_altitude;
     flight_ctrl_data.yaw = new_waypoint.heading;
 
 
@@ -40,8 +40,8 @@ bool DJISDKNode::process_waypoint(dji_sdk::Waypoint new_waypoint)
         double d_lon = dst_longitude - global_position.longitude;
         double d_lat = dst_latitude - global_position.latitude;
 
-        flight_ctrl_data.roll_or_x = ((d_lat) *C_PI/180) * C_EARTH;
-        flight_ctrl_data.pitch_or_y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
+        flight_ctrl_data.x = ((d_lat) *C_PI/180) * C_EARTH;
+        flight_ctrl_data.y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
         rosAdapter->flight->setFlight(&flight_ctrl_data);
 
         det_x = (100 * (dst_latitude - global_position.latitude))/dis_x;
@@ -125,8 +125,8 @@ bool DJISDKNode::local_position_navigation_action_callback(const dji_sdk::LocalP
   float det_x, det_y, det_z;
 
   DJI::onboardSDK::FlightData flight_ctrl_data;
-  flight_ctrl_data.ctrl_flag = 0x90;
-  flight_ctrl_data.thr_z = dst_z;
+  flight_ctrl_data.flag = 0x90;
+  flight_ctrl_data.z = dst_z;
   flight_ctrl_data.yaw = 0;
 
   int x_progress = 0; 
@@ -134,8 +134,8 @@ bool DJISDKNode::local_position_navigation_action_callback(const dji_sdk::LocalP
   int z_progress = 0; 
   while (x_progress < 100 || y_progress < 100 || z_progress <100) {
 
-     flight_ctrl_data.roll_or_x = dst_x - local_position.x;
-     flight_ctrl_data.pitch_or_y = dst_y - local_position.y;
+     flight_ctrl_data.x = dst_x - local_position.x;
+     flight_ctrl_data.y = dst_y - local_position.y;
      rosAdapter->flight->setFlight(&flight_ctrl_data);
 
      det_x = (100 * (dst_x - local_position.x)) / dis_x;
@@ -187,8 +187,8 @@ bool DJISDKNode::global_position_navigation_action_callback(const dji_sdk::Globa
     float det_z;
 
     DJI::onboardSDK::FlightData flight_ctrl_data;
-    flight_ctrl_data.ctrl_flag = 0x90;
-    flight_ctrl_data.thr_z = dst_altitude;
+    flight_ctrl_data.flag = 0x90;
+    flight_ctrl_data.z = dst_altitude;
     flight_ctrl_data.yaw = 0;
 
 
@@ -201,8 +201,8 @@ bool DJISDKNode::global_position_navigation_action_callback(const dji_sdk::Globa
         double d_lon = dst_longitude - global_position.longitude;
         double d_lat = dst_latitude - global_position.latitude;
 
-        flight_ctrl_data.roll_or_x = ((d_lat) *C_PI/180) * C_EARTH;
-        flight_ctrl_data.pitch_or_y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
+        flight_ctrl_data.x = ((d_lat) *C_PI/180) * C_EARTH;
+        flight_ctrl_data.y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
         rosAdapter->flight->setFlight(&flight_ctrl_data);
 
         det_x = (100* (dst_latitude - global_position.latitude))/dis_x;
