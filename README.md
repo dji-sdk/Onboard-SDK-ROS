@@ -18,9 +18,16 @@ It helps users handle the following commands and actions.
 * The attitude control
 * The photo taking procedure
 * The start/stop video recording procedure
+* The Virtual RC control
+* The broadcast frequency control
+* The arm/disarm control
+* The timestamp synchonization procedure
+* The native waypoint task implementation
+* The hotpoint task implementation
+* The follow-me task implementation
 * Local navigation (fly into a certain (X,Y,Z))
 * GPS navigation (fly into a certain GPS coordinate)
-* Waypoint navigation (fly through a series of GPS coordinates)
+* Naive waypoint navigation (fly through a series of GPS coordinates)
 * Using WebSocket together with Baidu Map for navigation 
 * Using MAVLink protocol and QGroundStation
 
@@ -28,7 +35,6 @@ It helps users handle the following commands and actions.
 1. Install and configure your hardware correctly.
 2. Enter the following info into `dji_sdk/launch/sdk_manifold.launch`.
 	* APP ID
-	* APP Level
 	* Communication Key
 	* Uart Device Name
 	* Baudrate
@@ -40,7 +46,7 @@ It helps users handle the following commands and actions.
 * [dji_sdk](dji_sdk): the core package handling the communication with Matrice 100, which provides a header file `dji_drone.h` for future use
 * [dji_sdk_demo](dji_sdk_demo): an example package of using `dji_drone.h` to control the Matrice 100
 * [dji_sdk_web_groundstation](dji_sdk_web_groundstation): a WebSocket example using ROS-bridge-suite, where a webpage groundstatino is provided
-* [dji_sdk_manifold_read_cam](dji_sdk_manifold_read_cam): a X3 video decoding package for Manifold, CATKIN_IGNOREd by defualt
+* [dji_sdk_read_cam](dji_sdk_read_cam): a X3 video decoding package for Manifold, CATKIN_IGNOREd by defualt
 * [dji_sdk_dji2mav](dji_sdk_dji2mav): a protocol converter making M100 compatiable with all MAVLink-protocol-dependent softwares
 * [dji_sdk_doc](dji_sdk_doc): all documents
 
@@ -69,9 +75,16 @@ The below environment has been tested.
 * 对 M100 进行姿态控制
 * 对 M100 进行云台角度控制
 * 向 M100 发送相机控制指令
+* 向 M100 发送虚拟遥控指令
+* 向 M100 发送锁定/解锁指令
+* 向 M100 发送同步时间戳指令
+* 设置 M100 外发数据频率
+* 利用航点任务接口实现航点任务
+* 利用热点任务接口实现热点任务
+* 利用跟随任务接口实现跟随任务
 * 控制 M100 进行 (x,y,z) 坐标导航
 * 控制 M100 进行 GPS 坐标导航
-* 控制 M100 进行航点飞行任务
+* 通过姿态控制指令实现 M100 的航点飞行任务
 * 通过 WebSocket 向 M100 发送网页地图生成的航点指令
 * 通过 MAVLink 和 QGroundControl 控制 M100
 
@@ -80,7 +93,6 @@ The below environment has been tested.
 1. 按照文档配置好 M100 
 2. 将激活信息输入至launch file：`dji_sdk/launch/sdk_manifold.launch`
 	* APP ID （在官网注册key后得到）
-	* API Level （key对应的 API 权限等级）
 	* Communication Key（在官网注册key后得到）
 	* Uart Device Name（串口设备名称）
 	* Baudrate（比特率）
@@ -91,7 +103,7 @@ The below environment has been tested.
 * [dji_sdk](dji_sdk): 核心 ROS 包，处理所有与 M100 的串口通信并提供了 `dji_drone.h`的头文件供开发者引用。
 * [dji_sdk_demo](dji_sdk_demo): 一个调用 `dji_drone.h` 控制 M100 的例子。
 * [dji_sdk_web_groundstation](dji_sdk_web_groundstation): 基于 WebSocket 的网页版地面站，依赖 ROS-bridge-suite 。
-* [dji_sdk_manifold_read_cam](dji_sdk_manifold_read_cam): Manifold专用 ROS 包，对禅思 X3 云台的视频信息进行解码输出视频流。默认通过`CATKIN_IGNORE`禁用，需要手动启用。
+* [dji_sdk_read_cam](dji_sdk_read_cam): Manifold专用 ROS 包，对禅思 X3 云台的视频信息进行解码输出视频流。默认通过`CATKIN_IGNORE`禁用，需要手动启用。
 * [dji_sdk_dji2mav](dji_sdk_dji2mav): MAVLink 协议转接器，使得 M100 可以支持任意使用 MAVLink 为协议的地面站软件。
 * [dji_sdk_doc](dji_sdk_doc): 所有的文档与图片信息。
 
