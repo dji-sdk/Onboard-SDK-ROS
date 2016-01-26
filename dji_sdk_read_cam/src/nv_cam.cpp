@@ -24,7 +24,6 @@ typedef unsigned char   BYTE;
 #define IMAGE_H 720
 #define FRAME_SIZE              IMAGE_W*IMAGE_H*3
 
-#define RGB
 
 unsigned char buffer[FRAME_SIZE] = {0};
 unsigned int frame_size = 0;
@@ -180,14 +179,25 @@ int main(int argc, char **argv)
 	int ret,nKey;
 	int nState = 1;
 	int nCount = 1;
-#ifdef RGB
-	IplImage * pRawImg = cvCreateImage(cvSize(IMAGE_W, IMAGE_H),IPL_DEPTH_8U,3);
-	IplImage * pImg = cvCreateImage(cvSize(640, 480),IPL_DEPTH_8U,3);
-	unsigned char * pData  = new unsigned char[1280 * 720 * 3];
-#else
-	IplImage * pRawImg = cvCreateImage(cvSize(IMAGE_W, IMAGE_H),IPL_DEPTH_8U,1);
-	IplImage * pImg = cvCreateImage(cvSize(640, 480),IPL_DEPTH_8U,1);
-#endif
+
+	int gray_or_rgb = 0;
+
+	IplImage *pRawImg;
+	IplImage *pImg;
+	unsigned char *pData;
+
+	ros::NodeHandle nh_private("~");
+	nh_private.param("gray_or_rgb", gray_or_rgb, 0);
+
+	printf("%d\n",gray_or_rgb);
+	if(gray_or_rgb){
+		pRawImg = cvCreateImage(cvSize(IMAGE_W, IMAGE_H),IPL_DEPTH_8U,3);
+		pImg = cvCreateImage(cvSize(640, 480),IPL_DEPTH_8U,3);
+		pData  = new unsigned char[1280 * 720 * 3];
+	} else{
+		pRawImg = cvCreateImage(cvSize(IMAGE_W, IMAGE_H),IPL_DEPTH_8U,1);
+		pImg = cvCreateImage(cvSize(640, 480),IPL_DEPTH_8U,1);
+	}
 
 	ros::NodeHandle node;
 	image_transport::ImageTransport transport(node);
@@ -237,22 +247,22 @@ int main(int argc, char **argv)
 		if(ret != -1)
 		{
 
-#ifdef RGB
-			NV12ToRGB(buffer,pData,1280,720);
-			memcpy(pRawImg->imageData,pData,FRAME_SIZE);
-#else
-			memcpy(pRawImg->imageData,buffer,FRAME_SIZE/3);
-#endif
+			if(gray_or_rgb){
+				NV12ToRGB(buffer,pData,1280,720);
+				memcpy(pRawImg->imageData,pData,FRAME_SIZE);
+			}else{
+				memcpy(pRawImg->imageData,buffer,FRAME_SIZE/3);
+			}
 			cvResize(pRawImg,pImg,CV_INTER_LINEAR);
 
 			time=ros::Time::now();
 			cvi.header.stamp = time;
 			cvi.header.frame_id = "image";
-#ifdef RGB
-			cvi.encoding = "bgr8";
-#else
-			cvi.encoding = "mono8";
-#endif
+			if(gray_or_rgb){
+				cvi.encoding = "bgr8";
+			}else{
+				cvi.encoding = "mono8";
+			}
 			cvi.image = pImg;
 			cvi.toImageMsg(im);
 			cam_info.header.seq = nCount;
