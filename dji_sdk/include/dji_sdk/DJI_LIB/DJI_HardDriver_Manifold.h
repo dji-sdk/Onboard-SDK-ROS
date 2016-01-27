@@ -115,7 +115,8 @@ class HardDriver_Manifold : public HardDriver {
 
 
         bool _serialOpen(const char* dev) {
-            m_serial_fd = open(dev, O_RDWR | O_NOCTTY);
+            // notice: use O_NONBLOCK to raise the frequency that read data from buffer
+            m_serial_fd = open(dev, O_RDWR | O_NONBLOCK);
             if(m_serial_fd < 0) {
                 API_LOG(this, ERROR_LOG, "cannot open device %s\n", dev);
                 return false;

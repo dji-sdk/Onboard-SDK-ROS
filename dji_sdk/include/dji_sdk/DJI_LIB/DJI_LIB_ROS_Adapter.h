@@ -44,6 +44,8 @@ class ROSAdapter {
             CoreAPI* p_coreAPI = (CoreAPI*)param;
             while(true) {
                 p_coreAPI->readPoll();
+                p_coreAPI->sendPoll();
+                usleep(1000);
             }
         }
 
