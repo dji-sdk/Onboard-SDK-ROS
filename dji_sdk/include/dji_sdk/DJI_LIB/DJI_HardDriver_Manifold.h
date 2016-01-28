@@ -69,8 +69,10 @@ class HardDriver_Manifold : public HardDriver {
         }
 
 
-        time_t getTimeStamp() {
-            return (unsigned int)time(NULL);
+        time_ms getTimeStamp() {
+            struct timespec time;
+            clock_gettime(CLOCK_REALTIME, &time);
+            return (uint64_t)time.tv_sec * 1000 + (uint64_t)(time.tv_nsec / 1.0e6);
         }
 
 

@@ -134,7 +134,7 @@ void DJI::onboardSDK::CoreAPI::appHandler(Header *header)
 void DJI::onboardSDK::CoreAPI::sendPoll()
 {
     unsigned char i;
-    unsigned int curTimestamp;
+    time_ms curTimestamp;
     for (i = 1; i < SESSION_TABLE_NUM; i++)
     {
         if (CMDSessionTab[i].usageFlag == 1)
@@ -182,6 +182,10 @@ void DJI::onboardSDK::CoreAPI::readPoll()
     int read_len;
     uint8_t buf[BUFFER_SIZE];
     read_len = driver->readall(buf, BUFFER_SIZE);
+#ifdef API_BUFFER_DATA
+    onceRead = read_len;
+    totalRead += onceRead;
+#endif // API_BUFFER_DATA
     for (int i = 0; i < read_len; i++)
     {
         byteHandler(buf[i]);
