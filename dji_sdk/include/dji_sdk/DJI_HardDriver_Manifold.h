@@ -13,8 +13,8 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <sys/time.h>
-#include "lib/inc/DJI_Type.h"
-#include "lib/inc/DJI_HardDriver.h"
+#include <dji_sdk_lib/DJI_Type.h>
+#include <dji_sdk_lib/DJI_HardDriver.h>
 
 namespace DJI {
 

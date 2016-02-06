@@ -238,8 +238,9 @@ class CoreAPI
     void setHotPointCallback(CallBackHandler callback) { hotPointCallback = callback; }
     void setWayPointCallback(CallBackHandler callback) { wayPointCallback = callback; }
     void setFollowCallback(CallBackHandler callback) { followCallback = callback; }
+    void setFromMobileCallback(CallBackHandler callback) { fromMobileCallback = callback; }
     void setBroadcastCallback(CallBack handler, UserData userData = 0);
-    void setFromMobileCallback(CallBackHandler FromMobileEntrance);
+    void setFromMobileCallback(CallBack handler, UserData userData = 0);
 
     /*! @note user callback sample
      *  @attention We can also use none-static function as a callback function.

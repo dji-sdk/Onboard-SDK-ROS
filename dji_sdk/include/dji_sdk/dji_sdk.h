@@ -2,7 +2,7 @@
 #define SDK_LIBRARY_H
 
 //SDK library
-#include "DJI_LIB/DJI_LIB_ROS_Adapter.h"
+#include "DJI_LIB_ROS_Adapter.h"
 
 //msgs
 #include <dji_sdk/Acceleration.h>

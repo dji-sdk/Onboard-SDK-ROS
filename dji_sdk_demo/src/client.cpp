@@ -262,7 +262,7 @@ int main(int argc, char **argv)
                     vx = V * sin((V/R)*time/50.0f);
                     vy = V * cos((V/R)*time/50.0f);
         
-                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSSITION |
+                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
                             Flight::VerticalLogic::VERTICAL_VELOCITY |
                             Flight::YawLogic::YAW_ANGLE |
                             Flight::HorizontalCoordinate::HORIZONTAL_BODY |
@@ -277,7 +277,7 @@ int main(int argc, char **argv)
                 /*draw square sample*/
                 for(int i = 0;i < 60;i++)
                 {
-                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSSITION |
+                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
                             Flight::VerticalLogic::VERTICAL_VELOCITY |
                             Flight::YawLogic::YAW_ANGLE |
                             Flight::HorizontalCoordinate::HORIZONTAL_BODY |
@@ -287,7 +287,7 @@ int main(int argc, char **argv)
                 }
                 for(int i = 0;i < 60;i++)
                 {
-                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSSITION |
+                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
                             Flight::VerticalLogic::VERTICAL_VELOCITY |
                             Flight::YawLogic::YAW_ANGLE |
                             Flight::HorizontalCoordinate::HORIZONTAL_BODY |
@@ -297,7 +297,7 @@ int main(int argc, char **argv)
                 }
                 for(int i = 0;i < 60;i++)
                 {
-                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSSITION |
+                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
                             Flight::VerticalLogic::VERTICAL_VELOCITY |
                             Flight::YawLogic::YAW_ANGLE |
                             Flight::HorizontalCoordinate::HORIZONTAL_BODY |
@@ -307,7 +307,7 @@ int main(int argc, char **argv)
                 }
                 for(int i = 0;i < 60;i++)
                 {
-                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSSITION |
+                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
                             Flight::VerticalLogic::VERTICAL_VELOCITY |
                             Flight::YawLogic::YAW_ANGLE |
                             Flight::HorizontalCoordinate::HORIZONTAL_BODY |

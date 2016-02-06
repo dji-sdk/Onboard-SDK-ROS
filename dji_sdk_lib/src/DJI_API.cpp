@@ -162,7 +162,7 @@ void CoreAPI::sendToMobile(uint8_t *data, uint8_t len, CallBack callback, UserDa
         API_LOG(driver, ERROR_LOG, "Too much data to send");
         return;
     }
-    send(2, 0, SET_ACTIVATION, CODE_TOMOBILE, data, len, 500, 2,
+    send(0, 0, SET_ACTIVATION, CODE_TOMOBILE, data, len, 500, 2,
          callback ? callback : CoreAPI::sendToMobileCallback, userData);
 }
 
@@ -363,12 +363,19 @@ void CoreAPI::setControlCallback(CoreAPI *This, Header *header, UserData userDat
     {
         case ACK_SETCONTROL_NEED_MODE_F:
             API_LOG(This->driver, STATUS_LOG, "Obtain control failed, Conditions did not "
-                                              "satisfied");
+                                              "satisfied\n");
             break;
         case ACK_SETCONTROL_RELEASE_SUCCESS:
+            This->getDriver()->lockMSG();
+            This->broadcastData.controlStatus = 0;
+            This->getDriver()->freeMSG();
             API_LOG(This->driver, STATUS_LOG, "release control successfully\n");
             break;
         case ACK_SETCONTROL_OBTAIN_SUCCESS:
+            This->getDriver()->lockMSG();
+            This->broadcastData.controlStatus = 1;
+            This->getDriver()->freeMSG();
+
             API_LOG(This->driver, STATUS_LOG, "obtain control successfully\n");
             break;
         case ACK_SETCONTROL_OBTAIN_RUNNING:
