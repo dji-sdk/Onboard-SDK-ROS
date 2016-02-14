@@ -35,6 +35,7 @@ private:
 	dji_sdk::TimeStamp time_stamp;
 
     bool sdk_permission_opened = false;
+	bool activation_result = false;
     bool localposbase_use_height = true;
 
     int global_position_ref_seted = 0;
@@ -44,6 +45,7 @@ private:
     ActivateData user_act_data;
 
 //Publishers:
+	ros::Publisher activation_publisher;
     ros::Publisher acceleration_publisher;
     ros::Publisher attitude_quaternion_publisher;
     ros::Publisher compass_publisher;
@@ -62,6 +64,7 @@ private:
     void init_publishers(ros::NodeHandle& nh)
     {
         // start ros publisher
+		activation_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/activation", 10);
         acceleration_publisher = nh.advertise<dji_sdk::Acceleration>("dji_sdk/acceleration", 10);
         attitude_quaternion_publisher = nh.advertise<dji_sdk::AttitudeQuaternion>("dji_sdk/attitude_quaternion", 10);
         compass_publisher = nh.advertise<dji_sdk::Compass>("dji_sdk/compass", 10);

@@ -176,12 +176,14 @@ void DJISDKNode::broadcast_callback()
     }
 
     //update obtaincontrol msg
-    if (msg_flags & HAS_TIME) {
-        std_msgs::UInt8 msg;
-        sdk_permission_opened = bc_data.ctrlInfo.data;
-        msg.data = bc_data.ctrlInfo.data;
-        sdk_permission_publisher.publish(msg);
-    }
+	std_msgs::UInt8 msg;
+	sdk_permission_opened = bc_data.ctrlInfo.data;
+	msg.data = bc_data.ctrlInfo.data;
+	sdk_permission_publisher.publish(msg);
+
+	activation_result = bc_data.activation;
+	msg.data = bc_data.activation;
+	activation_publisher.publish(msg);
 
 }
 
