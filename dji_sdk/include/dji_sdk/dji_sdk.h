@@ -12,7 +12,7 @@
 #include <dji_sdk/Gimbal.h>
 #include <dji_sdk/GlobalPosition.h>
 #include <dji_sdk/LocalPosition.h>
-#include <dji_sdk/PowerStatus.h>
+#include <dji_sdk/PowerStatus.h> 
 #include <dji_sdk/RCChannels.h>
 #include <dji_sdk/Velocity.h>
 #include <dji_sdk/Waypoint.h>
@@ -54,18 +54,26 @@
 #include <dji_sdk/MissionWaypoint.h>
 #include <dji_sdk/MissionWaypointTask.h>
 #include <dji_sdk/MissionCancel.h>
-#include <dji_sdk/MissionDownload.h>
 #include <dji_sdk/MissionFmSetTarget.h>
 #include <dji_sdk/MissionFmUpload.h>
 #include <dji_sdk/MissionHpResetYaw.h>
 #include <dji_sdk/MissionHpSetRadius.h>
 #include <dji_sdk/MissionHpSetSpeed.h>
 #include <dji_sdk/MissionHpUpload.h>
+#include <dji_sdk/MissionHpDownload.h>
 #include <dji_sdk/MissionPause.h>
 #include <dji_sdk/MissionStart.h>
 #include <dji_sdk/MissionWpGetSpeed.h>
 #include <dji_sdk/MissionWpSetSpeed.h>
 #include <dji_sdk/MissionWpUpload.h>
+#include <dji_sdk/MissionWpDownload.h>
+#include <dji_sdk/MissionStatusWaypoint.h>
+#include <dji_sdk/MissionStatusHotpoint.h>
+#include <dji_sdk/MissionStatusFollowme.h>
+#include <dji_sdk/MissionStatusOther.h>
+#include <dji_sdk/MissionEventWpUpload.h>
+#include <dji_sdk/MissionEventWpAction.h>
+#include <dji_sdk/MissionEventWpReach.h>
 
 
 #endif

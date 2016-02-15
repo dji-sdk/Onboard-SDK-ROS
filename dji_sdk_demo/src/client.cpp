@@ -21,14 +21,14 @@ static void Display_Main_Menu(void)
 	printf("| [h] Attitude Control Sample   | [z] Mission Pause               |\n");	
 	printf("| [i] Draw Circle Sample        | [1] Mission Resume              |\n");	
 	printf("| [j] Draw Square Sample        | [2] Mission Cancel              |\n");	
-	printf("| [k] Take a Picture            | [3] Mission Download            |\n");	
+	printf("| [k] Take a Picture            | [3] Mission Waypoint Download   |\n");	
 	printf("| [l] Start Record Video        | [4] Mission Waypoint Set Speed  |\n");	 
 	printf("| [m] Stop Record Video         | [5] Mission Waypoint Get Speed  |\n");	
 	printf("| [n] Local Navigation Test     | [6] Mission Hotpoint Set Speed  |\n");	
 	printf("| [o] Global Navigation Test    | [7] Mission Hotpoint Set Radius |\n");	
 	printf("| [p] Waypoint Navigation Test  | [8] Mission Hotpoint Reset Yaw  |\n");	
 	printf("| [q] Arm the Drone             | [9] Mission Followme Set Target |\n");	
-	printf("| [r] Disarm the Drone          | [0] Exit                        |\n");
+	printf("| [r] Disarm the Drone          | [0] Mission Hotpoint Download   |\n");
     printf("+-----------------------------------------------------------------+\n");
     printf("input a/b/c etc..then press enter key\r\n");
     printf("use `rostopic echo` to query drone status\r\n");
@@ -524,8 +524,8 @@ int main(int argc, char **argv)
 				drone->mission_cancel();
 				break;
 			case '3':
-				//mission download
-				drone->mission_download();
+				//waypoint mission download
+				waypoint_task = drone->mission_waypoint_download();
 				break;
 			case '4':
 				//mission waypoint set speed
@@ -559,7 +559,7 @@ int main(int argc, char **argv)
 				}
 				break;
 			case '0':
-				return 0;
+				hotpoint_task = drone->mission_hotpoint_download();
 
             default:
                 break;

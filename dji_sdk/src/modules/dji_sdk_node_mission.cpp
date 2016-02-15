@@ -3,10 +3,9 @@
 DJI::onboardSDK::HotPointData new_hotpoint = {0};
 DJI::onboardSDK::FollowData new_follow = {0};
 
-//TODO set callback in adapter
 void DJISDKMission::mission_status_callback(uint8_t *buf, uint8_t len)
 {
-	DJI::onboardSDK::GSPushData mission_status_data; //= rosAdapter->
+	DJI::onboardSDK::GSPushData mission_status_data;
 
 	memcpy(&mission_status_data, buf, len);
 
@@ -19,10 +18,9 @@ void DJISDKMission::mission_status_callback(uint8_t *buf, uint8_t len)
 	mission_status_publisher.publish(mission_status);
 }
 
-// TODO set callback in adapter
 void DJISDKMission::mission_event_callback(uint8_t *buf, uint8_t len)
 {
-	DJI::onboardSDK::GSPushData mission_event_data; //= rosAdapter ->
+	DJI::onboardSDK::GSPushData mission_event_data;
 
 	memcpy(&mission_event_data, buf, len);
 	mission_event.data_1 = mission_event_data.data_1;
@@ -137,38 +135,37 @@ bool DJISDKMission::mission_cancel_callback(dji_sdk::MissionCancel::Request& req
 }
 
 
-bool DJISDKMission::mission_download_callback(dji_sdk::MissionDownload::Request& request, dji_sdk::MissionDownload::Response& response)
+bool DJISDKMission::mission_wp_download_callback(dji_sdk::MissionWpDownload::Request& request, dji_sdk::MissionWpDownload::Response& response)
 {
-
-	switch(current_type)
+	if (current_type != MissionType::WAYPOINT)
 	{	
-		//different callback
-		case MissionType::WAYPOINT:
-			////DJI_Pro_Mission_Waypoint_Download_Task();
-			//TODO download (for each waypoint in task)
-//TODO: [__CHRIS__b9]
-//--------------------------------------------;
-ROS_INFO("Unsovled problem of downloading");
-			break;
-		
-		case MissionType::HOTPOINT:
-			////DJI_Pro_Mission_Hotpoint_Download();
-//-----------------------------------------------;
-ROS_INFO("Unsovled problem of downloading");
-			break;
-
-		case MissionType::FOLLOWME:
-			//No download for Followme
-//---------------------------------------------------;
-ROS_INFO("Unsovled problem of downloading");
-			break;
-
-		default:
-			return false;
+		ROS_INFO("Drone not in waypoint task!");
+		return false;
 	}
 
-	return true;
+	dji_sdk::MissionWaypointTask waypoint_task;
+	dji_sdk::MissionWaypoint waypont_data;
 
+	//TODO
+
+	response.waypoint_task = waypoint_task;
+	return true;
+}
+
+bool DJISDKMission::mission_hp_download_callback(dji_sdk::MissionHpDownload::Request& request, dji_sdk::MissionHpDownload::Response& response)
+{
+	if (current_type != MissionType::HOTPOINT)
+	{	
+		ROS_INFO("Drone not in hotpoint task!");
+		return false;
+	}
+
+	dji_sdk::MissionHotpointTask hotpoint_task;
+
+	//TODO
+
+	response.hotpoint_task = hotpoint_task;
+	return true;
 }
 
 

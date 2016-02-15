@@ -39,15 +39,16 @@ private:
 	ros::ServiceServer mission_start_service;
 	ros::ServiceServer mission_pause_service;
 	ros::ServiceServer mission_cancel_service;
-	ros::ServiceServer mission_download_service;
 
 	//subscriber running when operating waypoint
 	ros::ServiceServer mission_wp_upload_service;
+	ros::ServiceServer mission_wp_download_service;
 	ros::ServiceServer mission_wp_set_speed_service;
 	ros::ServiceServer mission_wp_get_speed_service;
 
 	//subscriber running when operating hotpoint
 	ros::ServiceServer mission_hp_upload_service;
+	ros::ServiceServer mission_hp_download_service;
 	ros::ServiceServer mission_hp_set_speed_service;
 	ros::ServiceServer mission_hp_set_radius_service;
 	ros::ServiceServer mission_hp_reset_yaw_service;
@@ -61,11 +62,12 @@ private:
 	bool mission_start_callback(dji_sdk::MissionStart::Request& request, dji_sdk::MissionStart::Response& response);
 	bool mission_pause_callback(dji_sdk::MissionPause::Request& request, dji_sdk::MissionPause::Response& response);
 	bool mission_cancel_callback(dji_sdk::MissionCancel::Request& request, dji_sdk::MissionCancel::Response& response);
-	bool mission_download_callback(dji_sdk::MissionDownload::Request& request, dji_sdk::MissionDownload::Response& response);
 	bool mission_wp_upload_callback(dji_sdk::MissionWpUpload::Request& request, dji_sdk::MissionWpUpload::Response& response);
+	bool mission_wp_download_callback(dji_sdk::MissionWpDownload::Request& request, dji_sdk::MissionWpDownload::Response& response);
 	bool mission_wp_get_speed_callback(dji_sdk::MissionWpGetSpeed::Request& request, dji_sdk::MissionWpGetSpeed::Response& response);
 	bool mission_wp_set_speed_callback(dji_sdk::MissionWpSetSpeed::Request& request, dji_sdk::MissionWpSetSpeed::Response& response);
 	bool mission_hp_upload_callback(dji_sdk::MissionHpUpload::Request& request, dji_sdk::MissionHpUpload::Response& response);
+	bool mission_hp_download_callback(dji_sdk::MissionHpDownload::Request& request, dji_sdk::MissionHpDownload::Response& response);
 	bool mission_hp_set_speed_callback(dji_sdk::MissionHpSetSpeed::Request& request, dji_sdk::MissionHpSetSpeed::Response& response);
 	bool mission_hp_set_radius_callback(dji_sdk::MissionHpSetRadius::Request& request, dji_sdk::MissionHpSetRadius::Response& response);
 	bool mission_hp_reset_yaw_callback(dji_sdk::MissionHpResetYaw::Request& request, dji_sdk::MissionHpResetYaw::Response& response);
@@ -81,11 +83,12 @@ private:
 		mission_start_service = nh.advertiseService("dji_sdk/mission_start", &DJISDKMission::mission_start_callback ,this);
 		mission_pause_service = nh.advertiseService("dji_sdk/mission_pause", &DJISDKMission::mission_pause_callback ,this);
 		mission_cancel_service = nh.advertiseService("dji_sdk/mission_cancel", &DJISDKMission::mission_cancel_callback ,this);
-		mission_download_service = nh.advertiseService("dji_sdk/mission_download", &DJISDKMission::mission_download_callback,this);
 		mission_wp_upload_service = nh.advertiseService("dji_sdk/mission_waypoint_upload", &DJISDKMission::mission_wp_upload_callback,this);
+		mission_wp_download_service = nh.advertiseService("dji_sdk/mission_waypoint_download", &DJISDKMission::mission_wp_download_callback,this);
 		mission_wp_set_speed_service = nh.advertiseService("dji_sdk/mission_waypoint_set_speed", &DJISDKMission::mission_wp_set_speed_callback ,this);
 		mission_wp_get_speed_service = nh.advertiseService("dji_sdk/mission_waypoint_get_speed", &DJISDKMission::mission_wp_get_speed_callback ,this);
 		mission_hp_upload_service = nh.advertiseService("dji_sdk/mission_hotpoint_upload", &DJISDKMission::mission_hp_upload_callback ,this);
+		mission_hp_download_service = nh.advertiseService("dji_sdk/mission_hotpoint_download", &DJISDKMission::mission_hp_download_callback,this);
 		mission_hp_set_speed_service = nh.advertiseService("dji_sdk/mission_hotpoint_set_speed", &DJISDKMission::mission_hp_set_speed_callback ,this);
 		mission_hp_set_radius_service = nh.advertiseService("dji_sdk/mission_hotpoint_set_radius", &DJISDKMission::mission_hp_set_radius_callback ,this);
 		mission_hp_reset_yaw_service = nh.advertiseService("dji_sdk/mission_hotpoint_reset_yaw", &DJISDKMission::mission_hp_reset_yaw_callback ,this);

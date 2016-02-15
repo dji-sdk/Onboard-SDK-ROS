@@ -1,0 +1,3 @@
+uint8 incident_type
+uint8 mission_valid
+uint16 estimated_runtime

@@ -75,6 +75,13 @@ add_message_files(
   MissionHotpointTask.msg
   MissionFollowmeTask.msg
   MissionFollowmeTarget.msg
+  MissionStatusWaypoint.msg
+  MissionStatusHotpoint.msg
+  MissionStatusFollowme.msg
+  MissionStatusOther.msg
+  MissionEventWpUpload.msg
+  MissionEventWpAction.msg
+  MissionEventWpReach.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -102,11 +109,12 @@ add_service_files(
   MissionStart.srv
   MissionPause.srv
   MissionCancel.srv
-  MissionDownload.srv
   MissionWpUpload.srv
   MissionWpSetSpeed.srv
   MissionWpGetSpeed.srv
+  MissionWpDownload.srv
   MissionHpUpload.srv
+  MissionHpDownload.srv
   MissionHpSetSpeed.srv
   MissionHpSetRadius.srv
   MissionHpResetYaw.srv

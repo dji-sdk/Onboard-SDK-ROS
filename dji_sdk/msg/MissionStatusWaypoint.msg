@@ -1,0 +1,4 @@
+uint8 mission_type
+uint8 target_waypoint
+uint8 current_status
+uint8 error_code
