@@ -60,6 +60,18 @@ class ROSAdapter {
             ( (ROSAdapter*)userData )->m_fromMobileCallback(data, len);
 		}
 
+		static void missionStatusCallback(CoreAPI *coreAPI, Header *header, void *userData) {
+			uint8_t *data = ((unsigned char*) header) + sizeof(Header) + SET_CMD_SIZE;
+			uint8_t len = header->length - SET_CMD_SIZE - EXC_DATA_SIZE;
+            ( (ROSAdapter*)userData )->m_missionStatusCallback(data, len);
+		}
+
+		static void missionEventCallback(CoreAPI *coreAPI, Header *header, void *userData) {
+			uint8_t *data = ((unsigned char*) header) + sizeof(Header) + SET_CMD_SIZE;
+			uint8_t len = header->length - SET_CMD_SIZE - EXC_DATA_SIZE;
+            ( (ROSAdapter*)userData )->m_missionEventCallback(data, len);
+		}
+
         void init(std::string device, unsigned int baudrate) {
             printf("--- Connection Info ---\n");
             printf("Serial port: %s\n", device.c_str());
@@ -102,12 +114,24 @@ class ROSAdapter {
             coreAPI->setBroadcastCallback(&ROSAdapter::broadcastCallback, (UserData)this);
         }
 
-
 		template<class T>
 		void setFromMobileCallback( void (T::*func)(uint8_t *, uint8_t), T *obj) {
 		m_fromMobileCallback = std::bind(func, obj, std::placeholders::_1, std::placeholders::_2);
 		coreAPI->setFromMobileCallback(&ROSAdapter::fromMobileCallback, (UserData)this);
 		}
+
+		template<class T>
+		void setMissionStatusCallback( void (T::*func)(uint8_t *, uint8_t), T *obj) {
+		m_missionStatusCallback= std::bind(func, obj, std::placeholders::_1, std::placeholders::_2);
+		coreAPI->setWayPointCallback(&ROSAdapter::missionStatusCallback, (UserData)this);
+		}
+
+		template<class T>
+		void setMissionEventCallback( void (T::*func)(uint8_t *, uint8_t), T *obj) {
+		m_missionEventCallback = std::bind(func, obj, std::placeholders::_1, std::placeholders::_2);
+		coreAPI->setWayPointEventCallback(&ROSAdapter::missionEventCallback, (UserData)this);
+		}
+
 /*
         BroadcastData getBroadcastData() {
             return coreAPI->getBroadcastData();
@@ -142,6 +166,9 @@ class ROSAdapter {
 
 		std::function<void(uint8_t*, uint8_t)> m_fromMobileCallback;
 
+		std::function<void(uint8_t*, uint8_t)> m_missionStatusCallback;
+
+		std::function<void(uint8_t*, uint8_t)> m_missionEventCallback;
 };
 
 

@@ -28,6 +28,8 @@ private:
 	
 public:
 	DJISDKMission(ros::NodeHandle& nh);
+	void mission_status_callback(uint8_t *buf, uint8_t len);
+	void mission_event_callback(uint8_t *buf, uint8_t len);
 private:
 	//mission data publisher, processing data from N1
 	ros::Publisher mission_status_publisher;
@@ -70,8 +72,6 @@ private:
 	bool mission_fm_upload_callback(dji_sdk::MissionFmUpload::Request& request, dji_sdk::MissionFmUpload::Response& response);
 	bool mission_fm_set_target_callback(dji_sdk::MissionFmSetTarget::Request& request, dji_sdk::MissionFmSetTarget::Response& response);
 
-	void mission_status_callback();
-	void mission_event_callback();
 
 	void init_missions(ros::NodeHandle& nh)
 	{

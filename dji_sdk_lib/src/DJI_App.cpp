@@ -126,50 +126,18 @@ void DJI::onboardSDK::CoreAPI::recvReqData(Header *header)
                 }
                 break;
             case CODE_MISSION:
-                //! @todo add mission session decode
-                switch (ack)
-                {
-                    case MISSION_MODE_A:
-                        break;
-                    case MISSION_WAYPOINT:
-                        if (wayPointData)
-                        {
-                            if (wayPointCallback.callback)
-                                wayPointCallback.callback(this, header,
-                                                          wayPointCallback.userData);
-                            else
-                                API_LOG(driver, STATUS_LOG, "Mode waypoint \n");
-                        }
-                        break;
-                    case MISSION_HOTPOINT:
-                        if (hotPointData)
-                        {
-                            if (hotPointCallback.callback)
-                                hotPointCallback.callback(this, header,
-                                                          hotPointCallback.userData);
-                            else
-                                API_LOG(driver, STATUS_LOG, "Mode HP \n");
-                        }
-                        break;
-                    case MISSION_FOLLOW:
-                        if (followData)
-                        {
-                            if (followCallback.callback)
-                                followCallback.callback(this, header, followCallback.userData);
-                            else
-                                API_LOG(driver, STATUS_LOG, "Mode Follow \n");
-                        }
-                        break;
-                    case MISSION_IOC:
-                        API_LOG(driver, STATUS_LOG, "Mode IOC \n");
-                        break;
-                    default:
-                        API_LOG(driver, ERROR_LOG, "unkown mission code 0x%X \n", ack);
-                        break;
-                }
+                //mission status push info
+				if (wayPointCallback.callback)
+					wayPointCallback.callback(this, header,
+							wayPointCallback.userData);
                 break;
             case CODE_WAYPOINT:
-                //! @todo add waypoint session decode
+				//mission event push info
+				if (wayPointEventCallback.callback)
+					wayPointEventCallback.callback(this, header,
+							wayPointEventCallback.userData);
+				else
+					API_LOG(driver, STATUS_LOG, "WAYPOINT DATA");
                 break;
             default:
                 API_LOG(driver, STATUS_LOG, "error, unknown BROADCAST command code\n");
@@ -193,3 +161,17 @@ void CoreAPI::setFromMobileCallback(CallBack handler, UserData userData)
     fromMobileCallback.callback = handler;
     fromMobileCallback.userData = userData;
 }
+
+void CoreAPI::setWayPointCallback(CallBack handler, UserData userData)
+{
+    wayPointCallback.callback = handler;
+    wayPointCallback.userData = userData;
+}
+
+void CoreAPI::setWayPointEventCallback(CallBack handler, UserData userData)
+{
+    wayPointEventCallback.callback = handler;
+    wayPointEventCallback.userData = userData;
+}
+
+

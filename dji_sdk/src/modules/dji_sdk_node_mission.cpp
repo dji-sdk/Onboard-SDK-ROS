@@ -3,9 +3,12 @@
 DJI::onboardSDK::HotPointData new_hotpoint = {0};
 DJI::onboardSDK::FollowData new_follow = {0};
 
-void DJISDKMission::mission_status_callback()
+//TODO set callback in adapter
+void DJISDKMission::mission_status_callback(uint8_t *buf, uint8_t len)
 {
 	DJI::onboardSDK::GSPushData mission_status_data; //= rosAdapter->
+
+	memcpy(&mission_status_data, buf, len);
 
 	mission_status.type = mission_status_data.type;
 	mission_status.data_1 = mission_status_data.data_1;
@@ -16,11 +19,12 @@ void DJISDKMission::mission_status_callback()
 	mission_status_publisher.publish(mission_status);
 }
 
-
-void DJISDKMission::mission_event_callback()
+// TODO set callback in adapter
+void DJISDKMission::mission_event_callback(uint8_t *buf, uint8_t len)
 {
 	DJI::onboardSDK::GSPushData mission_event_data; //= rosAdapter ->
 
+	memcpy(&mission_event_data, buf, len);
 	mission_event.data_1 = mission_event_data.data_1;
 	mission_event.data_2 = mission_event_data.data_2;
 	mission_event.data_3 = mission_event_data.data_3;
@@ -338,6 +342,10 @@ bool DJISDKMission::mission_fm_set_target_callback(dji_sdk::MissionFmSetTarget::
 DJISDKMission::DJISDKMission(ros::NodeHandle& nh)
 {
 	init_missions(nh);
+
+    rosAdapter->setMissionStatusCallback(&DJISDKMission::mission_status_callback, this);
+    rosAdapter->setMissionEventCallback(&DJISDKMission::mission_event_callback, this);
+
 }
 
 
