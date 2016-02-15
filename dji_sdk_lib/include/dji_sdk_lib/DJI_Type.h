@@ -344,6 +344,16 @@ typedef struct BroadcastData
     uint8_t activation;
 } BroadcastData;
 
+typedef struct GSPushData
+{
+	unsigned char type;
+	unsigned char data_1;
+	unsigned char data_2;
+	unsigned char data_3;
+	unsigned char data_4;
+	unsigned char data_5;
+} GSPushData;
+
 typedef struct VirtualRCSetting
 {
     uint8_t enable : 1;

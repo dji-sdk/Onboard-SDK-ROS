@@ -19,6 +19,9 @@ enum class MissionType
 class DJISDKMission
 {
 private:
+	dji_sdk::MissionPushInfo mission_status;
+	dji_sdk::MissionPushInfo mission_event;
+
 	dji_sdk::MissionWaypointTask waypoint_task;
 	dji_sdk::MissionHotpointTask hotpoint_task;
 	dji_sdk::MissionFollowmeTask followme_task;
@@ -27,7 +30,7 @@ public:
 	DJISDKMission(ros::NodeHandle& nh);
 private:
 	//mission data publisher, processing data from N1
-	ros::Publisher mission_state_publisher;
+	ros::Publisher mission_status_publisher;
 	ros::Publisher mission_event_publisher;
 
 	//common mission request subscriber
@@ -67,12 +70,12 @@ private:
 	bool mission_fm_upload_callback(dji_sdk::MissionFmUpload::Request& request, dji_sdk::MissionFmUpload::Response& response);
 	bool mission_fm_set_target_callback(dji_sdk::MissionFmSetTarget::Request& request, dji_sdk::MissionFmSetTarget::Response& response);
 
-	void mission_state_callback();
+	void mission_status_callback();
 	void mission_event_callback();
 
 	void init_missions(ros::NodeHandle& nh)
 	{
-		mission_state_publisher = nh.advertise<dji_sdk::MissionPushInfo>("dji_sdk/mission_state", 10);
+		mission_status_publisher = nh.advertise<dji_sdk::MissionPushInfo>("dji_sdk/mission_status", 10);
 		mission_event_publisher = nh.advertise<dji_sdk::MissionPushInfo>("dji_sdk/mission_event", 10);
 
 		mission_start_service = nh.advertiseService("dji_sdk/mission_start", &DJISDKMission::mission_start_callback ,this);

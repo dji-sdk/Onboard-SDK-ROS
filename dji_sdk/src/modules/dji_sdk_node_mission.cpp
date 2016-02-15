@@ -3,47 +3,30 @@
 DJI::onboardSDK::HotPointData new_hotpoint = {0};
 DJI::onboardSDK::FollowData new_follow = {0};
 
-void DJISDKMission::mission_state_callback()
+void DJISDKMission::mission_status_callback()
 {
-////
-/*
-	cmd_mission_common_data_t mission_state_data;
-	dji_sdk::MissionPushInfo mission_state;
-	////DJI_Pro_Get_Mission_State_Data(&mission_state_data);
-	mission_state.type = mission_state_data.type;
-	mission_state.data_1 = mission_state_data.data_1;
-	mission_state.data_2 = mission_state_data.data_2;
-	mission_state.data_3 = mission_state_data.data_3;
-	mission_state.data_4 = mission_state_data.data_4;
-	mission_state.data_5 = mission_state_data.data_5;
-	mission_state_publisher.publish(mission_state);
-*/
-////
-//TODO: [__CHRIS__b2]
-ROS_INFO("Unsolved state callback.");
-	//--------------------------------------------------;
+	DJI::onboardSDK::GSPushData mission_status_data; //= rosAdapter->
+
+	mission_status.type = mission_status_data.type;
+	mission_status.data_1 = mission_status_data.data_1;
+	mission_status.data_2 = mission_status_data.data_2;
+	mission_status.data_3 = mission_status_data.data_3;
+	mission_status.data_4 = mission_status_data.data_4;
+	mission_status.data_5 = mission_status_data.data_5;
+	mission_status_publisher.publish(mission_status);
 }
 
 
 void DJISDKMission::mission_event_callback()
 {
-////
-/*
-	cmd_mission_common_data_t mission_event_data;
-	dji_sdk::MissionPushInfo mission_event;
-	////DJI_Pro_Get_Mission_Event_Data(&mission_event_data);
+	DJI::onboardSDK::GSPushData mission_event_data; //= rosAdapter ->
+
 	mission_event.data_1 = mission_event_data.data_1;
 	mission_event.data_2 = mission_event_data.data_2;
 	mission_event.data_3 = mission_event_data.data_3;
 	mission_event.data_4 = mission_event_data.data_4;
 	mission_event.data_5 = mission_event_data.data_5;
 	mission_event_publisher.publish(mission_event);
-*/
-////
-//TODO: [__CHRIS__b3]
-ROS_INFO("Unsolve event callback.");
-	//-------------------------------------------------;
-
 }
 
 
@@ -355,9 +338,6 @@ bool DJISDKMission::mission_fm_set_target_callback(dji_sdk::MissionFmSetTarget::
 DJISDKMission::DJISDKMission(ros::NodeHandle& nh)
 {
 	init_missions(nh);
-//[__CHRIS__]
-	////DJI_Pro_Register_Mission_State_Callback(std::bind(&DJISDKMission::mission_state_callback,this));
-	////DJI_Pro_Register_Mission_Event_Callback(std::bind(&DJISDKMission::mission_event_callback,this));
 }
 
 

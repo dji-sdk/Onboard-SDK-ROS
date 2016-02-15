@@ -280,3 +280,10 @@ bool DJISDKNode::message_frequency_control_callback(dji_sdk::MessageFrequencyCon
 	return true;
 }
 
+bool DJISDKNode::send_data_to_remote_device_callback(dji_sdk::SendDataToRemoteDevice::Request& request, dji_sdk::SendDataToRemoteDevice::Response& response)
+{
+	memcpy(transparent_transmission_data, &request.data[0], request.data.size());
+	rosAdapter->sendToMobile(transparent_transmission_data, request.data.size());
+	response.result = true;
+	return true;
+}

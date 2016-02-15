@@ -34,6 +34,7 @@ private:
     nav_msgs::Odometry odometry;
 	dji_sdk::TimeStamp time_stamp;
 
+
     bool sdk_permission_opened = false;
 	bool activation_result = false;
     bool localposbase_use_height = true;
@@ -42,6 +43,7 @@ private:
 
 //internal variables
     char app_key[65];
+	unsigned char transparent_transmission_data[100];
     ActivateData user_act_data;
 
 //Publishers:
@@ -60,6 +62,7 @@ private:
     ros::Publisher odometry_publisher;
     ros::Publisher sdk_permission_publisher;
     ros::Publisher time_stamp_publisher;
+	ros::Publisher data_received_from_remote_device_publisher;
 
     void init_publishers(ros::NodeHandle& nh)
     {
@@ -79,6 +82,7 @@ private:
         odometry_publisher = nh.advertise<nav_msgs::Odometry>("dji_sdk/odometry",10);
         sdk_permission_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/sdk_permission", 10);
         time_stamp_publisher = nh.advertise<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10);
+		data_received_from_remote_device_publisher = nh.advertise<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device",10);
     }
 
 //Services:
@@ -93,6 +97,7 @@ private:
     ros::ServiceServer sdk_permission_control_service;
     ros::ServiceServer velocity_control_service;
     ros::ServiceServer version_check_service;
+	ros::ServiceServer send_data_to_remote_device_service;
 
 	ros::ServiceServer virtual_rc_enable_control_service;
 	ros::ServiceServer virtual_rc_data_control_service;
@@ -116,6 +121,7 @@ private:
 	bool sync_flag_control_callback(dji_sdk::SyncFlagControl::Request& request, dji_sdk::SyncFlagControl::Response& response);
 	bool message_frequency_control_callback(dji_sdk::MessageFrequencyControl::Request& request, dji_sdk::MessageFrequencyControl::Response& response);
 	bool version_check_callback(dji_sdk::VersionCheck::Request& requset, dji_sdk::VersionCheck::Response& response);
+	bool send_data_to_remote_device_callback(dji_sdk::SendDataToRemoteDevice::Request& request, dji_sdk::SendDataToRemoteDevice::Response& response);
 
     void init_services(ros::NodeHandle& nh)
     {
@@ -135,7 +141,7 @@ private:
 		drone_arm_control_service = nh.advertiseService("dji_sdk/drone_arm_control", &DJISDKNode::drone_arm_control_callback, this);
 		sync_flag_control_service = nh.advertiseService("dji_sdk/sync_flag_control", &DJISDKNode::sync_flag_control_callback, this);
 		message_frequency_control_service = nh.advertiseService("dji_sdk/message_frequency_control", &DJISDKNode::message_frequency_control_callback, this);
-		
+		send_data_to_remote_device_service = nh.advertiseService("dji_sdk/send_data_to_remote_device", &DJISDKNode::send_data_to_remote_device_callback,this);
     }
 
 //Actions:
@@ -192,6 +198,7 @@ public:
 private:
     int init_parameters(ros::NodeHandle& nh_private);
     void broadcast_callback();
+	void transparent_transmission_callback(unsigned char *buf, unsigned char len);
 
     bool process_waypoint(dji_sdk::Waypoint new_waypoint);
 

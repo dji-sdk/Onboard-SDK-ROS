@@ -54,6 +54,11 @@ class ROSAdapter {
             ( (ROSAdapter*)userData )->m_broadcastCallback();
         }
 
+		static void fromMobileCallback(CoreAPI *coreAPI, Header *header, void *userData) {
+			uint8_t *data = ((unsigned char*) header) + sizeof(Header) + SET_CMD_SIZE;
+			uint8_t len = header->length - SET_CMD_SIZE - EXC_DATA_SIZE;
+            ( (ROSAdapter*)userData )->m_fromMobileCallback(data, len);
+		}
 
         void init(std::string device, unsigned int baudrate) {
             printf("--- Connection Info ---\n");
@@ -86,11 +91,9 @@ class ROSAdapter {
         }
 
 
-/*
         void activate(ActivateData *data, CallBack callback) {
             coreAPI->activate(data, callback);
         }
-*/
 
 
         template<class T>
@@ -100,12 +103,20 @@ class ROSAdapter {
         }
 
 
+		template<class T>
+		void setFromMobileCallback( void (T::*func)(uint8_t *, uint8_t), T *obj) {
+		m_fromMobileCallback = std::bind(func, obj, std::placeholders::_1, std::placeholders::_2);
+		coreAPI->setFromMobileCallback(&ROSAdapter::fromMobileCallback, (UserData)this);
+		}
 /*
         BroadcastData getBroadcastData() {
             return coreAPI->getBroadcastData();
         }
 */
 
+		void sendToMobile(uint8_t *data, uint8_t len){
+			coreAPI->sendToMobile(data, len, NULL, NULL);
+		}
 
         void usbHandshake(std::string &device) {
             m_hd->usbHandshake(device);
@@ -129,6 +140,7 @@ class ROSAdapter {
 
         std::function<void()> m_broadcastCallback;
 
+		std::function<void(uint8_t*, uint8_t)> m_fromMobileCallback;
 
 };
 

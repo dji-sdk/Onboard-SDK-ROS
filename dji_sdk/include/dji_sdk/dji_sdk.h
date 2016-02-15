@@ -17,7 +17,7 @@
 #include <dji_sdk/Velocity.h>
 #include <dji_sdk/Waypoint.h>
 #include <dji_sdk/WaypointList.h>
-
+#include <dji_sdk/TransparentTransmissionData.h>
 #include <dji_sdk/TimeStamp.h>
 
 //srvs
@@ -32,7 +32,7 @@
 #include <dji_sdk/SDKPermissionControl.h>
 #include <dji_sdk/VelocityControl.h>
 #include <dji_sdk/VersionCheck.h>
-
+#include <dji_sdk/SendDataToRemoteDevice.h>
 #include <dji_sdk/DroneArmControl.h>
 #include <dji_sdk/SyncFlagControl.h>
 #include <dji_sdk/MessageFrequencyControl.h>

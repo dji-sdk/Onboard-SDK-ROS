@@ -5,6 +5,15 @@
 //----------------------------------------------------------
 // timer spin_function 50Hz
 //----------------------------------------------------------
+
+void DJISDKNode::transparent_transmission_callback(uint8_t *buf, uint8_t len)
+{
+	dji_sdk::TransparentTransmissionData transparent_transmission_data;
+	transparent_transmission_data.data.resize(len);
+	memcpy(&transparent_transmission_data.data[0], buf, len);
+	data_received_from_remote_device_publisher.publish(transparent_transmission_data);
+
+}
 void DJISDKNode::broadcast_callback()
 {
     DJI::onboardSDK::BroadcastData bc_data = rosAdapter->coreAPI->getBroadcastData();
@@ -246,8 +255,9 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
 
     rosAdapter->init(serial_name, baud_rate);
 
-    rosAdapter->coreAPI->activate(&user_act_data, NULL);
+    rosAdapter->activate(&user_act_data, NULL);
     rosAdapter->setBroadcastCallback(&DJISDKNode::broadcast_callback, this);
+	rosAdapter->setFromMobileCallback(&DJISDKNode::transparent_transmission_callback,this);
 
     return 0;
 }

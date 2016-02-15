@@ -65,7 +65,7 @@ add_message_files(
   Velocity.msg
   Waypoint.msg
   WaypointList.msg
-
+  TransparentTransmissionData.msg
   TimeStamp.msg
 
   MissionPushInfo.msg
@@ -89,6 +89,7 @@ add_service_files(
   GlobalPositionControl.srv
   LocalPositionControl.srv
   SDKPermissionControl.srv
+  SendDataToRemoteDevice.srv
   VelocityControl.srv
   VersionCheck.srv
 
