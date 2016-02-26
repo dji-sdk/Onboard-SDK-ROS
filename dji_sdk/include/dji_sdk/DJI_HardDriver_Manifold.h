@@ -70,10 +70,16 @@ class HardDriver_Manifold : public HardDriver {
 
 
         time_ms getTimeStamp() {
+#ifdef __MACH__
+			struct timeval now;
+			gettimeofday(&now, NULL);
+			return (uint64_t)now.tv_sec * 1000 + (uint64_t) (now.tv_usec / 1.0e3);
+#else
             struct timespec time;
-            clock_gettime(CLOCK_REALTIME, &time);
-            return (uint64_t)time.tv_sec * 1000 + (uint64_t)(time.tv_nsec / 1.0e6);
-        }
+			clock_gettime(CLOCK_REALTIME, &time);
+			return (uint64_t)time.tv_sec * 1000 + (uint64_t)(time.tv_nsec / 1.0e6);
+#endif
+		}
 
 
         size_t send(const uint8_t *buf, size_t len) {
