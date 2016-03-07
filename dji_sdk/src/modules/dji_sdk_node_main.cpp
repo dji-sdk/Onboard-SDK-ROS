@@ -204,17 +204,16 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     int baud_rate;
     int app_id;
     int app_version;
-    std::string app_bundle_id;
+    std::string app_bundle_id; //reserved
     std::string enc_key;
 
     int uart_or_usb;
     int A3_or_M100;
 
-    nh_private.param("serial_name", serial_name, std::string("/dev/cu.usbserial-A603T4HK"));
+    nh_private.param("serial_name", serial_name, std::string("/dev/ttyTHS1"));
     nh_private.param("baud_rate", baud_rate, 230400);
     nh_private.param("app_id", app_id, 1022384);
     nh_private.param("app_version", app_version, 1);
-    nh_private.param("app_bundle_id", app_bundle_id, std::string("12345678901234567890123456789012"));
     nh_private.param("enc_key", enc_key,
             std::string("e7bad64696529559318bb35d0a8c6050d3b88e791e1808cfe8f7802150ee6f0d"));
 
@@ -238,7 +237,6 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     {
         user_act_data.version = 0x03016400;
     }
-    strcpy( (char*) user_act_data.iosID, app_bundle_id.c_str() );
     user_act_data.encKey = app_key;
     strcpy(user_act_data.encKey, enc_key.c_str());
 
