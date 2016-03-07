@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 	//virtual RC test data
 	uint32_t virtual_rc_data[16];
 	//set frequency test data
-	uint8_t  msg_frequency_data[16] = {2};
+	uint8_t msg_frequency_data[16] = {1,2,3,4,3,2,1,2,3,4,3,2,1,2,3,4};
 	//waypoint action test data
     dji_sdk::WaypointList newWaypointList;
     dji_sdk::Waypoint waypoint0;
