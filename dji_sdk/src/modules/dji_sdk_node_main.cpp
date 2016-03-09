@@ -27,7 +27,7 @@ void DJISDKNode::broadcast_callback()
     if(msg_flags & HAS_TIME){
         time_stamp.header.frame_id = "/time";
         time_stamp.header.stamp = current_time;
-        time_stamp.time_ms = bc_data.timeStamp.time;
+        time_stamp.time = bc_data.timeStamp.time;
         time_stamp.time_ns = bc_data.timeStamp.nanoTime;
         time_stamp.sync_flag = bc_data.timeStamp.syncFlag;
         time_stamp_publisher.publish(time_stamp);
@@ -93,6 +93,7 @@ void DJISDKNode::broadcast_callback()
         velocity.vx = bc_data.v.x;
         velocity.vy = bc_data.v.y;
         velocity.vz = bc_data.v.z;
+        velocity.health_flag = bc_data.v.health;
         velocity_publisher.publish(velocity);
     }
 

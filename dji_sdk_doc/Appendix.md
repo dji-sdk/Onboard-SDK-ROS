@@ -1,5 +1,7 @@
 ##Appendix
 
+**Note: The ground station related msgs and srvs are not listed here, what named waypoint are not SDK waypoint protocol but an actionLib implemented logic.**
+
 ####Topic list:
 
 ```xml
@@ -55,16 +57,22 @@
 	info: current state of control ability
 	type: std_msgs/UInt8
 
+/dji_sdk/time_stamp
+	info: current time stamp information
+	type: dji_sdk/TimeStamp
+
 /dji_sdk/velocity
 	info: current velocity
 	type: dji_sdk/Velocity
-
 
 Note: the topics ending with `cancel`,`feedback`,`goal`,`result`,`status` are auto generated topics by the actionLib.
 
 ```
 
 ####Msg List
+
+**Note: there are two timestamps in msgs. The first one is the timestamp in ROS header, which is the timestamp from ROS. The other one called ts comes from the drone, it is a timestamp from Matrice 100, unit in 1/400s.**
+
 ```xml
 dji_sdk/GlobalPositionNavigationAction
 dji_sdk/GlobalPositionNavigationActionFeedback
@@ -212,6 +220,15 @@ dji_sdk/RCChannels
 	float32 mode
 	float32 gear_up
 
+dji_sdk/TimeStamp
+	std_msgs/Header header
+	  uint32 seq
+	  time stamp
+	  string frame_id
+	uint32 time 	#unit is 1/400s
+	uint32 time_ns  #unit is nano second, overflow every 4 sec
+	uint8 sync_flag
+
 dji_sdk/Velocity
 	std_msgs/Header header
 	  uint32 seq
@@ -221,9 +238,7 @@ dji_sdk/Velocity
 	float32 vx
 	float32 vy
 	float32 vz
-	#health_flag and sensor id are received from Guidance
-	uint8 health_flag
-	uint8 feedback_sensor_id
+	uint8 health_flag (0:not trustable or 1:trustable)
 
 
 dji_sdk/Waypoint
@@ -356,6 +371,8 @@ dji_sdk/SDKPermissionControl
 	bool result
 
 dji_sdk/VelocityControl
+	# body frame: 0, with stable mode 
+	#world frame: 1, with stable mode
 	uint8 frame
 	float32 vx
 	float32 vy

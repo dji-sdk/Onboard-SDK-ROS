@@ -187,10 +187,10 @@ bool DJISDKNode::velocity_control_callback(dji_sdk::VelocityControl::Request& re
     DJI::onboardSDK::FlightData flight_ctrl_data;
     if (request.frame)
         //world frame 
-        flight_ctrl_data.flag = 0x40;
+        flight_ctrl_data.flag = 0x41;
     else
         //body frame
-        flight_ctrl_data.flag = 0x42;
+        flight_ctrl_data.flag = 0x43;
 
     flight_ctrl_data.x = request.vx;
     flight_ctrl_data.y = request.vy;
