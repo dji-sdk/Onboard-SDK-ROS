@@ -42,6 +42,7 @@ private:
     int global_position_ref_seted = 0;
 
 //internal variables
+    DJISDKMission* dji_sdk_mission;
     char app_key[65];
 	unsigned char transparent_transmission_data[100];
     ActivateData user_act_data;
