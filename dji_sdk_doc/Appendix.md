@@ -21,6 +21,10 @@
 	info: compass data
 	type: dji_sdk/Compass
 
+/dji_sdk/data_received_from_remote_device
+	info: read transparent transmission data from mobile SDK
+	type: dji_sdk/TransparentTransmissionData
+
 /dji_sdk/flight_control_info
 	info: drone control device info
 	type: dji_sdk/FlightControlInfo
@@ -47,7 +51,7 @@
 
 /dji_sdk/power_status
 	info: current battery info
-	type: dji_sdk/PowerStatus
+	type: dji_sdk/PowerStatus #an uint8
 
 /dji_sdk/rc_channels
 	info: current channel values of RC controller
@@ -207,6 +211,7 @@ dji_sdk/RCChannels
 	#             |                            |                  \ -4545
 	#             V                            V
 	#          -10000                       -10000
+	# The range in RCChannles is different from the range of Virtual RC command.
 
 	std_msgs/Header header
 	  uint32 seq
@@ -229,6 +234,9 @@ dji_sdk/TimeStamp
 	uint32 time_ns  #unit is nano second, overflow every 4 sec
 	uint8 sync_flag
 
+dji_sdk/TransparentTransmissionData
+	uint8[] data
+
 dji_sdk/Velocity
 	std_msgs/Header header
 	  uint32 seq
@@ -240,7 +248,6 @@ dji_sdk/Velocity
 	float32 vz
 	uint8 health_flag (0:not trustable or 1:trustable)
 
-
 dji_sdk/Waypoint
 	#latitude is in degree
 	float64 latitude
@@ -251,7 +258,6 @@ dji_sdk/Waypoint
 	int16 heading
 	#stay time is in second
 	uint16 staytime
-
 
 dji_sdk/WaypointList
 	dji_sdk/Waypoint[] waypoint_list
@@ -268,6 +274,10 @@ dji_sdk/WaypointList
 /dji_sdk/camera_action_control
 	info: camera action control service
 	type: dji_sdk/CameraActionControl
+
+/dji_sdk/drone_arm_control
+	info: arm/disarm drone service
+	type: dji_sdk/DroneArmControl
 
 /dji_sdk/drone_task_control
 	info: drone task control service
@@ -291,6 +301,10 @@ dji_sdk/WaypointList
 	info: local position control service
 	type: dji_sdk/LocalPositionControl
 
+/dji_sdk/send_data_to_remote_device
+	info: send transparent transmission data service
+	type: dji_sdk/SendDataToRemoteDevice
+
 /dji_sdk/sdk_permission_control
 	info: obtain or release control abilitiy service
 	type: dji_sdk/SDKPermissionControl
@@ -298,6 +312,18 @@ dji_sdk/WaypointList
 /dji_sdk/velocity_control
 	info: velocity control service
 	type: dji_sdk/VelocityControl
+
+/dji_sdk/version_check
+	info: check sdk version service
+	type: dji_sdk/VersionCheck
+
+/dji_sdk/virtual_rc_enable_control
+	info: enable/disable Virtual RC service
+	type: dji_sdk/VirtualRCEnableControl
+
+/dji_sdk/virtual_rc_data_control
+	info: send Virtual RC data service
+	type: dji_sdk/VirtualRCDataControl
 
 ```
 
@@ -317,6 +343,13 @@ dji_sdk/CameraActionControl
 	#startRecord: 1
 	#stopRecord:  2
 	uint8 camera_action
+	---
+	bool result
+
+dji_sdk/DroneArmControl
+	#arm: 1
+	#disarm: 0
+	uint8 arm
 	---
 	bool result
 
@@ -370,6 +403,11 @@ dji_sdk/SDKPermissionControl
 	---
 	bool result
 
+dji_sdk/SendDataToRemoteDevice
+	uint8[] data #100 byte at most
+	---
+	bool result
+
 dji_sdk/VelocityControl
 	# body frame: 0, with stable mode 
 	#world frame: 1, with stable mode
@@ -380,6 +418,35 @@ dji_sdk/VelocityControl
 	float32 yawAngle
 	---
 	bool result
+
+dji_sdk/VersionCheck
+	---
+	bool result
+
+dji_sdk/VirtualRCEnable
+	uint8 enable
+	uint8 if_back_to_read
+	#switch back to real RC when 1
+	#behave like RC signal lost when 0
+	---
+	bool result
+
+dji_sdk/VirtualRCDataControl
+	#IMPORTANT: the channel range in VRC is different
+	#			from the channel range in broadcast data.
+	#
+	# VRC channel range is [1024-660, 1024+660]
+	# For Matrice 100: 
+	#		channle_data[0]: Roll
+	#		channle_data[1]: pitch 
+	#		channle_data[2]: throttle 
+	#		channle_data[3]: yaw
+	#		channle_data[4]: gear (1684:up, 1324:down)
+	#		channle_data[6]: mode (1552:P, 1024:A, 496:F)
+	uint32[16] channel_data
+	---
+	bool result
+
 ```
 
 ####Action Server List

@@ -53,6 +53,9 @@ It helps users handle the following commands and actions.
 ![image](dji_sdk_doc/structure.jpg)
 [click to see fullsize image](https://raw.githubusercontent.com/dji-sdk/Onboard-SDK-ROS/2.3/dji_sdk_doc/structure.jpg)
 
+##Read First
+[DJI SDK Challenge: Onboard SDK Part I](dji_sdk_doc/whatToKnowI.md)
+
 ##System Environment
 The below environment has been tested.
 * Operating System: Ubuntu 14.04, Manifold
@@ -109,6 +112,9 @@ The below environment has been tested.
 
 ![image](dji_sdk_doc/structure.jpg)
 [点击查看大图](https://raw.githubusercontent.com/dji-sdk/Onboard-SDK-ROS/2.3/dji_sdk_doc/structure.jpg)
+
+##Read First
+[DJI SDK Challenge: Onboard SDK Part I](dji_sdk_doc/whatToKnowI.md)
 
 #系统环境
 此 ROS 包在如下系统中进行测试；
