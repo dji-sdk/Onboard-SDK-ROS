@@ -262,21 +262,23 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
 
 
 
-DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
+DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private) : dji_sdk_mission(nullptr)
 {
 
     init_publishers(nh);
     init_services(nh);
     init_actions(nh);
 
+    
+    init_parameters(nh_private);
+    
     int groundstation_enable; 
     nh_private.param("groundstation_enable", groundstation_enable, 1);
     if(groundstation_enable)
     {
-        DJISDKMission* dji_sdk_mission = new DJISDKMission(nh);
+        dji_sdk_mission = new DJISDKMission(nh);
     }
 
-    init_parameters(nh_private);
 }
 
 
