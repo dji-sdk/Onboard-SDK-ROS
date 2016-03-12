@@ -257,7 +257,7 @@ class CoreAPI
     static void setFrequencyCallback(CoreAPI *This, Header *header, UserData userData = 0);
 
   private:
-    BroadcastData broadcastData;
+    BroadcastData broadcastData = {0};
 
   private:
     unsigned char encodeSendData[BUFFER_SIZE];
