@@ -149,8 +149,10 @@ dji_sdk/Compass
 	int8 z
 
 dji_sdk/FlightControlInfo
-	int8 cur_ctrl_dev_in_navi_mode
-	int8 serial_req_status
+	uint8 control_mode
+	uint8 cur_ctrl_dev_in_navi_mode #0:rc, 1:mobile, 2:onboard
+	uint8 serial_req_status #0:disabled, 1:enabled
+	uint8 virtual_rc_status #0:disabled, 1:enabled
 
 dji_sdk/Gimbal
 	std_msgs/Header header
@@ -425,7 +427,7 @@ dji_sdk/VersionCheck
 
 dji_sdk/VirtualRCEnable
 	uint8 enable
-	uint8 if_back_to_read
+	uint8 if_back_to_real
 	#switch back to real RC when 1
 	#behave like RC signal lost when 0
 	---

@@ -286,7 +286,8 @@ typedef struct CtrlInfoData
     //! @todo mode remote to enums
     uint8_t device : 3;	/*0->rc  1->app  2->serial*/
     uint8_t signature : 1; /*1->opensd  0->close*/
-    uint8_t reserved : 4;
+	uint8_t virtualrc : 1; /*1->opensd  0->close*/
+    uint8_t reserved : 3;
 } CtrlInfoData;
 
 #ifdef SDK_VERSION_2_3

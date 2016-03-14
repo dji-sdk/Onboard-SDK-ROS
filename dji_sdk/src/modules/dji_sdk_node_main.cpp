@@ -180,8 +180,10 @@ void DJISDKNode::broadcast_callback()
 
     //update flight control info
     if (msg_flags & HAS_DEVICE) {
+		flight_control_info.control_mode = bc_data.ctrlInfo.data;
         flight_control_info.cur_ctrl_dev_in_navi_mode = bc_data.ctrlInfo.device;
         flight_control_info.serial_req_status = bc_data.ctrlInfo.signature;
+		flight_control_info.virtual_rc_status = bc_data.ctrlInfo.virtualrc;
         flight_control_info_publisher.publish(flight_control_info);
     }
 
