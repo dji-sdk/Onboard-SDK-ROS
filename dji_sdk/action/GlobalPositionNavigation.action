@@ -3,6 +3,8 @@ float64 latitude
 #longitude is in degree
 float64 longitude
 float32 altitude
+int16 heading 
+
 ---
 bool result
 ---
