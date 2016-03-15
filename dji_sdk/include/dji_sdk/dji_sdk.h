@@ -12,7 +12,8 @@
 #include <dji_sdk/Gimbal.h>
 #include <dji_sdk/GlobalPosition.h>
 #include <dji_sdk/LocalPosition.h>
-#include <dji_sdk/PowerStatus.h> 
+#include <dji_sdk/LogControl.h>
+#include <dji_sdk/PowerStatus.h>
 #include <dji_sdk/RCChannels.h>
 #include <dji_sdk/Velocity.h>
 #include <dji_sdk/Waypoint.h>

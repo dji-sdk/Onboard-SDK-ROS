@@ -46,6 +46,7 @@ void DJISDKNode::broadcast_callback()
         attitude_quaternion.wz = bc_data.w.z;
         attitude_quaternion.ts = bc_data.timeStamp.time;
         attitude_quaternion_publisher.publish(attitude_quaternion);
+        LOG_MSG_STAMP("/dji_sdk/attitude_quaternion", attitude_quaternion, current_time, 2);
     }
 
     //update global_position msg
@@ -59,6 +60,7 @@ void DJISDKNode::broadcast_callback()
         global_position.altitude = bc_data.pos.altitude;
         global_position.health = bc_data.pos.health;
         global_position_publisher.publish(global_position);
+        LOG_MSG_STAMP("/dji_sdk/global_position", global_position, current_time, 1);
 
         //TODO:
         // FIX BUG about flying at lat = 0
@@ -82,6 +84,7 @@ void DJISDKNode::broadcast_callback()
         local_position.ts = global_position.ts;
         local_position_ref = local_position;
         local_position_publisher.publish(local_position);
+        LOG_MSG_STAMP("/dji_sdk/local_position", local_position, current_time, 1);
     }
 
 
@@ -95,6 +98,7 @@ void DJISDKNode::broadcast_callback()
         velocity.vz = bc_data.v.z;
         velocity.health_flag = bc_data.v.health;
         velocity_publisher.publish(velocity);
+        LOG_MSG_STAMP("/dji_sdk/velocity", velocity, current_time, 2);
     }
 
     //update acceleration msg
@@ -106,6 +110,7 @@ void DJISDKNode::broadcast_callback()
         acceleration.ay = bc_data.a.y;
         acceleration.az = bc_data.a.z;
         acceleration_publisher.publish(acceleration);
+        LOG_MSG_STAMP("/dji_sdk/acceleration", acceleration, current_time, 2);
     }
 
     //update gimbal msg
@@ -117,6 +122,7 @@ void DJISDKNode::broadcast_callback()
         gimbal.pitch = bc_data.gimbal.pitch;
         gimbal.yaw = bc_data.gimbal.yaw;
         gimbal_publisher.publish(gimbal);
+        LOG_MSG_STAMP("/dji_sdk/gimbal", gimbal, current_time, 1);
     }
 
     //update odom msg
@@ -137,6 +143,7 @@ void DJISDKNode::broadcast_callback()
         odometry.twist.twist.linear.y = velocity.vy;
         odometry.twist.twist.linear.z = velocity.vz;
         odometry_publisher.publish(odometry);
+        LOG_MSG_STAMP("/dji_sdk/odometry", odometry, current_time, 1);
     }
 
     //update rc_channel msg
@@ -151,6 +158,7 @@ void DJISDKNode::broadcast_callback()
         rc_channels.throttle = bc_data.rc.throttle;
         rc_channels.yaw = bc_data.rc.yaw;
         rc_channels_publisher.publish(rc_channels);
+        LOG_MSG_STAMP("/dji_sdk/rc_channels", rc_channels, current_time, 2);
     }
 
     //update compass msg
@@ -162,6 +170,7 @@ void DJISDKNode::broadcast_callback()
         compass.y = bc_data.mag.y;
         compass.z = bc_data.mag.z;
         compass_publisher.publish(compass);
+        LOG_MSG_STAMP("/dji_sdk/compass", compass, current_time, 2);
     }
 
     //update flight_status 
@@ -170,12 +179,14 @@ void DJISDKNode::broadcast_callback()
         flight_status = bc_data.status;
         msg.data = flight_status;
         flight_status_publisher.publish(msg);
+        LOG_MSG_STAMP("/dji_sdk/flight_status", msg, current_time, 1);
     }
 
     //update battery msg
     if (msg_flags & HAS_BATTERY) {
         power_status.percentage = bc_data.battery;
         power_status_publisher.publish(power_status);
+        LOG_MSG_STAMP("/dji_sdk/power_status", power_status, current_time, 1);
     }
 
     //update flight control info
@@ -185,6 +196,7 @@ void DJISDKNode::broadcast_callback()
         flight_control_info.serial_req_status = bc_data.ctrlInfo.signature;
 		flight_control_info.virtual_rc_status = bc_data.ctrlInfo.virtualrc;
         flight_control_info_publisher.publish(flight_control_info);
+        LOG_MSG_STAMP("/dji_sdk/flight_control_info", flight_control_info, current_time, 2);
     }
 
     //update obtaincontrol msg
@@ -307,5 +319,17 @@ dji_sdk::LocalPosition DJISDKNode::gps_convert_ned(dji_sdk::GlobalPosition loc)
     );
     local.z = loc.height;
     return local;
+}
+
+void DJISDKNode::logControlCB(const dji_sdk::LogControl::ConstPtr& msg)
+{
+    if (msg->enable)
+    {
+        BagLogger::instance()->startLogging(msg->name, msg->level);
+    }
+    else
+    {
+        BagLogger::instance()->stopLogging();
+    }
 }
 

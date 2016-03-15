@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   nav_msgs
   roscpp
   rospy
+  rosbag
   std_msgs
   actionlib_msgs 
   actionlib
@@ -60,6 +61,7 @@ add_message_files(
   Gimbal.msg
   GlobalPosition.msg
   LocalPosition.msg
+  LogControl.msg
   PowerStatus.msg
   RCChannels.msg
   Velocity.msg

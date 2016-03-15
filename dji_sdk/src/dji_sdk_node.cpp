@@ -3,6 +3,9 @@
 #include <cstring>
 #include <cmath>
 #include <dji_sdk/dji_sdk_node.h>
+#include <dji_sdk/bag_logger.h>
+
+BagLogger *BagLogger::s_instance_ = 0;
 
 DJI::onboardSDK::ROSAdapter *rosAdapter;
 

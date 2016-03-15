@@ -6,6 +6,7 @@
 #include <std_msgs/UInt8.h>
 #include <boost/bind.hpp>
 #include <dji_sdk/dji_sdk.h>
+#include <dji_sdk/bag_logger.h>
 #include <actionlib/server/simple_action_server.h>
 #include <dji_sdk/dji_sdk_mission.h>
 
@@ -64,6 +65,7 @@ private:
     ros::Publisher sdk_permission_publisher;
     ros::Publisher time_stamp_publisher;
 	ros::Publisher data_received_from_remote_device_publisher;
+    ros::Subscriber log_control_subscriber;
 
     void init_publishers(ros::NodeHandle& nh)
     {
@@ -84,6 +86,8 @@ private:
         sdk_permission_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/sdk_permission", 10);
         time_stamp_publisher = nh.advertise<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10);
 		data_received_from_remote_device_publisher = nh.advertise<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device",10);
+        log_control_subscriber = nh.subscribe<dji_sdk::LogControl>(
+                "/dji_sdk/log_control", 10, &DJISDKNode::logControlCB, this);
     }
 
 //Services:
@@ -209,6 +213,7 @@ private:
 
     dji_sdk::LocalPosition gps_convert_ned(dji_sdk::GlobalPosition loc);
 
+    void logControlCB(const dji_sdk::LogControl::ConstPtr& msg);
 };
 
 #endif
