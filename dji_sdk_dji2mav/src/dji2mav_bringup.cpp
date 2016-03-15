@@ -96,7 +96,7 @@ void respondToWpTarget(const float mission[][7], uint16_t beginIdx,
     task.velocity_range = 10.0; //must be set
     task.idle_velocity = 3.0; //must be set
 
-    ROS_INFO("beginIdx %d, endIdx %d", beginIdx, endIdx);
+    ROS_INFO("beginIdx %u, endIdx %u", beginIdx, endIdx);
     for(int i = beginIdx; i < endIdx; ++i) {
         dji_sdk::MissionWaypoint wp;
         memset(&wp, 0, sizeof(dji_sdk::MissionWaypoint));
@@ -114,7 +114,7 @@ void respondToWpTarget(const float mission[][7], uint16_t beginIdx,
 
         task.mission_waypoint.push_back(wp);
     }
-    ROS_INFO("Size of the wpl: %d", task.mission_waypoint.size());
+    ROS_INFO("Size of the wpl: %ld", task.mission_waypoint.size());
 
     ROS_INFO("Going to wait for Waypoint server...");
     drone->waypoint_navigation_wait_server();
