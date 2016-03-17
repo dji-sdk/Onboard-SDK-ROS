@@ -1,0 +1,19 @@
+uint32 date
+uint32 time
+float64 longitude_primary
+float64 latitude_primary
+float32 height_above_sea_primary
+int32 longitude_secondary
+int32 latitude_secondary
+int32 height_above_sea_secondary
+float32 velocity_north
+float32 velocity_east
+float32 velocity_down
+int16 yaw
+uint8 svn_s
+uint8 svn_p
+float32 horizontal_dop
+float32 position_dop
+uint8[6] positionFlag #0 sigle point, 1 RTK, 2 fixed direction, 3 reserve
+uint16 gps_state
+uint16 rtk_new

@@ -53,6 +53,8 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
+  A3GPS.msg
+  A3RTK.msg
   Acceleration.msg
   AttitudeQuaternion.msg
   Compass.msg
