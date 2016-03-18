@@ -10,8 +10,8 @@ float32 velocity_north
 float32 velocity_east
 float32 velocity_down
 int16 angle #between north and the line connecting drone with groundstation
-uint8 RTK_satellite_used
-uint8 single_satellite_used
+uint8 satellite_used_RTK
+uint8 satellite_used_single
 float32 horizontal_dop
 float32 position_dop
 uint8[6] position_flag #0 sigle point, 1 RTK, 2 fixed direction, 3 reserve
