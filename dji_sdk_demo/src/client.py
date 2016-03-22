@@ -23,7 +23,11 @@ def display_main_menu():
     print "[m] Local Navi Test"
     print "[n] GPS Navi Test"
     print "[o] Waypoint List Test"
-    print "[p] Exit"
+    print "[p] Arm Test"
+    print "[q] Disarm Test"
+    print "[r] Vrc Test"
+    print "[s] Sync Test"
+    print "[t] Exit"
     print "\ninput a/b/c etc..then press enter key"
     print "\nuse `rostopic echo` to query drone status"
     print "----------------------------------------"
@@ -159,21 +163,21 @@ def main():
                 vx = V * math.sin((V/R)*i/50.0)
                 vy = V * math.cos((V/R)*i/50.0)
     
-                drone.attitude_control(DJIDrone.HORIZ_POS|DJIDrone.VERT_VEL|DJIDrone.YAW_ANG|DJIDrone.HORIZ_BODY|DJIDrone.YAW_BODY, vx, vy, 0, 0)
+                drone.attitude_control(DJIDrone.HORIZ_POS|DJIDrone.VERT_VEL|DJIDrone.YAW_ANG|DJIDrone.HORIZ_BODY|DJIDrone.STABLE_ON, vx, vy, 0, 0)
                 time.sleep(0.02)
         elif main_operate_code == 'i':
             # draw square sample
             for i in range(60):
-                drone.attitude_control(DJIDrone.HORIZ_POS|DJIDrone.VERT_VEL|DJIDrone.YAW_ANG|DJIDrone.HORIZ_BODY|DJIDrone.YAW_BODY, 3, 3, 0, 0)
+                drone.attitude_control(DJIDrone.HORIZ_POS|DJIDrone.VERT_VEL|DJIDrone.YAW_ANG|DJIDrone.HORIZ_BODY|DJIDrone.STABLE_ON, 3, 3, 0, 0)
                 time.sleep(0.02)
             for i in range(60):
-                drone.attitude_control(DJIDrone.HORIZ_POS|DJIDrone.VERT_VEL|DJIDrone.YAW_ANG|DJIDrone.HORIZ_BODY|DJIDrone.YAW_BODY, -3, 3, 0, 0)
+                drone.attitude_control(DJIDrone.HORIZ_POS|DJIDrone.VERT_VEL|DJIDrone.YAW_ANG|DJIDrone.HORIZ_BODY|DJIDrone.STABLE_ON, -3, 3, 0, 0)
                 time.sleep(0.02)
             for i in range(60):
-                drone.attitude_control(DJIDrone.HORIZ_POS|DJIDrone.VERT_VEL|DJIDrone.YAW_ANG|DJIDrone.HORIZ_BODY|DJIDrone.YAW_BODY, -3, -3, 0, 0)
+                drone.attitude_control(DJIDrone.HORIZ_POS|DJIDrone.VERT_VEL|DJIDrone.YAW_ANG|DJIDrone.HORIZ_BODY|DJIDrone.STABLE_ON, -3, -3, 0, 0)
                 time.sleep(0.02)
             for i in range(60):
-                drone.attitude_control(DJIDrone.HORIZ_POS|DJIDrone.VERT_VEL|DJIDrone.YAW_ANG|DJIDrone.HORIZ_BODY|DJIDrone.YAW_BODY, 3, -3, 0, 0)
+                drone.attitude_control(DJIDrone.HORIZ_POS|DJIDrone.VERT_VEL|DJIDrone.YAW_ANG|DJIDrone.HORIZ_BODY|DJIDrone.STABLE_ON, 3, -3, 0, 0)
                 time.sleep(0.02)
         elif main_operate_code == 'j':
             # take a picture
@@ -200,6 +204,24 @@ def main():
                 dji_sdk.msg.Waypoint(latitude = 22.525, longitude = 113.93, altitude = 50, staytime = 0, heading = -180)]
             drone.waypoint_navigation_send_request(newWaypointList)
         elif main_operate_code == 'p':
+            drone.arm_drone()
+        elif main_operate_code == 'q':
+            drone.disarm_drone()
+        elif main_operate_code == 'r':
+            drone.vrc_start();
+            for i in range(100):
+                drone.vrc_control(1024-660, 1024-660, 1024-660, 1024+660)
+                time.sleep(0.02)	
+            for i in range(1000):
+                drone.vrc_control(1024, 1024, 1024+660, 1024+660)
+                time.sleep(0.02)	
+            for i in range(1000):
+                drone.vrc_control(1024-660, 1024-660)
+                time.sleep(0.02)	
+            drone.vrc_stop()
+        elif main_operate_code == 's':
+            drone.sync_timestamp(50)
+        elif main_operate_code == 't':
             return
         else:
             display_main_menu()
