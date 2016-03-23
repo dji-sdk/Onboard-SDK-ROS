@@ -3,10 +3,10 @@
 		<!-- node parameters -->
 		<param name="serial_name" type="string" value="/dev/ttyTHS1"/>
 		<param name="baud_rate" type="int" value="230400"/>
-		<param name="app_id" type="int" value="1022384"/>
+		<param name="app_id" type="int" value="1023987"/>
 		<param name="app_version" type="int" value="1"/>
 		<param name="app_bundle_id" type="string" value="Welcome to use dji-sdk"/>
-		<param name="enc_key" type="string" value="e7bad64696529559318bb35d0a8c6050d3b88e791e1808cfe8f7802150ee6f0d"/>
+		<param name="enc_key" type="string" value="afe96210ea022d24e17808d30229be0cfa5d41d75bb37f4965f1502b6d3cc62b"/>
 		<param name="groundstation_enable" type="int" value="1"/>
 	</node>
 </launch>
