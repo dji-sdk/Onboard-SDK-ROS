@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
 <package>
   <name>dji_sdk_lib</name>
-  <version>0.0.0</version>
+  <version>0.1.0</version>
   <description>The dji_sdk_lib package</description>
 
 
-  <maintainer email="sdk@dji.com">DJI SDK</maintainer>
+  <maintainer email="william.wu@dji.com">William Wu</maintainer>
+  <maintainer email="norman.li@dji.com">Norman Li</maintainer>
 
   <license>BSD</license>
 
