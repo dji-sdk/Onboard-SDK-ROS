@@ -1,6 +1,5 @@
 #include <dji_sdk/dji_sdk_node.h>
 #include <functional>
-#define DEG2RAD(DEG) ((DEG)*((C_PI)/(180.0)))
 
 //----------------------------------------------------------
 // timer spin_function 50Hz
@@ -164,7 +163,7 @@ void DJISDKNode::broadcast_callback()
         compass_publisher.publish(compass);
     }
 
-    //update flight_status 
+    //update flight_status
     if (msg_flags & HAS_STATUS) {
         std_msgs::UInt8 msg;
         flight_status = bc_data.status;
@@ -272,10 +271,10 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private) : dji_s
     init_services(nh);
     init_actions(nh);
 
-    
+
     init_parameters(nh_private);
-    
-    int groundstation_enable; 
+
+    int groundstation_enable;
     nh_private.param("groundstation_enable", groundstation_enable, 1);
     if(groundstation_enable)
     {
@@ -283,19 +282,6 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private) : dji_s
     }
 
 }
-
-
-
-inline void DJISDKNode::gps_convert_ned(float &ned_x, float &ned_y,
-            double gps_t_lon, double gps_t_lat,
-            double gps_r_lon, double gps_r_lat)
-{
-    double d_lon = gps_t_lon - gps_r_lon;
-    double d_lat = gps_t_lat - gps_r_lat;
-    ned_x = DEG2RAD(d_lat) * C_EARTH;
-    ned_y = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
-}
-
 
 
 dji_sdk::LocalPosition DJISDKNode::gps_convert_ned(dji_sdk::GlobalPosition loc)

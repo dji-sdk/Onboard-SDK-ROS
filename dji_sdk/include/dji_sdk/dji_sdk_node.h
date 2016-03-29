@@ -11,6 +11,7 @@
 
 #define C_EARTH (double) 6378137.0
 #define C_PI (double) 3.141592653589793
+#define DEG2RAD(DEG) ((DEG)*((C_PI)/(180.0)))
 
 extern DJI::onboardSDK::ROSAdapter *rosAdapter;
 
@@ -53,7 +54,7 @@ private:
     ros::Publisher attitude_quaternion_publisher;
     ros::Publisher compass_publisher;
     ros::Publisher flight_control_info_publisher;
-    ros::Publisher flight_status_publisher; 
+    ros::Publisher flight_status_publisher;
     ros::Publisher gimbal_publisher;
     ros::Publisher global_position_publisher;
     ros::Publisher local_position_publisher;
@@ -157,11 +158,11 @@ private:
     WaypointNavigationActionServer* waypoint_navigation_action_server;
 
     dji_sdk::DroneTaskFeedback drone_task_feedback;
-    dji_sdk::DroneTaskResult drone_task_result; 
-    dji_sdk::LocalPositionNavigationFeedback local_position_navigation_feedback; 
-    dji_sdk::LocalPositionNavigationResult local_position_navigation_result; 
+    dji_sdk::DroneTaskResult drone_task_result;
+    dji_sdk::LocalPositionNavigationFeedback local_position_navigation_feedback;
+    dji_sdk::LocalPositionNavigationResult local_position_navigation_result;
     dji_sdk::GlobalPositionNavigationFeedback global_position_navigation_feedback;
-    dji_sdk::GlobalPositionNavigationResult global_position_navigation_result; 
+    dji_sdk::GlobalPositionNavigationResult global_position_navigation_result;
     dji_sdk::WaypointNavigationFeedback waypoint_navigation_feedback;
     dji_sdk::WaypointNavigationResult waypoint_navigation_result;
 
@@ -172,23 +173,23 @@ private:
 
     void init_actions(ros::NodeHandle& nh)
     {
-        drone_task_action_server = new DroneTaskActionServer(nh, 
-            "dji_sdk/drone_task_action", 
+        drone_task_action_server = new DroneTaskActionServer(nh,
+            "dji_sdk/drone_task_action",
             boost::bind(&DJISDKNode::drone_task_action_callback, this, _1), false);
         drone_task_action_server->start();
 
-        local_position_navigation_action_server = new LocalPositionNavigationActionServer(nh, 
-            "dji_sdk/local_position_navigation_action", 
+        local_position_navigation_action_server = new LocalPositionNavigationActionServer(nh,
+            "dji_sdk/local_position_navigation_action",
             boost::bind(&DJISDKNode::local_position_navigation_action_callback, this, _1), false);
         local_position_navigation_action_server->start();
 
-        global_position_navigation_action_server = new GlobalPositionNavigationActionServer(nh, 
-            "dji_sdk/global_position_navigation_action", 
+        global_position_navigation_action_server = new GlobalPositionNavigationActionServer(nh,
+            "dji_sdk/global_position_navigation_action",
             boost::bind(&DJISDKNode::global_position_navigation_action_callback, this, _1), false );
         global_position_navigation_action_server->start();
 
-        waypoint_navigation_action_server = new WaypointNavigationActionServer(nh, 
-            "dji_sdk/waypoint_navigation_action", 
+        waypoint_navigation_action_server = new WaypointNavigationActionServer(nh,
+            "dji_sdk/waypoint_navigation_action",
             boost::bind(&DJISDKNode::waypoint_navigation_action_callback, this, _1), false);
         waypoint_navigation_action_server->start();
     }
@@ -205,7 +206,13 @@ private:
 
     inline void gps_convert_ned(float &ned_x, float &ned_y,
             double gps_t_lon, double gps_t_lat,
-            double gps_r_lon, double gps_r_lat);
+            double gps_r_lon, double gps_r_lat)
+    {
+        double d_lon = gps_t_lon - gps_r_lon;
+        double d_lat = gps_t_lat - gps_r_lat;
+        ned_x = DEG2RAD(d_lat) * C_EARTH;
+        ned_y = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
+    };
 
     dji_sdk::LocalPosition gps_convert_ned(dji_sdk::GlobalPosition loc);
 
