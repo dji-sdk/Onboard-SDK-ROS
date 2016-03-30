@@ -284,6 +284,16 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private) : dji_s
 }
 
 
+void DJISDKNode::gps_convert_ned(float &ned_x, float &ned_y,
+		double gps_t_lon, double gps_t_lat,
+		double gps_r_lon, double gps_r_lat)
+{
+	double d_lon = gps_t_lon - gps_r_lon;
+	double d_lat = gps_t_lat - gps_r_lat;
+	ned_x = DEG2RAD(d_lat) * C_EARTH;
+	ned_y = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
+};
+
 dji_sdk::LocalPosition DJISDKNode::gps_convert_ned(dji_sdk::GlobalPosition loc)
 {
     dji_sdk::LocalPosition local;
