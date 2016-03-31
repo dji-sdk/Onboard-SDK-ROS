@@ -76,11 +76,11 @@ bool DJISDKNode::gimbal_angle_control_callback(dji_sdk::GimbalAngleControl::Requ
     gimbal_angle.roll = request.roll;
     gimbal_angle.pitch = request.pitch;
     gimbal_angle.duration = request.duration;
-    gimbal_angle.mode = 0xF0;
-    gimbal_angle.mode &= request.absolute_or_incremental ? 0xFF : 0x7F;
-    gimbal_angle.mode &= request.yaw_cmd_ignore ? 0xFF : 0xBF;
-    gimbal_angle.mode &= request.roll_cmd_ignore ? 0xFF : 0xDF;
-    gimbal_angle.mode &= request.pitch_cmd_ignore ? 0xFF : 0xEF;
+    gimbal_angle.mode = 0x0F;
+    gimbal_angle.mode &= request.absolute_or_incremental ? 0xFF : 0xFE;
+    gimbal_angle.mode &= request.yaw_cmd_ignore ? 0xFF : 0xFD;
+    gimbal_angle.mode &= request.roll_cmd_ignore ? 0xFF : 0xFB;
+    gimbal_angle.mode &= request.pitch_cmd_ignore ? 0xFF : 0xF7;
 
     rosAdapter->camera->setGimbalAngle(&gimbal_angle);
 
