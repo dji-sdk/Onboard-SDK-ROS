@@ -417,7 +417,7 @@ dji_sdk/VelocityControl
 	float32 vx
 	float32 vy
 	float32 vz
-	float32 yawAngle
+	float32 yawRate
 	---
 	bool result
 

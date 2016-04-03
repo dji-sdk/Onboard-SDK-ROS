@@ -187,8 +187,8 @@ class DJIDrone:
     def attitude_control(self, flag, x, y, z, yaw):
         self.attitude_control_service(flag = flag, x = x, y = y, z = z, yaw = yaw)
 
-    def velocity_control(self, frame, vx, vy, vz, yawAngle):
-        self.velocity_control_service(frame = frame, vx = vx, vy = vy, vz = vz, yawAngle = yawAngle)
+    def velocity_control(self, frame, vx, vy, vz, yawRate):
+        self.velocity_control_service(frame = frame, vx = vx, vy = vy, vz = vz, yawRate = yawRate)
 
     def local_position_control(self, x, y, z, yaw):
         self.local_position_control_service(x = x, y = y, z = z, yaw = yaw)

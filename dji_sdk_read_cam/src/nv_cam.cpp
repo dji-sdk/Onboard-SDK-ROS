@@ -31,8 +31,6 @@ unsigned int nframe = 0;
 FILE *fp;
 
 
-#define mode GETBUFFER_MODE
-
 struct sRGB{
 	int r;
 	int g;
@@ -181,13 +179,18 @@ int main(int argc, char **argv)
 	int nCount = 1;
 
 	int gray_or_rgb = 0;
+	int to_mobile = 0;
 
 	IplImage *pRawImg;
 	IplImage *pImg;
 	unsigned char *pData;
 
+	int mode = GETBUFFER_MODE;
+
+
 	ros::NodeHandle nh_private("~");
 	nh_private.param("gray_or_rgb", gray_or_rgb, 0);
+	nh_private.param("to_mobile", to_mobile, 0);
 
 	printf("%d\n",gray_or_rgb);
 	if(gray_or_rgb){
@@ -197,6 +200,9 @@ int main(int argc, char **argv)
 	} else{
 		pRawImg = cvCreateImage(cvSize(IMAGE_W, IMAGE_H),IPL_DEPTH_8U,1);
 		pImg = cvCreateImage(cvSize(640, 480),IPL_DEPTH_8U,1);
+	}
+	if(to_mobile) {
+		mode |= TRANSFER_MODE;
 	}
 
 	ros::NodeHandle node;

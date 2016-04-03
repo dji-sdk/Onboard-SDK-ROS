@@ -76,11 +76,11 @@ bool DJISDKNode::gimbal_angle_control_callback(dji_sdk::GimbalAngleControl::Requ
     gimbal_angle.roll = request.roll;
     gimbal_angle.pitch = request.pitch;
     gimbal_angle.duration = request.duration;
-    gimbal_angle.mode = 0xF0;
-    gimbal_angle.mode &= request.absolute_or_incremental ? 0xFF : 0x7F;
-    gimbal_angle.mode &= request.yaw_cmd_ignore ? 0xFF : 0xBF;
-    gimbal_angle.mode &= request.roll_cmd_ignore ? 0xFF : 0xDF;
-    gimbal_angle.mode &= request.pitch_cmd_ignore ? 0xFF : 0xEF;
+    gimbal_angle.mode = 0;
+    gimbal_angle.mode |= request.absolute_or_incremental;
+    gimbal_angle.mode |= request.yaw_cmd_ignore << 1;
+    gimbal_angle.mode |= request.roll_cmd_ignore << 2;
+    gimbal_angle.mode |= request.pitch_cmd_ignore << 3;
 
     rosAdapter->camera->setGimbalAngle(&gimbal_angle);
 
@@ -187,15 +187,15 @@ bool DJISDKNode::velocity_control_callback(dji_sdk::VelocityControl::Request& re
     DJI::onboardSDK::FlightData flight_ctrl_data;
     if (request.frame)
         //world frame 
-        flight_ctrl_data.flag = 0x41;
+        flight_ctrl_data.flag = 0x49;
     else
         //body frame
-        flight_ctrl_data.flag = 0x43;
+        flight_ctrl_data.flag = 0x4B;
 
     flight_ctrl_data.x = request.vx;
     flight_ctrl_data.y = request.vy;
     flight_ctrl_data.z = request.vz;
-    flight_ctrl_data.yaw = request.yawAngle;
+    flight_ctrl_data.yaw = request.yawRate;
 
     rosAdapter->flight->setFlight(&flight_ctrl_data);
 

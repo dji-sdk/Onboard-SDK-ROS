@@ -417,7 +417,7 @@ public:
 		velocity_control.request.vx = x;
 		velocity_control.request.vy = y;
 		velocity_control.request.vz = z;
-		velocity_control.request.yawAngle = yaw;
+		velocity_control.request.yawRate = yaw;
 	
 		return velocity_control_service.call(velocity_control) && velocity_control.response.result;
 	}
