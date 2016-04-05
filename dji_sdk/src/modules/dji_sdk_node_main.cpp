@@ -323,6 +323,7 @@ dji_sdk::LocalPosition DJISDKNode::gps_convert_ned(dji_sdk::GlobalPosition loc)
 
 void DJISDKNode::logControlCB(const dji_sdk::LogControl::ConstPtr& msg)
 {
+    ROS_INFO("DJI: STARTING THE LOGGER TO %s, level %d", msg->name.c_str(), msg->level);
     if (msg->enable)
     {
         BagLogger::instance()->startLogging(msg->name, msg->level);
