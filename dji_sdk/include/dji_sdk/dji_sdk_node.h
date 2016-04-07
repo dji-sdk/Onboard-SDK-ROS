@@ -36,7 +36,6 @@ private:
 	dji_sdk::TimeStamp time_stamp;
 
 
-    bool sdk_permission_opened = false;
 	bool activation_result = false;
     bool localposbase_use_height = true;
 
@@ -62,7 +61,6 @@ private:
     ros::Publisher rc_channels_publisher;
     ros::Publisher velocity_publisher;
     ros::Publisher odometry_publisher;
-    ros::Publisher sdk_permission_publisher;
     ros::Publisher time_stamp_publisher;
 	ros::Publisher data_received_from_remote_device_publisher;
 
@@ -82,7 +80,6 @@ private:
         rc_channels_publisher = nh.advertise<dji_sdk::RCChannels>("dji_sdk/rc_channels", 10);
         velocity_publisher = nh.advertise<dji_sdk::Velocity>("dji_sdk/velocity", 10);
         odometry_publisher = nh.advertise<nav_msgs::Odometry>("dji_sdk/odometry",10);
-        sdk_permission_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/sdk_permission", 10);
         time_stamp_publisher = nh.advertise<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10);
 		data_received_from_remote_device_publisher = nh.advertise<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device",10);
     }

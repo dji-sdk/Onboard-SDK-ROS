@@ -63,9 +63,6 @@ class DJIDrone:
     def odometry_subscriber_callback(self, odometry):
         self.odometry = odometry
 
-    def sdk_permission_subscriber_callback(self, sdk_permission):
-        self.sdk_permission = sdk_permission
-
     def time_stamp_subscriber_callback(self, time_stamp):
         self.time_stamp = time_stamp
 
@@ -83,7 +80,6 @@ class DJIDrone:
         self.velocity_subscriber = rospy.Subscriber("dji_sdk/velocity", dji_sdk.msg.Velocity, self.velocity_subscriber_callback)
         self.activation_subscriber = rospy.Subscriber("dji_sdk/activation", std_msgs.msg.UInt8, self.activation_subscriber_callback)
         self.odometry_subscriber = rospy.Subscriber("dji_sdk/odometry", nav_msgs.msg.Odometry, self.odometry_subscriber_callback)
-        self.sdk_permission_subscriber = rospy.Subscriber("dji_sdk/sdk_permission", std_msgs.msg.UInt8, self.sdk_permission_subscriber_callback)
         self.time_stamp_subscriber = rospy.Subscriber("dji_sdk/time_stamp", dji_sdk.msg.TimeStamp, self.time_stamp_subscriber_callback)
 
     def init_services(self):
@@ -223,7 +219,6 @@ class DJIDrone:
         self.velocity = dji_sdk.msg.Velocity()
         self.odometry = nav_msgs.msg.Odometry()
 
-        self.sdk_permission_opened = False
         self.activation = False
         self.localposbase_use_height = True
 
