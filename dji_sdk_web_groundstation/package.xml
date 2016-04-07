@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>dji_sdk_web_groundstation</name>
-  <version>0.1.4</version>
+  <version>0.1.5</version>
   <description>The dji_sdk_web_groundstation package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
