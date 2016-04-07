@@ -56,10 +56,6 @@
 /dji_sdk/rc_channels
 	info: current channel values of RC controller
 	type: dji_sdk/RCChannels
-	
-/dji_sdk/sdk_permission
-	info: current state of control ability
-	type: std_msgs/UInt8
 
 /dji_sdk/time_stamp
 	info: current time stamp information
