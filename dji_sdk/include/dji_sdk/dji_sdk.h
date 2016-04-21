@@ -5,6 +5,8 @@
 #include "DJI_LIB_ROS_Adapter.h"
 
 //msgs
+#include <dji_sdk/A3RTK.h>
+#include <dji_sdk/A3GPS.h>
 #include <dji_sdk/Acceleration.h>
 #include <dji_sdk/AttitudeQuaternion.h>
 #include <dji_sdk/Compass.h>
@@ -38,6 +40,8 @@
 #include <dji_sdk/MessageFrequencyControl.h>
 #include <dji_sdk/VirtualRCEnableControl.h>
 #include <dji_sdk/VirtualRCDataControl.h>
+#include <dji_sdk/A3GPS.h>
+#include <dji_sdk/A3RTK.h>
 
 //actions
 #include <dji_sdk/DroneTaskAction.h>
