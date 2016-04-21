@@ -2,6 +2,14 @@
 
 ----
 
+**Attention: **
+
+The default drone type in the code is M100 with NCore controller, you can catkin_make directly if you're using M100.
+
+If you're using A3/M600 instead of M100, please uncomment the `#define SDK_VERSION_3_1_A3` and comment the `#define SDK_VERSION_3_1_M100` in file `DJI_Config.h` with path `dji_sdk_lib/include/dji_sdk_lib` and catkin_make.
+
+![](dji_sdk_doc/m100_a3.png)
+
 ##Introduction
 
 This is a ROS package for DJI OnBoard SDK.

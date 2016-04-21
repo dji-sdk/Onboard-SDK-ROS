@@ -99,7 +99,7 @@ class ROSAdapter {
             else
                 ROS_INFO("Succeed to create thread for readPoll");
 
-            coreAPI->getVersion();
+            coreAPI->getSDKVersion();
         }
 
 

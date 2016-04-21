@@ -8,6 +8,5 @@
 		<param name="app_bundle_id" type="string" value="Welcome to use dji-sdk"/>
 		<param name="enc_key" type="string" value="e7bad64696529559318bb35d0a8c6050d3b88e791e1808cfe8f7802150ee6f0d"/>
 		<param name="groundstation_enable" type="int" value="1"/>
-		<param name="uart_or_usb" type="int" value="0"/>
 	</node>
 </launch>

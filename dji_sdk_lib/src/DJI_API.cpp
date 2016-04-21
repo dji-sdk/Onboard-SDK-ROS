@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
+using namespace DJI;
 using namespace DJI::onboardSDK;
 
 #ifdef USE_ENCRYPT
@@ -30,10 +31,22 @@ void CoreAPI::init(HardDriver *Driver, CallBackHandler userRecvCallback,
     filter.reuseCount = 0;
     filter.reuseIndex = 0;
     filter.encode = 0;
+
     broadcastCallback.callback = 0;
     broadcastCallback.userData = 0;
     fromMobileCallback.callback = 0;
     fromMobileCallback.userData = 0;
+    hotPointCallback.callback = 0;
+    wayPointCallback.callback = 0;
+    hotPointCallback.userData = 0;
+    wayPointEventCallback.callback = 0;
+    wayPointEventCallback.userData = 0;
+    wayPointCallback.userData = 0;
+    followCallback.callback = 0;
+    followCallback.userData = 0;
+    missionCallback.callback = 0;
+    missionCallback.userData = 0;
+
     recvCallback.callback = userRecvCallback.callback;
     recvCallback.userData = userRecvCallback.userData;
 
@@ -45,11 +58,15 @@ void CoreAPI::init(HardDriver *Driver, CallBackHandler userRecvCallback,
     broadcastData.timeStamp = 0;
 #endif // SDK_VERSION_2_3
 
-    hotPointData = true;
-    followData = true;
+    hotPointData = false;
+    followData = false;
+    wayPointData = false;
     callbackThread = userCallbackThread;
 
     versionData.version = SDK_VERSION;
+
+    //! @todo siplify code above
+    memset((unsigned char *)&broadcastData, 0, sizeof(broadcastData));
 
     setup();
 }
@@ -57,7 +74,7 @@ void CoreAPI::init(HardDriver *Driver, CallBackHandler userRecvCallback,
 CoreAPI::CoreAPI(HardDriver *Driver, CallBackHandler userRecvCallback, bool userCallbackThread)
 {
     init(Driver, userRecvCallback, userCallbackThread);
-    // getVersion();
+    getSDKVersion();
 }
 
 void CoreAPI::send(unsigned char session, unsigned char is_enc, CMD_SET cmdSet,
@@ -127,9 +144,9 @@ void CoreAPI::ack(req_id_t req_id, unsigned char *ackdata, int len)
     this->ackInterface(&param);
 }
 
-void CoreAPI::getVersion(CallBack callback, UserData userData)
+void CoreAPI::getSDKVersion(CallBack callback, UserData userData)
 {
-    versionData.version_ack = AC_COMMON_NO_RESPONSE;
+    versionData.version_ack = ACK_COMMON_NO_RESPONSE;
     versionData.version_crc = 0x0;
     versionData.version_name[0] = 0;
 
@@ -138,7 +155,7 @@ void CoreAPI::getVersion(CallBack callback, UserData userData)
     unsigned char cmd_data = 0;
 
     send(2, 0, SET_ACTIVATION, CODE_GETVERSION, (unsigned char *)&cmd_data, 1, cmd_timeout,
-         retry_time, callback ? callback : CoreAPI::getVersionCallback, userData);
+         retry_time, callback ? callback : CoreAPI::getSDKVersionCallback, userData);
 }
 
 void CoreAPI::activate(ActivateData *data, CallBack callback, UserData userData)
@@ -147,9 +164,9 @@ void CoreAPI::activate(ActivateData *data, CallBack callback, UserData userData)
     accountData = *data;
     accountData.reserved = 2;
 
+    for (int i = 0; i < 32; ++i) accountData.iosID[i] = '0'; //! @note for ios verification
     API_LOG(driver, DEBUG_LOG, "version 0x%X/n", versionData.version);
-
-    for (int i = 0; i < 32; ++i) accountData.iosID[i] = '9'; //! @note for ios verification
+    API_LOG(driver, DEBUG_LOG, "%.32s", accountData.iosID);
     send(2, 0, SET_ACTIVATION, CODE_ACTIVATE, (unsigned char *)&accountData,
          sizeof(accountData) - sizeof(char *), 1000, 3,
          callback ? callback : CoreAPI::activateCallback, userData);
@@ -171,7 +188,11 @@ void CoreAPI::setBroadcastFreq(uint8_t *dataLenIs16, CallBack callback, UserData
     //! @note see also enum BROADCAST_FREQ in DJI_API.h
     for (int i = 0; i < 16; ++i)
     {
+#ifdef SDK_VERSION_3_1_A3
+        if (i < 14)
+#else
         if (i < 12)
+#endif
             dataLenIs16[i] = (dataLenIs16[i] > 5 ? 5 : dataLenIs16[i]);
         else
             dataLenIs16[i] = 0;
@@ -183,6 +204,12 @@ void CoreAPI::setBroadcastFreq(uint8_t *dataLenIs16, CallBack callback, UserData
 TimeStampData CoreAPI::getTime() const { return broadcastData.timeStamp; }
 
 FlightStatus CoreAPI::getFlightStatus() const { return broadcastData.status; }
+
+void CoreAPI::setFromMobileCallback(CallBackHandler FromMobileEntrance)
+{
+    fromMobileCallback = FromMobileEntrance;
+}
+
 ActivateData CoreAPI::getAccountData() const { return accountData; }
 
 void CoreAPI::setAccountData(const ActivateData &value) { accountData = value; }
@@ -204,7 +231,7 @@ HardDriver *CoreAPI::getDriver() const { return driver; }
 
 void CoreAPI::setDriver(HardDriver *value) { driver = value; }
 
-void CoreAPI::getVersionCallback(CoreAPI *This, Header *header, UserData userData __UNUSED)
+void CoreAPI::getSDKVersionCallback(CoreAPI *This, Header *header, UserData userData __UNUSED)
 {
     unsigned char *ptemp = ((unsigned char *)header) + sizeof(Header);
 
@@ -219,12 +246,13 @@ void CoreAPI::getVersionCallback(CoreAPI *This, Header *header, UserData userDat
 #endif
     memcpy(This->versionData.version_name, ptemp, 32);
 
-    API_LOG(This->driver, STATUS_LOG, "version ack = %d\n", This->versionData.version_ack);
-    API_LOG(This->driver, STATUS_LOG, "version crc = 0x%X\n", This->versionData.version_crc);
+    API_LOG(This->driver, STATUS_LOG, "version ack = %d", This->versionData.version_ack);
+    API_LOG(This->driver, STATUS_LOG, "version crc = 0x%X", This->versionData.version_crc);
 #ifdef SDK_VERSION_3_1
-    API_LOG(This->driver, STATUS_LOG, "version ID = %s\n", This->versionData.version_ID);
+    API_LOG(This->driver, STATUS_LOG, "version ID = %.11s", This->versionData.version_ID);
 #endif
-    API_LOG(This->driver, STATUS_LOG, "version name = %s\n", This->versionData.version_name);
+    API_LOG(This->driver, STATUS_LOG, "version name = %.32s\r\n",
+            This->versionData.version_name);
 }
 
 void CoreAPI::activateCallback(CoreAPI *This, Header *header, UserData userData __UNUSED)
@@ -274,7 +302,7 @@ void CoreAPI::activateCallback(CoreAPI *This, Header *header, UserData userData 
                 break;
             case ACK_ACTIVE_VERSION_ERROR:
                 API_LOG(This->driver, ERROR_LOG, "activate SDK version did not match\n");
-                This->getVersion();
+                This->getSDKVersion();
                 break;
             default:
                 if (!This->decodeACKStatus(ack_data))
@@ -296,7 +324,7 @@ void CoreAPI::activateCallback(CoreAPI *This, Header *header, UserData userData 
 
 void CoreAPI::sendToMobileCallback(CoreAPI *This, Header *header, UserData userData __UNUSED)
 {
-    unsigned short ack_data = AC_COMMON_NO_RESPONSE;
+    unsigned short ack_data = ACK_COMMON_NO_RESPONSE;
     if (header->length - EXC_DATA_SIZE <= 2)
     {
         memcpy((unsigned char *)&ack_data, ((unsigned char *)header) + sizeof(Header),
@@ -316,7 +344,7 @@ void CoreAPI::sendToMobileCallback(CoreAPI *This, Header *header, UserData userD
 void CoreAPI::setFrequencyCallback(CoreAPI *This __UNUSED, Header *header,
                                    UserData userData __UNUSED)
 {
-    unsigned short ack_data = AC_COMMON_NO_RESPONSE;
+    unsigned short ack_data = ACK_COMMON_NO_RESPONSE;
 
     if (header->length - EXC_DATA_SIZE <= 2)
     {
@@ -339,13 +367,15 @@ void CoreAPI::setFrequencyCallback(CoreAPI *This __UNUSED, Header *header,
             break;
     }
 }
-Version CoreAPI::getVersion() const { return versionData.version; }
+Version CoreAPI::getSDKVersion() const { return versionData.version; }
+
+SDKFilter CoreAPI::getFilter() const { return filter; }
 
 void CoreAPI::setVersion(const Version &value) { versionData.version = value; }
 
 void CoreAPI::setControlCallback(CoreAPI *This, Header *header, UserData userData __UNUSED)
 {
-    unsigned short ack_data = AC_COMMON_NO_RESPONSE;
+    unsigned short ack_data = ACK_COMMON_NO_RESPONSE;
     unsigned char data = 0x1;
 
     if (header->length - EXC_DATA_SIZE <= sizeof(ack_data))
@@ -363,19 +393,12 @@ void CoreAPI::setControlCallback(CoreAPI *This, Header *header, UserData userDat
     {
         case ACK_SETCONTROL_NEED_MODE_F:
             API_LOG(This->driver, STATUS_LOG, "Obtain control failed, Conditions did not "
-                                              "satisfied\n");
+                                              "satisfied");
             break;
         case ACK_SETCONTROL_RELEASE_SUCCESS:
-            This->getDriver()->lockMSG();
-            This->broadcastData.controlStatus = 0;
-            This->getDriver()->freeMSG();
             API_LOG(This->driver, STATUS_LOG, "release control successfully\n");
             break;
         case ACK_SETCONTROL_OBTAIN_SUCCESS:
-            This->getDriver()->lockMSG();
-            This->broadcastData.controlStatus = 1;
-            This->getDriver()->freeMSG();
-
             API_LOG(This->driver, STATUS_LOG, "obtain control successfully\n");
             break;
         case ACK_SETCONTROL_OBTAIN_RUNNING:

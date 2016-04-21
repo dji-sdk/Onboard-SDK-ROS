@@ -152,6 +152,51 @@ void DJISDKNode::broadcast_callback()
         rc_channels_publisher.publish(rc_channels);
     }
 
+#ifdef SDK_VERSION_3_1_A3
+	if (msg_flags & HAS_GPS){
+		A3_GPS.date = bc_data.gps.date;
+		A3_GPS.time = bc_data.gps.time;
+		A3_GPS.longitude = bc_data.gps.longitude;
+		A3_GPS.latitude = bc_data.gps.latitude;
+		A3_GPS.height_above_sea = bc_data.gps.Hmsl;
+		A3_GPS.velocity_north = bc_data.gps.velocityNorth;
+		A3_GPS.velocity_east= bc_data.gps.velocityEast;
+		A3_GPS.velocity_ground = bc_data.gps.velocityGround;
+		A3_GPS.horizontal_dop = bc_data.gps.Hdop;
+		A3_GPS.position_dop = bc_data.gps.Pdop;
+		A3_GPS.gps_fix= bc_data.gps.GPSFix;
+		A3_GPS.vertical_position_accuracy= bc_data.gps.GNSSFlag;
+		A3_GPS.horizontal_position_accuracy = bc_data.gps.hacc;
+		A3_GPS.velocity_accuracy = bc_data.gps.sacc;
+		A3_GPS.gps_satellite_used = bc_data.gps.GPSUsed;
+		A3_GPS.glonass_satellite_used = bc_data.gps.GNSSUsed;
+		A3_GPS.total_satellite_used = bc_data.gps.SVNum;
+		A3_GPS.gps_state = bc_data.gps.GPSState;
+		A3_GPS_info_publisher.publish(A3_GPS);
+	}
+	if (msg_flags & HAS_RTK)
+		A3_RTK.date = bc_data.rtk.date;
+		A3_RTK.time = bc_data.rtk.time;
+		A3_RTK.longitude_RTK = bc_data.rtk.longitude;
+		A3_RTK.latitude_RTK = bc_data.rtk.latitude;
+		A3_RTK.height_above_sea_RTK = bc_data.rtk.Hmsl;
+		A3_RTK.longitude_single = bc_data.rtk.longitudeS;
+		A3_RTK.latitude_single = bc_data.rtk.latitudeS;
+		A3_RTK.height_above_sea_single = bc_data.rtk.HmslS;
+		A3_RTK.velocity_north = bc_data.rtk.velocityNorth;
+		A3_RTK.velocity_east = bc_data.rtk.velocityEast;
+		A3_RTK.velocity_ground = bc_data.rtk.velocityGround;
+		A3_RTK.yaw = bc_data.rtk.yaw;
+		A3_RTK.satellite_used_RTK = bc_data.rtk.SVNS;
+		A3_RTK.satellite_used_single = bc_data.rtk.SVNP;
+		A3_RTK.horizontal_dop = bc_data.rtk.Hdop;
+		A3_RTK.position_dop = bc_data.rtk.Pdop;
+		for (int i = 0; i < 6; i ++)
+			A3_RTK.position_flag[i] = bc_data.rtk.posFlag[i];
+		A3_RTK.gps_state = bc_data.rtk.state;
+		A3_RTK.rtk_updated_flag = bc_data.rtk.rtkNew;
+		A3_RTK_info_publisher.publish(A3_RTK);
+#endif 
     //update compass msg
     if (msg_flags & HAS_MAG) {
         compass.header.frame_id = "/world";
@@ -179,10 +224,10 @@ void DJISDKNode::broadcast_callback()
 
     //update flight control info
     if (msg_flags & HAS_DEVICE) {
-		flight_control_info.control_mode = bc_data.ctrlInfo.data;
-        flight_control_info.cur_ctrl_dev_in_navi_mode = bc_data.ctrlInfo.device;
-        flight_control_info.serial_req_status = bc_data.ctrlInfo.signature;
-		flight_control_info.virtual_rc_status = bc_data.ctrlInfo.virtualrc;
+		flight_control_info.control_mode = bc_data.ctrlInfo.mode;
+        flight_control_info.cur_ctrl_dev_in_navi_mode = bc_data.ctrlInfo.deviceStatus;
+        flight_control_info.serial_req_status = bc_data.ctrlInfo.flightStatus;
+		flight_control_info.virtual_rc_status = bc_data.ctrlInfo.vrcStatus;
         flight_control_info_publisher.publish(flight_control_info);
     }
 
