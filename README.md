@@ -42,7 +42,7 @@ It helps users handle the following commands and actions.
 ##How to use
 1. Install and configure your hardware correctly.
 2. Enter the following info into `dji_sdk/launch/sdk_manifold.launch`.
-	* APP ID
+    * APP ID
 	* Communication Key
 	* Uart Device Name
 	* Baudrate
@@ -128,3 +128,6 @@ The below environment has been tested.
 此 ROS 包在如下系统中进行测试；
 * 操作系统：Ubuntu 14.04， DJI Manifold
 * ROS 版本：ROS Indigo
+
+#Eclipse IDE
+* 将gen_eclipse_project.sh拷贝到catkin_ws中,运行./gen_eclipse_project.sh,打开eclipse, File --> Import --> Existing projects into workspace,选择src目录.[参考地址](http://wiki.ros.org/IDEs)
