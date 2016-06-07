@@ -12,6 +12,9 @@
 #include <sys/types.h>
 #include <string.h>
 #include <iostream>
+#include <sstream>
+#include <vector>
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
 #include <ros/ros.h>
@@ -35,6 +38,8 @@ class BagLogger {
     std::string file_name_;
 
     std::string log_name_prefix_ {""};
+
+    std::string log_name_seq_ {"0000"};
 
 public:
     BagLogger() {};
@@ -60,17 +65,62 @@ public:
         path p("/media/ubuntu");
         for (auto i = directory_iterator(p); i != directory_iterator(); i++)
         {
-            if (is_directory(i->path())) // find the first directory
+            if (is_directory(i->path()))
             {
+                std::size_t found = i->path().filename().string().find("LOG");
+                if (found!=std::string::npos)
+                {
 //                cout << "FOUND: "+i->path().filename().string()+"  AT: "+i->path().string() << endl;
-                return i->path().string()+"/";
+                    return i->path().string()+"/";
+                }
             }
             else
                 continue;
         }
-        ROS_INFO("LG: NO SD CARD FOUND");
+        ROS_INFO("LG: NO LOG_XXX SD CARD FOUND");
 
         return string(DEFAULT_BAG_DIR);
+    }
+
+    std::string getSequence(std::string dir, std::string prefix) {
+        using namespace std;
+        using namespace boost::filesystem;
+        using namespace boost;
+
+        unsigned int seq_num = 0;
+
+        path p(dir);
+        for (auto i = directory_iterator(p); i != directory_iterator(); i++)
+        {
+            if (!is_directory(i->path())) //we eliminate directories
+            {
+//                cout << i->path().filename().string() << endl;
+                std::vector<std::string> fields;
+                boost::split(fields, i->path().filename().string(), boost::is_any_of("-"));
+                if (fields.size() >= 2)
+                {
+                    if (fields[0] == prefix)
+                    {
+                        unsigned long tmp = atol(fields[1].c_str());
+                        if (tmp < 9999 && tmp > seq_num)
+                        {
+                            seq_num = tmp;
+                        }
+                    }
+                }
+            }
+            else
+                continue;
+        }
+
+        seq_num++;
+
+        std::stringstream s;
+        s << std::setfill('0') << std::setw(4) << seq_num;
+
+        log_name_seq_ = s.str();
+
+        return log_name_seq_;
     }
 
     std::string getLogFileName(std::string prefix) {
@@ -84,7 +134,9 @@ public:
 
         std::string dir_str = getLogFileDir();
 
-        std::string format_str = dir_str+prefix+"-%Y-%m-%d-%H-%M-%S.bag";
+        std::string seq_str = getSequence(dir_str, prefix);
+
+        std::string format_str = dir_str+prefix+"-"+seq_str+"-%Y-%m-%d-%H-%M-%S.bag";
 
         strftime(buffer, 80, format_str.c_str(), timeinfo);
         std::string str(buffer);
