@@ -299,9 +299,7 @@ typedef struct GPSPositionData
 
 typedef struct CtrlInfoData
 {
-#ifndef SDK_VERSION_2_3
     uint8_t mode;
-#endif // SDK_VERSION_2_3
     //! @todo mode remote to enums
     uint8_t deviceStatus : 3; /*0->rc  1->app  2->serial*/
     uint8_t flightStatus : 1; /*1->opensd  0->close*/
@@ -309,9 +307,6 @@ typedef struct CtrlInfoData
     uint8_t reserved : 3;
 } CtrlInfoData;
 
-#ifdef SDK_VERSION_2_3
-typedef uint32_t TimeStampData;
-#else
 typedef struct TimeStampData
 {
     //! @todo type modify
@@ -319,19 +314,16 @@ typedef struct TimeStampData
     uint32_t nanoTime;
     uint8_t syncFlag;
 } TimeStampData;
-#endif // SDK_VERSION_2_3
 
 typedef struct GimbalData
 {
     float32_t roll;
     float32_t pitch;
     float32_t yaw;
-#ifndef SDK_VERSION_2_3
     uint8_t pitchLimit : 1;
     uint8_t rollLimit : 1;
     uint8_t yawLimit : 1;
     uint8_t reserved : 5;
-#endif // SDK_VERSION_2_3
 } GimbalData;
 
 typedef uint8_t FlightStatus;
@@ -350,20 +342,13 @@ typedef struct RTKData
     float64_t longitude;
     float64_t latitude;
     float32_t Hmsl;
-    int32_t longitudeS;
-    int32_t latitudeS;
-    int32_t HmslS;
     float32_t velocityNorth;
     float32_t velocityEast;
     float32_t velocityGround;
     int16_t yaw;
-    uint8_t SVNS;
-    uint8_t SVNP;
-    float32_t Hdop;
-    float32_t Pdop;
-    uint8_t posFlag[6];
-    uint16_t state;
-    uint16_t rtkNew;
+    uint8_t posFlag;
+    uint8_t yawFlag;
+    
 } RTKData;
 
 //! @todo rename to a final version
@@ -377,18 +362,11 @@ typedef struct GPSData
     float32_t velocityNorth;
     float32_t velocityEast;
     float32_t velocityGround;
-    float32_t Hdop;
-    float32_t Pdop;
-    float32_t GPSFix;
-    float32_t GNSSFlag;
-    float32_t hacc;
-    float32_t sacc;
-    uint32_t GPSUsed;
-    uint32_t GNSSUsed;
-    uint16_t SVNum;
-    uint16_t GPSState;
+
 } GPSData;
 
+#ifndef SDK_DEV
+//! @todo
 typedef struct BroadcastData
 {
     unsigned short dataFlag;
@@ -399,10 +377,8 @@ typedef struct BroadcastData
     CommonData w;
     PositionData pos;
     MagnetData mag;
-#ifdef SDK_VERSION_3_1_A3
     GPSData gps;
     RTKData rtk;
-#endif
     RadioData rc;
     GimbalData gimbal;
     FlightStatus status; //! @todo define enum
@@ -411,9 +387,9 @@ typedef struct BroadcastData
 
     //! @note these variables are not send from FMU,
     //! just a record for user.
-    uint8_t controlStatus; //! @todo add IO code
     uint8_t activation;
 } BroadcastData;
+#endif // SDK_DEV
 
 typedef struct VirtualRCSetting
 {
@@ -446,10 +422,14 @@ typedef struct VirtualRCData
 } VirtualRCData;
 
 #pragma pack()
+#ifdef SDK_DEV
+#include "devtype.h"
+#endif // SDK_DEV
 } // namespace onboardSDK
 } // namespace DJI
 
 #define PRO_PURE_DATA_MAX_SIZE 1007 // 2^10 - header size
 const size_t MMU_TABLE_NUM = 32;
+
 
 #endif // DJI_TYPE
