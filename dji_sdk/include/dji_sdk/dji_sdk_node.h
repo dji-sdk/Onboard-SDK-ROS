@@ -50,7 +50,7 @@ private:
     ActivateData user_act_data;
 
 //Publishers:
-	ros::Publisher activation_publisher;
+    ros::Publisher activation_publisher;
     ros::Publisher acceleration_publisher;
     ros::Publisher attitude_quaternion_publisher;
     ros::Publisher compass_publisher;
@@ -64,16 +64,15 @@ private:
     ros::Publisher velocity_publisher;
     ros::Publisher odometry_publisher;
     ros::Publisher time_stamp_publisher;
-	ros::Publisher data_received_from_remote_device_publisher;
-#ifdef SDK_VERSION_3_1_A3
-	ros::Publisher A3_GPS_info_publisher;
-	ros::Publisher A3_RTK_info_publisher;
-#endif
+    ros::Publisher data_received_from_remote_device_publisher;
+
+    ros::Publisher A3_GPS_info_publisher;
+    ros::Publisher A3_RTK_info_publisher;
 
     void init_publishers(ros::NodeHandle& nh)
     {
         // start ros publisher
-		activation_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/activation", 10);
+	activation_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/activation", 10);
         acceleration_publisher = nh.advertise<dji_sdk::Acceleration>("dji_sdk/acceleration", 10);
         attitude_quaternion_publisher = nh.advertise<dji_sdk::AttitudeQuaternion>("dji_sdk/attitude_quaternion", 10);
         compass_publisher = nh.advertise<dji_sdk::Compass>("dji_sdk/compass", 10);
@@ -87,11 +86,13 @@ private:
         velocity_publisher = nh.advertise<dji_sdk::Velocity>("dji_sdk/velocity", 10);
         odometry_publisher = nh.advertise<nav_msgs::Odometry>("dji_sdk/odometry",10);
         time_stamp_publisher = nh.advertise<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10);
-		data_received_from_remote_device_publisher = nh.advertise<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device",10);
-#ifdef SDK_VERSION_3_1_A3
-		A3_GPS_info_publisher = nh.advertise<dji_sdk::A3GPS>("dji_sdk/A3_GPS", 10);
-		A3_RTK_info_publisher = nh.advertise<dji_sdk::A3RTK>("dji_sdk/A3_RTK", 10);
-#endif
+	data_received_from_remote_device_publisher = nh.advertise<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device",10);
+
+	//TODO: Identify the drone version first	
+	A3_GPS_info_publisher = nh.advertise<dji_sdk::A3GPS>("dji_sdk/A3_GPS", 10);
+	A3_RTK_info_publisher = nh.advertise<dji_sdk::A3RTK>("dji_sdk/A3_RTK", 10);
+	
+
 
     }
 
