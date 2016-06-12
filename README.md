@@ -42,6 +42,7 @@ It helps users handle the following commands and actions.
 ##How to use
 1. Install and configure your hardware correctly.
 2. Enter the following info into `dji_sdk/launch/sdk_manifold.launch`.
+	* Drone Version ("M100" or "A3")
 	* APP ID
 	* Communication Key
 	* Uart Device Name
