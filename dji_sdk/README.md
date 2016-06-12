@@ -20,7 +20,7 @@ Please check the [Appendix](../dji_sdk_doc/Appendix.md) for the detail of all pu
 ###How to use
 1. Install and configure your hardware correctly.
 2. Enter the following info into *dji_sdk/launch/sdk_manifold.launch*.
-        * Drone Version ("M100" or "A3")
+	* Drone Version ("M100" or "A3")
 	* APP ID
 	* APP Level
 	* Communication Key
