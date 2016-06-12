@@ -42,6 +42,7 @@ It helps users handle the following commands and actions.
 ##How to use
 1. Install and configure your hardware correctly.
 2. Enter the following info into `dji_sdk/launch/sdk_manifold.launch`.
+	* Drone Version ("M100" or "A3")
 	* APP ID
 	* Communication Key
 	* Uart Device Name
@@ -103,6 +104,7 @@ The below environment has been tested.
 
 1. 按照文档配置好 M100 
 2. 将激活信息输入至launch file：`dji_sdk/launch/sdk_manifold.launch`
+	* Drone Version （飞控版本：“M100” 或 “A3”）
 	* APP ID （在官网注册key后得到）
 	* Communication Key（在官网注册key后得到）
 	* Uart Device Name（串口设备名称）

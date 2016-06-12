@@ -40,7 +40,7 @@ This launch file will fire up both rosbridge websocket server and the demo serve
 The webpage client will comunicate with rosbridge on default localhost:19871. If you are not testing the webpage on the onboard computer, you need to modify this network address in wp_control.js.
 
 #####b) Create a Mission
-On the webpage, click "Start Planning" to begin a mission. One the map a initial marker will be created to show current position.
+On the webpage, click "Start Planning" to begin a mission. On the map a initial marker will be created to show current position.
 Then create more waypoints by clicking on the map directly. You can also right click upon the markers to modify height. The default of height is 10m.
 After that, you can click "Confirm Mission" to check the waypoint list data. If you want to do more modification, drag the markers or right click upon them. Or you can use "Reset Mission" to clean up current mission.
 
@@ -49,6 +49,6 @@ Before this, make sure the quadcopter has been turn on and the RC has been switc
 Then click "Open Navigation Mode" to acquire control of the quadcopter.
 Next, click "Upload Mission" to upload the mission to onboard server.
 Finally, click"Start Mission" to execute.
-During the execution, if you want to cancel the mission, click "Cancel Mission" and stop the quadcopter.
+During the execution, if you want to abort the mission, click "Abort Mission" and stop the quadcopter.
 
 ![webpageClient](../dji_sdk_doc/webpage.png)

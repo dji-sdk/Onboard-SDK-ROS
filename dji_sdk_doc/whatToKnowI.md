@@ -3,7 +3,7 @@
 ## Overview
 Onboard SDK is a protocol provided by DJI, which makes it possible for developers to get current state of Matrice 100 and send commands to it.
 
-This document is a brief introduction of the structure and usage of SDK’s ROS packages. The structure and usage of these packatges will be introduced at first and then followed by some tips of SDK challenges. At last, there will be an appendix showing all topics and services, together with the correspondsing msgs and srvs.
+This document is a brief introduction of the structure and usage of SDK’s ROS packages. The structure and usage of these packages will be introduced at first and then followed by some tips of SDK challenges. At last, there will be an appendix showing all topics and services, together with the correspondsing msgs and srvs.
 
 ## ROS Package
 The ROS packages in this repository is one kind of implementation of DJI Onboard SDK protocol and many applications based on it.

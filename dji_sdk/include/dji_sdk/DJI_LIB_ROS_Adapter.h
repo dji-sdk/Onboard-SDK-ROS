@@ -1,6 +1,31 @@
 #ifndef _DJI_LIB_ROS_ADAPTER_H_
 #define _DJI_LIB_ROS_ADAPTER_H_
 
+#define HAS_TIME 0x0001
+#define HAS_Q 0x0002
+#define HAS_A 0x0004
+#define HAS_V 0x0008
+#define HAS_W 0x0010
+#define HAS_POS 0x0020
+
+/***Using M100***/
+#define HAS_MAG 0x0040
+#define HAS_RC 0x0080
+#define HAS_GIMBAL 0x0100
+#define HAS_STATUS 0x0200
+#define HAS_BATTERY 0x0400
+#define HAS_DEVICE 0x0800
+
+/***Using A3***/
+#define A3_HAS_GPS 0x0040
+#define A3_HAS_RTK 0x0080
+#define A3_HAS_MAG 0x0100
+#define A3_HAS_RC 0x0200
+#define A3_HAS_GIMBAL 0x0400
+#define A3_HAS_STATUS 0x0800
+#define A3_HAS_BATTERY 0x1000
+#define A3_HAS_DEVICE 0x2000
+
 
 #include "DJI_HardDriver_Manifold.h"
 #include <dji_sdk_lib/DJI_API.h>
@@ -99,12 +124,14 @@ class ROSAdapter {
             else
                 ROS_INFO("Succeed to create thread for readPoll");
 
-            coreAPI->getSDKVersion();
         }
 
 
         void activate(ActivateData *data, CallBack callback) {
+            
+            coreAPI->setVersion(data->version);
             coreAPI->activate(data, callback);
+            
         }
 
 
