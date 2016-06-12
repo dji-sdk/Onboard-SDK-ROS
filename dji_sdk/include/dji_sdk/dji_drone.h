@@ -23,14 +23,14 @@ private:
 
 	ros::ServiceClient activation_service;
 	ros::ServiceClient attitude_control_service;
-    ros::ServiceClient camera_action_control_service;
-    ros::ServiceClient drone_task_control_service;
-    ros::ServiceClient gimbal_angle_control_service;
-    ros::ServiceClient gimbal_speed_control_service;
-    ros::ServiceClient global_position_control_service;
-    ros::ServiceClient local_position_control_service;
-    ros::ServiceClient sdk_permission_control_service;
-    ros::ServiceClient velocity_control_service;
+    	ros::ServiceClient camera_action_control_service;
+    	ros::ServiceClient drone_task_control_service;
+    	ros::ServiceClient gimbal_angle_control_service;
+    	ros::ServiceClient gimbal_speed_control_service;
+    	ros::ServiceClient global_position_control_service;
+    	ros::ServiceClient local_position_control_service;
+    	ros::ServiceClient sdk_permission_control_service;
+    	ros::ServiceClient velocity_control_service;
 	ros::ServiceClient version_check_service;
 
 	ros::ServiceClient virtual_rc_enable_control_service;
@@ -53,42 +53,43 @@ private:
 	ros::ServiceClient mission_fm_upload_service;
 	ros::ServiceClient mission_fm_set_target_service;
 
-    ros::Subscriber acceleration_subscriber;
-    ros::Subscriber attitude_quaternion_subscriber;
-    ros::Subscriber compass_subscriber;
-    ros::Subscriber flight_control_info_subscriber;
-    ros::Subscriber flight_status_subscriber;
-    ros::Subscriber gimbal_subscriber;
-    ros::Subscriber global_position_subscriber;
-    ros::Subscriber local_position_subscriber;
-    ros::Subscriber power_status_subscriber;
-    ros::Subscriber rc_channels_subscriber;
-    ros::Subscriber velocity_subscriber;
-    ros::Subscriber activation_subscriber;
-    ros::Subscriber odometry_subscriber;
+    	ros::Subscriber acceleration_subscriber;
+    	ros::Subscriber attitude_quaternion_subscriber;
+    	ros::Subscriber compass_subscriber;
+    	ros::Subscriber flight_control_info_subscriber;
+    	ros::Subscriber flight_status_subscriber;
+    	ros::Subscriber gimbal_subscriber;
+    	ros::Subscriber global_position_subscriber;
+    	ros::Subscriber local_position_subscriber;
+    	ros::Subscriber power_status_subscriber;
+    	ros::Subscriber rc_channels_subscriber;
+    	ros::Subscriber velocity_subscriber;
+    	ros::Subscriber activation_subscriber;
+    	ros::Subscriber odometry_subscriber;
 
 	ros::Subscriber time_stamp_subscriber;
 	ros::Subscriber mission_status_subscriber;
 	ros::Subscriber mission_event_subscriber;
 
 public:
-    dji_sdk::Acceleration acceleration;
-    dji_sdk::AttitudeQuaternion attitude_quaternion;
-    dji_sdk::Compass compass;
-    dji_sdk::FlightControlInfo flight_control_info;
-    uint8_t flight_status;
-    dji_sdk::Gimbal gimbal;
-    dji_sdk::GlobalPosition global_position;
-    dji_sdk::GlobalPosition global_position_ref;
-    dji_sdk::LocalPosition local_position;
-    dji_sdk::LocalPosition local_position_ref;
-    dji_sdk::PowerStatus power_status;
-    dji_sdk::RCChannels rc_channels;
-    dji_sdk::Velocity velocity;
-    nav_msgs::Odometry odometry;
-	dji_sdk::TimeStamp time_stamp;
-    bool activation = false;
-    bool localposbase_use_height = true;
+
+   	 dji_sdk::Acceleration acceleration;
+    	dji_sdk::AttitudeQuaternion attitude_quaternion;
+    	dji_sdk::Compass compass;
+    	dji_sdk::FlightControlInfo flight_control_info;
+    	uint8_t flight_status;
+    	dji_sdk::Gimbal gimbal;
+    	dji_sdk::GlobalPosition global_position;
+    	dji_sdk::GlobalPosition global_position_ref;
+    	dji_sdk::LocalPosition local_position;
+    	dji_sdk::LocalPosition local_position_ref;
+    	dji_sdk::PowerStatus power_status;
+    	dji_sdk::RCChannels rc_channels;
+   	dji_sdk::Velocity velocity;
+   	nav_msgs::Odometry odometry;
+   	dji_sdk::TimeStamp time_stamp;
+   	bool activation = false;
+   	bool localposbase_use_height = true;
 
 	uint8_t mission_type;
 
@@ -243,15 +244,15 @@ public:
 		waypoint_navigation_action_client(nh, "dji_sdk/waypoint_navigation_action", true)
 	{
 		activation_service = nh.serviceClient<dji_sdk::Activation>("dji_sdk/activation");
-	    attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
-	    camera_action_control_service = nh.serviceClient<dji_sdk::CameraActionControl>("dji_sdk/camera_action_control");
-	    drone_task_control_service = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
-	    gimbal_angle_control_service = nh.serviceClient<dji_sdk::GimbalAngleControl>("dji_sdk/gimbal_angle_control");
-	    gimbal_speed_control_service = nh.serviceClient<dji_sdk::GimbalSpeedControl>("dji_sdk/gimbal_speed_control");
-	    global_position_control_service = nh.serviceClient<dji_sdk::GlobalPositionControl>("dji_sdk/global_position_control");
-	    local_position_control_service = nh.serviceClient<dji_sdk::LocalPositionControl>("dji_sdk/local_position_control");
-	    sdk_permission_control_service = nh.serviceClient<dji_sdk::SDKPermissionControl>("dji_sdk/sdk_permission_control");
-	    velocity_control_service = nh.serviceClient<dji_sdk::VelocityControl>("dji_sdk/velocity_control");
+	    	attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
+	    	camera_action_control_service = nh.serviceClient<dji_sdk::CameraActionControl>("dji_sdk/camera_action_control");
+	    	drone_task_control_service = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
+	    	gimbal_angle_control_service = nh.serviceClient<dji_sdk::GimbalAngleControl>("dji_sdk/gimbal_angle_control");
+	    	gimbal_speed_control_service = nh.serviceClient<dji_sdk::GimbalSpeedControl>("dji_sdk/gimbal_speed_control");
+	    	global_position_control_service = nh.serviceClient<dji_sdk::GlobalPositionControl>("dji_sdk/global_position_control");
+	    	local_position_control_service = nh.serviceClient<dji_sdk::LocalPositionControl>("dji_sdk/local_position_control");
+	    	sdk_permission_control_service = nh.serviceClient<dji_sdk::SDKPermissionControl>("dji_sdk/sdk_permission_control");
+	    	velocity_control_service = nh.serviceClient<dji_sdk::VelocityControl>("dji_sdk/velocity_control");
 		version_check_service = nh.serviceClient<dji_sdk::VersionCheck>("dji_sdk/version_check");
 		virtual_rc_enable_control_service = nh.serviceClient<dji_sdk::VirtualRCEnableControl>("dji_sdk/virtual_rc_enable_control");
 		virtual_rc_data_control_service = nh.serviceClient<dji_sdk::VirtualRCDataControl>("dji_sdk/virtual_rc_data_control");
@@ -274,19 +275,19 @@ public:
 		mission_fm_upload_service = nh.serviceClient<dji_sdk::MissionFmUpload>("dji_sdk/mission_followme_upload");
 		mission_fm_set_target_service = nh.serviceClient<dji_sdk::MissionFmSetTarget>("dji_sdk/mission_followme_set_target");
 
-        acceleration_subscriber = nh.subscribe<dji_sdk::Acceleration>("dji_sdk/acceleration", 10, &DJIDrone::acceleration_subscriber_callback, this);
-        attitude_quaternion_subscriber = nh.subscribe<dji_sdk::AttitudeQuaternion>("dji_sdk/attitude_quaternion", 10, &DJIDrone::attitude_quaternion_subscriber_callback, this);
-        compass_subscriber = nh.subscribe<dji_sdk::Compass>("dji_sdk/compass", 10, &DJIDrone::compass_subscriber_callback, this);
-        flight_control_info_subscriber = nh.subscribe<dji_sdk::FlightControlInfo>("dji_sdk/flight_control_info", 10, &DJIDrone::flight_control_info_subscriber_callback, this);
-        flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, &DJIDrone::flight_status_subscriber_callback, this);
-        gimbal_subscriber = nh.subscribe<dji_sdk::Gimbal>("dji_sdk/gimbal", 10, &DJIDrone::gimbal_subscriber_callback, this);
-        global_position_subscriber = nh.subscribe<dji_sdk::GlobalPosition>("dji_sdk/global_position", 10, &DJIDrone::global_position_subscriber_callback, this);
-        local_position_subscriber = nh.subscribe<dji_sdk::LocalPosition>("dji_sdk/local_position", 10, &DJIDrone::local_position_subscriber_callback, this);
-        power_status_subscriber = nh.subscribe<dji_sdk::PowerStatus>("dji_sdk/power_status", 10, &DJIDrone::power_status_subscriber_callback, this);
-        rc_channels_subscriber = nh.subscribe<dji_sdk::RCChannels>("dji_sdk/rc_channels", 10, &DJIDrone::rc_channels_subscriber_callback, this);
-        velocity_subscriber = nh.subscribe<dji_sdk::Velocity>("dji_sdk/velocity", 10, &DJIDrone::velocity_subscriber_callback, this);
-        activation_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/activation", 10, &DJIDrone::activation_subscriber_callback, this);
-        odometry_subscriber = nh.subscribe<nav_msgs::Odometry>("dji_sdk/odometry",10, &DJIDrone::odometry_subscriber_callback, this);
+        	acceleration_subscriber = nh.subscribe<dji_sdk::Acceleration>("dji_sdk/acceleration", 10, &DJIDrone::acceleration_subscriber_callback, this);
+        	attitude_quaternion_subscriber = nh.subscribe<dji_sdk::AttitudeQuaternion>("dji_sdk/attitude_quaternion", 10, &DJIDrone::attitude_quaternion_subscriber_callback, this);
+        	compass_subscriber = nh.subscribe<dji_sdk::Compass>("dji_sdk/compass", 10, &DJIDrone::compass_subscriber_callback, this);
+        	flight_control_info_subscriber = nh.subscribe<dji_sdk::FlightControlInfo>("dji_sdk/flight_control_info", 10, &DJIDrone::flight_control_info_subscriber_callback, this);
+        	flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, &DJIDrone::flight_status_subscriber_callback, this);
+        	gimbal_subscriber = nh.subscribe<dji_sdk::Gimbal>("dji_sdk/gimbal", 10, &DJIDrone::gimbal_subscriber_callback, this);
+        	global_position_subscriber = nh.subscribe<dji_sdk::GlobalPosition>("dji_sdk/global_position", 10, &DJIDrone::global_position_subscriber_callback, this);
+        	local_position_subscriber = nh.subscribe<dji_sdk::LocalPosition>("dji_sdk/local_position", 10, &DJIDrone::local_position_subscriber_callback, this);
+        	power_status_subscriber = nh.subscribe<dji_sdk::PowerStatus>("dji_sdk/power_status", 10, &DJIDrone::power_status_subscriber_callback, this);
+        	rc_channels_subscriber = nh.subscribe<dji_sdk::RCChannels>("dji_sdk/rc_channels", 10, &DJIDrone::rc_channels_subscriber_callback, this);
+        	velocity_subscriber = nh.subscribe<dji_sdk::Velocity>("dji_sdk/velocity", 10, &DJIDrone::velocity_subscriber_callback, this);
+        	activation_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/activation", 10, &DJIDrone::activation_subscriber_callback, this);
+        	odometry_subscriber = nh.subscribe<nav_msgs::Odometry>("dji_sdk/odometry",10, &DJIDrone::odometry_subscriber_callback, this);
 		time_stamp_subscriber = nh.subscribe<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10, &DJIDrone::time_stamp_subscriber_callback,this);
 		mission_status_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_status", 10, &DJIDrone::mission_status_push_info_callback, this);  
 		mission_event_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_event", 10, &DJIDrone::mission_event_push_info_callback, this);
@@ -777,4 +778,3 @@ public:
 	}
 
 };
-
