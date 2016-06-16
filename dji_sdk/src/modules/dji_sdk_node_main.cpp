@@ -272,6 +272,23 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     rosAdapter->setBroadcastCallback(&DJISDKNode::broadcast_callback, this);
 	rosAdapter->setFromMobileCallback(&DJISDKNode::transparent_transmission_callback,this);
 
+	// Check for reference lat lon coordiantes
+	if (nh_private.hasParam("/World/Origin/latitude") && nh_private.hasParam("/World/Origin/longitude"))
+	{
+        nh_private.param("/World/Origin/longitude", global_position_ref.longitude, 1.1);
+        nh_private.param("/World/Origin/latitude", global_position_ref.latitude, 2.2);
+        if (global_position_ref.longitude == 1.1 || global_position_ref.latitude == 2.2)
+        {
+            ROS_ERROR("\nIllegal or missing origin latitude longitude coordinates");
+        }
+        else
+        {
+            ROS_INFO("\nDJI_NODE: Origin latitude[%f]  longitude[%f]",
+                    global_position_ref.latitude, global_position_ref.longitude);
+            global_position_ref_seted = 1;
+        }
+	}
+
     return 0;
 }
 
