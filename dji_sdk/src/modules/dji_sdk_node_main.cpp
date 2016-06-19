@@ -14,6 +14,24 @@ void DJISDKNode::transparent_transmission_callback(uint8_t *buf, uint8_t len)
 	data_received_from_remote_device_publisher.publish(transparent_transmission_data);
 
 }
+
+#define MAX_UINT32 0xffffffff
+
+double DJISDKNode::deltaTimeStamp(DJI::onboardSDK::TimeStampData& current_time, DJI::onboardSDK::TimeStampData& prev_time) {
+    unsigned long delta;
+
+    if (current_time.nanoTime < prev_time.nanoTime)
+    {
+        delta  = (MAX_UINT32 - prev_time.nanoTime) + current_time.nanoTime;
+    }
+    else
+    {
+        delta = current_time.nanoTime - prev_time.nanoTime;
+    }
+
+    return (double)delta / 1000000000.0;
+}
+
 void DJISDKNode::broadcast_callback()
 {
     DJI::onboardSDK::BroadcastData bc_data = rosAdapter->coreAPI->getBroadcastData();
@@ -70,21 +88,23 @@ void DJISDKNode::broadcast_callback()
         }
 
         //update local_position msg
-        local_position.header.frame_id = "/world";
-        local_position.header.stamp = current_time;
-        gps_convert_ned(
-                local_position.x,
-                local_position.y,
-                global_position.longitude,
-                global_position.latitude,
-                global_position_ref.longitude,
-                global_position_ref.latitude
-                );
-        local_position.z = global_position.height;
-        local_position.ts = global_position.ts;
-        local_position_ref = local_position;
-        local_position_publisher.publish(local_position);
-        LOG_MSG_STAMP("/dji_sdk/local_position", local_position, current_time, 1);
+        if (!localpos_odometry) {
+            local_position.header.frame_id = "/world";
+            local_position.header.stamp = current_time;
+            gps_convert_ned(
+                    local_position.x,
+                    local_position.y,
+                    global_position.longitude,
+                    global_position.latitude,
+                    global_position_ref.longitude,
+                    global_position_ref.latitude
+            );
+            local_position.z = global_position.height;
+            local_position.ts = global_position.ts;
+            local_position_ref = local_position;
+            local_position_publisher.publish(local_position);
+            LOG_MSG_STAMP("/dji_sdk/local_position", local_position, current_time, 1);
+        }
     }
 
 
@@ -99,6 +119,40 @@ void DJISDKNode::broadcast_callback()
         velocity.health_flag = bc_data.v.health;
         velocity_publisher.publish(velocity);
         LOG_MSG_STAMP("/dji_sdk/velocity", velocity, current_time, 2);
+
+        if (localpos_odometry && localpos_init) {
+            ros::Duration d = prev_time - ros::Time::now();
+            double dt = deltaTimeStamp(bc_data.timeStamp, localpos_prevtime);
+//            printf("#### VEL[%0.5f %0.5f %0.5f]  time[%lu  %lu : %lu  : %0.9f  %0.9f]\n", velocity.vx, velocity.vy, velocity.vz,
+//                    cnt++, (unsigned long)bc_data.timeStamp.time, (unsigned long)bc_data.timeStamp.nanoTime, d.toSec(), dt);
+            prev_time = ros::Time::now();
+            localpos_prevtime = bc_data.timeStamp;
+            local_position.header.frame_id = "/world";
+            local_position.header.stamp = current_time;
+            local_position.x += velocity.vx * dt;
+            local_position.y += velocity.vy * dt;
+            local_position.z += velocity.vz * dt;
+
+//            gps_convert_ned(
+//                    local_position.x,
+//                    local_position.y,
+//                    global_position.longitude,
+//                    global_position.latitude,
+//                    global_position_ref.longitude,
+//                    global_position_ref.latitude
+//            );
+//            local_position.z = global_position.height;
+            local_position.ts = global_position.ts;
+            local_position_ref = local_position;
+            local_position_publisher.publish(local_position);
+            LOG_MSG_STAMP("/dji_sdk/local_position", local_position, current_time, 1);
+        }
+        else
+        {
+            localpos_init = true;
+            localpos_prevtime = bc_data.timeStamp;
+            prev_time = ros::Time::now();
+        }
     }
 
     //update acceleration msg
@@ -272,18 +326,26 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     rosAdapter->setBroadcastCallback(&DJISDKNode::broadcast_callback, this);
 	rosAdapter->setFromMobileCallback(&DJISDKNode::transparent_transmission_callback,this);
 
-	// Check for reference lat lon coordiantes
+	printf("\n");
+    // Check for odometry local location mode
+    if (nh_private.hasParam("/Location/odometry"))
+    {
+        localpos_odometry = true;
+        ROS_INFO("DJI_NODE: Using velocity odometry for local positioning");
+    }
+
+    // Check for reference lat lon coordiantes
 	if (nh_private.hasParam("/World/Origin/latitude") && nh_private.hasParam("/World/Origin/longitude"))
 	{
         nh_private.param("/World/Origin/longitude", global_position_ref.longitude, 1.1);
         nh_private.param("/World/Origin/latitude", global_position_ref.latitude, 2.2);
         if (global_position_ref.longitude == 1.1 || global_position_ref.latitude == 2.2)
         {
-            ROS_ERROR("\nIllegal or missing origin latitude longitude coordinates");
+            ROS_ERROR("DJI_NODE: Illegal or missing origin latitude longitude coordinates");
         }
         else
         {
-            ROS_INFO("\nDJI_NODE: Origin latitude[%f]  longitude[%f]",
+            ROS_INFO("DJI_NODE: Origin latitude[%f]  longitude[%f]",
                     global_position_ref.latitude, global_position_ref.longitude);
             global_position_ref_seted = 1;
         }

@@ -39,6 +39,12 @@ private:
     bool sdk_permission_opened = false;
 	bool activation_result = false;
     bool localposbase_use_height = true;
+    bool localpos_odometry = false;
+    bool localpos_init = false;
+    DJI::onboardSDK::TimeStampData localpos_prevtime;
+    ros::Time prev_time;
+    unsigned long cnt = 0;
+    double deltaTimeStamp(DJI::onboardSDK::TimeStampData& current_time, DJI::onboardSDK::TimeStampData& prev_time);
 
     int global_position_ref_seted = 0;
 
