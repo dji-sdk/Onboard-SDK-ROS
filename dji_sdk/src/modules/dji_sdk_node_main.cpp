@@ -328,11 +328,8 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
 
 	printf("\n");
     // Check for odometry local location mode
-    if (nh_private.hasParam("/Location/odometry"))
-    {
-        localpos_odometry = true;
-        ROS_INFO("DJI_NODE: Using velocity odometry for local positioning");
-    }
+    nh_private.getParam("/Location/odometry", localpos_odometry);
+    ROS_INFO("DJI_NODE: Using velocity odometry for local positioning[%s]", localpos_odometry ? "TRUE" : "FALSE");
 
     // Check for reference lat lon coordiantes
 	if (nh_private.hasParam("/World/Origin/latitude") && nh_private.hasParam("/World/Origin/longitude"))
