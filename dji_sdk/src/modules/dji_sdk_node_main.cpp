@@ -129,9 +129,9 @@ void DJISDKNode::broadcast_callback()
             localpos_prevtime = bc_data.timeStamp;
             local_position.header.frame_id = "/world";
             local_position.header.stamp = current_time;
-            local_position.x += (velocity.vx * dt) + local_position_ref.x;
-            local_position.y += (velocity.vy * dt) + local_position_ref.y;
-            local_position.z += (velocity.vz * dt) + local_position_ref.z;
+            local_position.x += velocity.vx * dt;
+            local_position.y += velocity.vy * dt;
+            local_position.z += velocity.vz * dt;
 
 //            gps_convert_ned(
 //                    local_position.x,
@@ -363,6 +363,7 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
         }
         ROS_INFO("DJI_NODE: Origin local_x[%f]  local_y[%f]",
                 (double)local_position_ref.x, (double)local_position_ref.y);
+        local_position = local_position_ref;
     }
 
     return 0;
