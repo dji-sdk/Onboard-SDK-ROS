@@ -129,9 +129,9 @@ void DJISDKNode::broadcast_callback()
             localpos_prevtime = bc_data.timeStamp;
             local_position.header.frame_id = "/world";
             local_position.header.stamp = current_time;
-            local_position.x += velocity.vx * dt;
-            local_position.y += velocity.vy * dt;
-            local_position.z += velocity.vz * dt;
+            local_position.x += (velocity.vx * dt) + local_position_ref.x;
+            local_position.y += (velocity.vy * dt) + local_position_ref.y;
+            local_position.z += (velocity.vz * dt) + local_position_ref.z;
 
 //            gps_convert_ned(
 //                    local_position.x,
@@ -143,7 +143,7 @@ void DJISDKNode::broadcast_callback()
 //            );
 //            local_position.z = global_position.height;
             local_position.ts = global_position.ts;
-            local_position_ref = local_position;
+//            local_position_ref = local_position;
             local_position_publisher.publish(local_position);
             LOG_MSG_STAMP("/dji_sdk/local_position", local_position, current_time, 1);
         }
@@ -331,22 +331,39 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     nh_private.getParam("/Location/odometry", localpos_odometry);
     ROS_INFO("DJI_NODE: Using velocity odometry for local positioning[%s]", localpos_odometry ? "TRUE" : "FALSE");
 
-    // Check for reference lat lon coordiantes
-	if (nh_private.hasParam("/World/Origin/latitude") && nh_private.hasParam("/World/Origin/longitude"))
-	{
-        nh_private.param("/World/Origin/longitude", global_position_ref.longitude, 1.1);
-        nh_private.param("/World/Origin/latitude", global_position_ref.latitude, 2.2);
-        if (global_position_ref.longitude == 1.1 || global_position_ref.latitude == 2.2)
+    // Check for reference lat lon coordinates for local position
+    if (nh_private.hasParam("/World/Origin/latitude") && nh_private.hasParam("/World/Origin/longitude"))
+    {
+        nh_private.getParam("/World/Origin/longitude", global_position_ref.longitude);
+        nh_private.getParam("/World/Origin/latitude", global_position_ref.latitude);
+        ROS_INFO("DJI_NODE: Origin latitude[%f]  longitude[%f]",
+                global_position_ref.latitude, global_position_ref.longitude);
+        global_position_ref_seted = 1;
+    }
+
+    // Check for local position reference coordinates if not using GPS
+    local_position_ref.x = 0.0;
+    local_position_ref.y = 0.0;
+    local_position_ref.z = 0.0;
+    if (localpos_odometry)
+    {
+        if (nh_private.hasParam("/World/Origin/local_x") && nh_private.hasParam("/World/Origin/local_y"))
         {
-            ROS_ERROR("DJI_NODE: Illegal or missing origin latitude longitude coordinates");
+            double c;
+            nh_private.getParam("/World/Origin/local_x", c);
+            local_position_ref.x = c;
+            nh_private.getParam("/World/Origin/local_y", c);
+            local_position_ref.y = c;
         }
         else
         {
-            ROS_INFO("DJI_NODE: Origin latitude[%f]  longitude[%f]",
-                    global_position_ref.latitude, global_position_ref.longitude);
-            global_position_ref_seted = 1;
+            ROS_ERROR("DJI_NODE: missing local_x or local_y offset coordinates, defaulting to 10, 10");
+            local_position_ref.x = 10.0;
+            local_position_ref.y = 10.0;
         }
-	}
+        ROS_INFO("DJI_NODE: Origin local_x[%f]  local_y[%f]",
+                (double)local_position_ref.x, (double)local_position_ref.y);
+    }
 
     return 0;
 }
