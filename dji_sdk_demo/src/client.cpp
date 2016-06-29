@@ -41,8 +41,8 @@ int main(int argc, char **argv)
     int temp32;
     int circleRadius;
     int circleHeight;
-    float Phi;
-    int x_center, y_center;
+    float Phi, circleRadiusIncrements;
+    int x_center, y_center, yaw_local;
     bool valid_flag = false;
     bool err_flag = false;
     ros::init(argc, argv, "sdk_client");
@@ -283,9 +283,28 @@ int main(int argc, char **argv)
                 {
                     circleRadius = 10;
                 } 
-                x_center = drone->local_position.x - circleRadius*cos(Phi);
-                y_center = drone->local_position.y - circleRadius*sin(Phi);
-                
+		
+                x_center = drone->local_position.x;
+                y_center = drone->local_position.y;
+                circleRadiusIncrements = 0.01;
+		
+		for(int j = 0; j < 1000; j ++)
+                {   
+                    if (circleRadiusIncrements < circleRadius)
+			{
+		            x =  x_center + circleRadiusIncrements;
+		            y =  y_center;
+			    circleRadiusIncrements = circleRadiusIncrements + 0.01;
+	       		    //printf("%f \n",circleRadiusIncrements);
+		            drone->local_position_control(x ,y ,circleHeight, 0);
+		            usleep(20000);
+			}
+                     else
+			{
+                            break;
+                	}
+                }
+
                 /* start to draw circle */
                 for(int i = 0; i < 1890; i ++)
                 {   
