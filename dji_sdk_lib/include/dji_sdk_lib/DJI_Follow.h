@@ -40,6 +40,7 @@ typedef struct FollowData
 
 #pragma pack()
 
+//! Follow class encapsulates all follow control related functions provided by the DJI OnboardSDK.
 class Follow
 {
   public:

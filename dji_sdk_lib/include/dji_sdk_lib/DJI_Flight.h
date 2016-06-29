@@ -31,6 +31,7 @@ typedef struct FlightData
 
 #pragma pack()
 
+//! Flight class encapsulates all flight control related functions provided by the DJI OnboardSDK.
 class Flight
 {
   public:
@@ -200,18 +201,5 @@ class Flight
   EulerAngle AngularSim;
 #endif // USE_SIMULATION
 };
-
-class FlightUnitTest
-{
-  //! @todo implement
-  public:
-  FlightUnitTest();
-
-  private:
-  bool mathematicalMethod();
-};
-
-} // namespace onboardSDK
-} // namespace DJI
 
 #endif // DJI_FLIGHT_H

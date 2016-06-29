@@ -21,6 +21,7 @@ namespace DJI
 namespace onboardSDK
 {
 
+//! VirtualRC class has all the methods to mimic the RC functionality via OnboardSDK. 
 class VirtualRC
 {
   public:

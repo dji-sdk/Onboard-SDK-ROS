@@ -261,10 +261,10 @@ int main(int argc, char **argv)
                 static float x;
                 static float y;
                 Phi = 0;
-                std::cout<<"Enter the radius of the circle (10m > x > 4m)\n";
+                std::cout<<"Enter the radius of the circle in meteres (10m > x > 4m)\n";
                 std::cin>>circleRadius;   
 
-                std::cout<<"Enter height (Relative to take off point. 15m > x > 5m) \n";
+                std::cout<<"Enter height in meteres (Relative to take off point. 15m > x > 5m) \n";
                 std::cin>>circleHeight;  
 
                  if (circleHeight < 5)
