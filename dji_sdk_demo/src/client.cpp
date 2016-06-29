@@ -422,10 +422,10 @@ int main(int argc, char **argv)
 				drone->virtual_rc_enable();
 				usleep(20000);
 
-				virtual_rc_data[0] = 1024-660;	//0-> roll     	[1024-660,1024+660] 
-				virtual_rc_data[1] = 1024-660;	//1-> pitch    	[1024-660,1024+660]
-				virtual_rc_data[2] = 1024-660;	//2-> throttle 	[1024-660,1024+660]
-				virtual_rc_data[3] = 1024+660;	//3-> yaw      	[1024-660,1024+660]
+				virtual_rc_data[0] = 1024;	//0-> roll     	[1024-660,1024+660] 
+				virtual_rc_data[1] = 1024;	//1-> pitch    	[1024-660,1024+660]
+				virtual_rc_data[2] = 1024+660;	//2-> throttle 	[1024-660,1024+660]
+				virtual_rc_data[3] = 1024;	//3-> yaw      	[1024-660,1024+660]
 				virtual_rc_data[4] = 1684;	 	//4-> gear		{1684(UP), 1324(DOWN)}
 				virtual_rc_data[6] = 1552;    	//6-> mode     	{1552(P), 1024(A), 496(F)}
 
@@ -438,7 +438,7 @@ int main(int argc, char **argv)
 				drone->virtual_rc_enable();
 				virtual_rc_data[0] = 1024;		//0-> roll     	[1024-660,1024+660] 
 				virtual_rc_data[1] = 1024;		//1-> pitch    	[1024-660,1024+660]
-				virtual_rc_data[2] = 1024+660;	//2-> throttle 	[1024-660,1024+660]
+				virtual_rc_data[2] = 1024-200;	//2-> throttle 	[1024-660,1024+660]
 				virtual_rc_data[3] = 1024;		//3-> yaw      	[1024-660,1024+660]
 				virtual_rc_data[4] = 1324;	 	//4-> gear		{1684(UP), 1324(DOWN)}
 				virtual_rc_data[6] = 1552;    	//6-> mode     	{1552(P), 1024(A), 496(F)}
@@ -502,7 +502,7 @@ int main(int argc, char **argv)
     				*/
     
     				waypoint_task.mission_waypoint.push_back(waypoint);
-                }
+                } 
                 
                 /* 
 
