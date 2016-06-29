@@ -39,6 +39,10 @@ int main(int argc, char **argv)
 {
     int main_operate_code = 0;
     int temp32;
+    int circleRadius;
+    int circleRadiusV;
+    float Phi;
+    int x_center, y_center;
     bool valid_flag = false;
     bool err_flag = false;
     ros::init(argc, argv, "sdk_client");
@@ -48,6 +52,7 @@ int main(int argc, char **argv)
 
 	//virtual RC test data
 	uint32_t virtual_rc_data[16];
+
 	//set frequency test data
 	uint8_t msg_frequency_data[16] = {1,2,3,4,3,2,1,2,3,4,3,2,1,2,3,4};
 	//waypoint action test data
@@ -251,25 +256,32 @@ int main(int argc, char **argv)
 
             case 'i':
                 /*draw circle sample*/
-                static float time = 0;
                 static float R = 2;
                 static float V = 2;
-                static float vx;
-                static float vy;
-                /* start to draw circle */
-                for(int i = 0; i < 300; i ++)
+                static float x;
+                static float y;
+                Phi = 0;
+                std::cout<<"Enter the radius of the circle (10m > x > 4m)\n";
+                std::cin>>circleRadius;                
+                if (circleRadius < 4)
                 {
-                    vx = V * sin((V/R)*time/50.0f);
-                    vy = V * cos((V/R)*time/50.0f);
-        
-                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
-                            Flight::VerticalLogic::VERTICAL_VELOCITY |
-                            Flight::YawLogic::YAW_ANGLE |
-                            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
-                            Flight::SmoothMode::SMOOTH_ENABLE,
-                            vx, vy, 0, 0 );
+                    circleRadius = 4;
+                }
+                else if (circleRadius > 10)
+                {
+                    circleRadius = 10;
+                } 
+                x_center = drone->local_position.x - circleRadius*cos(Phi);
+                y_center = drone->local_position.y - circleRadius*sin(Phi);
+                
+                /* start to draw circle */
+                for(int i = 0; i < 1890; i ++)
+                {   
+                    x =  x_center + circleRadius*cos((Phi/300));
+                    y =  y_center + circleRadius*sin((Phi/300));
+                    Phi = Phi+1;
+                    drone->local_position_control(x ,y ,5, 0);
                     usleep(20000);
-                    time++;
                 }
                 break;
 
