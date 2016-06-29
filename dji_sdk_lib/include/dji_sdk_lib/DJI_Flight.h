@@ -1,9 +1,8 @@
-/** @brief
- *  @file DJI_Flight.h
+/**@file DJI_Flight.h
  *  @version 3.1.7
  *  @date July 1st, 2016
  *
- *  @abstract
+ *  @brief
  *  Flight Control API for DJI onboardSDK library
  *
  *  @copyright 2016 DJI. All rights reserved.
@@ -202,4 +201,6 @@ class Flight
 #endif // USE_SIMULATION
 };
 
+} //namespace OnboardSDK
+} //namespace DJI
 #endif // DJI_FLIGHT_H

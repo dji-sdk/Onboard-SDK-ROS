@@ -1,8 +1,9 @@
-/** @file DJI_Flight.cpp
+/** @brief
+ *  @file DJI_Flight.cpp
  *  @version 3.1.7
  *  @date July 1st, 2016
  *
- *  @brief
+ *  @abstract
  *  Flight Control API for DJI onboardSDK library
  *
  *  @copyright 2016 DJI. All rights reserved.
@@ -261,3 +262,6 @@ QuaternionData Flight::toQuaternion(EulerianAngle eulerAngleData)
   ans.q3 = t2 * t4 * t1 - t3 * t5 * t0;
   return ans;
 }
+}
+
+
