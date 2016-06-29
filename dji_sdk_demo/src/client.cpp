@@ -459,6 +459,10 @@ int main(int argc, char **argv)
 				break;
 
 			case 'v':
+
+                // Clear the vector of previous waypoints 
+                waypoint_task.mission_waypoint.clear();
+                
 				//mission waypoint upload
 				waypoint_task.velocity_range = 10;
 				waypoint_task.idle_velocity = 3;
@@ -469,22 +473,38 @@ int main(int argc, char **argv)
 				waypoint_task.action_on_rc_lost = 0;
 				waypoint_task.gimbal_pitch_mode = 0;
 
-				waypoint.latitude = 22.540091;
-				waypoint.longitude = 113.946593;
-				waypoint.altitude = 100;
-				waypoint.damping_distance = 0;
-				waypoint.target_yaw = 0;
-				waypoint.target_gimbal_pitch = 0;
-				waypoint.turn_mode = 0;
-				waypoint.has_action = 0;
-				/*
-				waypoint.action_time_limit = 10;
-				waypoint.waypoint_action.action_repeat = 1;
-				waypoint.waypoint_action.command_list[0] = 1;
-				waypoint.waypoint_action.command_parameter[0] = 1;
-				*/
-
-				waypoint_task.mission_waypoint.push_back(waypoint);
+                static int num_waypoints = 4; 
+                static int altitude = 80;
+                // Currently hard coded, should be dynamic
+                static float orig_lat = 22.5401;
+                static float orig_long = 113.9468;
+                for(int i = 0; i < num_waypoints; i++)
+                {
+                    
+                    // Careens in zig-zag pattern
+    				waypoint.latitude = (orig_lat+=.0001);
+                    if (i % 2 == 1){
+    				    waypoint.longitude = orig_long+=.0001;
+                    } else {
+    				    waypoint.longitude = orig_long;
+                    }
+    				waypoint.altitude = altitude-=10;
+    				waypoint.damping_distance = 0;
+    				waypoint.target_yaw = 0;
+    				waypoint.target_gimbal_pitch = 0;
+    				waypoint.turn_mode = 0;
+    				waypoint.has_action = 0;
+    				/*
+    				waypoint.action_time_limit = 10;
+    				waypoint.waypoint_action.action_repeat = 1;
+    				waypoint.waypoint_action.command_list[0] = 1;
+    				waypoint.waypoint_action.command_parameter[0] = 1;
+    				*/
+    
+    				waypoint_task.mission_waypoint.push_back(waypoint);
+                }
+                
+                /* 
 
 				waypoint.latitude = 22.540015;
 				waypoint.longitude = 113.94659;
@@ -494,16 +514,17 @@ int main(int argc, char **argv)
 				waypoint.target_gimbal_pitch = 0;
 				waypoint.turn_mode = 0;
 				waypoint.has_action = 0;
-				/*
 				waypoint.action_time_limit = 10;
 				waypoint.waypoint_action.action_repeat = 1;
 				waypoint.waypoint_action.command_list[0] = 1;
 				waypoint.waypoint_action.command_list[1] = 1;
 				waypoint.waypoint_action.command_parameter[0] = 1;
 				waypoint.waypoint_action.command_parameter[1] = 1;
-				*/
+
 
 				waypoint_task.mission_waypoint.push_back(waypoint);
+
+                */
 
 				drone->mission_waypoint_upload(waypoint_task);
 				break;
