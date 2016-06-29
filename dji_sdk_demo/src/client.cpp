@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     int main_operate_code = 0;
     int temp32;
     int circleRadius;
-    int circleRadiusV;
+    int circleHeight;
     float Phi;
     int x_center, y_center;
     bool valid_flag = false;
@@ -262,7 +262,19 @@ int main(int argc, char **argv)
                 static float y;
                 Phi = 0;
                 std::cout<<"Enter the radius of the circle (10m > x > 4m)\n";
-                std::cin>>circleRadius;                
+                std::cin>>circleRadius;   
+
+                std::cout<<"Enter height (Relative to take off point. 15m > x > 5m) \n";
+                std::cin>>circleHeight;  
+
+                 if (circleHeight < 5)
+                {
+                    circleHeight = 5;
+                }
+                else if (circleHeight > 15)
+                {
+                    circleHeight = 15;
+                }           
                 if (circleRadius < 4)
                 {
                     circleRadius = 4;
@@ -280,7 +292,7 @@ int main(int argc, char **argv)
                     x =  x_center + circleRadius*cos((Phi/300));
                     y =  y_center + circleRadius*sin((Phi/300));
                     Phi = Phi+1;
-                    drone->local_position_control(x ,y ,5, 0);
+                    drone->local_position_control(x ,y ,circleHeight, 0);
                     usleep(20000);
                 }
                 break;
