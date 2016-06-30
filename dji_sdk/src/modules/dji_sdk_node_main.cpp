@@ -342,6 +342,7 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     }
 
     // Check for local position reference coordinates if not using GPS
+#if 0
     local_position_ref.x = 0.0;
     local_position_ref.y = 0.0;
     local_position_ref.z = 0.0;
@@ -365,6 +366,7 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
                 (double)local_position_ref.x, (double)local_position_ref.y);
         local_position = local_position_ref;
     }
+#endif
 
     return 0;
 }
