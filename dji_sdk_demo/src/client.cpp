@@ -39,6 +39,10 @@ int main(int argc, char **argv)
 {
     int main_operate_code = 0;
     int temp32;
+    int circleRadius;
+    int circleHeight;
+    float Phi, circleRadiusIncrements;
+    int x_center, y_center, yaw_local;
     bool valid_flag = false;
     bool err_flag = false;
     ros::init(argc, argv, "sdk_client");
@@ -48,6 +52,7 @@ int main(int argc, char **argv)
 
 	//virtual RC test data
 	uint32_t virtual_rc_data[16];
+
 	//set frequency test data
 	uint8_t msg_frequency_data[16] = {1,2,3,4,3,2,1,2,3,4,3,2,1,2,3,4};
 	//waypoint action test data
@@ -251,25 +256,63 @@ int main(int argc, char **argv)
 
             case 'i':
                 /*draw circle sample*/
-                static float time = 0;
                 static float R = 2;
                 static float V = 2;
-                static float vx;
-                static float vy;
-                /* start to draw circle */
-                for(int i = 0; i < 300; i ++)
+                static float x;
+                static float y;
+                Phi = 0;
+                std::cout<<"Enter the radius of the circle in meteres (10m > x > 4m)\n";
+                std::cin>>circleRadius;   
+
+                std::cout<<"Enter height in meteres (Relative to take off point. 15m > x > 5m) \n";
+                std::cin>>circleHeight;  
+
+                 if (circleHeight < 5)
                 {
-                    vx = V * sin((V/R)*time/50.0f);
-                    vy = V * cos((V/R)*time/50.0f);
-        
-                    drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
-                            Flight::VerticalLogic::VERTICAL_VELOCITY |
-                            Flight::YawLogic::YAW_ANGLE |
-                            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
-                            Flight::SmoothMode::SMOOTH_ENABLE,
-                            vx, vy, 0, 0 );
+                    circleHeight = 5;
+                }
+                else if (circleHeight > 15)
+                {
+                    circleHeight = 15;
+                }           
+                if (circleRadius < 4)
+                {
+                    circleRadius = 4;
+                }
+                else if (circleRadius > 10)
+                {
+                    circleRadius = 10;
+                } 
+		
+                x_center = drone->local_position.x;
+                y_center = drone->local_position.y;
+                circleRadiusIncrements = 0.01;
+		
+		for(int j = 0; j < 1000; j ++)
+                {   
+                    if (circleRadiusIncrements < circleRadius)
+			{
+		            x =  x_center + circleRadiusIncrements;
+		            y =  y_center;
+			    circleRadiusIncrements = circleRadiusIncrements + 0.01;
+	       		    //printf("%f \n",circleRadiusIncrements);
+		            drone->local_position_control(x ,y ,circleHeight, 0);
+		            usleep(20000);
+			}
+                     else
+			{
+                            break;
+                	}
+                }
+
+                /* start to draw circle */
+                for(int i = 0; i < 1890; i ++)
+                {   
+                    x =  x_center + circleRadius*cos((Phi/300));
+                    y =  y_center + circleRadius*sin((Phi/300));
+                    Phi = Phi+1;
+                    drone->local_position_control(x ,y ,circleHeight, 0);
                     usleep(20000);
-                    time++;
                 }
                 break;
 
@@ -398,10 +441,10 @@ int main(int argc, char **argv)
 				drone->virtual_rc_enable();
 				usleep(20000);
 
-				virtual_rc_data[0] = 1024-660;	//0-> roll     	[1024-660,1024+660] 
-				virtual_rc_data[1] = 1024-660;	//1-> pitch    	[1024-660,1024+660]
-				virtual_rc_data[2] = 1024-660;	//2-> throttle 	[1024-660,1024+660]
-				virtual_rc_data[3] = 1024+660;	//3-> yaw      	[1024-660,1024+660]
+				virtual_rc_data[0] = 1024;	//0-> roll     	[1024-660,1024+660] 
+				virtual_rc_data[1] = 1024;	//1-> pitch    	[1024-660,1024+660]
+				virtual_rc_data[2] = 1024+660;	//2-> throttle 	[1024-660,1024+660]
+				virtual_rc_data[3] = 1024;	//3-> yaw      	[1024-660,1024+660]
 				virtual_rc_data[4] = 1684;	 	//4-> gear		{1684(UP), 1324(DOWN)}
 				virtual_rc_data[6] = 1552;    	//6-> mode     	{1552(P), 1024(A), 496(F)}
 
@@ -414,7 +457,7 @@ int main(int argc, char **argv)
 				drone->virtual_rc_enable();
 				virtual_rc_data[0] = 1024;		//0-> roll     	[1024-660,1024+660] 
 				virtual_rc_data[1] = 1024;		//1-> pitch    	[1024-660,1024+660]
-				virtual_rc_data[2] = 1024+660;	//2-> throttle 	[1024-660,1024+660]
+				virtual_rc_data[2] = 1024-200;	//2-> throttle 	[1024-660,1024+660]
 				virtual_rc_data[3] = 1024;		//3-> yaw      	[1024-660,1024+660]
 				virtual_rc_data[4] = 1324;	 	//4-> gear		{1684(UP), 1324(DOWN)}
 				virtual_rc_data[6] = 1552;    	//6-> mode     	{1552(P), 1024(A), 496(F)}
@@ -435,6 +478,10 @@ int main(int argc, char **argv)
 				break;
 
 			case 'v':
+
+                // Clear the vector of previous waypoints 
+                waypoint_task.mission_waypoint.clear();
+                
 				//mission waypoint upload
 				waypoint_task.velocity_range = 10;
 				waypoint_task.idle_velocity = 3;
@@ -445,22 +492,38 @@ int main(int argc, char **argv)
 				waypoint_task.action_on_rc_lost = 0;
 				waypoint_task.gimbal_pitch_mode = 0;
 
-				waypoint.latitude = 22.540091;
-				waypoint.longitude = 113.946593;
-				waypoint.altitude = 100;
-				waypoint.damping_distance = 0;
-				waypoint.target_yaw = 0;
-				waypoint.target_gimbal_pitch = 0;
-				waypoint.turn_mode = 0;
-				waypoint.has_action = 0;
-				/*
-				waypoint.action_time_limit = 10;
-				waypoint.waypoint_action.action_repeat = 1;
-				waypoint.waypoint_action.command_list[0] = 1;
-				waypoint.waypoint_action.command_parameter[0] = 1;
-				*/
-
-				waypoint_task.mission_waypoint.push_back(waypoint);
+                static int num_waypoints = 4; 
+                static int altitude = 80;
+                // Currently hard coded, should be dynamic
+                static float orig_lat = 22.5401;
+                static float orig_long = 113.9468;
+                for(int i = 0; i < num_waypoints; i++)
+                {
+                    
+                    // Careens in zig-zag pattern
+    				waypoint.latitude = (orig_lat+=.0001);
+                    if (i % 2 == 1){
+    				    waypoint.longitude = orig_long+=.0001;
+                    } else {
+    				    waypoint.longitude = orig_long;
+                    }
+    				waypoint.altitude = altitude-=10;
+    				waypoint.damping_distance = 0;
+    				waypoint.target_yaw = 0;
+    				waypoint.target_gimbal_pitch = 0;
+    				waypoint.turn_mode = 0;
+    				waypoint.has_action = 0;
+    				/*
+    				waypoint.action_time_limit = 10;
+    				waypoint.waypoint_action.action_repeat = 1;
+    				waypoint.waypoint_action.command_list[0] = 1;
+    				waypoint.waypoint_action.command_parameter[0] = 1;
+    				*/
+    
+    				waypoint_task.mission_waypoint.push_back(waypoint);
+                } 
+                
+                /* 
 
 				waypoint.latitude = 22.540015;
 				waypoint.longitude = 113.94659;
@@ -470,16 +533,17 @@ int main(int argc, char **argv)
 				waypoint.target_gimbal_pitch = 0;
 				waypoint.turn_mode = 0;
 				waypoint.has_action = 0;
-				/*
 				waypoint.action_time_limit = 10;
 				waypoint.waypoint_action.action_repeat = 1;
 				waypoint.waypoint_action.command_list[0] = 1;
 				waypoint.waypoint_action.command_list[1] = 1;
 				waypoint.waypoint_action.command_parameter[0] = 1;
 				waypoint.waypoint_action.command_parameter[1] = 1;
-				*/
+
 
 				waypoint_task.mission_waypoint.push_back(waypoint);
+
+                */
 
 				drone->mission_waypoint_upload(waypoint_task);
 				break;

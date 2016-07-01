@@ -48,7 +48,7 @@ bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& reque
 			new_hotpoint.longitude = hotpoint_task.longitude;
 			new_hotpoint.height = hotpoint_task.altitude;
 			new_hotpoint.radius = hotpoint_task.radius;
-			new_hotpoint.palstance = hotpoint_task.angular_speed;
+			new_hotpoint.yawRate = hotpoint_task.angular_speed;
 			new_hotpoint.clockwise = hotpoint_task.is_clockwise;
 			new_hotpoint.startPoint = hotpoint_task.start_point;
 			new_hotpoint.yawMode = hotpoint_task.yaw_mode;
@@ -270,7 +270,7 @@ bool DJISDKMission::mission_hp_set_speed_callback(dji_sdk::MissionHpSetSpeed::Re
 		printf("Not in Hotpoint Mode!\n");
 		return false;
 	}
-	rosAdapter->hotpoint->updatePalstance(request.speed, request.direction);
+	rosAdapter->hotpoint->updateYawRate(request.speed, request.direction);
 
 	return true;
 

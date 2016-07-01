@@ -1,19 +1,12 @@
 /*! @brief
- *  @file DJI_APP.h
- *  @version 3.0
- *  @date Dec 16, 2015
+ *  @file DJI_App.h
+ *  @version 3.1.7
+ *  @date Jul 1, 2016
  *
  *  @abstract
- *  Core API Link upper level for DJI onboardSDK library
+ *  Developer App support functionality for DJI onboardSDK library
  *
- *  @attention
- *  Project configuration:
- *
- *  @version features:
- *  -* @version V3.0
- *  -* DJI-onboard-SDK for Windows,QT,STM32,ROS,Cmake
- *  -* @date Dec 16, 2015
- *  -* @author william.wu
+ *  Copyright 2016 DJI. All right reserved.
  *
  * */
 
@@ -32,10 +25,10 @@
 //----------------------------------------------------------------------
 typedef struct
 {
-    unsigned short sequence_number;
-    unsigned char session_id : 5;
-    unsigned char need_encrypt : 1;
-    unsigned char reserve : 2;
+  unsigned short sequence_number;
+  unsigned char session_id : 5;
+  unsigned char need_encrypt : 1;
+  unsigned char reserve : 2;
 } req_id_t;
 
 #define EXC_DATA_SIZE (16u)
@@ -56,20 +49,20 @@ typedef struct
 
 typedef struct ActivateData
 {
-    unsigned int ID;
-    unsigned int reserved;
-    unsigned int version;
-    unsigned char iosID[32];
-    char *encKey;
+  unsigned int ID;
+  unsigned int reserved;
+  unsigned int version;
+  unsigned char iosID[32];
+  char *encKey;
 } ActivateData;
 
 typedef struct VersionData
 {
-    unsigned short version_ack;
-    unsigned int version_crc;
-    char version_ID[11];
-    char version_name[32];
-    DJI::onboardSDK::Version version;
+  unsigned short version_ack;
+  unsigned int version_crc;
+  char version_ID[11];
+  char version_name[32];
+  DJI::onboardSDK::Version version;
 } VersionData;
 
 #pragma pack()
