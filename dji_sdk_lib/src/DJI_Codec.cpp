@@ -1,3 +1,14 @@
+/** @file DJI_Codec.cpp
+ *  @version 3.1.7
+ *  @date July 1st, 2016
+ *
+ *  @brief
+ *  Encoding/Message parsing features for DJI onboardSDK library
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
 #include "DJI_Codec.h"
 #include "DJI_Link.h"
 #include "DJI_API.h"
@@ -791,10 +802,10 @@ void DJI::onboardSDK::CoreAPI::byteHandler(const uint8_t in_data)
   }
 }
 
-void CoreAPI::byteStreamHandler(uint8_t *buffer __UNUSED, size_t size __UNUSED)
-{
-  //! @todo implement stream handler
-}
+
+// Implement stream handler here
+void CoreAPI::byteStreamHandler(uint8_t *buffer __UNUSED, size_t size __UNUSED){}
+
 
 void calculateCRC(void *p_data)
 {

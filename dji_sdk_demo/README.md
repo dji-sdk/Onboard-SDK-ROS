@@ -1,15 +1,10 @@
 ##DJI Onboard SDK ROS Demo Client Package
 
-This package is a demonstration of how to use dji_sdk package and its `dji_drone.h` class as a custom client.
+Documentation has been moved to the developer website. 
 
-###How to use
-1. Install and configure your hardware correctly.
-2. Enter the following info into *dji_sdk/launch/sdk_manifold.launch*.
-	* APP ID
-	* APP Level
-	* Communication Key
-	* uart device name
-	* baudrate
-3. Use `roslaunch dji_sdk sdk_manifold.launch` to start the core node.
-4. `rosrun dji_sdk_demo dji_sdk_client`
+First time users of OnboardSDK, please refer to the below link:
+https://developer.dji.com/onboard-sdk/documentation/quick-start/index.html
+
+ROS Demo package documentation:
+https://developer.dji.com/onboard-sdk/documentation/github-platform-docs/ROS_Example/ros_demo_client_package.html
 

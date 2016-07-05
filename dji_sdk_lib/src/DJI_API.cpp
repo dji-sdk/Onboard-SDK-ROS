@@ -1,3 +1,14 @@
+/** @file DJI_API.cpp
+ *  @version 3.1.7
+ *  @date July 1st, 2016
+ *
+ *  @brief
+ *  Core API for DJI onboardSDK library
+ *
+ *  @copyright 2016 DJI. All right reserved.
+ *
+ */
+
 #include "DJI_API.h"
 #include <string.h>
 #include <stdio.h>

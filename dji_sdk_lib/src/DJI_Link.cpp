@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*! @brief
  *  @file DJI_Link.cpp
  *  @version 3.1.7
@@ -7,23 +8,14 @@
  *  @abstract
  *  This file mainly implement functions in DJI_API.h
  *
- *  All Functions in this file is private function,
- *  which is used for decode data and build up data link.
+ *  @copyright 2016 DJI. All right reserved.
  *
- *  Definitions in DJI_Link.h are private variables.
  *
  *  @attention
  *  It is not necessary to include DJI_link.h in any custom code file.
- *  All functions in this file are not API function.
- *  Do not modify this file, if you are not sure about it.
+ *  The functions in this file are not API functions.
+ *  Do not modify this file if you are unsure about it.
  *
- *  @version features:
- *  -* @version V2.0
- *  -* @date Nov 11, 2015
- *  -* DJI-onboard-SDK Object-Oriented implementation.
- *  -* @version V1.0
- *  -* @date Mar 12, 2015
- *  -* DJI-onboard-SDK c-like implementation.
  */
 
 #include <stdio.h>
@@ -96,6 +88,7 @@ void CoreAPI::appHandler(Header *protocolHeader)
         API_LOG(serialDevice, STATUS_LOG, "ACK %d", protocolHeader->sessionID);
 
         if (ACKSessionTab[protocolHeader->sessionID - 1].sessionStatus == ACK_SESSION_PROCESS)
+
         {
           API_LOG(serialDevice, DEBUG_LOG, "This session is waiting for App ACK:"
               "session id=%d,seq_num=%d\n",
@@ -183,7 +176,8 @@ void CoreAPI::sendPoll()
       }
     }
   }
-  //! @note add auto resendpoll
+
+  //! @note Add auto resendpoll
 }
 
 void CoreAPI::readPoll()
@@ -201,16 +195,12 @@ void CoreAPI::readPoll()
   }
 }
 
-void CoreAPI::callbackPoll()
-{
-  //! @todo implement callbackPoll
-//  if (cblistTail != CALLBACK_LIST_NUM)
-//  {
-//  }
-}
+//! @todo Implement callback poll here
+void CoreAPI::callbackPoll(){}
 
 void CoreAPI::setup()
 {
+
   setupMMU();
   setupSession();
 }

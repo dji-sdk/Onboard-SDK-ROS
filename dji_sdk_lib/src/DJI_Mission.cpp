@@ -1,3 +1,14 @@
+/** @file DJI_Mission.cpp
+ *  @version 3.1.7
+ *  @date July 1st, 2016
+ *
+ *  @brief
+ *  Mission Framework for DJI onboardSDK library
+ *
+ *  @copyright 2016 DJI. All right reserved.
+ *
+ */
+
 #include "DJI_API.h"
 #include "DJI_Mission.h"
 #include <string.h>
@@ -80,7 +91,7 @@ bool CoreAPI::decodeMissionStatus(uint8_t ack)
   for (uint8_t i = 0; i < sizeof(missionACK); ++i)
     if (missionACK[i].code == ack)
     {
-      //! @todo memory leak issue
+      //! @todo Fix memory leak issue
       API_LOG(serialDevice, STATUS_LOG, "0x%X %s\n", missionACK[i].code, missionACK[i].meaning);
       return true;
     }
