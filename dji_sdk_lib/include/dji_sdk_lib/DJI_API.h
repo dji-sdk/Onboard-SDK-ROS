@@ -70,11 +70,9 @@ enum ACK_SETCONTROL_CODE
   ACK_SETCONTROL_OBTAIN_RUNNING = 0x0003,
   ACK_SETCONTROL_RELEASE_RUNNING = 0x0004,
   ACK_SETCONTROL_IOC = 0x00C9,
-<<<<<<< HEAD
-=======
+
 
 };
->>>>>>> OnboardSDKROS/3.1
 
 enum ACK_ARM_CODE
 {
@@ -84,17 +82,6 @@ enum ACK_ARM_CODE
   ACK_ARM_IN_AIR = 0x0003,
 };
 
-<<<<<<< HEAD
-enum ACK_ARM_CODE
-{
-  ACK_ARM_SUCCESS = 0x0000,
-  ACK_ARM_NEED_CONTROL = 0x0001,
-  ACK_ARM_ALREADY_ARMED = 0x0002,
-  ACK_ARM_IN_AIR = 0x0003,
-};
-
-=======
->>>>>>> OnboardSDKROS/3.1
 //! @note end of ACKs
 
 enum CMD_SET
@@ -208,30 +195,7 @@ enum BROADCAST_FREQ
  */
 class CoreAPI
 {
-<<<<<<< HEAD
-  /*! @brief
-   *  API is running on two poll thead
-   *  -sendPoll();
-   *  -readPoll();
-   * please make sure both thead is operating correctly
-   *
-   * @note
-   * if you can read data in a interrupt, try to pass data through
-   * byteHandler() or byteStreamHandler()
-   * */
-  public:
-  void sendPoll(void);
-  void readPoll(void);
-  void callbackPoll(void); //! @todo implement, not available yet
 
-  void byteHandler(const uint8_t in_data);
-  //! @todo modify to a new algorithm
-  void byteStreamHandler(uint8_t *buffer, size_t size);
-
-  public:
-  /*! @code CoreAPI*/
-  //! @note init API
-=======
   public:
   void sendPoll(void);
   void readPoll(void);
@@ -244,40 +208,11 @@ class CoreAPI
   void byteStreamHandler(uint8_t *buffer, size_t size);
 
   public:
->>>>>>> OnboardSDKROS/3.1
   CoreAPI(HardDriver *Driver = 0, Version SDKVersion = 0, bool userCallbackThread = false,
       CallBack userRecvCallback = 0, UserData userData = 0);
   CoreAPI(HardDriver *Driver, Version SDKVersion, CallBackHandler userRecvCallback,
       bool userCallbackThread = false);
 
-<<<<<<< HEAD
-  /*! @note Core Control API
-   *  void send(); is a core overloaded funtion. which has three ways invoked.
-   *
-   *  void send(CallbackCommand *parameter) is a main interface, other two
-   *  overloaded functions are builded on the base of this function.
-   *
-   *  Please be careful when passing in UserData, there might have memory leak
-   *  problems.
-   * */
-  void ack(req_id_t req_id, unsigned char *ackdata, int len);
-  void send(unsigned char session_mode, unsigned char is_enc, CMD_SET cmd_set,
-      unsigned char cmd_id, void *pdata, int len, CallBack ack_callback,
-      int timeout = 0, int retry_time = 1); //! @note compatible for DJI_APP_Pro_send
-  void send(unsigned char session_mode, bool is_enc, CMD_SET cmd_set, unsigned char cmd_id,
-      void *pdata, size_t len, int timeout = 0, int retry_time = 1,
-      CallBack ack_handler = 0,
-      UserData userData = 0); //! @note better interface entrance
-  void send(Command *parameter);	//! @note main interface
-
-  //! @note control API
-  void activate(ActivateData *data, CallBack callback = 0, UserData userData = 0);
-  void setControl(bool enable, CallBack callback = 0, UserData userData = 0);
-  void getDroneVersion(CallBack callback = 0, UserData userData = 0);
-  void sendToMobile(uint8_t *data, uint8_t len, CallBack callback = 0, UserData userData = 0);
-  void setBroadcastFreq(uint8_t *dataLenIs16, CallBack callback = 0, UserData userData = 0);
-  void setActivation(bool isActivated);
-=======
   void ack(req_id_t req_id, unsigned char *ackdata, int len);
 
   //@{
@@ -354,24 +289,11 @@ class CoreAPI
    * 11 - Control Information\n
    */
   void setBroadcastFreq(uint8_t *dataLenIs16, CallBack callback = 0, UserData userData = 0);
->>>>>>> OnboardSDKROS/3.1
   void setSessionStatus(uint32_t usageFlag);
   uint32_t getSessionStatus();
   void setSyncFreq(uint32_t freqInHz);
   void setKey(const char *key);
 
-<<<<<<< HEAD
-  //! @note Core read API
-  BroadcastData getBroadcastData() const;
-  TimeStampData getTime() const;
-  FlightStatus getFlightStatus() const;
-  CtrlInfoData getCtrlInfo() const;
-  BatteryData getBatteryCapacity() const;
-
-  //! @note call back functions
-  public:
-  //! @note Recevie data callback enterance
-=======
   //@{
   /**
    * Get aircraft version.
@@ -421,7 +343,6 @@ class CoreAPI
    */
   Version getSDKVersion() const;
   public:
->>>>>>> OnboardSDKROS/3.1
   void setBroadcastCallback(CallBackHandler callback) { broadcastCallback = callback; }
   void setFromMobileCallback(CallBackHandler FromMobileEntrance);
 
@@ -439,16 +360,6 @@ class CoreAPI
   void setWayPointCallback(CallBack handler, UserData userData = 0);
   void setFollowCallback(CallBack handler, UserData userData = 0);
   void setWayPointEventCallback(CallBack handler, UserData userData = 0);
-
-<<<<<<< HEAD
-  /*! @note user callback sample
-   *  @attention We can also use none-static function as a callback function.
-   *  Due to saftey consideration, we strongly suggest you to define a class callback
-   *  function as a static function. And passing in this pointer in a static way.
-   * */
-=======
-
->>>>>>> OnboardSDKROS/3.1
   static void activateCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
   static void getDroneVersionCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
   static void setControlCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
@@ -456,10 +367,6 @@ class CoreAPI
   static void setFrequencyCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
 
   private:
-<<<<<<< HEAD
-  //! @todo init function
-=======
->>>>>>> OnboardSDKROS/3.1
   BroadcastData broadcastData;
   uint32_t sessionStatus;
 
@@ -486,14 +393,6 @@ class CoreAPI
   SDKFilter filter;
 
   private:
-<<<<<<< HEAD
-  void init(HardDriver *Driver, CallBackHandler userRecvCallback, bool userCallbackThread,
-      Version SDKVersion);
-  void recvReqData(Header *protocolHeader);
-  void appHandler(Header *protocolHeader);
-  void broadcast(Header *protocolHeader);
-
-=======
 
   /// Serial Device Initialization
   void init(HardDriver *Driver, CallBackHandler userRecvCallback, bool userCallbackThread,
@@ -501,8 +400,6 @@ class CoreAPI
   void recvReqData(Header *protocolHeader);
   void appHandler(Header *protocolHeader);
   void broadcast(Header *protocolHeader);
-
->>>>>>> OnboardSDKROS/3.1
   int sendInterface(Command *parameter);
   int ackInterface(Ack *parameter);
   void sendData(unsigned char *buf);
@@ -521,15 +418,8 @@ class CoreAPI
   ACKSession *allocACK(unsigned short session_id, unsigned short size);
 
   private:
-<<<<<<< HEAD
-  //! @note memory alloc variables
   MMU_Tab MMU[MMU_TABLE_NUM];
   CMDSession CMDSessionTab[SESSION_TABLE_NUM];
-  //! @note session 0 is a nak session id
-=======
-  MMU_Tab MMU[MMU_TABLE_NUM];
-  CMDSession CMDSessionTab[SESSION_TABLE_NUM];
->>>>>>> OnboardSDKROS/3.1
   ACKSession ACKSessionTab[SESSION_TABLE_NUM - 1];
   unsigned char memory[MEMORY_SIZE];
 
@@ -546,27 +436,6 @@ class CoreAPI
   void storeData(SDKFilter *p_filter, unsigned char in_data);
 
   public:
-<<<<<<< HEAD
-  //! @note ack decoder
-  bool decodeACKStatus(unsigned short ack);
-  bool decodeMissionStatus(uint8_t ack);
-
-  public:
-  //! @note private variables access functions
-  ActivateData getAccountData() const;
-  HardDriver *getDriver() const;
-  Version getSDKVersion() const;
-  SDKFilter getFilter() const; //! @note evil definition
-  bool getHotPointData() const;
-  bool getWayPointData() const;
-  bool getFollowData() const;
-
-  void setHotPointData(bool value);
-  void setWayPointData(bool value);
-  void setFollowData(bool value);
-  void setDriver(HardDriver *value);
-  void setAccountData(const ActivateData &value);
-=======
   /**
    * ACK decoder.
    */
@@ -611,7 +480,6 @@ class CoreAPI
   /**
    * Set SDK version.
    */
->>>>>>> OnboardSDKROS/3.1
   void setVersion(const Version &value);
 
   private:

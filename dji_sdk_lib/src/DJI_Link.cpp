@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 /*! @brief
  *  @file DJI_Link.cpp
  *  @version 3.1.7
