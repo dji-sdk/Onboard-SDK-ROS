@@ -1,9 +1,8 @@
-/** @brief
- *  @file DJI_VirtualRC.h
+/**@file DJI_VirtualRC.h
  *  @version 3.1.7
  *  @date July 1st, 2016
  *
- *  @abstract
+ *  @brief
  *  Virtual Radio Control API for DJI onboardSDK library
  *
  *  @copyright 2016 DJI. All rights reserved.
@@ -74,7 +73,7 @@ class VirtualRC
    *
    *   When your drone lose signal, it will keep the recent command sent by your API:
    *   myAPIToSetupDataFromGroundStation();
-   *   Somehow, you will never get your drone back in one pice, if this tragedy happend.
+   *   This may result in a catastrophic crash.
    *
    *   @note API "sendData();" need to be called above 2Hz, and not greater than 25hz.
    *   @note API "sendSafeModeData();" will lead your drone hover;

@@ -3,7 +3,7 @@
 
 bool DJISDKNode::activation_callback(dji_sdk::Activation::Request& request, dji_sdk::Activation::Response& response)
 {
-	rosAdapter->coreAPI->activate(&user_act_data, NULL);
+	rosAdapter->coreAPI->activate(&user_act_data);
 	response.result = true;
 	return true;
 }

@@ -14,6 +14,7 @@
 #define DEG2RAD(DEG) ((DEG)*((C_PI)/(180.0)))
 
 extern DJI::onboardSDK::ROSAdapter *rosAdapter;
+using namespace DJI::onboardSDK;
 
 class DJISDKNode
 {

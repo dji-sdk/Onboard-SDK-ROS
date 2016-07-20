@@ -1,10 +1,9 @@
-/*! @brief
- *  @file DJI_App.cpp
+/*! @file DJI_App.cpp
  *  @version 3.1.7
  *  @date Jul 01 2016
  *
- *  @abstract
- *  Developer App support functionality for DJI onboardSDK library
+ *  @brief
+ *  Application layer support functionality for DJI onboardSDK library
  *
  *  Copyright 2016 DJI. All right reserved.
  *
@@ -52,6 +51,16 @@ BatteryData DJI::onboardSDK::CoreAPI::getBatteryCapacity() const
 
 CtrlInfoData DJI::onboardSDK::CoreAPI::getCtrlInfo() const { return broadcastData.ctrlInfo; }
 
+void DJI::onboardSDK::CoreAPI::setBroadcastFrameStatus(bool isFrame)
+{
+  broadcastFrameStatus = isFrame;
+}
+
+bool DJI::onboardSDK::CoreAPI::getBroadcastFrameStatus()
+{
+  return broadcastFrameStatus;
+}
+
 #ifdef SDK_DEV
 #include "devApp.cpp"
 #else
@@ -94,13 +103,18 @@ void DJI::onboardSDK::CoreAPI::broadcast(Header *protocolHeader)
   passData(*enableFlag, DATA_FLAG, &broadcastData.mag, pdata, sizeof(MagnetData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.rc, pdata, sizeof(RadioData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.gimbal, pdata,
-
       sizeof(GimbalData) - ((versionData.version == versionM100_23) ? 1 : 0), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.status, pdata, sizeof(FlightStatus), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.battery, pdata, sizeof(BatteryData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.ctrlInfo, pdata,
       sizeof(CtrlInfoData) - ((versionData.version == versionM100_23) ? 1 : 0), len);
   serialDevice->freeMSG();
+
+  /**
+   * Set broadcast frame status
+   * @todo Implement proper notification mechanism
+   */
+  setBroadcastFrameStatus(true);
 
   if (broadcastCallback.callback)
     broadcastCallback.callback(this, protocolHeader, broadcastCallback.userData);

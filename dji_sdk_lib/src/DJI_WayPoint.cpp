@@ -3,13 +3,12 @@
 *  @version 3.1.7
 *  @date July 1st, 2016
 *
-*  @abstract
+*  @brief
 *  Waypoint flight API for DJI onboardSDK library
 *
 *  @copyright 2016 DJI. All right reserved.
 *
 */
-
 
 #include "DJI_WayPoint.h"
 #include <string.h>

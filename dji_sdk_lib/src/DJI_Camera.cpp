@@ -1,9 +1,8 @@
-/** @brief
- *  @file DJI_Camera.cpp
+/** @file DJI_Camera.cpp
  *  @version 3.1.7
  *  @date July 1st, 2016
  *
- *  @abstract
+ *  @brief
  *  Camera/Gimbal API for DJI onboardSDK library
  *
  *  @copyright 2016 DJI. All rights reserved.

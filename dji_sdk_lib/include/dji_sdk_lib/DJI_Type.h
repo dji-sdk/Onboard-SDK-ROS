@@ -1,10 +1,9 @@
-/*! @brief
- *  @file DJI_Type.h
+/*! @file DJI_Type.h
  *  @version 3.1.7
  *  @date Jul 01 2016
  *
- *  @abstract
- *  Type definition for DJI onboardSDK library
+ *  @brief
+ *  Type definition for DJI onboardSDK library.
  *  Officially Maintained
  *  
  *  @copyright
@@ -13,7 +12,7 @@
 
 /*! @attention
  *  Do not modify any definition in this file
- *  if you are not sure what are you doing.
+ *  if you are unsure about what are you doing.
  *  DJI will not provide any support for changes made to this file.
  * */
 
@@ -26,6 +25,7 @@
 
 #define NAME(x) #x
 
+//! Define the UNUSED macro to suppress compiler warnings about unused arguments 
 #ifdef __GNUC__
 #define __UNUSED __attribute__((__unused__))
 #define __DELETE(x) delete (char *) x
@@ -50,6 +50,8 @@
 #define __func__ __FUNCTION__
 #endif // WIN32
 
+
+//! This is the default status printing mechanism
 #define API_LOG(driver, title, fmt, ...)                                  \
   if ((title))                                                            \
   {                                                                       \
@@ -113,8 +115,10 @@ extern uint8_t encrypt;
 const size_t SESSION_TABLE_NUM = 32;
 const size_t CALLBACK_LIST_NUM = 10;
 
+//! The CoreAPI class definition is detailed in DJI_API.h 
 class CoreAPI;
 
+//! The Header struct is meant to handle the open protocol header.
 typedef struct Header
 {
   unsigned int sof : 8;
@@ -134,8 +138,10 @@ typedef struct Header
   unsigned int crc : 16;
 } Header;
 
+//! The CallBack function pointer is used as an argument in api->send calls
 typedef void (*CallBack)(DJI::onboardSDK::CoreAPI *, Header *, UserData);
 
+//! The CallBackHandler struct allows users to encapsulate callbacks and data in one struct 
 typedef struct CallBackHandler
 {
   CallBack callback;
@@ -370,6 +376,7 @@ typedef struct TaskData
 } TaskData;
 
 //! @todo rename to a final version
+//! RTKData from the A3. This is not available on the M100.
 typedef struct RTKData
 {
   uint32_t date;
@@ -391,6 +398,7 @@ typedef struct RTKData
 } RTKData;
 
 //! @todo rename to a final version
+//! Detailed GPSData from the A3. This is not available on the M100.
 typedef struct GPSData
 {
   uint32_t date;
@@ -466,6 +474,24 @@ typedef struct VirtualRCData
   uint32_t Channel_14;
   uint32_t Channel_15;
 } VirtualRCData;
+
+typedef struct ActivateData
+{
+  unsigned int ID;
+  unsigned int reserved;
+  unsigned int version;
+  unsigned char iosID[32];
+  char *encKey;
+} ActivateData;
+
+typedef struct VersionData
+{
+  unsigned short version_ack;
+  unsigned int version_crc;
+  char version_ID[11];
+  char version_name[32];
+  DJI::onboardSDK::Version version;
+} VersionData;
 
 #pragma pack()
 #ifdef SDK_DEV

@@ -8,15 +8,17 @@
  *  @copyright 2016 DJI. All rights reserved.
  *
  */
- 
+
+// The comment block below is made for doxygen.
+
 /*! @mainpage
- * This is the officially maintained DJI Onboard SDK library. The library provides a set of APIs for implementing the various functionality available through the [open protocol](https://developer.dji.com/onboard-sdk/documentation/introduction/index.html).
+ * This is the officially maintained DJI Onboard SDK library. The library provides a set of APIs for implementing the various functionality available through the [open protocol](https://developer.dji.com/onboard-sdk/documentation/introduction/index.html). 
  *
  * @section intro_sec Introduction
  *
- * API class documentation is available here. Click on the Files/Classes/Namespaces tabs above to see more information about the library. \n
+ * API class documentation is available here. Click on the Files/Classes/Namespaces tabs above to see more information about the library. \n 
  * Documentation for the SDK has moved to the [DJI Developer Website](https://developer.dji.com/onboard-sdk/documentation/).
- * Please refer to the [Programming Guide](https://developer.dji.com/onboard-sdk/documentation/application-development-guides/programming-guide.html)
+ * Please refer to the [Programming Guide](https://developer.dji.com/onboard-sdk/documentation/application-development-guides/programming-guide.html) 
  * for more information.
  *
  */
@@ -39,6 +41,12 @@ class VirtualRC;
 class HotPoint;
 
 //! @todo sort enum and move to a new file
+
+enum ACK_ERROR_CODE
+{
+  ACK_SUCCESS = 0x0000,
+  ACK_PARAM_ERROR = 0x0001
+};
 
 enum ACK_COMMON_CODE
 {
@@ -70,7 +78,6 @@ enum ACK_SETCONTROL_CODE
   ACK_SETCONTROL_OBTAIN_RUNNING = 0x0003,
   ACK_SETCONTROL_RELEASE_RUNNING = 0x0004,
   ACK_SETCONTROL_IOC = 0x00C9,
-
 
 };
 
@@ -195,8 +202,11 @@ enum BROADCAST_FREQ
  */
 class CoreAPI
 {
-
   public:
+  CoreAPI(HardDriver *Driver = 0, Version SDKVersion = 0, bool userCallbackThread = false,
+        CallBack userRecvCallback = 0, UserData userData = 0);
+  CoreAPI(HardDriver *Driver, Version SDKVersion, CallBackHandler userRecvCallback,
+        bool userCallbackThread = false);
   void sendPoll(void);
   void readPoll(void);
   //! @todo Implement callback poll handler
@@ -207,13 +217,10 @@ class CoreAPI
   //! @todo Implement stream handler
   void byteStreamHandler(uint8_t *buffer, size_t size);
 
-  public:
-  CoreAPI(HardDriver *Driver = 0, Version SDKVersion = 0, bool userCallbackThread = false,
-      CallBack userRecvCallback = 0, UserData userData = 0);
-  CoreAPI(HardDriver *Driver, Version SDKVersion, CallBackHandler userRecvCallback,
-      bool userCallbackThread = false);
-
   void ack(req_id_t req_id, unsigned char *ackdata, int len);
+
+  //! Notify caller ACK frame arrived
+  void notifyCaller(Header *protocolHeader);
 
   //@{
   /**
@@ -249,7 +256,41 @@ class CoreAPI
    * Proceed to programming if activation successful.
    */
   void activate(ActivateData *data, CallBack callback = 0, UserData userData = 0);
+
+  /// Blocking API Control
+  /**
+  * @remark
+  * Blocks until ACK frame arrives or timeout occurs
+  *
+  * @brief
+  * Send activation control to your flight controller to check if: \n a)
+  * your application registered in your developer
+  * account \n b) API Control enabled in the Assistant software\n\n
+  * Proceed to programming if activation successful.
+  *
+  * @return ACK from flight controller
+  *
+  * @todo
+  * Implement high resolution timer to catch ACK timeout
+  */
+  unsigned short activate(ActivateData *data, int timeout);
+
   void setControl(bool enable, CallBack callback = 0, UserData userData = 0);
+
+  /// Blocking API Control
+  /**
+  * @remark
+  * Blocks until ACK frame arrives or timeout occurs
+  *
+  * @brief
+  * Obtain control
+  *
+  * @return ACK from flight controller
+  *
+  * @todo
+  * Implement high resolution timer to catch ACK timeout
+  */
+  unsigned short setControl(bool enable, int timeout);
 
   /// Activation Control
   /**
@@ -289,8 +330,40 @@ class CoreAPI
    * 11 - Control Information\n
    */
   void setBroadcastFreq(uint8_t *dataLenIs16, CallBack callback = 0, UserData userData = 0);
-  void setSessionStatus(uint32_t usageFlag);
-  uint32_t getSessionStatus();
+  unsigned short setBroadcastFreq(uint8_t *dataLenIs16, int timeout);
+
+  /**
+   * Reset all broadcast frequencies to their default values
+   */
+  void setBroadcastFreqDefaults();
+
+  /**
+   * Blocking API Control
+   *
+   * @brief
+   * Set broadcast frequencies to their default values and block until
+   * ACK arrives from flight controller
+   *
+   * @return ACK from flight controller
+   *
+   * @todo
+   * Implement high resolution timer to catch ACK timeout
+   */
+  unsigned short setBroadcastFreqDefaults(int timeout);
+   
+  /*
+   * Set all broadcast frequencies to zero. Only ACK data will stay on the line.
+   */
+  void setBroadcastFreqToZero();
+
+  /**
+   * Let user know when ACK and Broadcast messages processed
+   */
+  void setACKFrameStatus(uint32_t usageFlag);
+  uint32_t getACKFrameStatus();
+  void setBroadcastFrameStatus(bool isFrame);
+  bool getBroadcastFrameStatus();
+
   void setSyncFreq(uint32_t freqInHz);
   void setKey(const char *key);
 
@@ -302,6 +375,21 @@ class CoreAPI
    * You can query your flight controller prior to activation.
    */
   void getDroneVersion(CallBack callback = 0, UserData userData = 0);
+
+  /**
+   * Blocking API Control
+   *
+   * @brief
+   * Get drone version from flight controller block until
+   * ACK arrives from flight controller
+   *
+   * @return VersionData containing ACK value, CRC of the
+   * protocol version and protocol version itself
+   *
+   * @todo
+   * Implement high resolution timer to catch ACK timeout
+   */
+  VersionData getDroneVersion(int timeout);
 
   /**Get broadcasted data values from flight controller.*/
   BroadcastData getBroadcastData() const;
@@ -342,7 +430,6 @@ class CoreAPI
    * Get SDK version
    */
   Version getSDKVersion() const;
-  public:
   void setBroadcastCallback(CallBackHandler callback) { broadcastCallback = callback; }
   void setFromMobileCallback(CallBackHandler FromMobileEntrance);
 
@@ -360,82 +447,14 @@ class CoreAPI
   void setWayPointCallback(CallBack handler, UserData userData = 0);
   void setFollowCallback(CallBack handler, UserData userData = 0);
   void setWayPointEventCallback(CallBack handler, UserData userData = 0);
+
+
   static void activateCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
   static void getDroneVersionCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
   static void setControlCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
   static void sendToMobileCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
   static void setFrequencyCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
 
-  private:
-  BroadcastData broadcastData;
-  uint32_t sessionStatus;
-
-  private:
-  unsigned char encodeSendData[BUFFER_SIZE];
-  unsigned char encodeACK[ACK_SIZE];
-
-//  uint8_t cblistTail;
-//  CallBackHandler cbList[CALLBACK_LIST_NUM];
-  CallBackHandler fromMobileCallback;
-  CallBackHandler broadcastCallback;
-  CallBackHandler hotPointCallback;
-  CallBackHandler wayPointCallback;
-  CallBackHandler wayPointEventCallback;
-  CallBackHandler followCallback;
-  CallBackHandler missionCallback;
-  CallBackHandler recvCallback;
-
-  VersionData versionData;
-  ActivateData accountData;
-
-  unsigned short seq_num;
-
-  SDKFilter filter;
-
-  private:
-
-  /// Serial Device Initialization
-  void init(HardDriver *Driver, CallBackHandler userRecvCallback, bool userCallbackThread,
-      Version SDKVersion);
-  void recvReqData(Header *protocolHeader);
-  void appHandler(Header *protocolHeader);
-  void broadcast(Header *protocolHeader);
-  int sendInterface(Command *parameter);
-  int ackInterface(Ack *parameter);
-  void sendData(unsigned char *buf);
-
-  private:
-  void setup(void);
-  void setupMMU(void);
-  void setupSession(void);
-
-  MMU_Tab *allocMemory(unsigned short size);
-
-  void freeSession(CMDSession *session);
-  CMDSession *allocSession(unsigned short session_id, unsigned short size);
-
-  void freeACK(ACKSession *session);
-  ACKSession *allocACK(unsigned short session_id, unsigned short size);
-
-  private:
-  MMU_Tab MMU[MMU_TABLE_NUM];
-  CMDSession CMDSessionTab[SESSION_TABLE_NUM];
-  ACKSession ACKSessionTab[SESSION_TABLE_NUM - 1];
-  unsigned char memory[MEMORY_SIZE];
-
-  private:
-  unsigned short encrypt(unsigned char *pdest, const unsigned char *psrc,
-      unsigned short w_len, unsigned char is_ack, unsigned char is_enc,
-      unsigned char session_id, unsigned short seq_num);
-
-  void streamHandler(SDKFilter *p_filter, unsigned char in_data);
-  void checkStream(SDKFilter *p_filter);
-  void verifyHead(SDKFilter *p_filter);
-  void verifyData(SDKFilter *p_filter);
-  void callApp(SDKFilter *p_filter);
-  void storeData(SDKFilter *p_filter, unsigned char in_data);
-
-  public:
   /**
    * ACK decoder.
    */
@@ -446,7 +465,15 @@ class CoreAPI
    */
   bool decodeMissionStatus(uint8_t ack);
 
-  public:
+  /**
+   *@note  Thread data
+   */
+  bool stopCond;
+
+  /**
+   *@note  Thread data
+   */
+  unsigned short ack_data;
 
   /// Open Protocol Control
   /**
@@ -483,7 +510,69 @@ class CoreAPI
   void setVersion(const Version &value);
 
   private:
+  BroadcastData broadcastData;
+  uint32_t ackFrameStatus;
+  bool broadcastFrameStatus;
+  unsigned char encodeSendData[BUFFER_SIZE];
+  unsigned char encodeACK[ACK_SIZE];
+
+//  uint8_t cblistTail;
+//  CallBackHandler cbList[CALLBACK_LIST_NUM];
+  CallBackHandler fromMobileCallback;
+  CallBackHandler broadcastCallback;
+  CallBackHandler hotPointCallback;
+  CallBackHandler wayPointCallback;
+  CallBackHandler wayPointEventCallback;
+  CallBackHandler followCallback;
+  CallBackHandler missionCallback;
+  CallBackHandler recvCallback;
+
+  VersionData versionData;
+  ActivateData accountData;
+
+  unsigned short seq_num;
+  unsigned char *version_ack_data;
+
+  SDKFilter filter;
+
+  /// Serial Device Initialization
+  void init(HardDriver *Driver, CallBackHandler userRecvCallback, bool userCallbackThread,
+      Version SDKVersion);
+  void recvReqData(Header *protocolHeader);
+  void appHandler(Header *protocolHeader);
+  void broadcast(Header *protocolHeader);
+
+  int sendInterface(Command *parameter);
+  int ackInterface(Ack *parameter);
+  void sendData(unsigned char *buf);
+  void setup(void);
+  void setupMMU(void);
+  void setupSession(void);
+
+  MMU_Tab *allocMemory(unsigned short size);
+
+  void freeSession(CMDSession *session);
+  CMDSession *allocSession(unsigned short session_id, unsigned short size);
+
+  void freeACK(ACKSession *session);
+  ACKSession *allocACK(unsigned short session_id, unsigned short size);
+  MMU_Tab MMU[MMU_TABLE_NUM];
+  CMDSession CMDSessionTab[SESSION_TABLE_NUM];
+  ACKSession ACKSessionTab[SESSION_TABLE_NUM - 1];
+  unsigned char memory[MEMORY_SIZE];
+  unsigned short encrypt(unsigned char *pdest, const unsigned char *psrc,
+      unsigned short w_len, unsigned char is_ack, unsigned char is_enc,
+      unsigned char session_id, unsigned short seq_num);
+
+  void streamHandler(SDKFilter *p_filter, unsigned char in_data);
+  void checkStream(SDKFilter *p_filter);
+  void verifyHead(SDKFilter *p_filter);
+  void verifyData(SDKFilter *p_filter);
+  void callApp(SDKFilter *p_filter);
+  void storeData(SDKFilter *p_filter, unsigned char in_data);
+public:
   HardDriver *serialDevice;
+private:
   bool callbackThread;
   bool hotPointData;
   bool wayPointData;

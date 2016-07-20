@@ -1,9 +1,8 @@
-/** @brief
- *  @file DJI_Follow.h
+/** @file DJI_Follow.h
  *  @version 3.1.7
  *  @date July 1st, 2016
  *
- *  @abstract
+ *  @brief
  *  Follow API for DJI onboardSDK library
  *
  *  @copyright 2016 DJI. All right reserved.

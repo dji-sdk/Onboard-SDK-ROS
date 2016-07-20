@@ -1,11 +1,9 @@
-/*! @brief
- *  @file DJI_Link.cpp
+/** @file DJI_Link.cpp
  *  @version 3.1.7
  *  @date July 1st, 2016
- *  @author wuyuwei, william.wu
- *  @copyright 2016 DJI. All right reserved.
- *  @abstract
- *  This file mainly implement functions in DJI_API.h
+ *
+ *  @brief
+ *  Implement send/read, app handling and data link layer for Core API of DJI onboardSDK library
  *
  *  @copyright 2016 DJI. All right reserved.
  *
@@ -57,16 +55,23 @@ void CoreAPI::appHandler(Header *protocolHeader)
           callBack = CMDSessionTab[protocolHeader->sessionID].handler;
           data = CMDSessionTab[protocolHeader->sessionID].userData;
           freeSession(&CMDSessionTab[protocolHeader->sessionID]);
-
           serialDevice->freeMemory();
+
+          // Notify caller end of ACK frame arrived
+          notifyCaller(protocolHeader);
+
           if (callBack)
           {
             //! @todo new algorithm call in a thread
             callBack(this, protocolHeader, data);
 
-            //! End of session
-            setSessionStatus((&CMDSessionTab[protocolHeader->sessionID])->usageFlag);
+            /**
+             * Set end of ACK frame
+             * @todo Implement proper notification mechanism
+             */
+            // setACKFrameStatus((&CMDSessionTab[protocolHeader->sessionID])->usageFlag);
           }
+          setACKFrameStatus((&CMDSessionTab[protocolHeader->sessionID])->usageFlag);
         }
         else
           serialDevice->freeMemory();
@@ -87,7 +92,6 @@ void CoreAPI::appHandler(Header *protocolHeader)
         API_LOG(serialDevice, STATUS_LOG, "ACK %d", protocolHeader->sessionID);
 
         if (ACKSessionTab[protocolHeader->sessionID - 1].sessionStatus == ACK_SESSION_PROCESS)
-
         {
           API_LOG(serialDevice, DEBUG_LOG, "This session is waiting for App ACK:"
               "session id=%d,seq_num=%d\n",
@@ -107,7 +111,7 @@ void CoreAPI::appHandler(Header *protocolHeader)
           p2protocolHeader = (Header *)ACKSessionTab[protocolHeader->sessionID - 1].mmu->pmem;
           if (p2protocolHeader->sequenceNumber == protocolHeader->sequenceNumber)
           {
-            API_LOG(serialDevice, DEBUG_LOG, "repeat ACK to remote,session "
+            API_LOG(serialDevice, DEBUG_LOG, "Repeat ACK to remote,session "
                 "id=%d,seq_num=%d\n",
                 protocolHeader->sessionID, protocolHeader->sequenceNumber);
             sendData(ACKSessionTab[protocolHeader->sessionID - 1].mmu->pmem);
@@ -116,7 +120,7 @@ void CoreAPI::appHandler(Header *protocolHeader)
           else
           {
             API_LOG(serialDevice, DEBUG_LOG,
-                "same session,but new seq_num pkg,session id=%d,"
+                "Same session,but new seq_num pkg,session id=%d,"
                 "pre seq_num=%d,cur seq_num=%d\n",
                 protocolHeader->sessionID, p2protocolHeader->sequenceNumber,
                 protocolHeader->sequenceNumber);
@@ -129,6 +133,36 @@ void CoreAPI::appHandler(Header *protocolHeader)
         break;
     }
   }
+}
+
+void CoreAPI::notifyCaller(Header *protocolHeader)
+{
+  serialDevice->lockACK();
+
+  // In case of getDroneVersion? Should be only one case.
+  if(protocolHeader->length < 64)
+  {
+    // Write ACK frame
+    if (protocolHeader->length - EXC_DATA_SIZE <= 2)
+    {
+      memcpy((unsigned char *)&ack_data, ((unsigned char *)protocolHeader) + sizeof(Header),
+	    (protocolHeader->length - EXC_DATA_SIZE));
+    }
+    else
+    {
+      //TODO proper error handling
+      API_LOG(serialDevice, ERROR_LOG, "ACK is exception, session id %d,sequence %d\n",
+	    protocolHeader->sessionID, protocolHeader->sequenceNumber);
+    }
+  }
+  else
+  {
+    version_ack_data = ((unsigned char *)protocolHeader) + sizeof(Header);
+  }
+
+  // Notify caller end of ACK frame arrived
+  serialDevice->notify();
+  serialDevice->freeACK();
 }
 
 void CoreAPI::sendPoll()
@@ -163,7 +197,7 @@ void CoreAPI::sendPoll()
         }
         else
         {
-          API_LOG(serialDevice, DEBUG_LOG, "send once %d\n", i);
+          API_LOG(serialDevice, DEBUG_LOG, "Send once %d\n", i);
           sendData(CMDSessionTab[i].mmu->pmem);
           CMDSessionTab[i].preTimestamp = curTimestamp;
         }
@@ -171,11 +205,10 @@ void CoreAPI::sendPoll()
       }
       else
       {
-        API_LOG(serialDevice, DEBUG_LOG, "timeout Session: %d \n", i);
+        API_LOG(serialDevice, DEBUG_LOG, "Timeout Session: %d \n", i);
       }
     }
   }
-
   //! @note Add auto resendpoll
 }
 
@@ -199,7 +232,6 @@ void CoreAPI::callbackPoll(){}
 
 void CoreAPI::setup()
 {
-
   setupMMU();
   setupSession();
 }
@@ -218,14 +250,14 @@ void CoreAPI::setActivation(bool isActivated)
     broadcastData.activation = 0;
 }
 
-void DJI::onboardSDK::CoreAPI::setSessionStatus(uint32_t usageFlag)
+void DJI::onboardSDK::CoreAPI::setACKFrameStatus(uint32_t usageFlag)
 {
-  sessionStatus = usageFlag;
+  ackFrameStatus = usageFlag;
 }
 
-uint32_t DJI::onboardSDK::CoreAPI::getSessionStatus()
+uint32_t DJI::onboardSDK::CoreAPI::getACKFrameStatus()
 {
-  return sessionStatus;
+  return ackFrameStatus;
 }
 
 void CoreAPI::setSyncFreq(uint32_t freqInHz)

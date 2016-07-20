@@ -1,9 +1,8 @@
-/*! @brief
- *  @file DJI_Version.h
+/*! @file DJI_Version.h
  *  @version 3.1.7
  *  @date Jul 01 2016
  *
- *  @abstract
+ *  @brief
  *  Drone/SDK Version definition for DJI onboardSDK library
  *  Officially Maintained
  *  
@@ -30,7 +29,7 @@ namespace DJI
 {
 namespace onboardSDK
 {
-//! @todo better version control structure
+//! Different version strings define SDK/Drone combination. Only the ones listed below are available.
 typedef uint32_t Version;
 
 const Version versionM100_23 = (MAKE_VERSION(2, 3, 10, 0));

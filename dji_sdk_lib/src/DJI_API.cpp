@@ -38,7 +38,8 @@ void CoreAPI::init(HardDriver *sDevice, CallBackHandler userRecvCallback,
   // serialDevice->init();
 
   seq_num = 0;
-  sessionStatus = 11;
+  ackFrameStatus = 11;
+  broadcastFrameStatus = false;
 
   filter.recvIndex = 0;
   filter.reuseCount = 0;
@@ -165,6 +166,41 @@ void CoreAPI::getDroneVersion(CallBack callback, UserData userData)
     retry_time, callback ? callback : CoreAPI::getDroneVersionCallback, userData);
 }
 
+VersionData CoreAPI::getDroneVersion(int timeout)
+{
+  versionData.version_ack = ACK_COMMON_NO_RESPONSE;
+  versionData.version_crc = 0x0;
+  versionData.version_name[0] = 0;
+
+  unsigned cmd_timeout = 100; // unit is ms
+  unsigned retry_time = 3;
+  unsigned char cmd_data = 0;
+
+  send(2, 0, SET_ACTIVATION, CODE_GETVERSION, (unsigned char *)&cmd_data, 1, cmd_timeout,
+  retry_time, 0, 0);
+
+  // Wait for end of ACK frame to arrive
+  serialDevice->lockACK();
+  serialDevice->wait();
+  serialDevice->freeACK();
+
+  // Parse return value
+
+  versionData.version_ack = version_ack_data[0] + (version_ack_data[1] << 8);
+  version_ack_data += 2;
+  versionData.version_crc =
+      version_ack_data[0] + (version_ack_data[1] << 8) + (version_ack_data[2] << 16) + (version_ack_data[3] << 24);
+  ack_data += 4;
+  if (versionData.version != versionM100_23)
+  {
+    memcpy(versionData.version_ID, version_ack_data, 11);
+    ack_data += 11;
+  }
+  memcpy(versionData.version_name, version_ack_data, 32);
+
+  return versionData;
+}
+
 void CoreAPI::activate(ActivateData *data, CallBack callback, UserData userData)
 {
   data->version = versionData.version;
@@ -177,6 +213,29 @@ void CoreAPI::activate(ActivateData *data, CallBack callback, UserData userData)
   send(2, 0, SET_ACTIVATION, CODE_ACTIVATE, (unsigned char *)&accountData,
     sizeof(accountData) - sizeof(char *), 1000, 3,
     callback ? callback : CoreAPI::activateCallback, userData);
+}
+
+unsigned short CoreAPI::activate(ActivateData *data, int timeout)
+{
+  data->version = versionData.version;
+  accountData = *data;
+  accountData.reserved = 2;
+
+  for (int i = 0; i < 32; ++i) accountData.iosID[i] = '0'; //! @note for ios verification
+  API_LOG(serialDevice, DEBUG_LOG, "version 0x%X/n", versionData.version);
+  API_LOG(serialDevice, DEBUG_LOG, "%.32s", accountData.iosID);
+  send(2, 0, SET_ACTIVATION, CODE_ACTIVATE, (unsigned char *)&accountData,
+    sizeof(accountData) - sizeof(char *), 1000, 3, 0, 0);
+
+  // Wait for end of ACK frame to arrive
+  serialDevice->lockACK();
+  serialDevice->wait();
+  serialDevice->freeACK();
+
+  if(ack_data == ACK_ACTIVE_SUCCESS && accountData.encKey)
+    setKey(accountData.encKey);
+
+  return ack_data;
 }
 
 void CoreAPI::sendToMobile(uint8_t *data, uint8_t len, CallBack callback, UserData userData)
@@ -216,6 +275,144 @@ void CoreAPI::setBroadcastFreq(uint8_t *dataLenIs16, CallBack callback, UserData
      callback ? callback : CoreAPI::setFrequencyCallback, userData);
 }
 
+unsigned short CoreAPI::setBroadcastFreq(uint8_t *dataLenIs16, int timeout)
+{
+  //! @note see also enum BROADCAST_FREQ in DJI_API.h
+  for (int i = 0; i < 16; ++i)
+  {
+    if (versionData.version == versionM100_31)
+      if (i < 12)
+      {
+        dataLenIs16[i] = (dataLenIs16[i] > 5 ? 5 : dataLenIs16[i]);
+      }
+      else
+        dataLenIs16[i] = 0;
+    else
+    {
+      if (i < 14)
+      {
+        dataLenIs16[i] = (dataLenIs16[i] > 5 ? 5 : dataLenIs16[i]);
+      }
+      else
+        dataLenIs16[i] = 0;
+    }
+  }
+  send(2, 0, SET_ACTIVATION, CODE_FREQUENCY, dataLenIs16, 16, 100, 1, 0, 0);
+
+  // Wait for end of ACK frame to arrive
+  serialDevice->lockACK();
+  serialDevice->wait();
+  serialDevice->freeACK();
+
+  return ack_data;
+}
+
+void CoreAPI::setBroadcastFreqDefaults()
+{
+  uint8_t freq[16];
+
+  /* Channels definition:
+  * 0 - Timestamp
+  * 1 - Attitude Quaterniouns
+  * 2 - Acceleration
+  * 3 - Velocity (Ground Frame)
+  * 4 - Angular Velocity (Body Frame)
+  * 5 - Position
+  * 6 - Magnetometer
+  * 7 - RC Channels Data
+  * 8 - Gimbal Data
+  * 9 - Flight Status
+  * 10 - Battery Level
+  * 11 - Control Information
+  */
+
+  freq[0] = BROADCAST_FREQ_1HZ;
+  freq[1] = BROADCAST_FREQ_10HZ;
+  freq[2] = BROADCAST_FREQ_50HZ;
+  freq[3] = BROADCAST_FREQ_100HZ;
+  freq[4] = BROADCAST_FREQ_50HZ;
+  freq[5] = BROADCAST_FREQ_10HZ;
+  freq[6] = BROADCAST_FREQ_1HZ;
+  freq[7] = BROADCAST_FREQ_10HZ;
+  freq[8] = BROADCAST_FREQ_50HZ;
+  freq[9] = BROADCAST_FREQ_100HZ;
+  freq[10] = BROADCAST_FREQ_50HZ;
+  freq[11] = BROADCAST_FREQ_10HZ;
+
+  setBroadcastFreq(freq);
+}
+
+void CoreAPI::setBroadcastFreqToZero()
+{
+  uint8_t freq[16];
+
+  /* Channels definition:
+  * 0 - Timestamp
+  * 1 - Attitude Quaterniouns
+  * 2 - Acceleration
+  * 3 - Velocity (Ground Frame)
+  * 4 - Angular Velocity (Body Frame)
+  * 5 - Position
+  * 6 - Magnetometer
+  * 7 - RC Channels Data
+  * 8 - Gimbal Data
+  * 9 - Flight Status
+  * 10 - Battery Level
+  * 11 - Control Information
+  */
+
+  freq[0] = BROADCAST_FREQ_1HZ;
+  freq[1] = BROADCAST_FREQ_10HZ;
+  freq[2] = BROADCAST_FREQ_50HZ;
+  freq[3] = BROADCAST_FREQ_100HZ;
+  freq[4] = BROADCAST_FREQ_50HZ;
+  freq[5] = BROADCAST_FREQ_10HZ;
+  freq[6] = BROADCAST_FREQ_1HZ;
+  freq[7] = BROADCAST_FREQ_10HZ;
+  freq[8] = BROADCAST_FREQ_50HZ;
+  freq[9] = BROADCAST_FREQ_100HZ;
+  freq[10] = BROADCAST_FREQ_50HZ;
+  freq[11] = BROADCAST_FREQ_10HZ;
+
+  setBroadcastFreq(freq);
+}
+
+
+unsigned short CoreAPI::setBroadcastFreqDefaults(int timeout)
+{
+  uint8_t freq[16];
+
+  /* Channels definition:
+  * 0 - Timestamp
+  * 1 - Attitude Quaterniouns
+  * 2 - Acceleration
+  * 3 - Velocity (Ground Frame)
+  * 4 - Angular Velocity (Body Frame)
+  * 5 - Position
+  * 6 - Magnetometer
+  * 7 - RC Channels Data
+  * 8 - Gimbal Data
+  * 9 - Flight Status
+  * 10 - Battery Level
+  * 11 - Control Information
+  */
+
+  freq[0] = BROADCAST_FREQ_1HZ;
+  freq[1] = BROADCAST_FREQ_10HZ;
+  freq[2] = BROADCAST_FREQ_50HZ;
+  freq[3] = BROADCAST_FREQ_100HZ;
+  freq[4] = BROADCAST_FREQ_50HZ;
+  freq[5] = BROADCAST_FREQ_10HZ;
+  freq[6] = BROADCAST_FREQ_1HZ;
+  freq[7] = BROADCAST_FREQ_10HZ;
+  freq[8] = BROADCAST_FREQ_50HZ;
+  freq[9] = BROADCAST_FREQ_100HZ;
+  freq[10] = BROADCAST_FREQ_50HZ;
+  freq[11] = BROADCAST_FREQ_10HZ;
+
+  return setBroadcastFreq(freq, timeout);
+}
+
 TimeStampData CoreAPI::getTime() const { return broadcastData.timeStamp; }
 
 FlightStatus CoreAPI::getFlightStatus() const { return broadcastData.status; }
@@ -240,6 +437,19 @@ void CoreAPI::setControl(bool enable, CallBack callback, UserData userData)
   unsigned char data = enable ? 1 : 0;
   send(2, DJI::onboardSDK::encrypt, SET_CONTROL, CODE_SETCONTROL, &data, 1, 500, 2,
     callback ? callback : CoreAPI::setControlCallback, userData);
+}
+
+unsigned short CoreAPI::setControl(bool enable, int timeout)
+{
+  unsigned char data = enable ? 1 : 0;
+  send(2, DJI::onboardSDK::encrypt, SET_CONTROL, CODE_SETCONTROL, &data, 1, 500, 2, 0, 0);
+
+  // Wait for end of ACK frame to arrive
+  serialDevice->lockACK();
+  serialDevice->wait();
+  serialDevice->freeACK();
+
+  return ack_data;
 }
 
 HardDriver *CoreAPI::getDriver() const { return serialDevice; }
@@ -361,19 +571,20 @@ void CoreAPI::setFrequencyCallback(CoreAPI *api __UNUSED, Header *protocolHeader
   switch (ack_data)
   {
     case 0x0000:
-      API_LOG(api->serialDevice, STATUS_LOG, "Frequency set successfully");
+      API_LOG(api->serialDevice, STATUS_LOG, "Frequency set successfully\n");
       break;
     case 0x0001:
-      API_LOG(api->serialDevice, ERROR_LOG, "Frequency parameter error");
+      API_LOG(api->serialDevice, ERROR_LOG, "Frequency parameter error\n");
       break;
     default:
       if (!api->decodeACKStatus(ack_data))
       {
-        API_LOG(api->serialDevice, ERROR_LOG, "While calling this function");
+        API_LOG(api->serialDevice, ERROR_LOG, "While calling this function\n");
       }
       break;
   }
 }
+
 Version CoreAPI::getSDKVersion() const { return versionData.version; }
 
 SDKFilter CoreAPI::getFilter() const { return filter; }

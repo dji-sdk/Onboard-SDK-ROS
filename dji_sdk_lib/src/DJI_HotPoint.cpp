@@ -1,15 +1,13 @@
-/** @brief
-*  @file DJI_HotPoint.cpp
-*  @version 3.1.7
-*  @date July 1st, 2016
-*
-*  @abstract
-*  Hotpoint (Point of Interest) flight Control API for DJI onboardSDK library
-*
-*  @copyright 2016 DJI. All right reserved.
-*
-*/
-
+/** @file DJI_HotPoint.cpp
+ *  @version 3.1.7
+ *  @date July 1st, 2016
+ *
+ *  @brief
+ *  Hotpoint (Point of Interest) flight Control API for DJI onboardSDK library
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
 
 #include "DJI_HotPoint.h"
 #include <string.h>
