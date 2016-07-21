@@ -84,7 +84,6 @@ class ROSAdapter {
 			uint8_t *data = ((unsigned char*) header) + sizeof(Header) + SET_CMD_SIZE;
 			uint8_t len = header->length - SET_CMD_SIZE - EXC_DATA_SIZE;
             ( (ROSAdapter*)userData )->m_fromMobileCallback(data, len);
-            printf("Mobile data was received!!!!!! %d \n", data[0]);
 
 		}
 
