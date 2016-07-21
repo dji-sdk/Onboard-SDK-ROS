@@ -77,12 +77,15 @@ class ROSAdapter {
 
         static void broadcastCallback(CoreAPI *coreAPI, Header *header, void *userData) {
             ( (ROSAdapter*)userData )->m_broadcastCallback();
+
         }
 
 		static void fromMobileCallback(CoreAPI *coreAPI, Header *header, void *userData) {
 			uint8_t *data = ((unsigned char*) header) + sizeof(Header) + SET_CMD_SIZE;
 			uint8_t len = header->length - SET_CMD_SIZE - EXC_DATA_SIZE;
             ( (ROSAdapter*)userData )->m_fromMobileCallback(data, len);
+            printf("Mobile data was received!!!!!! %d \n", data[0]);
+
 		}
 
 		static void missionStatusCallback(CoreAPI *coreAPI, Header *header, void *userData) {
@@ -139,12 +142,14 @@ class ROSAdapter {
         void setBroadcastCallback( void (T::*func)(), T *obj ) {
             m_broadcastCallback = std::bind(func, obj);
             coreAPI->setBroadcastCallback(&ROSAdapter::broadcastCallback, (UserData)this);
+            printf("Broadcast call back received \n");
         }
 
 		template<class T>
 		void setFromMobileCallback( void (T::*func)(uint8_t *, uint8_t), T *obj) {
 		m_fromMobileCallback = std::bind(func, obj, std::placeholders::_1, std::placeholders::_2);
 		coreAPI->setFromMobileCallback(&ROSAdapter::fromMobileCallback, (UserData)this);
+
 		}
 
 		template<class T>

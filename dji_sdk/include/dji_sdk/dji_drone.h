@@ -52,6 +52,7 @@ private:
 	ros::ServiceClient mission_hp_reset_yaw_service;
 	ros::ServiceClient mission_fm_upload_service;
 	ros::ServiceClient mission_fm_set_target_service;
+	//ros::ServiceClient mobile_commands_service;
 
     	ros::Subscriber acceleration_subscriber;
     	ros::Subscriber attitude_quaternion_subscriber;
@@ -70,6 +71,7 @@ private:
 	ros::Subscriber time_stamp_subscriber;
 	ros::Subscriber mission_status_subscriber;
 	ros::Subscriber mission_event_subscriber;
+	ros::Subscriber mobile_data_subscriber;
 
 public:
 
@@ -78,12 +80,14 @@ public:
     	dji_sdk::Compass compass;
     	dji_sdk::FlightControlInfo flight_control_info;
     	uint8_t flight_status;
+    	uint8_t mobile_new_data;
     	dji_sdk::Gimbal gimbal;
     	dji_sdk::GlobalPosition global_position;
     	dji_sdk::GlobalPosition global_position_ref;
     	dji_sdk::LocalPosition local_position;
     	dji_sdk::LocalPosition local_position_ref;
     	dji_sdk::PowerStatus power_status;
+    	dji_sdk::TransparentTransmissionData mobile_data;
     	dji_sdk::RCChannels rc_channels;
    	dji_sdk::Velocity velocity;
    	nav_msgs::Odometry odometry;
@@ -103,6 +107,17 @@ public:
 	dji_sdk::MissionEventWpUpload waypoint_upload_result;
 	dji_sdk::MissionEventWpAction waypoint_action_result;
 	dji_sdk::MissionEventWpReach waypoint_reached_result;
+
+typedef void *UserData; 
+typedef void (*CallBack)(DJIDrone *);
+
+typedef struct CallBackHandler
+{
+  CallBack callback;
+  UserData userData;
+} CallBackHandler;
+    
+
 
 private:
 	void acceleration_subscriber_callback(dji_sdk::Acceleration acceleration)
@@ -212,6 +227,112 @@ private:
 	
 	}
 
+    //! Callback Handler functions for Mobile data commands
+	CallBackHandler obtainControlCallback;
+	CallBackHandler releaseControlCallback;
+	CallBackHandler takeOffCallback;
+	CallBackHandler landingCallback;
+	CallBackHandler getSDKVersionCallback;
+	CallBackHandler armCallback;
+	CallBackHandler disArmCallback;
+	CallBackHandler goHomeCallback;
+	CallBackHandler takePhotoCallback;
+	CallBackHandler startVideoCallback;
+	CallBackHandler stopVideoCallback;
+
+	void mobile_data_push_info_callback(dji_sdk::TransparentTransmissionData information)
+	{
+		printf("mobile data push info callback called! \n");
+		this->mobile_data = information;
+		mobile_new_data = 1;
+        int cmdID = mobile_data.data[0];
+        printf("Command ID code is %d \n", cmdID);
+
+        switch(cmdID)
+        {
+        	case 2: 
+        	if (obtainControlCallback.callback)
+        	{
+       		 obtainControlCallback.callback(this);          
+            }
+            break;
+
+            case 3: 
+            if (releaseControlCallback.callback)
+        	{
+       		 releaseControlCallback.callback(this);          
+            }
+            break;
+
+            case 4: 
+            //if (obtainControlCallback.callback)
+        	//{
+       		// obtainControlCallback.callback();          
+            //}
+            break;
+
+            case 5: 
+            if (armCallback.callback)
+        	{
+       		 armCallback.callback(this);          
+            }
+            break;
+
+            case 6: 
+            if (disArmCallback.callback)
+        	{
+       		 disArmCallback.callback(this);          
+            }
+            break;
+
+            case 7: 
+            if (takeOffCallback.callback)
+        	{
+       		 takeOffCallback.callback(this);          
+            }
+            break;
+
+            case 8: 
+            if (landingCallback.callback)
+        	{
+       		 landingCallback.callback(this);          
+            }
+            break;
+
+            case 9: 
+            if (goHomeCallback.callback)
+        	{
+       		 goHomeCallback.callback(this);          
+            }
+            break;
+
+            case 10: 
+            if (takePhotoCallback.callback)
+        	{
+       		 takePhotoCallback.callback(this);          
+            }
+            break;
+
+            case 11: 
+            if (startVideoCallback.callback)
+        	{
+       		 startVideoCallback.callback(this);          
+            }
+            break;
+
+            case 13: 
+            if (stopVideoCallback.callback)
+        	{
+       		 stopVideoCallback.callback(this);          
+            }
+            break;
+
+        }
+
+		  
+
+	}
+
 	void mission_event_push_info_callback(dji_sdk::MissionPushInfo event_push_info)
 	{
 		this->incident_type = event_push_info.type;
@@ -259,6 +380,7 @@ public:
 		drone_arm_control_service = nh.serviceClient<dji_sdk::DroneArmControl>("dji_sdk/drone_arm_control");
 		sync_flag_control_service = nh.serviceClient<dji_sdk::SyncFlagControl>("dji_sdk/sync_flag_control");
 		message_frequency_control_service = nh.serviceClient<dji_sdk::MessageFrequencyControl>("dji_sdk/message_frequency_control");
+		//mobile_commands_service = nh.serviceClient<dji_sdk::mobileCommandsl>("dji_sdk/mobile_commands");
 
 		mission_start_service = nh.serviceClient<dji_sdk::MissionStart>("dji_sdk/mission_start");
 		mission_pause_service = nh.serviceClient<dji_sdk::MissionPause>("dji_sdk/mission_pause");
@@ -291,6 +413,82 @@ public:
 		time_stamp_subscriber = nh.subscribe<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10, &DJIDrone::time_stamp_subscriber_callback,this);
 		mission_status_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_status", 10, &DJIDrone::mission_status_push_info_callback, this);  
 		mission_event_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_event", 10, &DJIDrone::mission_event_push_info_callback, this);
+		mobile_data_subscriber = nh.subscribe<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device", 10, &DJIDrone::mobile_data_push_info_callback, this);
+	}
+
+	void setObtainControlCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		obtainControlCallback.callback = userCallback;
+  		obtainControlCallback.userData = userData;
+	}
+
+
+	void setReleaseControlCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		releaseControlCallback.callback = userCallback;
+  		releaseControlCallback.userData = userData;
+	}
+
+	void setTakeOffCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		takeOffCallback.callback = userCallback;
+  		takeOffCallback.userData = userData;
+	}
+
+
+	void setLandingCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		landingCallback.callback = userCallback;
+  		landingCallback.userData = userData;
+	}
+
+
+	void setGetSDKVersionCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  	    getSDKVersionCallback.callback = userCallback;
+  		getSDKVersionCallback.userData = userData;
+	}
+
+
+	void setArmCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		armCallback.callback = userCallback;
+  		armCallback.userData = userData;
+	}
+
+	void setDisarmCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		disArmCallback.callback = userCallback;
+  		disArmCallback.userData = userData;
+	}
+
+
+
+	void setGoHomeCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		goHomeCallback.callback = userCallback;
+  		goHomeCallback.userData = userData;
+	}
+
+
+	void setTakePhotoCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		takePhotoCallback.callback = userCallback;
+  		takePhotoCallback.userData = userData;
+	}
+
+
+	void setStartVideoCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		startVideoCallback.callback = userCallback;
+  		startVideoCallback.userData = userData;
+	}
+
+
+	void setStopVideoCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		stopVideoCallback.callback = userCallback;
+  		stopVideoCallback.userData = userData;
 	}
 
 	bool activate()

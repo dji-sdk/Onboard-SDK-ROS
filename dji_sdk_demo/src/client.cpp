@@ -7,6 +7,19 @@
 
 using namespace DJI::onboardSDK;
 
+//! Function Prototypes for Mobile command callbacks
+void ObtainControlCallback(DJIDrone *drone);
+void ReleaseControlCallback(DJIDrone *drone);
+void TakeOffCallback(DJIDrone *drone);
+void LandingCallback(DJIDrone *drone);
+void GetSDKVersionCallback(DJIDrone *drone);
+void ArmCallback(DJIDrone *drone);
+void DisarmCallback(DJIDrone *drone);
+void GoHomeCallback(DJIDrone *drone);
+void TakePhotoCallback(DJIDrone *drone);
+void StartVideoCallback(DJIDrone *drone);
+void StopVideoCallback(DJIDrone *drone);
+
 static void Display_Main_Menu(void)
 {
     printf("\r\n");
@@ -29,13 +42,16 @@ static void Display_Main_Menu(void)
 	printf("| [p] Waypoint Navigation Test  | [8] Mission Hotpoint Reset Yaw  |\n");	
 	printf("| [q] Arm the Drone             | [9] Mission Followme Set Target |\n");	
 	printf("| [r] Disarm the Drone          | [0] Mission Hotpoint Download   |\n");
+    printf("| [a] Enter Mobile commands mode \n");
     printf("+-----------------------------------------------------------------+\n");
     printf("input a/b/c etc..then press enter key\r\n");
     printf("use `rostopic echo` to query drone status\r\n");
     printf("----------------------------------------\r\n");
     printf("input: ");
 }
-int main(int argc, char **argv)
+
+   
+int main(int argc, char *argv[])
 {
     int main_operate_code = 0;
     int temp32;
@@ -69,6 +85,23 @@ int main(int argc, char **argv)
 	dji_sdk::MissionHotpointTask hotpoint_task;
 	dji_sdk::MissionFollowmeTask followme_task;
 	dji_sdk::MissionFollowmeTarget followme_target;
+    uint8_t userData = 0;
+    ros::spinOnce();
+    
+    //! Setting functions to be called for Mobile App Commands mode 
+
+    drone->setObtainControlCallback(ObtainControlCallback, &userData);
+    drone->setReleaseControlCallback(ReleaseControlCallback, &userData);
+    drone->setTakeOffCallback(TakeOffCallback, &userData);
+    drone->setLandingCallback(LandingCallback, &userData);
+    drone->setGetSDKVersionCallback(GetSDKVersionCallback, &userData);
+    drone->setArmCallback(ArmCallback, &userData);
+    drone->setDisarmCallback(DisarmCallback, &userData);
+    drone->setGoHomeCallback(GoHomeCallback, &userData);
+    drone->setTakePhotoCallback(TakePhotoCallback, &userData);
+    drone->setStartVideoCallback(StartVideoCallback,&userData);
+    drone->setStopVideoCallback(StopVideoCallback,&userData);
+
 	
     Display_Main_Menu();
     while(1)
@@ -98,11 +131,22 @@ int main(int argc, char **argv)
                 continue;
             }
         }
+         //while( (buf = getchar()) != '\n' )
+        //temp32 = temp32 * 10 + buf - '0';
+
+
+        //printf("Read %d\n", temp32);  
+        
         switch(main_operate_code)
         {
 			case 'a':
 				/* SDK version query*/
 				drone->check_version();
+                printf("Mobile Data Commands mode entered\n");
+                while(1)
+                {             
+                ros::spinOnce();  
+                }
 				break;
             case 'b':
                 /* request control ability*/
@@ -630,7 +674,74 @@ int main(int argc, char **argv)
         }
         main_operate_code = -1;
         err_flag = valid_flag = false;
-        Display_Main_Menu();
+        //Display_Main_Menu();
     }
     return 0;
 }
+
+//! Callback functions for Mobile Commands
+    void ObtainControlCallback(DJIDrone *drone)
+    {
+      drone->request_sdk_permission_control();
+      printf("Test Obtain control succesfully called! \n");
+    }
+
+    void ReleaseControlCallback(DJIDrone *drone)
+    {
+      drone->release_sdk_permission_control();
+      printf("Release control succesfully called! \n");
+    }
+
+    void TakeOffCallback(DJIDrone *drone)
+    {
+      drone->takeoff();
+      printf("Take Off succesfully called! \n");
+    }
+
+    void LandingCallback(DJIDrone *drone)
+    {
+      drone->landing();
+      printf("Landing succesfully called! \n");
+    }
+
+    void GetSDKVersionCallback(DJIDrone *drone)
+    {
+      drone->check_version();
+      printf("Get SDK Version succesfully called! \n");
+    }
+
+    void ArmCallback(DJIDrone *drone)
+    {
+      drone->drone_arm();
+      printf("Arm succesfully called! \n");
+    }
+
+    void DisarmCallback(DJIDrone *drone)
+    {
+      drone->drone_disarm();
+      printf("DisArm succesfully called! \n");
+    }
+
+    void GoHomeCallback(DJIDrone *drone)
+    {
+      drone->gohome();
+      printf("Go Home succesfully called! \n");
+    }
+
+    void TakePhotoCallback(DJIDrone *drone)
+    {
+      drone->take_picture();
+      printf("Take Picture succesfully called! \n");
+    }
+
+    void StartVideoCallback(DJIDrone *drone)
+    {
+      drone->start_video();
+      printf("StartVideo succesfully called! \n");
+    }
+
+    void StopVideoCallback(DJIDrone *drone)
+    {
+      drone->stop_video();
+      printf("Stop Video succesfully called! \n");
+    }
