@@ -7,18 +7,23 @@
 
 using namespace DJI::onboardSDK;
 
-//! Function Prototypes for Mobile command callbacks
-void ObtainControlCallback(DJIDrone *drone);
-void ReleaseControlCallback(DJIDrone *drone);
-void TakeOffCallback(DJIDrone *drone);
-void LandingCallback(DJIDrone *drone);
-void GetSDKVersionCallback(DJIDrone *drone);
-void ArmCallback(DJIDrone *drone);
-void DisarmCallback(DJIDrone *drone);
-void GoHomeCallback(DJIDrone *drone);
-void TakePhotoCallback(DJIDrone *drone);
-void StartVideoCallback(DJIDrone *drone);
-void StopVideoCallback(DJIDrone *drone);
+//! Function Prototypes for Mobile command callbacks - Core Functions
+void ObtainControlMobileCallback(DJIDrone *drone);
+void ReleaseControlMobileCallback(DJIDrone *drone);
+void TakeOffMobileCallback(DJIDrone *drone);
+void LandingMobileCallback(DJIDrone *drone);
+void GetSDKVersionMobileCallback(DJIDrone *drone);
+void ArmMobileCallback(DJIDrone *drone);
+void DisarmMobileCallback(DJIDrone *drone);
+void GoHomeMobileCallback(DJIDrone *drone);
+void TakePhotoMobileCallback(DJIDrone *drone);
+void StartVideoMobileCallback(DJIDrone *drone);
+void StopVideoMobileCallback(DJIDrone *drone);
+
+//! Function Prototypes for Mobile command callbacks - Custom Missions
+void DrawCircleDemoMobileCallback(DJIDrone *drone);
+
+
 
 static void Display_Main_Menu(void)
 {
@@ -90,17 +95,18 @@ int main(int argc, char *argv[])
     
     //! Setting functions to be called for Mobile App Commands mode 
 
-    drone->setObtainControlCallback(ObtainControlCallback, &userData);
-    drone->setReleaseControlCallback(ReleaseControlCallback, &userData);
-    drone->setTakeOffCallback(TakeOffCallback, &userData);
-    drone->setLandingCallback(LandingCallback, &userData);
-    drone->setGetSDKVersionCallback(GetSDKVersionCallback, &userData);
-    drone->setArmCallback(ArmCallback, &userData);
-    drone->setDisarmCallback(DisarmCallback, &userData);
-    drone->setGoHomeCallback(GoHomeCallback, &userData);
-    drone->setTakePhotoCallback(TakePhotoCallback, &userData);
-    drone->setStartVideoCallback(StartVideoCallback,&userData);
-    drone->setStopVideoCallback(StopVideoCallback,&userData);
+    drone->setObtainControlMobileCallback(ObtainControlMobileCallback, &userData);
+    drone->setReleaseControlMobileCallback(ReleaseControlMobileCallback, &userData);
+    drone->setTakeOffMobileCallback(TakeOffMobileCallback, &userData);
+    drone->setLandingMobileCallback(LandingMobileCallback, &userData);
+    drone->setGetSDKVersionMobileCallback(GetSDKVersionMobileCallback, &userData);
+    drone->setArmMobileCallback(ArmMobileCallback, &userData);
+    drone->setDisarmMobileCallback(DisarmMobileCallback, &userData);
+    drone->setGoHomeMobileCallback(GoHomeMobileCallback, &userData);
+    drone->setTakePhotoMobileCallback(TakePhotoMobileCallback, &userData);
+    drone->setStartVideoMobileCallback(StartVideoMobileCallback,&userData);
+    drone->setStopVideoMobileCallback(StopVideoMobileCallback,&userData);
+    drone->setDrawCircleDemoMobileCallback(DrawCircleDemoMobileCallback, &userData);
 
 	
     Display_Main_Menu();
@@ -332,7 +338,7 @@ int main(int argc, char *argv[])
                 y_center = drone->local_position.y;
                 circleRadiusIncrements = 0.01;
 		
-		for(int j = 0; j < 1000; j ++)
+		  for(int j = 0; j < 1000; j ++)
                 {   
                     if (circleRadiusIncrements < circleRadius)
 			{
@@ -680,68 +686,117 @@ int main(int argc, char *argv[])
 }
 
 //! Callback functions for Mobile Commands
-    void ObtainControlCallback(DJIDrone *drone)
+    void ObtainControlMobileCallback(DJIDrone *drone)
     {
       drone->request_sdk_permission_control();
       printf("Test Obtain control succesfully called! \n");
     }
 
-    void ReleaseControlCallback(DJIDrone *drone)
+    void ReleaseControlMobileCallback(DJIDrone *drone)
     {
       drone->release_sdk_permission_control();
       printf("Release control succesfully called! \n");
     }
 
-    void TakeOffCallback(DJIDrone *drone)
+    void TakeOffMobileCallback(DJIDrone *drone)
     {
       drone->takeoff();
       printf("Take Off succesfully called! \n");
     }
 
-    void LandingCallback(DJIDrone *drone)
+    void LandingMobileCallback(DJIDrone *drone)
     {
       drone->landing();
       printf("Landing succesfully called! \n");
     }
 
-    void GetSDKVersionCallback(DJIDrone *drone)
+    void GetSDKVersionMobileCallback(DJIDrone *drone)
     {
       drone->check_version();
       printf("Get SDK Version succesfully called! \n");
     }
 
-    void ArmCallback(DJIDrone *drone)
+    void ArmMobileCallback(DJIDrone *drone)
     {
       drone->drone_arm();
       printf("Arm succesfully called! \n");
     }
 
-    void DisarmCallback(DJIDrone *drone)
+    void DisarmMobileCallback(DJIDrone *drone)
     {
       drone->drone_disarm();
       printf("DisArm succesfully called! \n");
     }
 
-    void GoHomeCallback(DJIDrone *drone)
+    void GoHomeMobileCallback(DJIDrone *drone)
     {
       drone->gohome();
       printf("Go Home succesfully called! \n");
     }
 
-    void TakePhotoCallback(DJIDrone *drone)
+    void TakePhotoMobileCallback(DJIDrone *drone)
     {
       drone->take_picture();
       printf("Take Picture succesfully called! \n");
     }
 
-    void StartVideoCallback(DJIDrone *drone)
+    void StartVideoMobileCallback(DJIDrone *drone)
     {
       drone->start_video();
       printf("StartVideo succesfully called! \n");
     }
 
-    void StopVideoCallback(DJIDrone *drone)
+    void StopVideoMobileCallback(DJIDrone *drone)
     {
       drone->stop_video();
       printf("Stop Video succesfully called! \n");
+    }
+
+    void DrawCircleDemoMobileCallback(DJIDrone *drone)
+    {
+        printf("Draw a Circle demo running! \n");
+        static float R = 2;
+        static float V = 2;
+        static float x;
+        static float y;
+        int circleRadius;
+        int circleHeight;
+        float Phi =0, circleRadiusIncrements;
+        int x_center, y_center, yaw_local; 
+
+        circleHeight = 7;
+        circleRadius = 7;
+
+        x_center = drone->local_position.x;
+        y_center = drone->local_position.y;
+        circleRadiusIncrements = 0.01;
+
+        for(int j = 0; j < 1000; j ++)
+        {   
+            if (circleRadiusIncrements < circleRadius)
+            {
+                x =  x_center + circleRadiusIncrements;
+                y =  y_center;
+                circleRadiusIncrements = circleRadiusIncrements + 0.01;
+                //printf("%f \n",circleRadiusIncrements);
+                drone->local_position_control(x ,y ,circleHeight, 0);
+                usleep(20000);
+            }
+                else
+            {
+                break;
+            }
+        }
+        
+
+        /* start to draw circle */
+        for(int i = 0; i < 1890; i ++)
+        {   
+            x =  x_center + circleRadius*cos((Phi/300));
+            y =  y_center + circleRadius*sin((Phi/300));
+            Phi = Phi+1;
+            drone->local_position_control(x ,y ,circleHeight, 0);
+            usleep(20000);
+        }
+
     }

@@ -116,8 +116,6 @@ typedef struct CallBackHandler
   CallBack callback;
   UserData userData;
 } CallBackHandler;
-    
-
 
 private:
 	void acceleration_subscriber_callback(dji_sdk::Acceleration acceleration)
@@ -239,10 +237,10 @@ private:
 	CallBackHandler takePhotoCallback;
 	CallBackHandler startVideoCallback;
 	CallBackHandler stopVideoCallback;
+	CallBackHandler drawCircleDemoCallback;
 
 	void mobile_data_push_info_callback(dji_sdk::TransparentTransmissionData information)
 	{
-		printf("mobile data push info callback called! \n");
 		this->mobile_data = information;
 		mobile_new_data = 1;
         int cmdID = mobile_data.data[0];
@@ -327,10 +325,15 @@ private:
             }
             break;
 
+            case 61: 
+            if (drawCircleDemoCallback.callback)
+        	{
+       		 drawCircleDemoCallback.callback(this);          
+            }
+            break;
+
+
         }
-
-		  
-
 	}
 
 	void mission_event_push_info_callback(dji_sdk::MissionPushInfo event_push_info)
@@ -416,47 +419,47 @@ public:
 		mobile_data_subscriber = nh.subscribe<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device", 10, &DJIDrone::mobile_data_push_info_callback, this);
 	}
 
-	void setObtainControlCallback(DJIDrone::CallBack userCallback, UserData userData)
+	void setObtainControlMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
 	{
   		obtainControlCallback.callback = userCallback;
   		obtainControlCallback.userData = userData;
 	}
 
 
-	void setReleaseControlCallback(DJIDrone::CallBack userCallback, UserData userData)
+	void setReleaseControlMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
 	{
   		releaseControlCallback.callback = userCallback;
   		releaseControlCallback.userData = userData;
 	}
 
-	void setTakeOffCallback(DJIDrone::CallBack userCallback, UserData userData)
+	void setTakeOffMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
 	{
   		takeOffCallback.callback = userCallback;
   		takeOffCallback.userData = userData;
 	}
 
 
-	void setLandingCallback(DJIDrone::CallBack userCallback, UserData userData)
+	void setLandingMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
 	{
   		landingCallback.callback = userCallback;
   		landingCallback.userData = userData;
 	}
 
 
-	void setGetSDKVersionCallback(DJIDrone::CallBack userCallback, UserData userData)
+	void setGetSDKVersionMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
 	{
   	    getSDKVersionCallback.callback = userCallback;
   		getSDKVersionCallback.userData = userData;
 	}
 
 
-	void setArmCallback(DJIDrone::CallBack userCallback, UserData userData)
+	void setArmMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
 	{
   		armCallback.callback = userCallback;
   		armCallback.userData = userData;
 	}
 
-	void setDisarmCallback(DJIDrone::CallBack userCallback, UserData userData)
+	void setDisarmMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
 	{
   		disArmCallback.callback = userCallback;
   		disArmCallback.userData = userData;
@@ -464,31 +467,37 @@ public:
 
 
 
-	void setGoHomeCallback(DJIDrone::CallBack userCallback, UserData userData)
+	void setGoHomeMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
 	{
   		goHomeCallback.callback = userCallback;
   		goHomeCallback.userData = userData;
 	}
 
 
-	void setTakePhotoCallback(DJIDrone::CallBack userCallback, UserData userData)
+	void setTakePhotoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
 	{
   		takePhotoCallback.callback = userCallback;
   		takePhotoCallback.userData = userData;
 	}
 
 
-	void setStartVideoCallback(DJIDrone::CallBack userCallback, UserData userData)
+	void setStartVideoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
 	{
   		startVideoCallback.callback = userCallback;
   		startVideoCallback.userData = userData;
 	}
 
 
-	void setStopVideoCallback(DJIDrone::CallBack userCallback, UserData userData)
+	void setStopVideoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
 	{
   		stopVideoCallback.callback = userCallback;
   		stopVideoCallback.userData = userData;
+	}
+
+	void setDrawCircleDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+		drawCircleDemoCallback.callback = userCallback;
+		drawCircleDemoCallback.userData = userData;
 	}
 
 	bool activate()
