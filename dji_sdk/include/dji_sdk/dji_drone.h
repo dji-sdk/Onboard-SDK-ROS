@@ -238,6 +238,8 @@ private:
 	CallBackHandler startVideoCallback;
 	CallBackHandler stopVideoCallback;
 	CallBackHandler drawCircleDemoCallback;
+	CallBackHandler drawSquareDemoCallback;
+	CallBackHandler gimbalControlDemoCallback;
 
 	void mobile_data_push_info_callback(dji_sdk::TransparentTransmissionData information)
 	{
@@ -329,6 +331,21 @@ private:
             if (drawCircleDemoCallback.callback)
         	{
        		 drawCircleDemoCallback.callback(this);          
+            }
+            break;
+
+
+            case 62: 
+            if (drawSquareDemoCallback.callback)
+        	{
+       		 drawSquareDemoCallback.callback(this);          
+            }
+            break;
+
+            case 64: 
+            if (gimbalControlDemoCallback.callback)
+        	{
+       		 gimbalControlDemoCallback.callback(this);          
             }
             break;
 
@@ -499,6 +516,18 @@ public:
 		drawCircleDemoCallback.callback = userCallback;
 		drawCircleDemoCallback.userData = userData;
 	}
+
+	void setDrawSquareDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+		drawSquareDemoCallback.callback = userCallback;
+		drawSquareDemoCallback.userData = userData;
+	}
+    
+    void setGimbalControlDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	gimbalControlDemoCallback.callback = userCallback;
+		gimbalControlDemoCallback.userData = userData;
+    }
 
 	bool activate()
 	{

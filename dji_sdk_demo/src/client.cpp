@@ -19,6 +19,8 @@ void GoHomeMobileCallback(DJIDrone *drone);
 void TakePhotoMobileCallback(DJIDrone *drone);
 void StartVideoMobileCallback(DJIDrone *drone);
 void StopVideoMobileCallback(DJIDrone *drone);
+void DrawSquareDemoMobileCallback(DJIDrone *drone);
+void GimbalControlDemoMobileCallback(DJIDrone *drone);
 
 //! Function Prototypes for Mobile command callbacks - Custom Missions
 void DrawCircleDemoMobileCallback(DJIDrone *drone);
@@ -107,6 +109,8 @@ int main(int argc, char *argv[])
     drone->setStartVideoMobileCallback(StartVideoMobileCallback,&userData);
     drone->setStopVideoMobileCallback(StopVideoMobileCallback,&userData);
     drone->setDrawCircleDemoMobileCallback(DrawCircleDemoMobileCallback, &userData);
+    drone->setDrawSquareDemoMobileCallback(DrawSquareDemoMobileCallback, &userData);
+    drone->setGimbalControlDemoMobileCallback(GimbalControlDemoMobileCallback, &userData);
 
 	
     Display_Main_Menu();
@@ -800,3 +804,76 @@ int main(int argc, char *argv[])
         }
 
     }
+    void DrawSquareDemoMobileCallback(DJIDrone *drone)
+    {
+    /*draw square sample*/
+        for(int i = 0;i < 60;i++)
+        {
+            drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
+            Flight::VerticalLogic::VERTICAL_VELOCITY |
+            Flight::YawLogic::YAW_ANGLE |
+            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+            Flight::SmoothMode::SMOOTH_ENABLE,
+            3, 3, 0, 0 );
+            usleep(20000);
+        }
+        for(int i = 0;i < 60;i++)
+        {
+            drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
+            Flight::VerticalLogic::VERTICAL_VELOCITY |
+            Flight::YawLogic::YAW_ANGLE |
+            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+            Flight::SmoothMode::SMOOTH_ENABLE,
+            -3, 3, 0, 0);
+            usleep(20000);
+        }
+        for(int i = 0;i < 60;i++)
+        {
+            drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
+            Flight::VerticalLogic::VERTICAL_VELOCITY |
+            Flight::YawLogic::YAW_ANGLE |
+            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+            Flight::SmoothMode::SMOOTH_ENABLE,
+            -3, -3, 0, 0);
+            usleep(20000);
+        }
+        for(int i = 0;i < 60;i++)
+        {
+            drone->attitude_control( Flight::HorizontalLogic::HORIZONTAL_POSITION |
+            Flight::VerticalLogic::VERTICAL_VELOCITY |
+            Flight::YawLogic::YAW_ANGLE |
+            Flight::HorizontalCoordinate::HORIZONTAL_BODY |
+            Flight::SmoothMode::SMOOTH_ENABLE,
+            3, -3, 0, 0);
+            usleep(20000);
+        }
+    }
+
+     void GimbalControlDemoMobileCallback(DJIDrone *drone)
+            {
+                drone->gimbal_angle_control(0, 0, 1800, 20);
+                sleep(2);
+                drone->gimbal_angle_control(0, 0, -1800, 20);
+                sleep(2);
+                drone->gimbal_angle_control(300, 0, 0, 20);
+                sleep(2);
+                drone->gimbal_angle_control(-300, 0, 0, 20);
+                sleep(2);
+                drone->gimbal_angle_control(0, 300, 0, 20);
+                sleep(2);
+                drone->gimbal_angle_control(0, -300, 0, 20);
+                sleep(2);
+                drone->gimbal_speed_control(100, 0, 0);
+                sleep(2);
+                drone->gimbal_speed_control(-100, 0, 0);
+                sleep(2);
+                drone->gimbal_speed_control(0, 0, 200);
+                sleep(2);
+                drone->gimbal_speed_control(0, 0, -200);
+                sleep(2);
+                drone->gimbal_speed_control(0, 200, 0);
+                sleep(2);
+                drone->gimbal_speed_control(0, -200, 0);
+                sleep(2);
+                drone->gimbal_angle_control(0, 0, 0, 20);
+            }
