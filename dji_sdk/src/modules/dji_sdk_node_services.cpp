@@ -206,7 +206,9 @@ bool DJISDKNode::velocity_control_callback(dji_sdk::VelocityControl::Request& re
 
 bool DJISDKNode::version_check_callback(dji_sdk::VersionCheck::Request& request, dji_sdk::VersionCheck::Response& response)
 {
-	rosAdapter->coreAPI->getSDKVersion();
+    int sdkVer;
+    sdkVer = rosAdapter->coreAPI->getSDKVersion();
+    std::cout << std::hex << sdkVer << '\n';
 	response.result = true;
 	return true;
 }

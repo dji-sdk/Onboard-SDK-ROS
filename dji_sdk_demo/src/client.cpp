@@ -19,12 +19,10 @@ void GoHomeMobileCallback(DJIDrone *drone);
 void TakePhotoMobileCallback(DJIDrone *drone);
 void StartVideoMobileCallback(DJIDrone *drone);
 void StopVideoMobileCallback(DJIDrone *drone);
-void DrawSquareDemoMobileCallback(DJIDrone *drone);
-void GimbalControlDemoMobileCallback(DJIDrone *drone);
-
 //! Function Prototypes for Mobile command callbacks - Custom Missions
 void DrawCircleDemoMobileCallback(DJIDrone *drone);
-
+void DrawSquareDemoMobileCallback(DJIDrone *drone);
+void GimbalControlDemoMobileCallback(DJIDrone *drone);
 
 
 static void Display_Main_Menu(void)
@@ -95,7 +93,6 @@ int main(int argc, char *argv[])
     ros::spinOnce();
     
     //! Setting functions to be called for Mobile App Commands mode 
-
     drone->setObtainControlMobileCallback(ObtainControlMobileCallback, &userData);
     drone->setReleaseControlMobileCallback(ReleaseControlMobileCallback, &userData);
     drone->setTakeOffMobileCallback(TakeOffMobileCallback, &userData);
@@ -110,13 +107,11 @@ int main(int argc, char *argv[])
     drone->setDrawCircleDemoMobileCallback(DrawCircleDemoMobileCallback, &userData);
     drone->setDrawSquareDemoMobileCallback(DrawSquareDemoMobileCallback, &userData);
     drone->setGimbalControlDemoMobileCallback(GimbalControlDemoMobileCallback, &userData);
-
 	
     Display_Main_Menu();
     while(1)
     {
         ros::spinOnce();
-        //temp32 = getchar();
         std::cout << "Enter Input Val: ";
         std::cin >> temp32;
 
@@ -821,29 +816,29 @@ int main(int argc, char *argv[])
 
      void GimbalControlDemoMobileCallback(DJIDrone *drone)
         {
-            drone->gimbal_angle_control(0, 0, 1800, 20);
-            sleep(2);
-            drone->gimbal_angle_control(0, 0, -1800, 20);
-            sleep(2);
-            drone->gimbal_angle_control(300, 0, 0, 20);
-            sleep(2);
-            drone->gimbal_angle_control(-300, 0, 0, 20);
-            sleep(2);
-            drone->gimbal_angle_control(0, 300, 0, 20);
-            sleep(2);
-            drone->gimbal_angle_control(0, -300, 0, 20);
-            sleep(2);
-            drone->gimbal_speed_control(100, 0, 0);
-            sleep(2);
-            drone->gimbal_speed_control(-100, 0, 0);
-            sleep(2);
-            drone->gimbal_speed_control(0, 0, 200);
-            sleep(2);
-            drone->gimbal_speed_control(0, 0, -200);
-            sleep(2);
-            drone->gimbal_speed_control(0, 200, 0);
-            sleep(2);
-            drone->gimbal_speed_control(0, -200, 0);
-            sleep(2);
-            drone->gimbal_angle_control(0, 0, 0, 20);
+        drone->gimbal_angle_control(0, 0, 1800, 20);
+        sleep(2);
+        drone->gimbal_angle_control(0, 0, -1800, 20);
+        sleep(2);
+        drone->gimbal_angle_control(300, 0, 0, 20);
+        sleep(2);
+        drone->gimbal_angle_control(-300, 0, 0, 20);
+        sleep(2);
+        drone->gimbal_angle_control(0, 300, 0, 20);
+        sleep(2);
+        drone->gimbal_angle_control(0, -300, 0, 20);
+        sleep(2);
+        drone->gimbal_speed_control(100, 0, 0);
+        sleep(2);
+        drone->gimbal_speed_control(-100, 0, 0);
+        sleep(2);
+        drone->gimbal_speed_control(0, 0, 200);
+        sleep(2);
+        drone->gimbal_speed_control(0, 0, -200);
+        sleep(2);
+        drone->gimbal_speed_control(0, 200, 0);
+        sleep(2);
+        drone->gimbal_speed_control(0, -200, 0);
+        sleep(2);
+        drone->gimbal_angle_control(0, 0, 0, 20);
         }
