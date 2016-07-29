@@ -954,73 +954,7 @@ int main(int argc, char *argv[])
         drone->landing();
 
     }
-    void LocalNavigationTestMobileCallback(DJIDrone *drone)
-    {
-    drone->local_position_navigation_send_request(-100, -100, 100);
-    }
-    void GlobalNavigationTestMobileCallback(DJIDrone *drone)
-    {
-    /* GPS Navi Test */
-    drone->global_position_navigation_send_request(22.535, 113.95, 100);
 
-    }
-    void WaypointNavigationTestMobileCallback(DJIDrone *drone)
-    {
-        dji_sdk::Waypoint waypoint0;
-        dji_sdk::Waypoint waypoint1;
-        dji_sdk::Waypoint waypoint2;
-        dji_sdk::Waypoint waypoint3;
-        dji_sdk::Waypoint waypoint4;
-        dji_sdk::WaypointList newWaypointList;
-
-        {
-            /* Waypoint List Navi Test */
-            waypoint0.latitude = 22.535;
-            waypoint0.longitude = 113.95;
-            waypoint0.altitude = 100;
-            waypoint0.staytime = 5;
-            waypoint0.heading = 0;
-        }
-        newWaypointList.waypoint_list.push_back(waypoint0);
-
-        {
-            waypoint1.latitude = 22.535;
-            waypoint1.longitude = 113.96;
-            waypoint1.altitude = 100;
-            waypoint1.staytime = 0;
-            waypoint1.heading = 90;
-        }
-        newWaypointList.waypoint_list.push_back(waypoint1);
-
-        {
-            waypoint2.latitude = 22.545;
-            waypoint2.longitude = 113.96;
-            waypoint2.altitude = 100;
-            waypoint2.staytime = 4;
-            waypoint2.heading = -90;
-        }
-        newWaypointList.waypoint_list.push_back(waypoint2);
-
-        {
-            waypoint3.latitude = 22.545;
-            waypoint3.longitude = 113.96;
-            waypoint3.altitude = 10;
-            waypoint3.staytime = 2;
-            waypoint3.heading = 180;
-        }
-        newWaypointList.waypoint_list.push_back(waypoint3);
-
-        {
-            waypoint4.latitude = 22.525;
-            waypoint4.longitude = 113.93;
-            waypoint4.altitude = 50;
-            waypoint4.staytime = 0;
-            waypoint4.heading = -180;
-        }
-        newWaypointList.waypoint_list.push_back(waypoint4);
-
-        drone->waypoint_navigation_send_request(newWaypointList);
-    }
     void VirtuaRCTestMobileCallback(DJIDrone *drone)
     {
         //virtual RC test data
