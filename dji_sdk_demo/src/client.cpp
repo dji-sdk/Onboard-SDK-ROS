@@ -23,21 +23,26 @@ void StopVideoMobileCallback(DJIDrone *drone);
 void DrawCircleDemoMobileCallback(DJIDrone *drone);
 void DrawSquareDemoMobileCallback(DJIDrone *drone);
 void GimbalControlDemoMobileCallback(DJIDrone *drone);
+void AttitudeControlDemoMobileCallback(DJIDrone *drone);
+void LocalNavigationTestMobileCallback(DJIDrone *drone);
+void GlobalNavigationTestMobileCallback(DJIDrone *drone);
+void WaypointNavigationTestMobileCallback(DJIDrone *drone);
+void VirtuaRCTestMobileCallback(DJIDrone *drone);
 
 
 static void Display_Main_Menu(void)
 {
     printf("\r\n");
     printf("+-------------------------- < Main menu > ------------------------+\n");
-	printf("| [1] SDK Version Query         | [20] Set Sync Flag Test          |\n");
-	printf("| [2] Request Control           | [21] Set Msg Frequency Test      |\n");	
-	printf("| [3] Release Control           | [22] Waypoint Mission Upload     |\n");	
-	printf("| [4] Takeoff                   | [23] Hotpoint Mission Upload     |\n");	
-	printf("| [5] Landing                   | [24] Followme Mission Upload     |\n");	
-	printf("| [6] Go Home                   | [25] Mission Start               |\n");	
-	printf("| [7] Gimbal Control Sample     | [26] Mission Pause               |\n");	
-	printf("| [8] Attitude Control Sample   | [27] Mission Resume              |\n");	
-	printf("| [9] Draw Circle Sample        | [28] Mission Cancel              |\n");	
+	printf("| [1]  SDK Version Query        | [20] Set Sync Flag Test          |\n");
+	printf("| [2]  Request Control          | [21] Set Msg Frequency Test      |\n");	
+	printf("| [3]  Release Control          | [22] Waypoint Mission Upload     |\n");	
+	printf("| [4]  Takeoff                  | [23] Hotpoint Mission Upload     |\n");	
+	printf("| [5]  Landing                  | [24] Followme Mission Upload     |\n");	
+	printf("| [6]  Go Home                  | [25] Mission Start               |\n");	
+	printf("| [7]  Gimbal Control Sample    | [26] Mission Pause               |\n");	
+	printf("| [8]  Attitude Control Sample  | [27] Mission Resume              |\n");	
+	printf("| [9]  Draw Circle Sample       | [28] Mission Cancel              |\n");	
 	printf("| [10] Draw Square Sample       | [29] Mission Waypoint Download   |\n");	
 	printf("| [11] Take a Picture           | [30] Mission Waypoint Set Speed  |\n");	
 	printf("| [12] Start Record Video       | [31] Mission Waypoint Get Speed  |\n");	 
@@ -107,6 +112,12 @@ int main(int argc, char *argv[])
     drone->setDrawCircleDemoMobileCallback(DrawCircleDemoMobileCallback, &userData);
     drone->setDrawSquareDemoMobileCallback(DrawSquareDemoMobileCallback, &userData);
     drone->setGimbalControlDemoMobileCallback(GimbalControlDemoMobileCallback, &userData);
+    drone->setAttitudeControlDemoMobileCallback(AttitudeControlDemoMobileCallback, &userData);
+    drone->setLocalNavigationTestMobileCallback(LocalNavigationTestMobileCallback, &userData);
+    drone->setGlobalNavigationTestMobileCallback(GlobalNavigationTestMobileCallback, &userData);
+    drone->setWaypointNavigationTestMobileCallback(WaypointNavigationTestMobileCallback, &userData);
+    drone->setVirtuaRCTestMobileCallback(VirtuaRCTestMobileCallback, &userData);
+
 	
     Display_Main_Menu();
     while(1)
@@ -842,3 +853,206 @@ int main(int argc, char *argv[])
         sleep(2);
         drone->gimbal_angle_control(0, 0, 0, 20);
         }
+
+    void AttitudeControlDemoMobileCallback(DJIDrone *drone)
+    {
+        /* attitude control sample*/
+        drone->takeoff();
+        sleep(8);
+
+
+        for(int i = 0; i < 100; i ++)
+        {
+            if(i < 90)
+                drone->attitude_control(0x40, 0, 2, 0, 0);
+            else
+                drone->attitude_control(0x40, 0, 0, 0, 0);
+            usleep(20000);
+        }
+        sleep(1);
+
+        for(int i = 0; i < 200; i ++)
+        {
+            if(i < 180)
+                drone->attitude_control(0x40, 2, 0, 0, 0);
+            else
+                drone->attitude_control(0x40, 0, 0, 0, 0);
+            usleep(20000);
+        }
+        sleep(1);
+
+        for(int i = 0; i < 200; i ++)
+        {
+            if(i < 180)
+                drone->attitude_control(0x40, -2, 0, 0, 0);
+            else
+                drone->attitude_control(0x40, 0, 0, 0, 0);
+            usleep(20000);
+        }
+        sleep(1);
+
+        for(int i = 0; i < 200; i ++)
+        {
+            if(i < 180)
+                drone->attitude_control(0x40, 0, 2, 0, 0);
+            else
+                drone->attitude_control(0x40, 0, 0, 0, 0);
+            usleep(20000);
+        }
+        sleep(1);
+
+        for(int i = 0; i < 200; i ++)
+        {
+            if(i < 180)
+                drone->attitude_control(0x40, 0, -2, 0, 0);
+            else
+                drone->attitude_control(0x40, 0, 0, 0, 0);
+            usleep(20000);
+        }
+        sleep(1);
+
+        for(int i = 0; i < 200; i ++)
+        {
+            if(i < 180)
+                drone->attitude_control(0x40, 0, 0, 0.5, 0);
+            else
+                drone->attitude_control(0x40, 0, 0, 0, 0);
+            usleep(20000);
+        }
+        sleep(1);
+
+        for(int i = 0; i < 200; i ++)
+        {
+            if(i < 180)
+                drone->attitude_control(0x40, 0, 0, -0.5, 0);
+            else
+                drone->attitude_control(0x40, 0, 0, 0, 0);
+            usleep(20000);
+        }
+        sleep(1);
+
+        for(int i = 0; i < 200; i ++)
+        {
+            if(i < 180)
+                drone->attitude_control(0xA, 0, 0, 0, 90);
+            else
+                drone->attitude_control(0xA, 0, 0, 0, 0);
+            usleep(20000);
+        }
+        sleep(1);
+
+        for(int i = 0; i < 200; i ++)
+        {
+            if(i < 180)
+                drone->attitude_control(0xA, 0, 0, 0, -90);
+            else
+                drone->attitude_control(0xA, 0, 0, 0, 0);
+            usleep(20000);
+        }
+        sleep(1);
+
+        drone->landing();
+
+    }
+    void LocalNavigationTestMobileCallback(DJIDrone *drone)
+    {
+    drone->local_position_navigation_send_request(-100, -100, 100);
+    }
+    void GlobalNavigationTestMobileCallback(DJIDrone *drone)
+    {
+    /* GPS Navi Test */
+    drone->global_position_navigation_send_request(22.535, 113.95, 100);
+
+    }
+    void WaypointNavigationTestMobileCallback(DJIDrone *drone)
+    {
+        dji_sdk::Waypoint waypoint0;
+        dji_sdk::Waypoint waypoint1;
+        dji_sdk::Waypoint waypoint2;
+        dji_sdk::Waypoint waypoint3;
+        dji_sdk::Waypoint waypoint4;
+        dji_sdk::WaypointList newWaypointList;
+
+        {
+            /* Waypoint List Navi Test */
+            waypoint0.latitude = 22.535;
+            waypoint0.longitude = 113.95;
+            waypoint0.altitude = 100;
+            waypoint0.staytime = 5;
+            waypoint0.heading = 0;
+        }
+        newWaypointList.waypoint_list.push_back(waypoint0);
+
+        {
+            waypoint1.latitude = 22.535;
+            waypoint1.longitude = 113.96;
+            waypoint1.altitude = 100;
+            waypoint1.staytime = 0;
+            waypoint1.heading = 90;
+        }
+        newWaypointList.waypoint_list.push_back(waypoint1);
+
+        {
+            waypoint2.latitude = 22.545;
+            waypoint2.longitude = 113.96;
+            waypoint2.altitude = 100;
+            waypoint2.staytime = 4;
+            waypoint2.heading = -90;
+        }
+        newWaypointList.waypoint_list.push_back(waypoint2);
+
+        {
+            waypoint3.latitude = 22.545;
+            waypoint3.longitude = 113.96;
+            waypoint3.altitude = 10;
+            waypoint3.staytime = 2;
+            waypoint3.heading = 180;
+        }
+        newWaypointList.waypoint_list.push_back(waypoint3);
+
+        {
+            waypoint4.latitude = 22.525;
+            waypoint4.longitude = 113.93;
+            waypoint4.altitude = 50;
+            waypoint4.staytime = 0;
+            waypoint4.heading = -180;
+        }
+        newWaypointList.waypoint_list.push_back(waypoint4);
+
+        drone->waypoint_navigation_send_request(newWaypointList);
+    }
+    void VirtuaRCTestMobileCallback(DJIDrone *drone)
+    {
+        //virtual RC test data
+        uint32_t virtual_rc_data[16];
+        //virtual rc test 1: arm & disarm
+        drone->virtual_rc_enable();
+        usleep(20000);
+
+        virtual_rc_data[0] = 1024;  //0-> roll      [1024-660,1024+660] 
+        virtual_rc_data[1] = 1024;  //1-> pitch     [1024-660,1024+660]
+        virtual_rc_data[2] = 1024+660;  //2-> throttle  [1024-660,1024+660]
+        virtual_rc_data[3] = 1024;  //3-> yaw       [1024-660,1024+660]
+        virtual_rc_data[4] = 1684;      //4-> gear      {1684(UP), 1324(DOWN)}
+        virtual_rc_data[6] = 1552;      //6-> mode      {1552(P), 1024(A), 496(F)}
+
+        for (int i = 0; i < 100; i++){
+            drone->virtual_rc_control(virtual_rc_data);
+            usleep(20000);
+        }
+
+        //virtual rc test 2: yaw 
+        drone->virtual_rc_enable();
+        virtual_rc_data[0] = 1024;      //0-> roll      [1024-660,1024+660] 
+        virtual_rc_data[1] = 1024;      //1-> pitch     [1024-660,1024+660]
+        virtual_rc_data[2] = 1024-200;  //2-> throttle  [1024-660,1024+660]
+        virtual_rc_data[3] = 1024;      //3-> yaw       [1024-660,1024+660]
+        virtual_rc_data[4] = 1324;      //4-> gear      {1684(UP), 1324(DOWN)}
+        virtual_rc_data[6] = 1552;      //6-> mode      {1552(P), 1024(A), 496(F)}
+
+        for(int i = 0; i < 100; i++) {
+            drone->virtual_rc_control(virtual_rc_data);
+            usleep(20000);
+        }
+        drone->virtual_rc_disable();
+    }

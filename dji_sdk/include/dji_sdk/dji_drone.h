@@ -239,6 +239,11 @@ private:
 	CallBackHandler stopVideoCallback;
 	CallBackHandler drawCircleDemoCallback;
 	CallBackHandler drawSquareDemoCallback;
+	CallBackHandler attitudeControlDemoCallback;
+	CallBackHandler waypointNavigationTestCallback;
+	CallBackHandler localNavigationTestCallback;
+	CallBackHandler globalNavigationTestCallback;
+	CallBackHandler virtualRCTestCallback;
 	CallBackHandler gimbalControlDemoCallback;
 
 	void mobile_data_push_info_callback(dji_sdk::TransparentTransmissionData information)
@@ -342,10 +347,45 @@ private:
             }
             break;
 
+            case 63: 
+            if (attitudeControlDemoCallback.callback)
+        	{
+       		 attitudeControlDemoCallback.callback(this);          
+            }
+            break;
+
             case 64: 
             if (gimbalControlDemoCallback.callback)
         	{
        		 gimbalControlDemoCallback.callback(this);          
+            }
+            break;
+
+            case 65: 
+            if (waypointNavigationTestCallback.callback)
+        	{
+       		 waypointNavigationTestCallback.callback(this);          
+            }
+            break;
+
+            case 66: 
+            if (localNavigationTestCallback.callback)
+        	{
+       		 localNavigationTestCallback.callback(this);          
+            }
+            break;
+
+            case 67: 
+            if (globalNavigationTestCallback.callback)
+        	{
+       		 globalNavigationTestCallback.callback(this);          
+            }
+            break;
+
+            case 68: 
+            if (virtualRCTestCallback.callback)
+        	{
+       		 virtualRCTestCallback.callback(this);          
             }
             break;
 
@@ -523,7 +563,37 @@ public:
 		drawSquareDemoCallback.userData = userData;
 	}
     
-    void setGimbalControlDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    void setAttitudeControlDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	attitudeControlDemoCallback.callback = userCallback;
+		attitudeControlDemoCallback.userData = userData;
+    }
+
+      void setLocalNavigationTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	localNavigationTestCallback.callback = userCallback;
+		localNavigationTestCallback.userData = userData;
+    }
+
+      void setGlobalNavigationTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	globalNavigationTestCallback.callback = userCallback;
+		globalNavigationTestCallback.userData = userData;
+    }
+
+      void setWaypointNavigationTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	waypointNavigationTestCallback.callback = userCallback;
+		waypointNavigationTestCallback.userData = userData;
+    }
+
+      void setVirtuaRCTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	virtualRCTestCallback.callback = userCallback;
+		virtualRCTestCallback.userData = userData;
+    }
+
+      void setGimbalControlDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
     {
     	gimbalControlDemoCallback.callback = userCallback;
 		gimbalControlDemoCallback.userData = userData;
