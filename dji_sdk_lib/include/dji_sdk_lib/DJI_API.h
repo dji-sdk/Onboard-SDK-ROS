@@ -89,6 +89,13 @@ enum ACK_ARM_CODE
   ACK_ARM_IN_AIR = 0x0003,
 };
 
+enum TASK_ACK_CODE
+{ 
+  TASK_FAILURE = 0x01,
+  TASK_SUCCESS = 0x02
+};
+
+
 //! @note end of ACKs
 
 enum CMD_SET
@@ -455,6 +462,30 @@ class CoreAPI
   static void sendToMobileCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
   static void setFrequencyCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
 
+  /** 
+   * MOS Protocol parsing lirbary functions. 
+   */
+
+  /**
+   * Default MOS Protocol Parser. Calls other callback functions based on data
+   */
+  void parseFromMobileCallback(CoreAPI *api, Header *protocolHeader, UserData userData = 0);
+  
+  /**
+   * Mobile Callback handler functions
+   */
+  void setObtainControlMobileCallback(CallBackHandler callback) {obtainControlMobileCallback = callback;}
+  void setReleaseControlMobileCallback(CallBackHandler callback) {releaseControlMobileCallback = callback;}
+  void setActivateMobileCallback(CallBackHandler callback) {activateMobileCallback = callback;}
+  void setArmMobileCallback(CallBackHandler callback) {armMobileCallback = callback;}
+  void setDisArmMobileCallback(CallBackHandler callback) {disArmMobileCallback = callback;}
+  void setTakeOffMobileCallback(CallBackHandler callback) {takeOffMobileCallback = callback;}
+  void setLandingMobileCallback(CallBackHandler callback) {landingMobileCallback = callback;}
+  void setGoHomeMobileCallback(CallBackHandler callback) {goHomeMobileCallback = callback;}
+  void setTakePhotoMobileCallback(CallBackHandler callback) {takePhotoMobileCallback = callback;}
+  void setStartVideoMobileCallback(CallBackHandler callback) {startVideoMobileCallback = callback;}
+  void setStopVideoMobileCallback(CallBackHandler callback) {stopVideoMobileCallback = callback;}
+
   /**
    * ACK decoder.
    */
@@ -473,7 +504,11 @@ class CoreAPI
   /**
    *@note  Thread data
    */
-  unsigned short ack_data;
+
+  uint32_t ack_data;
+  HotPointReadACK hotpointReadACK;
+  WayPointInitACK waypointInitACK;
+  MissionACKUnion missionACKUnion;
 
   /// Open Protocol Control
   /**
@@ -509,6 +544,36 @@ class CoreAPI
    */
   void setVersion(const Version &value);
 
+  /**
+   * Setters and getters for Mobile CMD variables
+   */
+  bool getObtainControlMobileCMD() {return obtainControlMobileCMD;}
+  bool getReleaseControlMobileCMD() {return releaseControlMobileCMD;}
+  bool getActivateMobileCMD() {return activateMobileCMD;}
+  bool getArmMobileCMD() {return armMobileCMD;}
+  bool getDisArmMobileCMD() {return disArmMobileCMD;}
+  bool getTakeOffMobileCMD() {return takeOffMobileCMD;}
+  bool getLandingMobileCMD() {return landingMobileCMD;}
+  bool getGoHomeMobileCMD() {return goHomeMobileCMD;}
+  bool getTakePhotoMobileCMD() {return takePhotoMobileCMD;}
+  bool getStartVideoMobileCMD() {return startVideoMobileCMD;}
+  bool getStopVideoMobileCMD() {return stopVideoMobileCMD;}
+  bool getFollowMeMobileCMD() {return followMeMobileCMD;}
+
+  void setObtainControlMobileCMD(bool userInput) {obtainControlMobileCMD = userInput;}
+  void setReleaseControlMobileCMD(bool userInput) {releaseControlMobileCMD= userInput;}
+  void setActivateMobileCMD(bool userInput) {activateMobileCMD= userInput;}
+  void setArmMobileCMD(bool userInput) {armMobileCMD= userInput;}
+  void setDisArmMobileCMD(bool userInput) {disArmMobileCMD= userInput;}
+  void setTakeOffMobileCMD(bool userInput) {takeOffMobileCMD= userInput;}
+  void setLandingMobileCMD(bool userInput) {landingMobileCMD= userInput;}
+  void setGoHomeMobileCMD(bool userInput) {goHomeMobileCMD= userInput;}
+  void setTakePhotoMobileCMD(bool userInput) {takePhotoMobileCMD= userInput;}
+  void setStartVideoMobileCMD(bool userInput) {startVideoMobileCMD= userInput;}
+  void setStopVideoMobileCMD(bool userInput) {stopVideoMobileCMD= userInput;}
+  void setFollowMeMobileCMD(bool userInput) {followMeMobileCMD= userInput;}
+
+
   private:
   BroadcastData broadcastData;
   uint32_t ackFrameStatus;
@@ -518,6 +583,7 @@ class CoreAPI
 
 //  uint8_t cblistTail;
 //  CallBackHandler cbList[CALLBACK_LIST_NUM];
+
   CallBackHandler fromMobileCallback;
   CallBackHandler broadcastCallback;
   CallBackHandler hotPointCallback;
@@ -527,6 +593,31 @@ class CoreAPI
   CallBackHandler missionCallback;
   CallBackHandler recvCallback;
 
+  CallBackHandler obtainControlMobileCallback;
+  CallBackHandler releaseControlMobileCallback;
+  CallBackHandler activateMobileCallback;
+  CallBackHandler armMobileCallback;
+  CallBackHandler disArmMobileCallback;
+  CallBackHandler takeOffMobileCallback;
+  CallBackHandler landingMobileCallback;
+  CallBackHandler goHomeMobileCallback;
+  CallBackHandler takePhotoMobileCallback;
+  CallBackHandler startVideoMobileCallback;
+  CallBackHandler stopVideoMobileCallback;
+
+  bool obtainControlMobileCMD;
+  bool releaseControlMobileCMD;
+  bool activateMobileCMD;
+  bool armMobileCMD;
+  bool disArmMobileCMD;
+  bool takeOffMobileCMD;
+  bool landingMobileCMD;
+  bool goHomeMobileCMD;
+  bool takePhotoMobileCMD;
+  bool startVideoMobileCMD;
+  bool stopVideoMobileCMD;
+  bool followMeMobileCMD;
+  
   VersionData versionData;
   ActivateData accountData;
 

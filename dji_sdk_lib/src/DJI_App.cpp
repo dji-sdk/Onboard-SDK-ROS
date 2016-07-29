@@ -133,10 +133,14 @@ void DJI::onboardSDK::CoreAPI::recvReqData(Header *protocolHeader)
         broadcast(protocolHeader);
         break;
       case CODE_FROMMOBILE:
+        API_LOG(serialDevice, STATUS_LOG, "Receive data from mobile\n");
         if (fromMobileCallback.callback)
         {
-          API_LOG(serialDevice, STATUS_LOG, "Receive data from mobile\n")
           fromMobileCallback.callback(this, protocolHeader, fromMobileCallback.userData);
+        }
+        else
+        {
+          parseFromMobileCallback(this, protocolHeader);
         }
         break;
       case CODE_LOSTCTRL:

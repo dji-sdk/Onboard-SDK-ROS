@@ -89,6 +89,7 @@ class Flight
     STATUS_FINISHING_LANDING = 5,
   };
 
+
   enum Device
   {
     DEVICE_RC = 0,

@@ -142,21 +142,12 @@ void CoreAPI::notifyCaller(Header *protocolHeader)
   // In case of getDroneVersion? Should be only one case.
   if(protocolHeader->length < 64)
   {
-    // Write ACK frame
-    if (protocolHeader->length - EXC_DATA_SIZE <= 2)
-    {
-      memcpy((unsigned char *)&ack_data, ((unsigned char *)protocolHeader) + sizeof(Header),
+    memcpy(missionACKUnion.raw_ack_array, ((unsigned char *)protocolHeader) + sizeof(Header),
 	    (protocolHeader->length - EXC_DATA_SIZE));
-    }
-    else
-    {
-      //TODO proper error handling
-      API_LOG(serialDevice, ERROR_LOG, "ACK is exception, session id %d,sequence %d\n",
-	    protocolHeader->sessionID, protocolHeader->sequenceNumber);
-    }
-  }
+  } 
   else
   {
+    // Special case for getDroneVersion API call
     version_ack_data = ((unsigned char *)protocolHeader) + sizeof(Header);
   }
 

@@ -67,7 +67,7 @@ bool DJISDKMission::mission_start_callback(dji_sdk::MissionStart::Request& reque
 			new_follow.target.angle = 0; //unused param
 			new_follow.sensitivity = followme_task.sensitivity;
 			rosAdapter->followme->setData(new_follow);
-			rosAdapter->followme->start();
+			rosAdapter->followme->start(0,0,0);
 
 			break;
 

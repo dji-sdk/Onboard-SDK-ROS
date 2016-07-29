@@ -70,6 +70,7 @@ void CoreAPI::init(HardDriver *sDevice, CallBackHandler userRecvCallback,
   wayPointData = false;
   callbackThread = userCallbackThread;
 
+  ack_data = 99;
   versionData.version = SDKVersion;
 
   //! @todo simplify code above
@@ -181,7 +182,7 @@ VersionData CoreAPI::getDroneVersion(int timeout)
 
   // Wait for end of ACK frame to arrive
   serialDevice->lockACK();
-  serialDevice->wait();
+  serialDevice->wait(timeout);
   serialDevice->freeACK();
 
   // Parse return value
@@ -229,9 +230,9 @@ unsigned short CoreAPI::activate(ActivateData *data, int timeout)
 
   // Wait for end of ACK frame to arrive
   serialDevice->lockACK();
-  serialDevice->wait();
+  serialDevice->wait(timeout);
   serialDevice->freeACK();
-
+  ack_data = missionACKUnion.simpleACK;
   if(ack_data == ACK_ACTIVE_SUCCESS && accountData.encKey)
     setKey(accountData.encKey);
 
@@ -245,7 +246,7 @@ void CoreAPI::sendToMobile(uint8_t *data, uint8_t len, CallBack callback, UserDa
     API_LOG(serialDevice, ERROR_LOG, "Too much data to send");
     return;
   }
-  send(2, 0, SET_ACTIVATION, CODE_TOMOBILE, data, len, 500, 1,
+  send(0, 0, SET_ACTIVATION, CODE_TOMOBILE, data, len, 500, 1,
     callback ? callback : CoreAPI::sendToMobileCallback, userData);
 }
 
@@ -301,10 +302,10 @@ unsigned short CoreAPI::setBroadcastFreq(uint8_t *dataLenIs16, int timeout)
 
   // Wait for end of ACK frame to arrive
   serialDevice->lockACK();
-  serialDevice->wait();
+  serialDevice->wait(timeout);
   serialDevice->freeACK();
 
-  return ack_data;
+  return missionACKUnion.simpleACK;
 }
 
 void CoreAPI::setBroadcastFreqDefaults()
@@ -422,6 +423,7 @@ void CoreAPI::setFromMobileCallback(CallBackHandler FromMobileEntrance)
   fromMobileCallback = FromMobileEntrance;
 }
 
+
 ActivateData CoreAPI::getAccountData() const { return accountData; }
 
 void CoreAPI::setAccountData(const ActivateData &value) { accountData = value; }
@@ -446,10 +448,10 @@ unsigned short CoreAPI::setControl(bool enable, int timeout)
 
   // Wait for end of ACK frame to arrive
   serialDevice->lockACK();
-  serialDevice->wait();
+  serialDevice->wait(timeout);
   serialDevice->freeACK();
 
-  return ack_data;
+  return missionACKUnion.simpleACK;
 }
 
 HardDriver *CoreAPI::getDriver() const { return serialDevice; }
@@ -556,6 +558,142 @@ void CoreAPI::sendToMobileCallback(CoreAPI *api, Header *protocolHeader, UserDat
     API_LOG(api->serialDevice, ERROR_LOG, "ACK is exception, session id %d,sequence %d\n",
         protocolHeader->sessionID, protocolHeader->sequenceNumber);
   }
+}
+void CoreAPI::parseFromMobileCallback(CoreAPI *api, Header *protocolHeader, UserData userData __UNUSED)
+{
+  uint16_t mobile_data_id;
+  
+  if (protocolHeader->length - EXC_DATA_SIZE <= 4)
+  {
+    mobile_data_id = *((unsigned char*)protocolHeader + sizeof(Header) + 2);
+
+    switch (mobile_data_id)
+    {
+      case 2: 
+        if (obtainControlMobileCallback.callback)
+        {
+          obtainControlMobileCallback.callback(api, protocolHeader, obtainControlMobileCallback.userData);          
+        }
+        else
+        {
+          obtainControlMobileCMD = true; 
+        }
+        break;
+
+      case 3: 
+        if (releaseControlMobileCallback.callback)
+        {
+          releaseControlMobileCallback.callback(api, protocolHeader, releaseControlMobileCallback.userData);          
+        }
+        else
+        {
+          releaseControlMobileCMD = true;
+        }
+        break;
+
+      case 4: 
+        if (activateMobileCallback.callback)
+        {
+          activateMobileCallback.callback(api, protocolHeader, activateMobileCallback.userData);          
+        }
+        else
+        {
+          activateMobileCMD = true;
+        }
+        break;
+
+      case 5: 
+        if (armMobileCallback.callback)
+        {
+          armMobileCallback.callback(api, protocolHeader, armMobileCallback.userData);
+        }
+        else
+        {
+          armMobileCMD = true;
+        }
+        break;
+
+      case 6: 
+        if (disArmMobileCallback.callback)
+        {
+          disArmMobileCallback.callback(api, protocolHeader, disArmMobileCallback.userData);     
+        }
+        else
+        {
+          disArmMobileCMD = true;
+        }
+        break;
+
+      case 7: 
+        if (takeOffMobileCallback.callback)
+        {
+          takeOffMobileCallback.callback(api, protocolHeader, takeOffMobileCallback.userData);   
+        }
+        else
+        {
+          takeOffMobileCMD = true;
+        }
+        break;
+
+      case 8: 
+        if (landingMobileCallback.callback)
+        {
+          landingMobileCallback.callback(api, protocolHeader, landingMobileCallback.userData);  
+        }
+        else
+        {
+          landingMobileCMD = true;
+        }
+        break;
+
+      case 9: 
+        if (goHomeMobileCallback.callback)
+        {
+          goHomeMobileCallback.callback(api, protocolHeader, goHomeMobileCallback.userData); 
+        }
+        else
+        {
+          goHomeMobileCMD = true;
+        }
+        break;
+
+      case 10: 
+        if (takePhotoMobileCallback.callback)
+        {
+          takePhotoMobileCallback.callback(api, protocolHeader, takePhotoMobileCallback.userData);     
+        }
+        else
+        {
+          takePhotoMobileCMD = true;
+        }
+        break;
+
+      case 11: 
+        if (startVideoMobileCallback.callback)
+        {
+          startVideoMobileCallback.callback(api, protocolHeader, startVideoMobileCallback.userData);   
+        }
+        else
+        {
+          startVideoMobileCMD = true;
+        }
+        break;
+
+      case 13: 
+        if (stopVideoMobileCallback.callback)
+        {
+          stopVideoMobileCallback.callback(api, protocolHeader, stopVideoMobileCallback.userData); 
+        }
+        else
+        {
+          stopVideoMobileCMD = true;
+        }
+        break;
+      case 68:
+        followMeMobileCMD = true;
+  }
+  
+}
 }
 
 void CoreAPI::setFrequencyCallback(CoreAPI *api __UNUSED, Header *protocolHeader,

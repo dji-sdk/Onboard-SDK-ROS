@@ -43,7 +43,7 @@ void Flight::task(TASK taskname, CallBack TaskCallback, UserData userData)
       100, 3, TaskCallback ? TaskCallback : Flight::taskCallback, userData);
 }
 
-unsigned short Flight::task(TASK taskname, int timer)
+unsigned short Flight::task(TASK taskname, int timeout)
 {
   taskData.cmdData = taskname;
   taskData.cmdSequence++;
@@ -52,10 +52,10 @@ unsigned short Flight::task(TASK taskname, int timer)
       100, 3, 0, 0);
 
   api->serialDevice->lockACK();
-  api->serialDevice->wait();
+  api->serialDevice->wait(timeout);
   api->serialDevice->freeACK();
 
-  return api->ack_data;
+  return api->missionACKUnion.simpleACK;
 }
 
 void Flight::setArm(bool enable, CallBack ArmCallback, UserData userData)
@@ -65,17 +65,17 @@ void Flight::setArm(bool enable, CallBack ArmCallback, UserData userData)
       ArmCallback ? ArmCallback : Flight::armCallback, userData);
 }
 
-unsigned short Flight::setArm(bool enable, int timer)
+unsigned short Flight::setArm(bool enable, int timeout)
 {
   uint8_t data = enable ? 1 : 0;
   api->send(2, encrypt, SET_CONTROL, CODE_SETARM, &data, 1, 0, 1, 0, 0);
 
 
   api->serialDevice->lockACK();
-  api->serialDevice->wait();
+  api->serialDevice->wait(timeout);
   api->serialDevice->freeACK();
 
-  return api->ack_data;
+  return api->missionACKUnion.simpleACK;
 }
 
 void Flight::control(uint8_t flag, float32_t x, float32_t y, float32_t z, float32_t yaw)

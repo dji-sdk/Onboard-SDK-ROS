@@ -153,9 +153,15 @@ class HardDriver_Manifold : public HardDriver {
           pthread_cond_signal(&ack_recv_cv);
         }
 
-        void wait() {
-          pthread_cond_wait(&ack_recv_cv, &m_ackLock);
-        }
+    void wait(int timeoutInSeconds){
+  struct timespec curTime, absTimeout;
+  //Use clock_gettime instead of getttimeofday for compatibility with POSIX APIs
+  clock_gettime(CLOCK_REALTIME, &curTime);
+  //absTimeout = curTime;
+  absTimeout.tv_sec = curTime.tv_sec + timeoutInSeconds;
+  absTimeout.tv_nsec = curTime.tv_nsec; 
+  pthread_cond_timedwait(&ack_recv_cv, &m_ackLock, &absTimeout);
+	}
 
     private:
         std::string m_device;

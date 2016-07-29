@@ -94,7 +94,7 @@ class HardDriver
   virtual void freeACK() = 0;
 
   virtual void notify() = 0;
-  virtual void wait() = 0;
+  virtual void wait(int timeout) = 0;
 
   public:
   virtual void displayLog(const char *buf = 0);
