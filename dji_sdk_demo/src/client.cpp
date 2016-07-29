@@ -954,7 +954,18 @@ int main(int argc, char *argv[])
         drone->landing();
 
     }
+    void LocalNavigationTestMobileCallback(DJIDrone *drone)
+    {
 
+    }
+    void GlobalNavigationTestMobileCallback(DJIDrone *drone)
+    {
+
+    }
+    void WaypointNavigationTestMobileCallback(DJIDrone *drone)
+    {
+        
+    }
     void VirtuaRCTestMobileCallback(DJIDrone *drone)
     {
         //virtual RC test data
