@@ -1,3 +1,15 @@
+/** @file dji_drone.h
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  Contains client side ROS code. Including this header
+ *  as a part of your project will allow your project to be used as a custom client. 
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
 #include <dji_sdk/dji_sdk.h>
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>

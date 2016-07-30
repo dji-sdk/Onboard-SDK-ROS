@@ -1,3 +1,14 @@
+/** @file dji_sdk_node_mission.cpp
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  All the mission callbacks are implemented here.
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
 #include <dji_sdk/dji_sdk_mission.h>
 
 DJI::onboardSDK::HotPointData new_hotpoint = {0};

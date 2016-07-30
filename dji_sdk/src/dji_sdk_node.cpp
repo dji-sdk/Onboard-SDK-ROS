@@ -1,3 +1,14 @@
+/** @file dji_sdk_node.cpp
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  Main function for ROS Node
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
 #include <iostream>
 #include <cstdio>
 #include <cstring>

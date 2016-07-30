@@ -1,3 +1,15 @@
+/** @file DJI_HardDriver_Manifold.h
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  Hardware level driver code
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
+
 #ifndef __DJI_HARDDRIVER_MANIFOLD_H__
 #define __DJI_HARDDRIVER_MANIFOLD_H__
 

@@ -1,3 +1,13 @@
+/** @file DJI_LIB_ROS_Adapter.h
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  ROS Adapter to communicate with CoreAPI
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
 #ifndef _DJI_LIB_ROS_ADAPTER_H_
 #define _DJI_LIB_ROS_ADAPTER_H_
 

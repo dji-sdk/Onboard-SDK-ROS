@@ -1,3 +1,16 @@
+/** @file client.cpp
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  All the exampls for ROS are implemented here. 
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
+
+
 #include <ros/ros.h>
 #include <stdio.h>
 #include <dji_sdk/dji_drone.h>

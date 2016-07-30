@@ -1,3 +1,14 @@
+/** @file dji_sdk_node.h
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  Initializes all Publishers, Services and Actions
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
 #ifndef __DJI_SDK_NODE_H__
 #define __DJI_SDK_NODE_H__
 
