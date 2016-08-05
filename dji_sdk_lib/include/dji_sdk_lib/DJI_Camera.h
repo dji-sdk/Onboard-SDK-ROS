@@ -1,9 +1,8 @@
-/** @brief
- *  @file DJI_Camera.h
+/** @file DJI_Camera.h
  *  @version 3.1.7
  *  @date July 1st, 2016
  *
- *  @abstract
+ *  @brief
  *  Camera/Gimbal API for DJI onboardSDK library
  *
  *  @copyright 2016 DJI. All rights reserved.
@@ -19,6 +18,7 @@ namespace DJI
 {
 namespace onboardSDK
 {
+//! Camera class for controlling camera and gimbal-related functions available through open protocol 
 class Camera
 {
   public:

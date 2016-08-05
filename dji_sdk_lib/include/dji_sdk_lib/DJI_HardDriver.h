@@ -1,21 +1,14 @@
-/*! @brief
- *  @file DJI_HardDriver.h
- *  @version 3.0
- *  @date Dec 9, 2015
+/*! @file DJI_HardDriver.h
+ *  @version 3.1.7
+ *  @date Jul 01 2016
  *
- *  @abstract
- *  Hard ware level for DJI onboardSDK library
+ *  @brief
+ *  Serial device driver abstraction. Provided as an abstract class. Please inherit and implement for individual platforms.
  *
- *  @attention
- *  Project configuration:
- *
- *  @version features:
- *  -* @version V3.0
- *  -* DJI-onboard-SDK for Windows,QT,STM32,ROS,Cmake
- *  -* @date Dec 9, 2015
- *  -* @author william.wu
- *
+ *  @copyright
+ *  2016 DJI. All rights reserved.
  * */
+
 #ifndef DJI_HARDDRIVER_H
 #define DJI_HARDDRIVER_H
 
@@ -60,6 +53,10 @@ class HardDriver
    *  void lockMSG();/ void freeMSG();
    *  @brief provide a mutex for multi-thread. when operating messages.
    *
+   *  void notify();/ void wait();
+   *  @brief use conditional variable to signal controller thread about
+   *  arrival of ACK frame.
+   *
    *  void displayLog(char *buf);
    *  @brief Micro "API_LOG" invoked this function, to pass datalog.
    *  In order to pass data through different stream or channel.
@@ -92,6 +89,12 @@ class HardDriver
 
   virtual void lockMSG() = 0;
   virtual void freeMSG() = 0;
+
+  virtual void lockACK() = 0;
+  virtual void freeACK() = 0;
+
+  virtual void notify() = 0;
+  virtual void wait(int timeout) = 0;
 
   public:
   virtual void displayLog(const char *buf = 0);

@@ -1,3 +1,15 @@
+/** @file dji_drone.h
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  Contains client side ROS code. Including this header
+ *  as a part of your project will allow your project to be used as a custom client. 
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
 #include <dji_sdk/dji_sdk.h>
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
@@ -52,6 +64,7 @@ private:
 	ros::ServiceClient mission_hp_reset_yaw_service;
 	ros::ServiceClient mission_fm_upload_service;
 	ros::ServiceClient mission_fm_set_target_service;
+	//ros::ServiceClient mobile_commands_service;
 
     	ros::Subscriber acceleration_subscriber;
     	ros::Subscriber attitude_quaternion_subscriber;
@@ -70,6 +83,7 @@ private:
 	ros::Subscriber time_stamp_subscriber;
 	ros::Subscriber mission_status_subscriber;
 	ros::Subscriber mission_event_subscriber;
+	ros::Subscriber mobile_data_subscriber;
 
 public:
 
@@ -78,12 +92,14 @@ public:
     	dji_sdk::Compass compass;
     	dji_sdk::FlightControlInfo flight_control_info;
     	uint8_t flight_status;
+    	uint8_t mobile_new_data;
     	dji_sdk::Gimbal gimbal;
     	dji_sdk::GlobalPosition global_position;
     	dji_sdk::GlobalPosition global_position_ref;
     	dji_sdk::LocalPosition local_position;
     	dji_sdk::LocalPosition local_position_ref;
     	dji_sdk::PowerStatus power_status;
+    	dji_sdk::TransparentTransmissionData mobile_data;
     	dji_sdk::RCChannels rc_channels;
    	dji_sdk::Velocity velocity;
    	nav_msgs::Odometry odometry;
@@ -103,6 +119,15 @@ public:
 	dji_sdk::MissionEventWpUpload waypoint_upload_result;
 	dji_sdk::MissionEventWpAction waypoint_action_result;
 	dji_sdk::MissionEventWpReach waypoint_reached_result;
+
+typedef void *UserData; 
+typedef void (*CallBack)(DJIDrone *);
+
+typedef struct CallBackHandler
+{
+  CallBack callback;
+  UserData userData;
+} CallBackHandler;
 
 private:
 	void acceleration_subscriber_callback(dji_sdk::Acceleration acceleration)
@@ -212,6 +237,174 @@ private:
 	
 	}
 
+    //! Callback Handler functions for Mobile data commands
+	CallBackHandler obtainControlCallback;
+	CallBackHandler releaseControlCallback;
+	CallBackHandler takeOffCallback;
+	CallBackHandler landingCallback;
+	CallBackHandler getSDKVersionCallback;
+	CallBackHandler armCallback;
+	CallBackHandler disArmCallback;
+	CallBackHandler goHomeCallback;
+	CallBackHandler takePhotoCallback;
+	CallBackHandler startVideoCallback;
+	CallBackHandler stopVideoCallback;
+	CallBackHandler drawCircleDemoCallback;
+	CallBackHandler drawSquareDemoCallback;
+	CallBackHandler attitudeControlDemoCallback;
+	CallBackHandler waypointNavigationTestCallback;
+	CallBackHandler localNavigationTestCallback;
+	CallBackHandler globalNavigationTestCallback;
+	CallBackHandler virtualRCTestCallback;
+	CallBackHandler gimbalControlDemoCallback;
+
+	void mobile_data_push_info_callback(dji_sdk::TransparentTransmissionData information)
+	{
+		this->mobile_data = information;
+		mobile_new_data = 1;
+        int cmdID = mobile_data.data[0];
+        printf("Command ID code is %d \n", cmdID);
+
+        switch(cmdID)
+        {
+        	case 2: 
+        	if (obtainControlCallback.callback)
+        	{
+       		 obtainControlCallback.callback(this);          
+            }
+            break;
+
+            case 3: 
+            if (releaseControlCallback.callback)
+        	{
+       		 releaseControlCallback.callback(this);          
+            }
+            break;
+
+            case 4: 
+            //if (obtainControlCallback.callback)
+        	//{
+       		// obtainControlCallback.callback();          
+            //}
+            break;
+
+            case 5: 
+            if (armCallback.callback)
+        	{
+       		 armCallback.callback(this);          
+            }
+            break;
+
+            case 6: 
+            if (disArmCallback.callback)
+        	{
+       		 disArmCallback.callback(this);          
+            }
+            break;
+
+            case 7: 
+            if (takeOffCallback.callback)
+        	{
+       		 takeOffCallback.callback(this);          
+            }
+            break;
+
+            case 8: 
+            if (landingCallback.callback)
+        	{
+       		 landingCallback.callback(this);          
+            }
+            break;
+
+            case 9: 
+            if (goHomeCallback.callback)
+        	{
+       		 goHomeCallback.callback(this);          
+            }
+            break;
+
+            case 10: 
+            if (takePhotoCallback.callback)
+        	{
+       		 takePhotoCallback.callback(this);          
+            }
+            break;
+
+            case 11: 
+            if (startVideoCallback.callback)
+        	{
+       		 startVideoCallback.callback(this);          
+            }
+            break;
+
+            case 13: 
+            if (stopVideoCallback.callback)
+        	{
+       		 stopVideoCallback.callback(this);          
+            }
+            break;
+
+            case 61: 
+            if (drawCircleDemoCallback.callback)
+        	{
+       		 drawCircleDemoCallback.callback(this);          
+            }
+            break;
+
+
+            case 62: 
+            if (drawSquareDemoCallback.callback)
+        	{
+       		 drawSquareDemoCallback.callback(this);          
+            }
+            break;
+
+            case 63: 
+            if (attitudeControlDemoCallback.callback)
+        	{
+       		 attitudeControlDemoCallback.callback(this);          
+            }
+            break;
+
+            case 64: 
+            if (gimbalControlDemoCallback.callback)
+        	{
+       		 gimbalControlDemoCallback.callback(this);          
+            }
+            break;
+
+            case 65: 
+            if (waypointNavigationTestCallback.callback)
+        	{
+       		 waypointNavigationTestCallback.callback(this);          
+            }
+            break;
+
+            case 66: 
+            if (localNavigationTestCallback.callback)
+        	{
+       		 localNavigationTestCallback.callback(this);          
+            }
+            break;
+
+            case 67: 
+            if (globalNavigationTestCallback.callback)
+        	{
+       		 globalNavigationTestCallback.callback(this);          
+            }
+            break;
+
+            case 68: 
+            if (virtualRCTestCallback.callback)
+        	{
+       		 virtualRCTestCallback.callback(this);          
+            }
+            break;
+
+
+        }
+	}
+
 	void mission_event_push_info_callback(dji_sdk::MissionPushInfo event_push_info)
 	{
 		this->incident_type = event_push_info.type;
@@ -259,6 +452,7 @@ public:
 		drone_arm_control_service = nh.serviceClient<dji_sdk::DroneArmControl>("dji_sdk/drone_arm_control");
 		sync_flag_control_service = nh.serviceClient<dji_sdk::SyncFlagControl>("dji_sdk/sync_flag_control");
 		message_frequency_control_service = nh.serviceClient<dji_sdk::MessageFrequencyControl>("dji_sdk/message_frequency_control");
+		//mobile_commands_service = nh.serviceClient<dji_sdk::mobileCommandsl>("dji_sdk/mobile_commands");
 
 		mission_start_service = nh.serviceClient<dji_sdk::MissionStart>("dji_sdk/mission_start");
 		mission_pause_service = nh.serviceClient<dji_sdk::MissionPause>("dji_sdk/mission_pause");
@@ -291,7 +485,131 @@ public:
 		time_stamp_subscriber = nh.subscribe<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10, &DJIDrone::time_stamp_subscriber_callback,this);
 		mission_status_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_status", 10, &DJIDrone::mission_status_push_info_callback, this);  
 		mission_event_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_event", 10, &DJIDrone::mission_event_push_info_callback, this);
+		mobile_data_subscriber = nh.subscribe<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device", 10, &DJIDrone::mobile_data_push_info_callback, this);
 	}
+
+	void setObtainControlMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		obtainControlCallback.callback = userCallback;
+  		obtainControlCallback.userData = userData;
+	}
+
+
+	void setReleaseControlMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		releaseControlCallback.callback = userCallback;
+  		releaseControlCallback.userData = userData;
+	}
+
+	void setTakeOffMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		takeOffCallback.callback = userCallback;
+  		takeOffCallback.userData = userData;
+	}
+
+
+	void setLandingMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		landingCallback.callback = userCallback;
+  		landingCallback.userData = userData;
+	}
+
+
+	void setGetSDKVersionMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  	    getSDKVersionCallback.callback = userCallback;
+  		getSDKVersionCallback.userData = userData;
+	}
+
+
+	void setArmMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		armCallback.callback = userCallback;
+  		armCallback.userData = userData;
+	}
+
+	void setDisarmMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		disArmCallback.callback = userCallback;
+  		disArmCallback.userData = userData;
+	}
+
+
+
+	void setGoHomeMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		goHomeCallback.callback = userCallback;
+  		goHomeCallback.userData = userData;
+	}
+
+
+	void setTakePhotoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		takePhotoCallback.callback = userCallback;
+  		takePhotoCallback.userData = userData;
+	}
+
+
+	void setStartVideoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		startVideoCallback.callback = userCallback;
+  		startVideoCallback.userData = userData;
+	}
+
+
+	void setStopVideoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		stopVideoCallback.callback = userCallback;
+  		stopVideoCallback.userData = userData;
+	}
+
+	void setDrawCircleDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+		drawCircleDemoCallback.callback = userCallback;
+		drawCircleDemoCallback.userData = userData;
+	}
+
+	void setDrawSquareDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+		drawSquareDemoCallback.callback = userCallback;
+		drawSquareDemoCallback.userData = userData;
+	}
+    
+    void setAttitudeControlDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	attitudeControlDemoCallback.callback = userCallback;
+		attitudeControlDemoCallback.userData = userData;
+    }
+
+      void setLocalNavigationTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	localNavigationTestCallback.callback = userCallback;
+		localNavigationTestCallback.userData = userData;
+    }
+
+      void setGlobalNavigationTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	globalNavigationTestCallback.callback = userCallback;
+		globalNavigationTestCallback.userData = userData;
+    }
+
+      void setWaypointNavigationTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	waypointNavigationTestCallback.callback = userCallback;
+		waypointNavigationTestCallback.userData = userData;
+    }
+
+      void setVirtuaRCTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	virtualRCTestCallback.callback = userCallback;
+		virtualRCTestCallback.userData = userData;
+    }
+
+      void setGimbalControlDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	gimbalControlDemoCallback.callback = userCallback;
+		gimbalControlDemoCallback.userData = userData;
+    }
 
 	bool activate()
 	{

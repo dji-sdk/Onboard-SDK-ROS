@@ -1,10 +1,9 @@
-/*! @brief
- *  @file DJI_Type.h
+/*! @file DJI_Type.h
  *  @version 3.1.7
  *  @date Jul 01 2016
  *
- *  @abstract
- *  Type definition for DJI onboardSDK library
+ *  @brief
+ *  Type definition for DJI onboardSDK library.
  *  Officially Maintained
  *  
  *  @copyright
@@ -13,7 +12,7 @@
 
 /*! @attention
  *  Do not modify any definition in this file
- *  if you are not sure what are you doing.
+ *  if you are unsure about what are you doing.
  *  DJI will not provide any support for changes made to this file.
  * */
 
@@ -26,6 +25,7 @@
 
 #define NAME(x) #x
 
+//! Define the UNUSED macro to suppress compiler warnings about unused arguments 
 #ifdef __GNUC__
 #define __UNUSED __attribute__((__unused__))
 #define __DELETE(x) delete (char *) x
@@ -50,6 +50,8 @@
 #define __func__ __FUNCTION__
 #endif // WIN32
 
+
+//! This is the default status printing mechanism
 #define API_LOG(driver, title, fmt, ...)                                  \
   if ((title))                                                            \
   {                                                                       \
@@ -113,8 +115,10 @@ extern uint8_t encrypt;
 const size_t SESSION_TABLE_NUM = 32;
 const size_t CALLBACK_LIST_NUM = 10;
 
+//! The CoreAPI class definition is detailed in DJI_API.h 
 class CoreAPI;
 
+//! The Header struct is meant to handle the open protocol header.
 typedef struct Header
 {
   unsigned int sof : 8;
@@ -134,8 +138,10 @@ typedef struct Header
   unsigned int crc : 16;
 } Header;
 
+//! The CallBack function pointer is used as an argument in api->send calls
 typedef void (*CallBack)(DJI::onboardSDK::CoreAPI *, Header *, UserData);
 
+//! The CallBackHandler struct allows users to encapsulate callbacks and data in one struct 
 typedef struct CallBackHandler
 {
   CallBack callback;
@@ -209,8 +215,10 @@ typedef struct Ack
 #pragma pack(1)
 
 typedef uint8_t BatteryData;
-typedef uint8_t MissionACK;
 
+/**
+ * Gimbal Data
+ */
 typedef struct GimbalAngleData
 {  
   int16_t yaw;
@@ -230,6 +238,121 @@ typedef struct GimbalSpeedData
 
 typedef float float32_t;
 typedef double float64_t;
+
+/**
+ * HotPoint Data
+ */
+typedef struct HotPointData
+{
+  uint8_t version;
+
+  float64_t latitude;
+  float64_t longitude;
+  float64_t height;
+
+  float64_t radius;
+  float32_t yawRate; // degree
+
+  uint8_t clockwise;
+  uint8_t startPoint;
+  uint8_t yawMode;
+  uint8_t reserved[11];
+} HotPointData;
+
+/**
+ * WayPoint Data
+ */
+typedef struct WayPointInitData
+{
+  uint8_t indexNumber;
+  float32_t maxVelocity;
+  float32_t idleVelocity;
+
+  uint8_t finishAction;
+  uint8_t executiveTimes;
+  uint8_t yawMode;
+  uint8_t traceMode;
+  uint8_t RCLostAction;
+  uint8_t gimbalPitch;
+  float64_t latitude;  //! @note For Camera to recording
+  float64_t longitude; //! not supported yet
+  float32_t altitude;
+
+  uint8_t reserved[16];
+} WayPointInitData;
+
+typedef struct WayPointData
+{
+  uint8_t index;
+
+  float64_t latitude;
+  float64_t longitude;
+  float32_t altitude;
+  float32_t damping;
+
+  int16_t yaw;
+  int16_t gimbalPitch;
+  uint8_t turnMode;
+
+  uint8_t reserved[8];
+  uint8_t hasAction;
+  uint16_t actionTimeLimit;
+
+  uint8_t actionNumber : 4;
+  uint8_t actionRepeat : 4;
+
+  uint8_t commandList[16];//! @note issues here list number is 15
+  int16_t commandParameter[16];
+} WayPointData;
+
+/**
+ * ACK Data
+ */
+
+typedef uint8_t MissionACK;
+typedef uint32_t SimpleACK;
+
+typedef struct HotPointStartACK
+{
+  uint8_t ack;
+  float32_t maxRadius;
+} HotpointStartACK;
+
+typedef struct WayPointDataACK
+{
+  uint8_t ack;
+  uint8_t index;
+} WayPointDataACK;
+
+typedef struct WayPointVelocityACK
+{
+  uint8_t ack;
+  float32_t idleVelocity;
+} WayPointVelocityACK;
+
+
+typedef union MissionACKUnion
+{ 
+  uint8_t raw_ack_array[5];
+  MissionACK missionACK;
+  SimpleACK simpleACK;
+  HotPointStartACK hotpointStartACK;
+  WayPointDataACK waypointDataACK; 
+  WayPointVelocityACK waypointVelocityACK;
+} MissionACKUnion; 
+
+// These big structs have structs within and don't seem to be used 
+typedef struct HotPointReadACK
+{
+  MissionACK ack;
+  HotPointData data;
+} HotpointReadACK;
+
+typedef struct WayPointInitACK
+{
+  uint8_t ack;
+  WayPointInitData data;
+} WayPointInitACK;
 
 typedef struct QuaternionData
 {
@@ -370,6 +493,7 @@ typedef struct TaskData
 } TaskData;
 
 //! @todo rename to a final version
+//! RTKData from the A3. This is not available on the M100.
 typedef struct RTKData
 {
   uint32_t date;
@@ -391,6 +515,7 @@ typedef struct RTKData
 } RTKData;
 
 //! @todo rename to a final version
+//! Detailed GPSData from the A3. This is not available on the M100.
 typedef struct GPSData
 {
   uint32_t date;
@@ -466,6 +591,24 @@ typedef struct VirtualRCData
   uint32_t Channel_14;
   uint32_t Channel_15;
 } VirtualRCData;
+
+typedef struct ActivateData
+{
+  unsigned int ID;
+  unsigned int reserved;
+  unsigned int version;
+  unsigned char iosID[32];
+  char *encKey;
+} ActivateData;
+
+typedef struct VersionData
+{
+  unsigned short version_ack;
+  unsigned int version_crc;
+  char version_ID[11];
+  char version_name[32];
+  DJI::onboardSDK::Version version;
+} VersionData;
 
 #pragma pack()
 #ifdef SDK_DEV

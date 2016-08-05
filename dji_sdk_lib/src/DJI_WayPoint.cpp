@@ -3,13 +3,12 @@
 *  @version 3.1.7
 *  @date July 1st, 2016
 *
-*  @abstract
+*  @brief
 *  Waypoint flight API for DJI onboardSDK library
 *
 *  @copyright 2016 DJI. All right reserved.
 *
 */
-
 
 #include "DJI_WayPoint.h"
 #include <string.h>
@@ -41,12 +40,39 @@ void WayPoint::init(WayPointInitData *Info, CallBack callback, UserData userData
     callback ? callback : missionCallback, userData);
 }
 
+MissionACK WayPoint::init(WayPointInitData *Info, int timeout)
+{
+  if (Info)
+    setInfo(*Info);
+
+  api->send(2, encrypt, SET_MISSION, CODE_WAYPOINT_INIT, &info, sizeof(info), 500, 2, 0, 0);
+
+  api->serialDevice->lockACK();
+  api->serialDevice->wait(timeout);
+  api->serialDevice->freeACK();
+
+  return api->missionACKUnion.missionACK;
+}
+
 void WayPoint::start(CallBack callback, UserData userData)
 {
   uint8_t start = 0;
 
   api->send(2, encrypt, SET_MISSION, CODE_WAYPOINT_SETSTART, &start, sizeof(start), 500, 2,
     callback ? callback : missionCallback, userData);
+}
+
+MissionACK WayPoint::start(int timeout)
+{
+  uint8_t start = 0;
+
+  api->send(2, encrypt, SET_MISSION, CODE_WAYPOINT_SETSTART, &start, sizeof(start), 500, 2, 0, 0);
+
+  api->serialDevice->lockACK();
+  api->serialDevice->wait(timeout);
+  api->serialDevice->freeACK();
+
+  return api->missionACKUnion.missionACK;
 }
 
 void WayPoint::stop(CallBack callback, UserData userData)
@@ -57,12 +83,38 @@ void WayPoint::stop(CallBack callback, UserData userData)
     callback ? callback : missionCallback, userData);
 }
 
+MissionACK WayPoint::stop(int timeout)
+{
+  uint8_t stop = 1;
+
+  api->send(2, encrypt, SET_MISSION, CODE_WAYPOINT_SETSTART, &stop, sizeof(stop), 500, 2, 0,0);
+
+  api->serialDevice->lockACK();
+  api->serialDevice->wait(timeout);
+  api->serialDevice->freeACK();
+
+  return api->missionACKUnion.missionACK;
+}
+
 void WayPoint::pause(bool isPause, CallBack callback, UserData userData)
 {
  uint8_t data = isPause ? 0 : 1;
  
  api->send(2, encrypt, SET_MISSION, CODE_WAYPOINT_SETPAUSE, &data, sizeof(data), 500, 2,
     callback ? callback : missionCallback, userData);
+}
+
+MissionACK WayPoint::pause(bool isPause, int timeout)
+{
+ uint8_t data = isPause ? 0 : 1;
+
+ api->send(2, encrypt, SET_MISSION, CODE_WAYPOINT_SETPAUSE, &data, sizeof(data), 500, 2, 0, 0);
+
+ api->serialDevice->lockACK();
+ api->serialDevice->wait(timeout);
+ api->serialDevice->freeACK();
+
+  return api->missionACKUnion.missionACK;
 }
 
 void WayPoint::readIdleVelocity(CallBack callback, UserData userData)
@@ -91,6 +143,26 @@ bool WayPoint::uploadIndexData(uint8_t pos, CallBack callback, UserData userData
     callback ? callback : uploadIndexDataCallback, userData);
 
   return true;
+}
+
+WayPointDataACK WayPoint::uploadIndexData(WayPointData *data, int timeout)
+{
+  WayPointData wpData;
+
+  setIndex(data, data->index);
+
+  if (data->index < info.indexNumber)
+     wpData = index[data->index];
+   else
+     std::runtime_error("Range error.\n");
+
+  api->send(2, encrypt, SET_MISSION, CODE_WAYPOINT_ADDPOINT, &wpData, sizeof(wpData), 1000, 4, 0, 0);
+
+  api->serialDevice->lockACK();
+  api->serialDevice->wait(timeout);
+  api->serialDevice->freeACK();
+
+  return api->missionACKUnion.waypointDataACK;
 }
 
 void WayPoint::updateIdleVelocity(float32_t meterPreSecond, CallBack callback,

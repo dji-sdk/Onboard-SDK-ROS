@@ -1,3 +1,15 @@
+/** @file dji_sdk_node_main.cpp
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  Broadcast and Mobile callbacks are implemented here. 
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
+
 #include <dji_sdk/dji_sdk_node.h>
 #include <functional>
 #include <dji_sdk/DJI_LIB_ROS_Adapter.h>

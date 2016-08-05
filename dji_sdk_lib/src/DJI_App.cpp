@@ -1,10 +1,9 @@
-/*! @brief
- *  @file DJI_App.cpp
+/*! @file DJI_App.cpp
  *  @version 3.1.7
  *  @date Jul 01 2016
  *
- *  @abstract
- *  Developer App support functionality for DJI onboardSDK library
+ *  @brief
+ *  Application layer support functionality for DJI onboardSDK library
  *
  *  Copyright 2016 DJI. All right reserved.
  *
@@ -51,6 +50,16 @@ BatteryData DJI::onboardSDK::CoreAPI::getBatteryCapacity() const
 }
 
 CtrlInfoData DJI::onboardSDK::CoreAPI::getCtrlInfo() const { return broadcastData.ctrlInfo; }
+
+void DJI::onboardSDK::CoreAPI::setBroadcastFrameStatus(bool isFrame)
+{
+  broadcastFrameStatus = isFrame;
+}
+
+bool DJI::onboardSDK::CoreAPI::getBroadcastFrameStatus()
+{
+  return broadcastFrameStatus;
+}
 
 #ifdef SDK_DEV
 #include "devApp.cpp"
@@ -101,6 +110,12 @@ void DJI::onboardSDK::CoreAPI::broadcast(Header *protocolHeader)
       sizeof(CtrlInfoData) - ((versionData.version == versionM100_23) ? 1 : 0), len);
   serialDevice->freeMSG();
 
+  /**
+   * Set broadcast frame status
+   * @todo Implement proper notification mechanism
+   */
+  setBroadcastFrameStatus(true);
+
   if (broadcastCallback.callback)
     broadcastCallback.callback(this, protocolHeader, broadcastCallback.userData);
 }
@@ -118,10 +133,14 @@ void DJI::onboardSDK::CoreAPI::recvReqData(Header *protocolHeader)
         broadcast(protocolHeader);
         break;
       case CODE_FROMMOBILE:
+        API_LOG(serialDevice, STATUS_LOG, "Receive data from mobile\n");
         if (fromMobileCallback.callback)
         {
-          API_LOG(serialDevice, STATUS_LOG, "Receive data from mobile\n")
           fromMobileCallback.callback(this, protocolHeader, fromMobileCallback.userData);
+        }
+        else
+        {
+          parseFromMobileCallback(this, protocolHeader);
         }
         break;
       case CODE_LOSTCTRL:

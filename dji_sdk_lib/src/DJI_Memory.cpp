@@ -1,23 +1,18 @@
-/*! @brief
- *  @file DJI_Memory.cpp
- *  @version V2.0
- *  @date Nov 11, 2015
- *  @author wuyunwei,william.wu
+/** @file DJI_Memory.cpp
+ *  @version 3.1.7
+ *  @date July 1st, 2016
  *
- *  @abstract
- *  This file mainly implement fuctions in DJI_API.h
+ *  @brief
+ *  Implement memory management for Core API of DJI onboardSDK library
  *
- *  All Functions in this file is private function,
- *  which is used for memory and session management.
+ *  @copyright 2016 DJI. All right reserved.
+ *
  *
  *  @attention
- *  It is not necessary to include DJI_link.h in any custom code file.
- *  All functions in this file are not API function.
- *  Do not modify this file, if you are not sure about it.
- *  Created on: 24 Aug, 2015
- *    Author: wuyuwei
- *  Modified on: Nov 11, 2015
- *  by william.wu
+ *  It is not necessary to include DJI_Memory.h in any custom code file.
+ *  The functions in this file are not API functions.
+ *  Do not modify this file if you are unsure about it.
+ *
  */
 
 #include <stdio.h>

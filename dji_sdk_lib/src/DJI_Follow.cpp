@@ -1,9 +1,8 @@
-/** @brief
- *  @file DJI_Follow.cpp
+/** @file DJI_Follow.cpp
  *  @version 3.1.7
  *  @date July 1st, 2016
  *
- *  @abstract
+ *  @brief
  *  Follow API for DJI onboardSDK library
  *
  *  @copyright 2016 DJI. All right reserved.
@@ -42,6 +41,21 @@ void Follow::start(FollowData *Data, CallBack callback, UserData userData)
       callback ? callback : missionCallback, userData);
 }
 
+MissionACK Follow::start(FollowData *Data, int timeout)
+{
+  if (Data)
+    followData = *Data;
+  else
+    resetData();
+  api->send(2, encrypt, SET_MISSION, CODE_FOLLOW_START, &followData, sizeof(followData), 500, 2, 0,0);
+
+  api->serialDevice->lockACK();
+  api->serialDevice->wait(timeout);
+  api->serialDevice->freeACK();
+
+  return api->missionACKUnion.missionACK;
+}
+
 void Follow::stop(CallBack callback, UserData userData)
 {
   uint8_t zero = 0;
@@ -49,11 +63,35 @@ void Follow::stop(CallBack callback, UserData userData)
       callback ? callback : missionCallback, userData);
 }
 
+MissionACK Follow::stop(int timeout)
+{
+  uint8_t zero = 0;
+  api->send(2, encrypt, SET_MISSION, CODE_FOLLOW_STOP, &zero, sizeof(zero), 500, 2, 0, 0);
+
+  api->serialDevice->lockACK();
+  api->serialDevice->wait(timeout);
+  api->serialDevice->freeACK();
+
+  return api->missionACKUnion.missionACK;
+}
+
 void Follow::pause(bool isPause, CallBack callback, UserData userData)
 {
   uint8_t followData = isPause ? 0 : 1;
   api->send(2, encrypt, SET_MISSION, CODE_FOLLOW_SETPAUSE, &followData, sizeof(followData), 500, 2,
       callback ? callback : missionCallback, userData);
+}
+
+MissionACK Follow::pause(bool isPause, int timeout)
+{
+  uint8_t followData = isPause ? 0 : 1;
+  api->send(2, encrypt, SET_MISSION, CODE_FOLLOW_SETPAUSE, &followData, sizeof(followData), 500, 2, 0, 0);
+
+  api->serialDevice->lockACK();
+  api->serialDevice->wait(timeout);
+  api->serialDevice->freeACK();
+
+  return api->missionACKUnion.missionACK;
 }
 
 void Follow::updateTarget(FollowTarget target)

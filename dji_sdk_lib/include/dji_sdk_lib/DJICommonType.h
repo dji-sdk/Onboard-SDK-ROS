@@ -1,10 +1,9 @@
-/*! @brief
- *  @file DJICommonType.h
+/*! @file DJICommonType.h
  *  @version 3.1.7
  *  @date Jul 01 2016
  *
- *  @abstract
- *  Common Type definition for DJI onboardSDK library
+ *  @brief
+ *  Common Type definition for DJI onboardSDK library.
  *  Officially Maintained
  *  
  *  @copyright
@@ -13,7 +12,7 @@
 
 /*! @attention
  *  Do not modify any definition in this file
- *  if you are not sure what are you doing.
+ *  if you are unsure of what are you doing.
  *  DJI will not provide any support for changes made to this file.
  * */
 
@@ -28,7 +27,8 @@ namespace DJI
 typedef uint64_t time_ms;
 typedef uint64_t time_us; // about 0.3 million years
 
-typedef void *UserData; //! This is used as the datatype for all data arguments in callbacks.
+//! This is used as the datatype for all data arguments in callbacks.
+typedef void *UserData; 
 typedef uint32_t Flag;
 
 typedef uint8_t size8_t;

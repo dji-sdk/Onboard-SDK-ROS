@@ -1,10 +1,9 @@
-/*! @brief
- *  @file DJI_App.h
+/*! @file DJI_App.h
  *  @version 3.1.7
  *  @date Jul 1, 2016
  *
- *  @abstract
- *  Developer App support functionality for DJI onboardSDK library
+ *  @brief
+ *  Application layer support functionality for DJI onboardSDK library
  *
  *  Copyright 2016 DJI. All right reserved.
  *
@@ -44,27 +43,5 @@ typedef struct
 #define STATUS_CMD_EXE_FAIL 0x0004
 #define STATUS_CMD_EXE_SUCCESS 0x0005
 
-//! @todo move to type.h
-#pragma pack(1)
-
-typedef struct ActivateData
-{
-  unsigned int ID;
-  unsigned int reserved;
-  unsigned int version;
-  unsigned char iosID[32];
-  char *encKey;
-} ActivateData;
-
-typedef struct VersionData
-{
-  unsigned short version_ack;
-  unsigned int version_crc;
-  char version_ID[11];
-  char version_name[32];
-  DJI::onboardSDK::Version version;
-} VersionData;
-
-#pragma pack()
 
 #endif // DJI_APP_H
