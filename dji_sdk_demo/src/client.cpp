@@ -427,7 +427,7 @@ int main(int argc, char *argv[])
                 break;
             case 15:
                 /* GPS Navi Test */
-                drone->global_position_navigation_send_request(22.535, 113.95, 100);
+                drone->global_position_navigation_send_request(22.5420, 113.9580, 10);
                 break;
             case 16:
                 /* Waypoint List Navi Test */
@@ -599,8 +599,8 @@ int main(int argc, char *argv[])
 				break;
 			case 23:
 				//mission hotpoint upload
-				hotpoint_task.latitude = 22.540091;
-				hotpoint_task.longitude = 113.946593;
+				hotpoint_task.latitude = 22.542813;
+				hotpoint_task.longitude = 113.958902;
 				hotpoint_task.altitude = 20;
 				hotpoint_task.radius = 10;
 				hotpoint_task.angular_speed = 10;

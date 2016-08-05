@@ -314,8 +314,8 @@ typedef uint32_t SimpleACK;
 
 typedef struct HotPointStartACK
 {
-  float32_t maxRadius;
   uint8_t ack;
+  float32_t maxRadius;
 } HotpointStartACK;
 
 typedef struct WayPointDataACK
@@ -326,9 +326,10 @@ typedef struct WayPointDataACK
 
 typedef struct WayPointVelocityACK
 {
-  float32_t idleVelocity;
   uint8_t ack;
+  float32_t idleVelocity;
 } WayPointVelocityACK;
+
 
 typedef union MissionACKUnion
 { 
@@ -352,7 +353,6 @@ typedef struct WayPointInitACK
   uint8_t ack;
   WayPointInitData data;
 } WayPointInitACK;
-
 
 typedef struct QuaternionData
 {
