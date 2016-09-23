@@ -1,13 +1,13 @@
 <launch>
 	<node pkg="dji_sdk" type="dji_sdk_node" name="dji_sdk" output="screen">
 		<!-- node parameters -->
-                <param name="drone_version" type="string" value="M100"/>
-		<param name="serial_name" type="string" value="/dev/ttyTHS1"/>
+        <param name="drone_version" type="string" value="M100"/>
+		<param name="serial_name" type="string" value="/dev/ttyS1"/>
 		<param name="baud_rate" type="int" value="230400"/>
-		<param name="app_id" type="int" value="1234"/>
+		<param name="app_id" type="int" value="1030504"/>
 		<param name="app_version" type="int" value="1"/>
 		<param name="app_bundle_id" type="string" value="Welcome to use dji-sdk"/>
-		<param name="enc_key" type="string" value="abcd1234"/>
+		<param name="enc_key" type="string" value="ed636fb031582beb1d6fe4b5852df84d1cc415a2b2d056a2785d6884144b6912"/>
 		<param name="groundstation_enable" type="int" value="1"/>
 	</node>
 </launch>
