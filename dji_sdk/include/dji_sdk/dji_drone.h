@@ -1,3 +1,15 @@
+/** @file dji_drone.h
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  Contains client side ROS code. Including this header
+ *  as a part of your project will allow your project to be used as a custom client. 
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
 #include <dji_sdk/dji_sdk.h>
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
@@ -23,14 +35,14 @@ private:
 
 	ros::ServiceClient activation_service;
 	ros::ServiceClient attitude_control_service;
-    ros::ServiceClient camera_action_control_service;
-    ros::ServiceClient drone_task_control_service;
-    ros::ServiceClient gimbal_angle_control_service;
-    ros::ServiceClient gimbal_speed_control_service;
-    ros::ServiceClient global_position_control_service;
-    ros::ServiceClient local_position_control_service;
-    ros::ServiceClient sdk_permission_control_service;
-    ros::ServiceClient velocity_control_service;
+    	ros::ServiceClient camera_action_control_service;
+    	ros::ServiceClient drone_task_control_service;
+    	ros::ServiceClient gimbal_angle_control_service;
+    	ros::ServiceClient gimbal_speed_control_service;
+    	ros::ServiceClient global_position_control_service;
+    	ros::ServiceClient local_position_control_service;
+    	ros::ServiceClient sdk_permission_control_service;
+    	ros::ServiceClient velocity_control_service;
 	ros::ServiceClient version_check_service;
 
 	ros::ServiceClient virtual_rc_enable_control_service;
@@ -52,45 +64,48 @@ private:
 	ros::ServiceClient mission_hp_reset_yaw_service;
 	ros::ServiceClient mission_fm_upload_service;
 	ros::ServiceClient mission_fm_set_target_service;
+	//ros::ServiceClient mobile_commands_service;
 
-    ros::Subscriber acceleration_subscriber;
-    ros::Subscriber attitude_quaternion_subscriber;
-    ros::Subscriber compass_subscriber;
-    ros::Subscriber flight_control_info_subscriber;
-    ros::Subscriber flight_status_subscriber;
-    ros::Subscriber gimbal_subscriber;
-    ros::Subscriber global_position_subscriber;
-    ros::Subscriber local_position_subscriber;
-    ros::Subscriber power_status_subscriber;
-    ros::Subscriber rc_channels_subscriber;
-    ros::Subscriber velocity_subscriber;
-    ros::Subscriber activation_subscriber;
-    ros::Subscriber odometry_subscriber;
-    ros::Subscriber sdk_permission_subscriber;
+    	ros::Subscriber acceleration_subscriber;
+    	ros::Subscriber attitude_quaternion_subscriber;
+    	ros::Subscriber compass_subscriber;
+    	ros::Subscriber flight_control_info_subscriber;
+    	ros::Subscriber flight_status_subscriber;
+    	ros::Subscriber gimbal_subscriber;
+    	ros::Subscriber global_position_subscriber;
+    	ros::Subscriber local_position_subscriber;
+    	ros::Subscriber power_status_subscriber;
+    	ros::Subscriber rc_channels_subscriber;
+    	ros::Subscriber velocity_subscriber;
+    	ros::Subscriber activation_subscriber;
+    	ros::Subscriber odometry_subscriber;
 
 	ros::Subscriber time_stamp_subscriber;
 	ros::Subscriber mission_status_subscriber;
 	ros::Subscriber mission_event_subscriber;
+	ros::Subscriber mobile_data_subscriber;
 
 public:
-    dji_sdk::Acceleration acceleration;
-    dji_sdk::AttitudeQuaternion attitude_quaternion;
-    dji_sdk::Compass compass;
-    dji_sdk::FlightControlInfo flight_control_info;
-    uint8_t flight_status;
-    dji_sdk::Gimbal gimbal;
-    dji_sdk::GlobalPosition global_position;
-    dji_sdk::GlobalPosition global_position_ref;
-    dji_sdk::LocalPosition local_position;
-    dji_sdk::LocalPosition local_position_ref;
-    dji_sdk::PowerStatus power_status;
-    dji_sdk::RCChannels rc_channels;
-    dji_sdk::Velocity velocity;
-    nav_msgs::Odometry odometry;
-	dji_sdk::TimeStamp time_stamp;
-    bool sdk_permission_opened = false;
-    bool activation = false;
-    bool localposbase_use_height = true;
+
+   	 dji_sdk::Acceleration acceleration;
+    	dji_sdk::AttitudeQuaternion attitude_quaternion;
+    	dji_sdk::Compass compass;
+    	dji_sdk::FlightControlInfo flight_control_info;
+    	uint8_t flight_status;
+    	uint8_t mobile_new_data;
+    	dji_sdk::Gimbal gimbal;
+    	dji_sdk::GlobalPosition global_position;
+    	dji_sdk::GlobalPosition global_position_ref;
+    	dji_sdk::LocalPosition local_position;
+    	dji_sdk::LocalPosition local_position_ref;
+    	dji_sdk::PowerStatus power_status;
+    	dji_sdk::TransparentTransmissionData mobile_data;
+    	dji_sdk::RCChannels rc_channels;
+   	dji_sdk::Velocity velocity;
+   	nav_msgs::Odometry odometry;
+   	dji_sdk::TimeStamp time_stamp;
+   	bool activation = false;
+   	bool localposbase_use_height = true;
 
 	uint8_t mission_type;
 
@@ -104,6 +119,15 @@ public:
 	dji_sdk::MissionEventWpUpload waypoint_upload_result;
 	dji_sdk::MissionEventWpAction waypoint_action_result;
 	dji_sdk::MissionEventWpReach waypoint_reached_result;
+
+typedef void *UserData; 
+typedef void (*CallBack)(DJIDrone *);
+
+typedef struct CallBackHandler
+{
+  CallBack callback;
+  UserData userData;
+} CallBackHandler;
 
 private:
 	void acceleration_subscriber_callback(dji_sdk::Acceleration acceleration)
@@ -171,11 +195,6 @@ private:
 		this->odometry = odometry;
 	}
 
-	void sdk_permission_subscriber_callback(std_msgs::UInt8 sdk_permission)
-	{
-		this->sdk_permission_opened = sdk_permission.data;
-	}
-
 	void time_stamp_subscriber_callback(dji_sdk::TimeStamp time_stamp)
 	{
 		this->time_stamp = time_stamp;
@@ -218,6 +237,174 @@ private:
 	
 	}
 
+    //! Callback Handler functions for Mobile data commands
+	CallBackHandler obtainControlCallback;
+	CallBackHandler releaseControlCallback;
+	CallBackHandler takeOffCallback;
+	CallBackHandler landingCallback;
+	CallBackHandler getSDKVersionCallback;
+	CallBackHandler armCallback;
+	CallBackHandler disArmCallback;
+	CallBackHandler goHomeCallback;
+	CallBackHandler takePhotoCallback;
+	CallBackHandler startVideoCallback;
+	CallBackHandler stopVideoCallback;
+	CallBackHandler drawCircleDemoCallback;
+	CallBackHandler drawSquareDemoCallback;
+	CallBackHandler attitudeControlDemoCallback;
+	CallBackHandler waypointNavigationTestCallback;
+	CallBackHandler localNavigationTestCallback;
+	CallBackHandler globalNavigationTestCallback;
+	CallBackHandler virtualRCTestCallback;
+	CallBackHandler gimbalControlDemoCallback;
+
+	void mobile_data_push_info_callback(dji_sdk::TransparentTransmissionData information)
+	{
+		this->mobile_data = information;
+		mobile_new_data = 1;
+        int cmdID = mobile_data.data[0];
+        printf("Command ID code is %d \n", cmdID);
+
+        switch(cmdID)
+        {
+        	case 2: 
+        	if (obtainControlCallback.callback)
+        	{
+       		 obtainControlCallback.callback(this);          
+            }
+            break;
+
+            case 3: 
+            if (releaseControlCallback.callback)
+        	{
+       		 releaseControlCallback.callback(this);          
+            }
+            break;
+
+            case 4: 
+            //if (obtainControlCallback.callback)
+        	//{
+       		// obtainControlCallback.callback();          
+            //}
+            break;
+
+            case 5: 
+            if (armCallback.callback)
+        	{
+       		 armCallback.callback(this);          
+            }
+            break;
+
+            case 6: 
+            if (disArmCallback.callback)
+        	{
+       		 disArmCallback.callback(this);          
+            }
+            break;
+
+            case 7: 
+            if (takeOffCallback.callback)
+        	{
+       		 takeOffCallback.callback(this);          
+            }
+            break;
+
+            case 8: 
+            if (landingCallback.callback)
+        	{
+       		 landingCallback.callback(this);          
+            }
+            break;
+
+            case 9: 
+            if (goHomeCallback.callback)
+        	{
+       		 goHomeCallback.callback(this);          
+            }
+            break;
+
+            case 10: 
+            if (takePhotoCallback.callback)
+        	{
+       		 takePhotoCallback.callback(this);          
+            }
+            break;
+
+            case 11: 
+            if (startVideoCallback.callback)
+        	{
+       		 startVideoCallback.callback(this);          
+            }
+            break;
+
+            case 13: 
+            if (stopVideoCallback.callback)
+        	{
+       		 stopVideoCallback.callback(this);          
+            }
+            break;
+
+            case 61: 
+            if (drawCircleDemoCallback.callback)
+        	{
+       		 drawCircleDemoCallback.callback(this);          
+            }
+            break;
+
+
+            case 62: 
+            if (drawSquareDemoCallback.callback)
+        	{
+       		 drawSquareDemoCallback.callback(this);          
+            }
+            break;
+
+            case 63: 
+            if (attitudeControlDemoCallback.callback)
+        	{
+       		 attitudeControlDemoCallback.callback(this);          
+            }
+            break;
+
+            case 64: 
+            if (gimbalControlDemoCallback.callback)
+        	{
+       		 gimbalControlDemoCallback.callback(this);          
+            }
+            break;
+
+            case 65: 
+            if (waypointNavigationTestCallback.callback)
+        	{
+       		 waypointNavigationTestCallback.callback(this);          
+            }
+            break;
+
+            case 66: 
+            if (localNavigationTestCallback.callback)
+        	{
+       		 localNavigationTestCallback.callback(this);          
+            }
+            break;
+
+            case 67: 
+            if (globalNavigationTestCallback.callback)
+        	{
+       		 globalNavigationTestCallback.callback(this);          
+            }
+            break;
+
+            case 68: 
+            if (virtualRCTestCallback.callback)
+        	{
+       		 virtualRCTestCallback.callback(this);          
+            }
+            break;
+
+
+        }
+	}
+
 	void mission_event_push_info_callback(dji_sdk::MissionPushInfo event_push_info)
 	{
 		this->incident_type = event_push_info.type;
@@ -250,21 +437,22 @@ public:
 		waypoint_navigation_action_client(nh, "dji_sdk/waypoint_navigation_action", true)
 	{
 		activation_service = nh.serviceClient<dji_sdk::Activation>("dji_sdk/activation");
-	    attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
-	    camera_action_control_service = nh.serviceClient<dji_sdk::CameraActionControl>("dji_sdk/camera_action_control");
-	    drone_task_control_service = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
-	    gimbal_angle_control_service = nh.serviceClient<dji_sdk::GimbalAngleControl>("dji_sdk/gimbal_angle_control");
-	    gimbal_speed_control_service = nh.serviceClient<dji_sdk::GimbalSpeedControl>("dji_sdk/gimbal_speed_control");
-	    global_position_control_service = nh.serviceClient<dji_sdk::GlobalPositionControl>("dji_sdk/global_position_control");
-	    local_position_control_service = nh.serviceClient<dji_sdk::LocalPositionControl>("dji_sdk/local_position_control");
-	    sdk_permission_control_service = nh.serviceClient<dji_sdk::SDKPermissionControl>("dji_sdk/sdk_permission_control");
-	    velocity_control_service = nh.serviceClient<dji_sdk::VelocityControl>("dji_sdk/velocity_control");
+	    	attitude_control_service = nh.serviceClient<dji_sdk::AttitudeControl>("dji_sdk/attitude_control");
+	    	camera_action_control_service = nh.serviceClient<dji_sdk::CameraActionControl>("dji_sdk/camera_action_control");
+	    	drone_task_control_service = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
+	    	gimbal_angle_control_service = nh.serviceClient<dji_sdk::GimbalAngleControl>("dji_sdk/gimbal_angle_control");
+	    	gimbal_speed_control_service = nh.serviceClient<dji_sdk::GimbalSpeedControl>("dji_sdk/gimbal_speed_control");
+	    	global_position_control_service = nh.serviceClient<dji_sdk::GlobalPositionControl>("dji_sdk/global_position_control");
+	    	local_position_control_service = nh.serviceClient<dji_sdk::LocalPositionControl>("dji_sdk/local_position_control");
+	    	sdk_permission_control_service = nh.serviceClient<dji_sdk::SDKPermissionControl>("dji_sdk/sdk_permission_control");
+	    	velocity_control_service = nh.serviceClient<dji_sdk::VelocityControl>("dji_sdk/velocity_control");
 		version_check_service = nh.serviceClient<dji_sdk::VersionCheck>("dji_sdk/version_check");
 		virtual_rc_enable_control_service = nh.serviceClient<dji_sdk::VirtualRCEnableControl>("dji_sdk/virtual_rc_enable_control");
 		virtual_rc_data_control_service = nh.serviceClient<dji_sdk::VirtualRCDataControl>("dji_sdk/virtual_rc_data_control");
 		drone_arm_control_service = nh.serviceClient<dji_sdk::DroneArmControl>("dji_sdk/drone_arm_control");
 		sync_flag_control_service = nh.serviceClient<dji_sdk::SyncFlagControl>("dji_sdk/sync_flag_control");
 		message_frequency_control_service = nh.serviceClient<dji_sdk::MessageFrequencyControl>("dji_sdk/message_frequency_control");
+		//mobile_commands_service = nh.serviceClient<dji_sdk::mobileCommandsl>("dji_sdk/mobile_commands");
 
 		mission_start_service = nh.serviceClient<dji_sdk::MissionStart>("dji_sdk/mission_start");
 		mission_pause_service = nh.serviceClient<dji_sdk::MissionPause>("dji_sdk/mission_pause");
@@ -281,24 +469,147 @@ public:
 		mission_fm_upload_service = nh.serviceClient<dji_sdk::MissionFmUpload>("dji_sdk/mission_followme_upload");
 		mission_fm_set_target_service = nh.serviceClient<dji_sdk::MissionFmSetTarget>("dji_sdk/mission_followme_set_target");
 
-        acceleration_subscriber = nh.subscribe<dji_sdk::Acceleration>("dji_sdk/acceleration", 10, &DJIDrone::acceleration_subscriber_callback, this);
-        attitude_quaternion_subscriber = nh.subscribe<dji_sdk::AttitudeQuaternion>("dji_sdk/attitude_quaternion", 10, &DJIDrone::attitude_quaternion_subscriber_callback, this);
-        compass_subscriber = nh.subscribe<dji_sdk::Compass>("dji_sdk/compass", 10, &DJIDrone::compass_subscriber_callback, this);
-        flight_control_info_subscriber = nh.subscribe<dji_sdk::FlightControlInfo>("dji_sdk/flight_control_info", 10, &DJIDrone::flight_control_info_subscriber_callback, this);
-        flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, &DJIDrone::flight_status_subscriber_callback, this);
-        gimbal_subscriber = nh.subscribe<dji_sdk::Gimbal>("dji_sdk/gimbal", 10, &DJIDrone::gimbal_subscriber_callback, this);
-        global_position_subscriber = nh.subscribe<dji_sdk::GlobalPosition>("dji_sdk/global_position", 10, &DJIDrone::global_position_subscriber_callback, this);
-        local_position_subscriber = nh.subscribe<dji_sdk::LocalPosition>("dji_sdk/local_position", 10, &DJIDrone::local_position_subscriber_callback, this);
-        power_status_subscriber = nh.subscribe<dji_sdk::PowerStatus>("dji_sdk/power_status", 10, &DJIDrone::power_status_subscriber_callback, this);
-        rc_channels_subscriber = nh.subscribe<dji_sdk::RCChannels>("dji_sdk/rc_channels", 10, &DJIDrone::rc_channels_subscriber_callback, this);
-        velocity_subscriber = nh.subscribe<dji_sdk::Velocity>("dji_sdk/velocity", 10, &DJIDrone::velocity_subscriber_callback, this);
-        activation_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/activation", 10, &DJIDrone::activation_subscriber_callback, this);
-        odometry_subscriber = nh.subscribe<nav_msgs::Odometry>("dji_sdk/odometry",10, &DJIDrone::odometry_subscriber_callback, this);
-        sdk_permission_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/sdk_permission", 10, &DJIDrone::sdk_permission_subscriber_callback, this);
+        	acceleration_subscriber = nh.subscribe<dji_sdk::Acceleration>("dji_sdk/acceleration", 10, &DJIDrone::acceleration_subscriber_callback, this);
+        	attitude_quaternion_subscriber = nh.subscribe<dji_sdk::AttitudeQuaternion>("dji_sdk/attitude_quaternion", 10, &DJIDrone::attitude_quaternion_subscriber_callback, this);
+        	compass_subscriber = nh.subscribe<dji_sdk::Compass>("dji_sdk/compass", 10, &DJIDrone::compass_subscriber_callback, this);
+        	flight_control_info_subscriber = nh.subscribe<dji_sdk::FlightControlInfo>("dji_sdk/flight_control_info", 10, &DJIDrone::flight_control_info_subscriber_callback, this);
+        	flight_status_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/flight_status", 10, &DJIDrone::flight_status_subscriber_callback, this);
+        	gimbal_subscriber = nh.subscribe<dji_sdk::Gimbal>("dji_sdk/gimbal", 10, &DJIDrone::gimbal_subscriber_callback, this);
+        	global_position_subscriber = nh.subscribe<dji_sdk::GlobalPosition>("dji_sdk/global_position", 10, &DJIDrone::global_position_subscriber_callback, this);
+        	local_position_subscriber = nh.subscribe<dji_sdk::LocalPosition>("dji_sdk/local_position", 10, &DJIDrone::local_position_subscriber_callback, this);
+        	power_status_subscriber = nh.subscribe<dji_sdk::PowerStatus>("dji_sdk/power_status", 10, &DJIDrone::power_status_subscriber_callback, this);
+        	rc_channels_subscriber = nh.subscribe<dji_sdk::RCChannels>("dji_sdk/rc_channels", 10, &DJIDrone::rc_channels_subscriber_callback, this);
+        	velocity_subscriber = nh.subscribe<dji_sdk::Velocity>("dji_sdk/velocity", 10, &DJIDrone::velocity_subscriber_callback, this);
+        	activation_subscriber = nh.subscribe<std_msgs::UInt8>("dji_sdk/activation", 10, &DJIDrone::activation_subscriber_callback, this);
+        	odometry_subscriber = nh.subscribe<nav_msgs::Odometry>("dji_sdk/odometry",10, &DJIDrone::odometry_subscriber_callback, this);
 		time_stamp_subscriber = nh.subscribe<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10, &DJIDrone::time_stamp_subscriber_callback,this);
 		mission_status_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_status", 10, &DJIDrone::mission_status_push_info_callback, this);  
 		mission_event_subscriber = nh.subscribe<dji_sdk::MissionPushInfo>("dji_sdk/mission_event", 10, &DJIDrone::mission_event_push_info_callback, this);
+		mobile_data_subscriber = nh.subscribe<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device", 10, &DJIDrone::mobile_data_push_info_callback, this);
 	}
+
+	void setObtainControlMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		obtainControlCallback.callback = userCallback;
+  		obtainControlCallback.userData = userData;
+	}
+
+
+	void setReleaseControlMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		releaseControlCallback.callback = userCallback;
+  		releaseControlCallback.userData = userData;
+	}
+
+	void setTakeOffMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		takeOffCallback.callback = userCallback;
+  		takeOffCallback.userData = userData;
+	}
+
+
+	void setLandingMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		landingCallback.callback = userCallback;
+  		landingCallback.userData = userData;
+	}
+
+
+	void setGetSDKVersionMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  	    getSDKVersionCallback.callback = userCallback;
+  		getSDKVersionCallback.userData = userData;
+	}
+
+
+	void setArmMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		armCallback.callback = userCallback;
+  		armCallback.userData = userData;
+	}
+
+	void setDisarmMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		disArmCallback.callback = userCallback;
+  		disArmCallback.userData = userData;
+	}
+
+
+
+	void setGoHomeMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		goHomeCallback.callback = userCallback;
+  		goHomeCallback.userData = userData;
+	}
+
+
+	void setTakePhotoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		takePhotoCallback.callback = userCallback;
+  		takePhotoCallback.userData = userData;
+	}
+
+
+	void setStartVideoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		startVideoCallback.callback = userCallback;
+  		startVideoCallback.userData = userData;
+	}
+
+
+	void setStopVideoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+  		stopVideoCallback.callback = userCallback;
+  		stopVideoCallback.userData = userData;
+	}
+
+	void setDrawCircleDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+		drawCircleDemoCallback.callback = userCallback;
+		drawCircleDemoCallback.userData = userData;
+	}
+
+	void setDrawSquareDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+		drawSquareDemoCallback.callback = userCallback;
+		drawSquareDemoCallback.userData = userData;
+	}
+    
+    void setAttitudeControlDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	attitudeControlDemoCallback.callback = userCallback;
+		attitudeControlDemoCallback.userData = userData;
+    }
+
+      void setLocalNavigationTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	localNavigationTestCallback.callback = userCallback;
+		localNavigationTestCallback.userData = userData;
+    }
+
+      void setGlobalNavigationTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	globalNavigationTestCallback.callback = userCallback;
+		globalNavigationTestCallback.userData = userData;
+    }
+
+      void setWaypointNavigationTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	waypointNavigationTestCallback.callback = userCallback;
+		waypointNavigationTestCallback.userData = userData;
+    }
+
+      void setVirtuaRCTestMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	virtualRCTestCallback.callback = userCallback;
+		virtualRCTestCallback.userData = userData;
+    }
+
+      void setGimbalControlDemoMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+    {
+    	gimbalControlDemoCallback.callback = userCallback;
+		gimbalControlDemoCallback.userData = userData;
+    }
 
 	bool activate()
 	{
@@ -417,7 +728,7 @@ public:
 		velocity_control.request.vx = x;
 		velocity_control.request.vy = y;
 		velocity_control.request.vz = z;
-		velocity_control.request.yawAngle = yaw;
+		velocity_control.request.yawRate = yaw;
 	
 		return velocity_control_service.call(velocity_control) && velocity_control.response.result;
 	}
@@ -786,4 +1097,3 @@ public:
 	}
 
 };
-

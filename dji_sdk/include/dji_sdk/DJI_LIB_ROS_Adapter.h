@@ -1,5 +1,40 @@
+/** @file DJI_LIB_ROS_Adapter.h
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  ROS Adapter to communicate with CoreAPI
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
 #ifndef _DJI_LIB_ROS_ADAPTER_H_
 #define _DJI_LIB_ROS_ADAPTER_H_
+
+#define HAS_TIME 0x0001
+#define HAS_Q 0x0002
+#define HAS_A 0x0004
+#define HAS_V 0x0008
+#define HAS_W 0x0010
+#define HAS_POS 0x0020
+
+/***Using M100***/
+#define HAS_MAG 0x0040
+#define HAS_RC 0x0080
+#define HAS_GIMBAL 0x0100
+#define HAS_STATUS 0x0200
+#define HAS_BATTERY 0x0400
+#define HAS_DEVICE 0x0800
+
+/***Using A3***/
+#define A3_HAS_GPS 0x0040
+#define A3_HAS_RTK 0x0080
+#define A3_HAS_MAG 0x0100
+#define A3_HAS_RC 0x0200
+#define A3_HAS_GIMBAL 0x0400
+#define A3_HAS_STATUS 0x0800
+#define A3_HAS_BATTERY 0x1000
+#define A3_HAS_DEVICE 0x2000
 
 
 #include "DJI_HardDriver_Manifold.h"
@@ -52,12 +87,14 @@ class ROSAdapter {
 
         static void broadcastCallback(CoreAPI *coreAPI, Header *header, void *userData) {
             ( (ROSAdapter*)userData )->m_broadcastCallback();
+
         }
 
 		static void fromMobileCallback(CoreAPI *coreAPI, Header *header, void *userData) {
 			uint8_t *data = ((unsigned char*) header) + sizeof(Header) + SET_CMD_SIZE;
 			uint8_t len = header->length - SET_CMD_SIZE - EXC_DATA_SIZE;
             ( (ROSAdapter*)userData )->m_fromMobileCallback(data, len);
+
 		}
 
 		static void missionStatusCallback(CoreAPI *coreAPI, Header *header, void *userData) {
@@ -99,12 +136,14 @@ class ROSAdapter {
             else
                 ROS_INFO("Succeed to create thread for readPoll");
 
-            coreAPI->getVersion();
         }
 
 
         void activate(ActivateData *data, CallBack callback) {
+            
+            coreAPI->setVersion(data->version);
             coreAPI->activate(data, callback);
+            
         }
 
 
@@ -112,12 +151,14 @@ class ROSAdapter {
         void setBroadcastCallback( void (T::*func)(), T *obj ) {
             m_broadcastCallback = std::bind(func, obj);
             coreAPI->setBroadcastCallback(&ROSAdapter::broadcastCallback, (UserData)this);
+            printf("Broadcast call back received \n");
         }
 
 		template<class T>
 		void setFromMobileCallback( void (T::*func)(uint8_t *, uint8_t), T *obj) {
 		m_fromMobileCallback = std::bind(func, obj, std::placeholders::_1, std::placeholders::_2);
 		coreAPI->setFromMobileCallback(&ROSAdapter::fromMobileCallback, (UserData)this);
+
 		}
 
 		template<class T>

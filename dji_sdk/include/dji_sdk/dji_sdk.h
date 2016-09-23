@@ -1,3 +1,16 @@
+/** @file dji_sdk.h
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  This file lists all functionalities as a part of 
+ *	the messages, services and actions in ROS. 
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
+
 #ifndef SDK_LIBRARY_H
 #define SDK_LIBRARY_H
 
@@ -5,6 +18,8 @@
 #include "DJI_LIB_ROS_Adapter.h"
 
 //msgs
+#include <dji_sdk/A3RTK.h>
+#include <dji_sdk/A3GPS.h>
 #include <dji_sdk/Acceleration.h>
 #include <dji_sdk/AttitudeQuaternion.h>
 #include <dji_sdk/Compass.h>
@@ -39,6 +54,8 @@
 #include <dji_sdk/MessageFrequencyControl.h>
 #include <dji_sdk/VirtualRCEnableControl.h>
 #include <dji_sdk/VirtualRCDataControl.h>
+#include <dji_sdk/A3GPS.h>
+#include <dji_sdk/A3RTK.h>
 
 //actions
 #include <dji_sdk/DroneTaskAction.h>

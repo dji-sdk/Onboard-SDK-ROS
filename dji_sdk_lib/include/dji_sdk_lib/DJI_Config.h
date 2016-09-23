@@ -1,21 +1,12 @@
-/*! @brief
- *  @file DJI_Config.h
- *  @version 3.0
- *  @date Dec 16, 2015
+/*! @file DJI_Config.h
+ *  @version 3.1.7
+ *  @date Jul 01 2016
  *
- *  @abstract
- *  Configuration optional Micro definitions for DJI onboardSDK library.
+ *  @brief
+ *  Optional macro definitions for DJI Onboard SDK. Use for debugging.
  *
- *  @attention
- *  Project configuration:
- *  None
- *
- *  @version features:
- *  -* @version V3.0
- *  -* DJI-onboard-SDK for Windows,QT,STM32,ROS,Cmake
- *  -* @date Dec 16, 2015
- *  -* @author william.wu
- *
+ *  @copyright
+ *  2016 DJI. All rights reserved.
  * */
 
 #ifndef DJI_CONFIG_H
@@ -26,22 +17,25 @@
 #define BUFFER_SIZE 1024
 #define ACK_SIZE 10
 
-//! @note it means DJI onboardSDK library will not alloc memory from heap.
-//! @todo not available yet, only affect WayPoint
+//! @note The static memory flag means DJI onboardSDK library will not alloc memory from heap.
+//! @todo Not supported in this release.
+
 //#define STATIC_MEMORY
+
+//! Uncomment these macros to access various messages from the API. 
 
 //#define API_MISSION_DATA
 //#define API_DEBUG_DATA
 //#define API_BUFFER_DATA
+//#define API_RTK_DEBUG
 #define API_ERROR_DATA
 #define API_STATUS_DATA
 
-//#define SDK_VERSION_2_3
-#define SDK_VERSION_3_1_M100
-//#define SDK_VERSION_3_1_A3
-
-//! @note if you do not want to use AES encrypt, comment this micro below
+//! @note if you do NOT want to use AES encrypt, comment this macro below
 #define USE_ENCRYPT
+
+//! @todo Not supported in this release.
+//#define USE_SIMULATION
 
 #include "DJI_Version.h"
 

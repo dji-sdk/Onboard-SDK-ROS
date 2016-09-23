@@ -1,3 +1,14 @@
+/** @file dji_sdk_node.h
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  Initializes all Publishers, Services and Actions
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
 #ifndef __DJI_SDK_NODE_H__
 #define __DJI_SDK_NODE_H__
 
@@ -12,8 +23,10 @@
 
 #define C_EARTH (double) 6378137.0
 #define C_PI (double) 3.141592653589793
+#define DEG2RAD(DEG) ((DEG)*((C_PI)/(180.0)))
 
 extern DJI::onboardSDK::ROSAdapter *rosAdapter;
+using namespace DJI::onboardSDK;
 
 class DJISDKNode
 {
@@ -34,9 +47,10 @@ private:
     dji_sdk::Velocity velocity;
     nav_msgs::Odometry odometry;
 	dji_sdk::TimeStamp time_stamp;
+	dji_sdk::A3GPS A3_GPS;
+	dji_sdk::A3RTK A3_RTK;
 
 
-    bool sdk_permission_opened = false;
 	bool activation_result = false;
     bool localposbase_use_height = true;
     bool localpos_odometry = false;
@@ -55,12 +69,12 @@ private:
     ActivateData user_act_data;
 
 //Publishers:
-	ros::Publisher activation_publisher;
+    ros::Publisher activation_publisher;
     ros::Publisher acceleration_publisher;
     ros::Publisher attitude_quaternion_publisher;
     ros::Publisher compass_publisher;
     ros::Publisher flight_control_info_publisher;
-    ros::Publisher flight_status_publisher; 
+    ros::Publisher flight_status_publisher;
     ros::Publisher gimbal_publisher;
     ros::Publisher global_position_publisher;
     ros::Publisher local_position_publisher;
@@ -68,10 +82,13 @@ private:
     ros::Publisher rc_channels_publisher;
     ros::Publisher velocity_publisher;
     ros::Publisher odometry_publisher;
-    ros::Publisher sdk_permission_publisher;
     ros::Publisher time_stamp_publisher;
-	ros::Publisher data_received_from_remote_device_publisher;
+    ros::Publisher data_received_from_remote_device_publisher;
+
     ros::Subscriber log_control_subscriber;
+
+    ros::Publisher A3_GPS_info_publisher;
+    ros::Publisher A3_RTK_info_publisher;
 
     void init_publishers(ros::NodeHandle& nh)
     {
@@ -89,11 +106,16 @@ private:
         rc_channels_publisher = nh.advertise<dji_sdk::RCChannels>("dji_sdk/rc_channels", 10);
         velocity_publisher = nh.advertise<dji_sdk::Velocity>("dji_sdk/velocity", 10);
         odometry_publisher = nh.advertise<nav_msgs::Odometry>("dji_sdk/odometry",10);
-        sdk_permission_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/sdk_permission", 10);
         time_stamp_publisher = nh.advertise<dji_sdk::TimeStamp>("dji_sdk/time_stamp", 10);
-		data_received_from_remote_device_publisher = nh.advertise<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device",10);
+        data_received_from_remote_device_publisher = nh.advertise<dji_sdk::TransparentTransmissionData>("dji_sdk/data_received_from_remote_device",10);
+
+        //TODO: Identify the drone version first	
+        A3_GPS_info_publisher = nh.advertise<dji_sdk::A3GPS>("dji_sdk/A3_GPS", 10);
+        A3_RTK_info_publisher = nh.advertise<dji_sdk::A3RTK>("dji_sdk/A3_RTK", 10);
+
         log_control_subscriber = nh.subscribe<dji_sdk::LogControl>(
                 "/dji_sdk/log_control", 10, &DJISDKNode::logControlCB, this);
+	
     }
 
 //Services:
@@ -167,11 +189,11 @@ private:
     WaypointNavigationActionServer* waypoint_navigation_action_server;
 
     dji_sdk::DroneTaskFeedback drone_task_feedback;
-    dji_sdk::DroneTaskResult drone_task_result; 
-    dji_sdk::LocalPositionNavigationFeedback local_position_navigation_feedback; 
-    dji_sdk::LocalPositionNavigationResult local_position_navigation_result; 
+    dji_sdk::DroneTaskResult drone_task_result;
+    dji_sdk::LocalPositionNavigationFeedback local_position_navigation_feedback;
+    dji_sdk::LocalPositionNavigationResult local_position_navigation_result;
     dji_sdk::GlobalPositionNavigationFeedback global_position_navigation_feedback;
-    dji_sdk::GlobalPositionNavigationResult global_position_navigation_result; 
+    dji_sdk::GlobalPositionNavigationResult global_position_navigation_result;
     dji_sdk::WaypointNavigationFeedback waypoint_navigation_feedback;
     dji_sdk::WaypointNavigationResult waypoint_navigation_result;
 
@@ -182,23 +204,23 @@ private:
 
     void init_actions(ros::NodeHandle& nh)
     {
-        drone_task_action_server = new DroneTaskActionServer(nh, 
-            "dji_sdk/drone_task_action", 
+        drone_task_action_server = new DroneTaskActionServer(nh,
+            "dji_sdk/drone_task_action",
             boost::bind(&DJISDKNode::drone_task_action_callback, this, _1), false);
         drone_task_action_server->start();
 
-        local_position_navigation_action_server = new LocalPositionNavigationActionServer(nh, 
-            "dji_sdk/local_position_navigation_action", 
+        local_position_navigation_action_server = new LocalPositionNavigationActionServer(nh,
+            "dji_sdk/local_position_navigation_action",
             boost::bind(&DJISDKNode::local_position_navigation_action_callback, this, _1), false);
         local_position_navigation_action_server->start();
 
-        global_position_navigation_action_server = new GlobalPositionNavigationActionServer(nh, 
-            "dji_sdk/global_position_navigation_action", 
+        global_position_navigation_action_server = new GlobalPositionNavigationActionServer(nh,
+            "dji_sdk/global_position_navigation_action",
             boost::bind(&DJISDKNode::global_position_navigation_action_callback, this, _1), false );
         global_position_navigation_action_server->start();
 
-        waypoint_navigation_action_server = new WaypointNavigationActionServer(nh, 
-            "dji_sdk/waypoint_navigation_action", 
+        waypoint_navigation_action_server = new WaypointNavigationActionServer(nh,
+            "dji_sdk/waypoint_navigation_action",
             boost::bind(&DJISDKNode::waypoint_navigation_action_callback, this, _1), false);
         waypoint_navigation_action_server->start();
     }
@@ -213,7 +235,7 @@ private:
 
     bool process_waypoint(dji_sdk::Waypoint new_waypoint);
 
-    inline void gps_convert_ned(float &ned_x, float &ned_y,
+    void gps_convert_ned(float &ned_x, float &ned_y,
             double gps_t_lon, double gps_t_lat,
             double gps_r_lon, double gps_r_lat);
 

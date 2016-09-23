@@ -21,8 +21,8 @@ class DJIDrone:
     YAW_RATE   = 0x08
     HORIZ_GND  = 0x00
     HORIZ_BODY = 0x02
-    YAW_GND    = 0x00
-    YAW_BODY   = 0x01
+    STABLE_OFF = 0x00
+    STABLE_ON  = 0x01
 
     def acceleration_subscriber_callback(self, acceleration):
         self.acceleration = acceleration
@@ -63,8 +63,8 @@ class DJIDrone:
     def odometry_subscriber_callback(self, odometry):
         self.odometry = odometry
 
-    def sdk_permission_subscriber_callback(self, sdk_permission):
-        self.sdk_permission = sdk_permission
+    def time_stamp_subscriber_callback(self, time_stamp):
+        self.time_stamp = time_stamp
 
     def init_subscribers(self):
         self.acceleration_subscriber = rospy.Subscriber("dji_sdk/acceleration", dji_sdk.msg.Acceleration, self.acceleration_subscriber_callback)
@@ -80,7 +80,7 @@ class DJIDrone:
         self.velocity_subscriber = rospy.Subscriber("dji_sdk/velocity", dji_sdk.msg.Velocity, self.velocity_subscriber_callback)
         self.activation_subscriber = rospy.Subscriber("dji_sdk/activation", std_msgs.msg.UInt8, self.activation_subscriber_callback)
         self.odometry_subscriber = rospy.Subscriber("dji_sdk/odometry", nav_msgs.msg.Odometry, self.odometry_subscriber_callback)
-        self.sdk_permission_subscriber = rospy.Subscriber("dji_sdk/sdk_permission", std_msgs.msg.UInt8, self.sdk_permission_subscriber_callback)
+        self.time_stamp_subscriber = rospy.Subscriber("dji_sdk/time_stamp", dji_sdk.msg.TimeStamp, self.time_stamp_subscriber_callback)
 
     def init_services(self):
         rospy.wait_for_service("dji_sdk/attitude_control")
@@ -92,6 +92,10 @@ class DJIDrone:
         rospy.wait_for_service("dji_sdk/local_position_control")
         rospy.wait_for_service("dji_sdk/sdk_permission_control")
         rospy.wait_for_service("dji_sdk/velocity_control")
+        rospy.wait_for_service("dji_sdk/drone_arm_control")
+        rospy.wait_for_service("dji_sdk/virtual_rc_enable_control")
+        rospy.wait_for_service("dji_sdk/virtual_rc_data_control")
+        rospy.wait_for_service("dji_sdk/sync_flag_control")
 
         self.attitude_control_service = rospy.ServiceProxy("dji_sdk/attitude_control", dji_sdk.srv.AttitudeControl)
         self.camera_action_control_service = rospy.ServiceProxy("dji_sdk/camera_action_control", dji_sdk.srv.CameraActionControl)
@@ -102,6 +106,10 @@ class DJIDrone:
         self.local_position_control_service = rospy.ServiceProxy("dji_sdk/local_position_control", dji_sdk.srv.LocalPositionControl)
         self.sdk_permission_control_service = rospy.ServiceProxy("dji_sdk/sdk_permission_control", dji_sdk.srv.SDKPermissionControl)
         self.velocity_control_service = rospy.ServiceProxy("dji_sdk/velocity_control", dji_sdk.srv.VelocityControl)
+        self.drone_arm_service = rospy.ServiceProxy("dji_sdk/drone_arm_control", dji_sdk.srv.DroneArmControl)
+        self.drone_vrc_enable_service = rospy.ServiceProxy("dji_sdk/virtual_rc_enable_control", dji_sdk.srv.VirtualRCEnableControl)
+        self.drone_vrc_data_service = rospy.ServiceProxy("dji_sdk/virtual_rc_data_control", dji_sdk.srv.VirtualRCDataControl)
+        self.sync_timestamp_service = rospy.ServiceProxy("dji_sdk/sync_flag_control", dji_sdk.srv.SyncFlagControl)
 
     def init_actions(self):
         self.local_position_navigation_action_client = actionlib.SimpleActionClient("dji_sdk/local_position_navigation_action", dji_sdk.msg.LocalPositionNavigationAction)
@@ -123,6 +131,12 @@ class DJIDrone:
         goal = dji_sdk.msg.WaypointNavigationGoal(waypoint_list=dji_sdk.msg.WaypointList(waypoint_list=waypoint_list))
         self.waypoint_navigation_action_client.send_goal(goal)
 
+    def arm_drone(self):
+        self.drone_arm_service(arm=1)
+
+    def disarm_drone(self):
+        self.drone_arm_service(arm=0)
+
     def takeoff(self):
         self.drone_task_control_service(task=4)
 
@@ -134,6 +148,18 @@ class DJIDrone:
 
     def take_picture(self):
         self.camera_action_control_service(camera_action=0)
+
+    def vrc_start(self):
+        self.drone_vrc_enable_service(enable=1, if_back_to_real=1)
+
+    def vrc_stop(self):
+        self.drone_vrc_enable_service(enable=0, if_back_to_real=1)
+
+    def vrc_control(self, roll=1024, pitch=1024, throttle=1024, yaw=1024, gear=1324, mode=496):
+        self.drone_vrc_data_service(channel_data = [roll, pitch, throttle, yaw, gear, 0, mode, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+    def sync_timestamp(self, frequency=0):
+        self.sync_timestamp_service(frequency=frequency)
 
     def start_video(self):
         self.camera_action_control_service(camera_action=1)
@@ -157,8 +183,8 @@ class DJIDrone:
     def attitude_control(self, flag, x, y, z, yaw):
         self.attitude_control_service(flag = flag, x = x, y = y, z = z, yaw = yaw)
 
-    def velocity_control(self, frame, vx, vy, vz, yawAngle):
-        self.velocity_control_service(frame = frame, vx = vx, vy = vy, vz = vz, yawAngle = yawAngle)
+    def velocity_control(self, frame, vx, vy, vz, yawRate):
+        self.velocity_control_service(frame = frame, vx = vx, vy = vy, vz = vz, yawRate = yawRate)
 
     def local_position_control(self, x, y, z, yaw):
         self.local_position_control_service(x = x, y = y, z = z, yaw = yaw)
@@ -189,10 +215,10 @@ class DJIDrone:
         self.local_position_ref = dji_sdk.msg.LocalPosition()
         self.power_status = dji_sdk.msg.PowerStatus()
         self.rc_channels = dji_sdk.msg.RCChannels() 
+        self.time_stamp = dji_sdk.msg.TimeStamp()
         self.velocity = dji_sdk.msg.Velocity()
         self.odometry = nav_msgs.msg.Odometry()
 
-        self.sdk_permission_opened = False
         self.activation = False
         self.localposbase_use_height = True
 

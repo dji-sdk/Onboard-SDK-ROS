@@ -1,3 +1,14 @@
+/** @file dji_sdk_mission.h
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  Mission services are advertised here. 
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
 #ifndef __DJI_MISSION_NODE_H__
 #define __DJI_MISSION_NODE_H__
 

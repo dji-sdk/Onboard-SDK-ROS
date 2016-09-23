@@ -1,9 +1,20 @@
+/** @file dji_sdk_node_services.cpp
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  All the purchase callbacks are implemented here.
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
 #include <dji_sdk/dji_sdk_node.h>
 
 
 bool DJISDKNode::activation_callback(dji_sdk::Activation::Request& request, dji_sdk::Activation::Response& response)
 {
-	rosAdapter->coreAPI->activate(&user_act_data, NULL);
+	rosAdapter->coreAPI->activate(&user_act_data);
 	response.result = true;
 	return true;
 }
@@ -76,11 +87,11 @@ bool DJISDKNode::gimbal_angle_control_callback(dji_sdk::GimbalAngleControl::Requ
     gimbal_angle.roll = request.roll;
     gimbal_angle.pitch = request.pitch;
     gimbal_angle.duration = request.duration;
-    gimbal_angle.mode = 0x0F;
-    gimbal_angle.mode &= request.absolute_or_incremental ? 0xFF : 0xFE;
-    gimbal_angle.mode &= request.yaw_cmd_ignore ? 0xFF : 0xFD;
-    gimbal_angle.mode &= request.roll_cmd_ignore ? 0xFF : 0xFB;
-    gimbal_angle.mode &= request.pitch_cmd_ignore ? 0xFF : 0xF7;
+    gimbal_angle.mode = 0;
+    gimbal_angle.mode |= request.absolute_or_incremental;
+    gimbal_angle.mode |= request.yaw_cmd_ignore << 1;
+    gimbal_angle.mode |= request.roll_cmd_ignore << 2;
+    gimbal_angle.mode |= request.pitch_cmd_ignore << 3;
 
     rosAdapter->camera->setGimbalAngle(&gimbal_angle);
 
@@ -187,15 +198,15 @@ bool DJISDKNode::velocity_control_callback(dji_sdk::VelocityControl::Request& re
     DJI::onboardSDK::FlightData flight_ctrl_data;
     if (request.frame)
         //world frame 
-        flight_ctrl_data.flag = 0x41;
+        flight_ctrl_data.flag = 0x49;
     else
         //body frame
-        flight_ctrl_data.flag = 0x43;
+        flight_ctrl_data.flag = 0x4B;
 
     flight_ctrl_data.x = request.vx;
     flight_ctrl_data.y = request.vy;
     flight_ctrl_data.z = request.vz;
-    flight_ctrl_data.yaw = request.yawAngle;
+    flight_ctrl_data.yaw = request.yawRate;
 
     rosAdapter->flight->setFlight(&flight_ctrl_data);
 
@@ -206,7 +217,9 @@ bool DJISDKNode::velocity_control_callback(dji_sdk::VelocityControl::Request& re
 
 bool DJISDKNode::version_check_callback(dji_sdk::VersionCheck::Request& request, dji_sdk::VersionCheck::Response& response)
 {
-	rosAdapter->coreAPI->getVersion();
+    int sdkVer;
+    sdkVer = rosAdapter->coreAPI->getSDKVersion();
+    std::cout << std::hex << sdkVer << '\n';
 	response.result = true;
 	return true;
 }

@@ -1,3 +1,15 @@
+/** @file DJI_HardDriver_Manifold.h
+ *  @version 3.1.8
+ *  @date July 29th, 2016
+ *
+ *  @brief
+ *  Hardware level driver code
+ *
+ *  @copyright 2016 DJI. All rights reserved.
+ *
+ */
+
+
 #ifndef __DJI_HARDDRIVER_MANIFOLD_H__
 #define __DJI_HARDDRIVER_MANIFOLD_H__
 
@@ -16,6 +28,8 @@
 #include <dji_sdk_lib/DJI_Type.h>
 #include <dji_sdk_lib/DJI_HardDriver.h>
 
+#define BUFFER_SIZE 1024
+
 namespace DJI {
 
 namespace onboardSDK {
@@ -28,24 +42,46 @@ class HardDriver_Manifold : public HardDriver {
             m_baudrate = baudrate;
             m_memLock = PTHREAD_MUTEX_INITIALIZER;
             m_msgLock = PTHREAD_MUTEX_INITIALIZER;
+            m_ackLock = PTHREAD_MUTEX_INITIALIZER;
+            pthread_cond_init (&ack_recv_cv, NULL);
         }
 
 
         ~HardDriver_Manifold() {
             _serialClose();
+            pthread_mutex_destroy(&m_memLock);
+            pthread_mutex_destroy(&m_msgLock);
+            pthread_mutex_destroy(&m_ackLock);
+            pthread_cond_destroy(&ack_recv_cv);
         }
 
 
-        void init() {
-            API_LOG(this, STATUS_LOG, "going to open device %s with baudrate %u...\n", 
+        void init()
+        {
+            API_LOG(this, STATUS_LOG, "Open serial device %s with baudrate %u...\n",
                     m_device.c_str(), m_baudrate);
-            if( _serialStart(m_device.c_str(), m_baudrate) < 0 ) {
+            if( _serialStart(m_device.c_str(), m_baudrate) < 0 )
+            {
                 _serialClose();
-                API_LOG(this, ERROR_LOG, "...fail to start serial\n");
-            } else {
-                API_LOG(this, STATUS_LOG, "...succeed to start serial\n");
+                API_LOG(this, ERROR_LOG, "Failed to start serial device\n");
+                deviceStatus = false;
             }
-        }
+
+            deviceStatus = true;
+/*
+            uint8_t buf[BUFFER_SIZE];
+            usleep(5000);
+
+            //! Check if serial connection valid
+	    if(_serialRead(buf, BUFFER_SIZE) > 0)
+	    {
+              API_LOG(this, STATUS_LOG, "Succeeded to read from serial device\n");
+	      deviceStatus = true;
+	      return;
+	    }
+            API_LOG(this, ERROR_LOG, "Failed to read from serial device\n");
+            deviceStatus = false;
+*/        }
 
 
         /**
@@ -68,6 +104,11 @@ class HardDriver_Manifold : public HardDriver {
             m_device = device;
         }
 
+
+        bool getDevieStatus()
+        {
+          return deviceStatus;
+        }
 
         time_ms getTimeStamp() {
 #ifdef __MACH__
@@ -111,22 +152,50 @@ class HardDriver_Manifold : public HardDriver {
             pthread_mutex_unlock(&m_msgLock);
         }
 
+        void lockACK() {
+	    pthread_mutex_lock(&m_ackLock);
+	}
+
+
+	void freeACK() {
+	    pthread_mutex_unlock(&m_ackLock);
+	}
+
+        void notify() {
+          pthread_cond_signal(&ack_recv_cv);
+        }
+
+    void wait(int timeoutInSeconds){
+  struct timespec curTime, absTimeout;
+  //Use clock_gettime instead of getttimeofday for compatibility with POSIX APIs
+  clock_gettime(CLOCK_REALTIME, &curTime);
+  //absTimeout = curTime;
+  absTimeout.tv_sec = curTime.tv_sec + timeoutInSeconds;
+  absTimeout.tv_nsec = curTime.tv_nsec; 
+  pthread_cond_timedwait(&ack_recv_cv, &m_ackLock, &absTimeout);
+	}
 
     private:
         std::string m_device;
         unsigned int m_baudrate;
         pthread_mutex_t m_memLock;
+
+        // Message synchronization data
+        pthread_mutex_t m_ackLock;
         pthread_mutex_t m_msgLock;
+        pthread_cond_t ack_recv_cv;
 
         int m_serial_fd;
         fd_set m_serial_fd_set;
+
+        bool deviceStatus;
 
 
         bool _serialOpen(const char* dev) {
             // notice: use O_NONBLOCK to raise the frequency that read data from buffer
             m_serial_fd = open(dev, O_RDWR | O_NONBLOCK);
             if(m_serial_fd < 0) {
-                API_LOG(this, ERROR_LOG, "cannot open device %s\n", dev);
+                API_LOG(this, ERROR_LOG, "Failed to open serial device %s\n", dev);
                 return false;
             }
             return true;
