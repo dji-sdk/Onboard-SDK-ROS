@@ -214,6 +214,10 @@ void CoreAPI::activate(ActivateData *data, CallBack callback, UserData userData)
   send(2, 0, SET_ACTIVATION, CODE_ACTIVATE, (unsigned char *)&accountData,
     sizeof(accountData) - sizeof(char *), 1000, 3,
     callback ? callback : CoreAPI::activateCallback, userData);
+
+  ack_data = missionACKUnion.simpleACK;
+  if(ack_data == ACK_ACTIVE_SUCCESS && accountData.encKey)
+   setKey(accountData.encKey);
 }
 
 unsigned short CoreAPI::activate(ActivateData *data, int timeout)
@@ -304,7 +308,6 @@ unsigned short CoreAPI::setBroadcastFreq(uint8_t *dataLenIs16, int timeout)
   serialDevice->lockACK();
   serialDevice->wait(timeout);
   serialDevice->freeACK();
-
   return missionACKUnion.simpleACK;
 }
 
@@ -362,18 +365,18 @@ void CoreAPI::setBroadcastFreqToZero()
   * 11 - Control Information
   */
 
-  freq[0] = BROADCAST_FREQ_1HZ;
-  freq[1] = BROADCAST_FREQ_10HZ;
-  freq[2] = BROADCAST_FREQ_50HZ;
-  freq[3] = BROADCAST_FREQ_100HZ;
-  freq[4] = BROADCAST_FREQ_50HZ;
-  freq[5] = BROADCAST_FREQ_10HZ;
-  freq[6] = BROADCAST_FREQ_1HZ;
-  freq[7] = BROADCAST_FREQ_10HZ;
-  freq[8] = BROADCAST_FREQ_50HZ;
-  freq[9] = BROADCAST_FREQ_100HZ;
-  freq[10] = BROADCAST_FREQ_50HZ;
-  freq[11] = BROADCAST_FREQ_10HZ;
+  freq[0] = BROADCAST_FREQ_0HZ;
+  freq[1] = BROADCAST_FREQ_0HZ;
+  freq[2] = BROADCAST_FREQ_0HZ;
+  freq[3] = BROADCAST_FREQ_0HZ;
+  freq[4] = BROADCAST_FREQ_0HZ;
+  freq[5] = BROADCAST_FREQ_0HZ;
+  freq[6] = BROADCAST_FREQ_0HZ;
+  freq[7] = BROADCAST_FREQ_0HZ;
+  freq[8] = BROADCAST_FREQ_0HZ;
+  freq[9] = BROADCAST_FREQ_0HZ;
+  freq[10] = BROADCAST_FREQ_0HZ;
+  freq[11] = BROADCAST_FREQ_0HZ;
 
   setBroadcastFreq(freq);
 }
@@ -455,6 +458,8 @@ unsigned short CoreAPI::setControl(bool enable, int timeout)
 }
 
 HardDriver *CoreAPI::getDriver() const { return serialDevice; }
+
+SimpleACK CoreAPI::getSimpleACK () const { return missionACKUnion.simpleACK; }
 
 void CoreAPI::setDriver(HardDriver *sDevice) { serialDevice = sDevice; }
 
@@ -559,6 +564,8 @@ void CoreAPI::sendToMobileCallback(CoreAPI *api, Header *protocolHeader, UserDat
         protocolHeader->sessionID, protocolHeader->sequenceNumber);
   }
 }
+
+//! Mobile Data Transparent Transmission Input Servicing 
 void CoreAPI::parseFromMobileCallback(CoreAPI *api, Header *protocolHeader, UserData userData __UNUSED)
 {
   uint16_t mobile_data_id;
@@ -689,11 +696,33 @@ void CoreAPI::parseFromMobileCallback(CoreAPI *api, Header *protocolHeader, User
           stopVideoMobileCMD = true;
         }
         break;
+      //! The next few are only polling based and do not use callbacks. See usage in Linux Sample.
+      case 61:
+        drawCirMobileCMD = true;
+        break;
+      case 62:
+        drawSqrMobileCMD = true;
+        break;
+      case 63:
+        attiCtrlMobileCMD = true;
+        break;
+      case 64:
+        gimbalCtrlMobileCMD = true;
+        break;
+      case 65:
+        wayPointTestMobileCMD = true;
+        break;
+      case 66:
+        localNavTestMobileCMD = true;
+        break;
+      case 67:
+        globalNavTestMobileCMD = true;
+        break;
       case 68:
-        followMeMobileCMD = true;
+        VRCTestMobileCMD = true;
+        break;
+    }
   }
-  
-}
 }
 
 void CoreAPI::setFrequencyCallback(CoreAPI *api __UNUSED, Header *protocolHeader,

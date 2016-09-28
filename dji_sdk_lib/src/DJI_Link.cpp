@@ -21,12 +21,23 @@
 #include "DJI_Codec.h"
 #include "DJI_API.h"
 
+#include "DJI_Logging.h"
+
 using namespace DJI::onboardSDK;
+
+CallBack callBack = 0;
+void* data = 0;
+Header *protHeader = 0;
 
 void CoreAPI::sendData(unsigned char *buf)
 {
   size_t ans;
   Header *pHeader = (Header *)buf;
+
+#ifdef API_TRACE_DATA
+  printFrame(serialDevice, pHeader, true);
+#endif
+
   ans = serialDevice->send(buf, pHeader->length);
   if (ans == 0)
     API_LOG(serialDevice, STATUS_LOG, "Port not send");
@@ -36,9 +47,13 @@ void CoreAPI::sendData(unsigned char *buf)
 
 void CoreAPI::appHandler(Header *protocolHeader)
 {
+#ifdef API_TRACE_DATA
+    printFrame(serialDevice, protocolHeader, false);
+#endif
+
   Header *p2protocolHeader;
-  CallBack callBack = 0;
-  UserData data = 0;
+
+
   if (protocolHeader->isAck == 1)
   {
     if (protocolHeader->sessionID > 1 && protocolHeader->sessionID < 32)
@@ -57,13 +72,21 @@ void CoreAPI::appHandler(Header *protocolHeader)
           freeSession(&CMDSessionTab[protocolHeader->sessionID]);
           serialDevice->freeMemory();
 
-          // Notify caller end of ACK frame arrived
-          notifyCaller(protocolHeader);
-
           if (callBack)
           {
-            //! @todo new algorithm call in a thread
-            callBack(this, protocolHeader, data);
+            //! Non-blocking callback thread
+            if (nonBlockingCBThreadEnable == true)
+            {
+             notifyNonBlockingCaller(protocolHeader);
+            }
+            else if (nonBlockingCBThreadEnable == true) {
+             callBack(this, protocolHeader, data);
+            }
+          else
+          {
+           // Notify caller end of ACK frame arrived
+           notifyCaller(protocolHeader);
+          }
 
             /**
              * Set end of ACK frame
@@ -156,6 +179,29 @@ void CoreAPI::notifyCaller(Header *protocolHeader)
   serialDevice->freeACK();
 }
 
+void CoreAPI::notifyNonBlockingCaller(Header *protocolHeader)
+{
+    serialDevice->lockProtocolHeader();
+
+    // In case of getDroneVersion? Should be only one case.
+    if(protocolHeader->length < 64)
+    {
+        memcpy(missionACKUnion.raw_ack_array, ((unsigned char *)protocolHeader) + sizeof(Header),
+               (protocolHeader->length - EXC_DATA_SIZE));
+    }
+    else
+    {
+        // Special case for getDroneVersion API call
+        version_ack_data = ((unsigned char *)protocolHeader) + sizeof(Header);
+    }
+    //! Copying protocol header to a global variable - will be passed to the Callback thread.
+    protHeader = protocolHeader;
+
+    serialDevice->notifyNonBlockCBAckRecv();
+    serialDevice->freeProtocolHeader();
+}
+
+
 void CoreAPI::sendPoll()
 {
   unsigned char i;
@@ -219,7 +265,13 @@ void CoreAPI::readPoll()
 }
 
 //! @todo Implement callback poll here
-void CoreAPI::callbackPoll(){}
+void CoreAPI::callbackPoll(CoreAPI *api)
+{
+  serialDevice->lockNonBlockCBAck();
+  serialDevice->nonBlockWait();
+  serialDevice->freeNonBlockCBAck();
+  callBack(api,protHeader,data);
+}
 
 void CoreAPI::setup()
 {
@@ -318,7 +370,7 @@ int CoreAPI::sendInterface(Command *parameter)
   CMDSession *cmdSession = (CMDSession *)NULL;
   if (parameter->length > PRO_PURE_DATA_MAX_SIZE)
   {
-    API_LOG(serialDevice, ERROR_LOG, "ERROR,length=%d is over-sized\n", parameter->length);
+    API_LOG(serialDevice, ERROR_LOG, "ERROR,length=%lu is over-sized\n", parameter->length);
     return -1;
   }
 

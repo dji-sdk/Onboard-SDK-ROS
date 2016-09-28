@@ -217,7 +217,7 @@ class CoreAPI
   void sendPoll(void);
   void readPoll(void);
   //! @todo Implement callback poll handler
-  void callbackPoll(void);
+  void callbackPoll(CoreAPI *api);
 
   //! @todo Pipeline refactoring
   void byteHandler(const uint8_t in_data);
@@ -228,6 +228,7 @@ class CoreAPI
 
   //! Notify caller ACK frame arrived
   void notifyCaller(Header *protocolHeader);
+  void notifyNonBlockingCaller(Header *protocolHeader);
 
   //@{
   /**
@@ -401,6 +402,8 @@ class CoreAPI
   /**Get broadcasted data values from flight controller.*/
   BroadcastData getBroadcastData() const;
 
+  bool nonBlockingCBThreadEnable = false;
+
   /**
    * Get timestamp from flight controller.
    *
@@ -433,6 +436,7 @@ class CoreAPI
    */
   HardDriver *getDriver() const;
 
+  SimpleACK getSimpleACK() const;
   /**
    * Get SDK version
    */
@@ -545,7 +549,8 @@ class CoreAPI
   void setVersion(const Version &value);
 
   /**
-   * Setters and getters for Mobile CMD variables
+   * Setters and getters for Mobile CMD variables - these are used 
+   * when interacting with a Data Transparent Transmission App 
    */
   bool getObtainControlMobileCMD() {return obtainControlMobileCMD;}
   bool getReleaseControlMobileCMD() {return releaseControlMobileCMD;}
@@ -558,7 +563,15 @@ class CoreAPI
   bool getTakePhotoMobileCMD() {return takePhotoMobileCMD;}
   bool getStartVideoMobileCMD() {return startVideoMobileCMD;}
   bool getStopVideoMobileCMD() {return stopVideoMobileCMD;}
-  bool getFollowMeMobileCMD() {return followMeMobileCMD;}
+
+  bool getDrawCirMobileCMD() {return drawCirMobileCMD;}
+  bool getDrawSqrMobileCMD() {return drawSqrMobileCMD;}
+  bool getAttiCtrlMobileCMD() {return attiCtrlMobileCMD;}
+  bool getGimbalCtrlMobileCMD() {return gimbalCtrlMobileCMD;}
+  bool getWayPointTestMobileCMD() {return wayPointTestMobileCMD;}
+  bool getLocalNavTestMobileCMD() {return localNavTestMobileCMD;}
+  bool getGlobalNavTestMobileCMD() {return globalNavTestMobileCMD;}
+  bool getVRCTestMobileCMD() {return VRCTestMobileCMD;} 
 
   void setObtainControlMobileCMD(bool userInput) {obtainControlMobileCMD = userInput;}
   void setReleaseControlMobileCMD(bool userInput) {releaseControlMobileCMD= userInput;}
@@ -571,7 +584,15 @@ class CoreAPI
   void setTakePhotoMobileCMD(bool userInput) {takePhotoMobileCMD= userInput;}
   void setStartVideoMobileCMD(bool userInput) {startVideoMobileCMD= userInput;}
   void setStopVideoMobileCMD(bool userInput) {stopVideoMobileCMD= userInput;}
-  void setFollowMeMobileCMD(bool userInput) {followMeMobileCMD= userInput;}
+
+  void setDrawCirMobileCMD(bool userInput) {drawCirMobileCMD = userInput;}
+  void setDrawSqrMobileCMD(bool userInput) {drawSqrMobileCMD = userInput;}
+  void setAttiCtrlMobileCMD(bool userInput) {attiCtrlMobileCMD = userInput;}
+  void setGimbalCtrlMobileCMD(bool userInput) {gimbalCtrlMobileCMD = userInput;}
+  void setWayPointTestMobileCMD(bool userInput) {wayPointTestMobileCMD = userInput;}
+  void setLocalNavTestMobileCMD(bool userInput) {localNavTestMobileCMD = userInput;}
+  void setGlobalNavTestMobileCMD(bool userInput) {globalNavTestMobileCMD = userInput;}
+  void setVRCTestMobileCMD(bool userInput) {VRCTestMobileCMD = userInput;} 
 
 
   private:
@@ -581,9 +602,7 @@ class CoreAPI
   unsigned char encodeSendData[BUFFER_SIZE];
   unsigned char encodeACK[ACK_SIZE];
 
-//  uint8_t cblistTail;
-//  CallBackHandler cbList[CALLBACK_LIST_NUM];
-
+  //! Mobile Data Transparent Transmission - callbacks
   CallBackHandler fromMobileCallback;
   CallBackHandler broadcastCallback;
   CallBackHandler hotPointCallback;
@@ -605,6 +624,8 @@ class CoreAPI
   CallBackHandler startVideoMobileCallback;
   CallBackHandler stopVideoMobileCallback;
 
+  //! Mobile Data Transparent Transmission - flags
+
   bool obtainControlMobileCMD;
   bool releaseControlMobileCMD;
   bool activateMobileCMD;
@@ -616,8 +637,16 @@ class CoreAPI
   bool takePhotoMobileCMD;
   bool startVideoMobileCMD;
   bool stopVideoMobileCMD;
-  bool followMeMobileCMD;
-  
+
+  bool drawCirMobileCMD;
+  bool drawSqrMobileCMD;
+  bool attiCtrlMobileCMD;
+  bool gimbalCtrlMobileCMD;
+  bool wayPointTestMobileCMD;
+  bool localNavTestMobileCMD;
+  bool globalNavTestMobileCMD;
+  bool VRCTestMobileCMD;
+
   VersionData versionData;
   ActivateData accountData;
 
