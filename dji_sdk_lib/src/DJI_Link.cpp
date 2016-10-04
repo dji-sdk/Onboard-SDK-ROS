@@ -181,26 +181,30 @@ void CoreAPI::notifyCaller(Header *protocolHeader)
 
 void CoreAPI::notifyNonBlockingCaller(Header *protocolHeader)
 {
-    serialDevice->lockProtocolHeader();
+  serialDevice->lockNonBlockCBAck();
+  //! This version of non-blocking can be limited in performance since the
+  //! read thread waits for the callback thread to return before the read thread continues.
 
-    // In case of getDroneVersion? Should be only one case.
-    if(protocolHeader->length < 64)
-    {
-        memcpy(missionACKUnion.raw_ack_array, ((unsigned char *)protocolHeader) + sizeof(Header),
-               (protocolHeader->length - EXC_DATA_SIZE));
-    }
-    else
-    {
-        // Special case for getDroneVersion API call
-        version_ack_data = ((unsigned char *)protocolHeader) + sizeof(Header);
-    }
-    //! Copying protocol header to a global variable - will be passed to the Callback thread.
-    protHeader = protocolHeader;
+  if(protocolHeader->length < 64)
+  {
+    memcpy(missionACKUnion.raw_ack_array, ((unsigned char *)protocolHeader) + sizeof(Header),
+           (protocolHeader->length - EXC_DATA_SIZE));
+  }
+  else
+  {
+    //! Special case for getDroneVersion API call
+    version_ack_data = ((unsigned char *)protocolHeader) + sizeof(Header);
+  }
+  //! Copying protocol header to a global variable - will be passed to the Callback thread.
+  //! protHeader is not thread safe and is passed to Callback for legacy purposes.
+  //! Ack is available in the callback via MissionACKUnion.
+  protHeader = protocolHeader;
+  serialDevice->freeNonBlockCBAck();
 
-    serialDevice->notifyNonBlockCBAckRecv();
-    serialDevice->freeProtocolHeader();
+  serialDevice->lockProtocolHeader();
+  serialDevice->notifyNonBlockCBAckRecv();
+  serialDevice->freeProtocolHeader();
 }
-
 
 void CoreAPI::sendPoll()
 {
@@ -269,8 +273,9 @@ void CoreAPI::callbackPoll(CoreAPI *api)
 {
   serialDevice->lockNonBlockCBAck();
   serialDevice->nonBlockWait();
-  serialDevice->freeNonBlockCBAck();
   callBack(api,protHeader,data);
+  serialDevice->freeNonBlockCBAck();
+
 }
 
 void CoreAPI::setup()
