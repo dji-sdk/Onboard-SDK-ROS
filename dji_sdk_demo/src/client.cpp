@@ -67,7 +67,7 @@ static void Display_Main_Menu(void)
 	printf("| [18] Disarm the Drone         | [37] Enter Mobile commands mode  |\n");
     printf("| [19] Virtual RC Test           \n");
     printf("+-----------------------------------------------------------------+\n");
-    printf("input a/b/c etc..then press enter key\r\n");
+    printf("input 1/2/3 etc..then press enter key\r\n");
     printf("use `rostopic echo` to query drone status\r\n");
     printf("----------------------------------------\r\n");
 }
@@ -137,7 +137,11 @@ int main(int argc, char *argv[])
     {
         ros::spinOnce();
         std::cout << "Enter Input Val: ";
-        std::cin >> temp32;
+        while(!(std::cin >> temp32)){
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::cout << "Invalid input.  Try again: ";
+	}
 
         if(temp32>0 && temp32<38)
         {
