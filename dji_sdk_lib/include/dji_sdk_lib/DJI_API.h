@@ -402,7 +402,7 @@ class CoreAPI
   /**Get broadcasted data values from flight controller.*/
   BroadcastData getBroadcastData() const;
 
-  bool nonBlockingCBThreadEnable = false;
+  bool nonBlockingCBThreadEnable;
 
   /**
    * Get timestamp from flight controller.
@@ -552,6 +552,8 @@ class CoreAPI
    * Setters and getters for Mobile CMD variables - these are used 
    * when interacting with a Data Transparent Transmission App 
    */
+
+  /** Core functions - getters */
   bool getObtainControlMobileCMD() {return obtainControlMobileCMD;}
   bool getReleaseControlMobileCMD() {return releaseControlMobileCMD;}
   bool getActivateMobileCMD() {return activateMobileCMD;}
@@ -564,6 +566,7 @@ class CoreAPI
   bool getStartVideoMobileCMD() {return startVideoMobileCMD;}
   bool getStopVideoMobileCMD() {return stopVideoMobileCMD;}
 
+  /** Custom missions - getters */
   bool getDrawCirMobileCMD() {return drawCirMobileCMD;}
   bool getDrawSqrMobileCMD() {return drawSqrMobileCMD;}
   bool getAttiCtrlMobileCMD() {return attiCtrlMobileCMD;}
@@ -571,8 +574,10 @@ class CoreAPI
   bool getWayPointTestMobileCMD() {return wayPointTestMobileCMD;}
   bool getLocalNavTestMobileCMD() {return localNavTestMobileCMD;}
   bool getGlobalNavTestMobileCMD() {return globalNavTestMobileCMD;}
-  bool getVRCTestMobileCMD() {return VRCTestMobileCMD;} 
+  bool getVRCTestMobileCMD() {return VRCTestMobileCMD;}
+  bool getLocalMissionPlanCMD() {return localMissionPlanCMD;}
 
+  /** Core functions - setters */
   void setObtainControlMobileCMD(bool userInput) {obtainControlMobileCMD = userInput;}
   void setReleaseControlMobileCMD(bool userInput) {releaseControlMobileCMD= userInput;}
   void setActivateMobileCMD(bool userInput) {activateMobileCMD= userInput;}
@@ -585,6 +590,7 @@ class CoreAPI
   void setStartVideoMobileCMD(bool userInput) {startVideoMobileCMD= userInput;}
   void setStopVideoMobileCMD(bool userInput) {stopVideoMobileCMD= userInput;}
 
+  /** Custom missions - setters */
   void setDrawCirMobileCMD(bool userInput) {drawCirMobileCMD = userInput;}
   void setDrawSqrMobileCMD(bool userInput) {drawSqrMobileCMD = userInput;}
   void setAttiCtrlMobileCMD(bool userInput) {attiCtrlMobileCMD = userInput;}
@@ -592,8 +598,8 @@ class CoreAPI
   void setWayPointTestMobileCMD(bool userInput) {wayPointTestMobileCMD = userInput;}
   void setLocalNavTestMobileCMD(bool userInput) {localNavTestMobileCMD = userInput;}
   void setGlobalNavTestMobileCMD(bool userInput) {globalNavTestMobileCMD = userInput;}
-  void setVRCTestMobileCMD(bool userInput) {VRCTestMobileCMD = userInput;} 
-
+  void setVRCTestMobileCMD(bool userInput) {VRCTestMobileCMD = userInput;}
+  void setLocalMissionPlanCMD(bool userInput) {localMissionPlanCMD = userInput;}
 
   private:
   BroadcastData broadcastData;
@@ -646,6 +652,7 @@ class CoreAPI
   bool localNavTestMobileCMD;
   bool globalNavTestMobileCMD;
   bool VRCTestMobileCMD;
+  bool localMissionPlanCMD;
 
   VersionData versionData;
   ActivateData accountData;

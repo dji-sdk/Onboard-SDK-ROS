@@ -70,6 +70,7 @@ void CoreAPI::init(HardDriver *sDevice, CallBackHandler userRecvCallback,
   wayPointData = false;
   callbackThread = userCallbackThread;
 
+  nonBlockingCBThreadEnable = false;
   ack_data = 99;
   versionData.version = SDKVersion;
 
@@ -720,6 +721,9 @@ void CoreAPI::parseFromMobileCallback(CoreAPI *api, Header *protocolHeader, User
         break;
       case 68:
         VRCTestMobileCMD = true;
+        break;
+      case 69:
+        localMissionPlanCMD = true;
         break;
     }
   }

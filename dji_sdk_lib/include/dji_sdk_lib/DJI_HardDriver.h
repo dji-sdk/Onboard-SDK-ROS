@@ -82,7 +82,7 @@ class HardDriver
   virtual time_ms getTimeStamp() = 0;
   virtual size_t send(const uint8_t *buf, size_t len) = 0;
   virtual size_t readall(uint8_t *buf, size_t maxlen) = 0;
-  virtual bool getDeviceStatus() {;}
+  virtual bool getDeviceStatus() {return true;}
 
   public:
   virtual void lockMemory() = 0;
