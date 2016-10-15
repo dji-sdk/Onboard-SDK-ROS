@@ -551,16 +551,12 @@ class CoreAPI
   void setVersion(const Version &value);
 
   /**
-<<<<<<< HEAD
-   * Setters and getters for Mobile CMD variables
-   */
-=======
+
    * Setters and getters for Mobile CMD variables - these are used 
    * when interacting with a Data Transparent Transmission App 
    */
 
   /** Core functions - getters */
->>>>>>> master
   bool getObtainControlMobileCMD() {return obtainControlMobileCMD;}
   bool getReleaseControlMobileCMD() {return releaseControlMobileCMD;}
   bool getActivateMobileCMD() {return activateMobileCMD;}

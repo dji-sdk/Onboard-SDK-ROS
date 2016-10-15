@@ -317,11 +317,7 @@ typedef struct WayPointData
  */
 
 typedef uint8_t MissionACK;
-<<<<<<< HEAD
-typedef uint32_t SimpleACK;
-=======
 typedef uint16_t SimpleACK;
->>>>>>> master
 
 typedef struct HotPointStartACK
 {
