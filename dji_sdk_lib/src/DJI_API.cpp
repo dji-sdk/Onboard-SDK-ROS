@@ -70,6 +70,7 @@ void CoreAPI::init(HardDriver *sDevice, CallBackHandler userRecvCallback,
   wayPointData = false;
   callbackThread = userCallbackThread;
 
+  nonBlockingCBThreadEnable = false;
   ack_data = 99;
   versionData.version = SDKVersion;
 
@@ -214,6 +215,33 @@ void CoreAPI::activate(ActivateData *data, CallBack callback, UserData userData)
   send(2, 0, SET_ACTIVATION, CODE_ACTIVATE, (unsigned char *)&accountData,
     sizeof(accountData) - sizeof(char *), 1000, 3,
     callback ? callback : CoreAPI::activateCallback, userData);
+
+  ack_data = missionACKUnion.simpleACK;
+  if(ack_data == ACK_ACTIVE_SUCCESS && accountData.encKey)
+   setKey(accountData.encKey);
+}
+
+unsigned short CoreAPI::activate(ActivateData *data, int timeout)
+{
+  data->version = versionData.version;
+  accountData = *data;
+  accountData.reserved = 2;
+
+  for (int i = 0; i < 32; ++i) accountData.iosID[i] = '0'; //! @note for ios verification
+  API_LOG(serialDevice, DEBUG_LOG, "version 0x%X/n", versionData.version);
+  API_LOG(serialDevice, DEBUG_LOG, "%.32s", accountData.iosID);
+  send(2, 0, SET_ACTIVATION, CODE_ACTIVATE, (unsigned char *)&accountData,
+    sizeof(accountData) - sizeof(char *), 1000, 3, 0, 0);
+
+  // Wait for end of ACK frame to arrive
+  serialDevice->lockACK();
+  serialDevice->wait(timeout);
+  serialDevice->freeACK();
+  ack_data = missionACKUnion.simpleACK;
+  if(ack_data == ACK_ACTIVE_SUCCESS && accountData.encKey)
+    setKey(accountData.encKey);
+
+  return ack_data;
 }
 
 unsigned short CoreAPI::activate(ActivateData *data, int timeout)
@@ -304,7 +332,6 @@ unsigned short CoreAPI::setBroadcastFreq(uint8_t *dataLenIs16, int timeout)
   serialDevice->lockACK();
   serialDevice->wait(timeout);
   serialDevice->freeACK();
-
   return missionACKUnion.simpleACK;
 }
 
@@ -362,6 +389,7 @@ void CoreAPI::setBroadcastFreqToZero()
   * 11 - Control Information
   */
 
+<<<<<<< HEAD
   freq[0] = BROADCAST_FREQ_1HZ;
   freq[1] = BROADCAST_FREQ_10HZ;
   freq[2] = BROADCAST_FREQ_50HZ;
@@ -374,6 +402,20 @@ void CoreAPI::setBroadcastFreqToZero()
   freq[9] = BROADCAST_FREQ_100HZ;
   freq[10] = BROADCAST_FREQ_50HZ;
   freq[11] = BROADCAST_FREQ_10HZ;
+=======
+  freq[0] = BROADCAST_FREQ_0HZ;
+  freq[1] = BROADCAST_FREQ_0HZ;
+  freq[2] = BROADCAST_FREQ_0HZ;
+  freq[3] = BROADCAST_FREQ_0HZ;
+  freq[4] = BROADCAST_FREQ_0HZ;
+  freq[5] = BROADCAST_FREQ_0HZ;
+  freq[6] = BROADCAST_FREQ_0HZ;
+  freq[7] = BROADCAST_FREQ_0HZ;
+  freq[8] = BROADCAST_FREQ_0HZ;
+  freq[9] = BROADCAST_FREQ_0HZ;
+  freq[10] = BROADCAST_FREQ_0HZ;
+  freq[11] = BROADCAST_FREQ_0HZ;
+>>>>>>> master
 
   setBroadcastFreq(freq);
 }
@@ -455,6 +497,8 @@ unsigned short CoreAPI::setControl(bool enable, int timeout)
 }
 
 HardDriver *CoreAPI::getDriver() const { return serialDevice; }
+
+SimpleACK CoreAPI::getSimpleACK () const { return missionACKUnion.simpleACK; }
 
 void CoreAPI::setDriver(HardDriver *sDevice) { serialDevice = sDevice; }
 
@@ -694,6 +738,169 @@ void CoreAPI::parseFromMobileCallback(CoreAPI *api, Header *protocolHeader, User
   }
   
 }
+}
+
+//! Mobile Data Transparent Transmission Input Servicing 
+void CoreAPI::parseFromMobileCallback(CoreAPI *api, Header *protocolHeader, UserData userData __UNUSED)
+{
+  uint16_t mobile_data_id;
+  
+  if (protocolHeader->length - EXC_DATA_SIZE <= 4)
+  {
+    mobile_data_id = *((unsigned char*)protocolHeader + sizeof(Header) + 2);
+
+    switch (mobile_data_id)
+    {
+      case 2: 
+        if (obtainControlMobileCallback.callback)
+        {
+          obtainControlMobileCallback.callback(api, protocolHeader, obtainControlMobileCallback.userData);          
+        }
+        else
+        {
+          obtainControlMobileCMD = true; 
+        }
+        break;
+
+      case 3: 
+        if (releaseControlMobileCallback.callback)
+        {
+          releaseControlMobileCallback.callback(api, protocolHeader, releaseControlMobileCallback.userData);          
+        }
+        else
+        {
+          releaseControlMobileCMD = true;
+        }
+        break;
+
+      case 4: 
+        if (activateMobileCallback.callback)
+        {
+          activateMobileCallback.callback(api, protocolHeader, activateMobileCallback.userData);          
+        }
+        else
+        {
+          activateMobileCMD = true;
+        }
+        break;
+
+      case 5: 
+        if (armMobileCallback.callback)
+        {
+          armMobileCallback.callback(api, protocolHeader, armMobileCallback.userData);
+        }
+        else
+        {
+          armMobileCMD = true;
+        }
+        break;
+
+      case 6: 
+        if (disArmMobileCallback.callback)
+        {
+          disArmMobileCallback.callback(api, protocolHeader, disArmMobileCallback.userData);     
+        }
+        else
+        {
+          disArmMobileCMD = true;
+        }
+        break;
+
+      case 7: 
+        if (takeOffMobileCallback.callback)
+        {
+          takeOffMobileCallback.callback(api, protocolHeader, takeOffMobileCallback.userData);   
+        }
+        else
+        {
+          takeOffMobileCMD = true;
+        }
+        break;
+
+      case 8: 
+        if (landingMobileCallback.callback)
+        {
+          landingMobileCallback.callback(api, protocolHeader, landingMobileCallback.userData);  
+        }
+        else
+        {
+          landingMobileCMD = true;
+        }
+        break;
+
+      case 9: 
+        if (goHomeMobileCallback.callback)
+        {
+          goHomeMobileCallback.callback(api, protocolHeader, goHomeMobileCallback.userData); 
+        }
+        else
+        {
+          goHomeMobileCMD = true;
+        }
+        break;
+
+      case 10: 
+        if (takePhotoMobileCallback.callback)
+        {
+          takePhotoMobileCallback.callback(api, protocolHeader, takePhotoMobileCallback.userData);     
+        }
+        else
+        {
+          takePhotoMobileCMD = true;
+        }
+        break;
+
+      case 11: 
+        if (startVideoMobileCallback.callback)
+        {
+          startVideoMobileCallback.callback(api, protocolHeader, startVideoMobileCallback.userData);   
+        }
+        else
+        {
+          startVideoMobileCMD = true;
+        }
+        break;
+
+      case 13: 
+        if (stopVideoMobileCallback.callback)
+        {
+          stopVideoMobileCallback.callback(api, protocolHeader, stopVideoMobileCallback.userData); 
+        }
+        else
+        {
+          stopVideoMobileCMD = true;
+        }
+        break;
+      //! The next few are only polling based and do not use callbacks. See usage in Linux Sample.
+      case 61:
+        drawCirMobileCMD = true;
+        break;
+      case 62:
+        drawSqrMobileCMD = true;
+        break;
+      case 63:
+        attiCtrlMobileCMD = true;
+        break;
+      case 64:
+        gimbalCtrlMobileCMD = true;
+        break;
+      case 65:
+        wayPointTestMobileCMD = true;
+        break;
+      case 66:
+        localNavTestMobileCMD = true;
+        break;
+      case 67:
+        globalNavTestMobileCMD = true;
+        break;
+      case 68:
+        VRCTestMobileCMD = true;
+        break;
+      case 69:
+        localMissionPlanCMD = true;
+        break;
+    }
+  }
 }
 
 void CoreAPI::setFrequencyCallback(CoreAPI *api __UNUSED, Header *protocolHeader,

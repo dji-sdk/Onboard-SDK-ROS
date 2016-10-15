@@ -96,9 +96,9 @@ void DJI::onboardSDK::CoreAPI::broadcast(Header *protocolHeader)
     passData(*enableFlag, DATA_FLAG, &broadcastData.gps, pdata, sizeof(GPSData), len);
     passData(*enableFlag, DATA_FLAG, &broadcastData.rtk, pdata, sizeof(RTKData), len);
     if (((*enableFlag) & 0x0040))
-      API_LOG(serialDevice, RTK_LOG, "receive GPS data %lld\n", serialDevice->getTimeStamp());
+      API_LOG(serialDevice, RTK_LOG, "receive GPS data %llu\n", (unsigned long long)serialDevice->getTimeStamp());
     if (((*enableFlag) & 0x0080))
-      API_LOG(serialDevice, RTK_LOG, "receive RTK data %lld\n", serialDevice->getTimeStamp());
+      API_LOG(serialDevice, RTK_LOG, "receive RTK data %llu\n", (unsigned long long)serialDevice->getTimeStamp());
   }
   passData(*enableFlag, DATA_FLAG, &broadcastData.mag, pdata, sizeof(MagnetData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.rc, pdata, sizeof(RadioData), len);

@@ -25,6 +25,7 @@
 //! Uncomment these macros to access various messages from the API. 
 
 //#define API_MISSION_DATA
+//#define API_TRACE_DATA
 //#define API_DEBUG_DATA
 //#define API_BUFFER_DATA
 //#define API_RTK_DEBUG

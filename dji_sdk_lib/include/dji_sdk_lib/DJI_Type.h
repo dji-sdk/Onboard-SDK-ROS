@@ -62,6 +62,13 @@
     else                                                                  \
       (driver)->displayLog("ERROR: log printer inner fault\n");           \
   }
+
+#ifdef API_TRACE_DATA
+#define TRACE_LOG "TRACE"
+#else
+#define TRACE_LOG 0
+#endif
+
 #ifdef API_DEBUG_DATA
 #define DEBUG_LOG "DEBUG"
 #else
@@ -310,7 +317,11 @@ typedef struct WayPointData
  */
 
 typedef uint8_t MissionACK;
+<<<<<<< HEAD
 typedef uint32_t SimpleACK;
+=======
+typedef uint16_t SimpleACK;
+>>>>>>> master
 
 typedef struct HotPointStartACK
 {
