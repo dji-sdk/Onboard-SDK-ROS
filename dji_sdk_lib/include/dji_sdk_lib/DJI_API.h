@@ -228,7 +228,9 @@ class CoreAPI
 
   //! Notify caller ACK frame arrived
   void notifyCaller(Header *protocolHeader);
+
   void notifyNonBlockingCaller(Header *protocolHeader);
+
 
   //@{
   /**
@@ -549,6 +551,7 @@ class CoreAPI
   void setVersion(const Version &value);
 
   /**
+
    * Setters and getters for Mobile CMD variables - these are used 
    * when interacting with a Data Transparent Transmission App 
    */
@@ -608,6 +611,7 @@ class CoreAPI
   unsigned char encodeSendData[BUFFER_SIZE];
   unsigned char encodeACK[ACK_SIZE];
 
+
   //! Mobile Data Transparent Transmission - callbacks
   CallBackHandler fromMobileCallback;
   CallBackHandler broadcastCallback;
@@ -643,7 +647,6 @@ class CoreAPI
   bool takePhotoMobileCMD;
   bool startVideoMobileCMD;
   bool stopVideoMobileCMD;
-
   bool drawCirMobileCMD;
   bool drawSqrMobileCMD;
   bool attiCtrlMobileCMD;
@@ -653,7 +656,6 @@ class CoreAPI
   bool globalNavTestMobileCMD;
   bool VRCTestMobileCMD;
   bool localMissionPlanCMD;
-
   VersionData versionData;
   ActivateData accountData;
 

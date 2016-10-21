@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['longitude',['longitude',['../structDJI_1_1onboardSDK_1_1WayPointInitData.html#a5829cb39abac8750ab507796e50d1639',1,'DJI::onboardSDK::WayPointInitData']]]
+  ['init',['init',['../classDJI_1_1onboardSDK_1_1HardDriver.html#a4bd7d6bcbb708b905e6296f3d1ac9eab',1,'DJI::onboardSDK::HardDriver']]]
 ];

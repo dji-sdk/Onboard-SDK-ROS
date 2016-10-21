@@ -71,7 +71,6 @@ void CoreAPI::appHandler(Header *protocolHeader)
           data = CMDSessionTab[protocolHeader->sessionID].userData;
           freeSession(&CMDSessionTab[protocolHeader->sessionID]);
           serialDevice->freeMemory();
-
           if (callBack) {
               //! Non-blocking callback thread
               if (nonBlockingCBThreadEnable == true) {
@@ -206,7 +205,6 @@ void CoreAPI::notifyNonBlockingCaller(Header *protocolHeader)
     serialDevice->freeProtocolHeader();
 
 }
-
 
 void CoreAPI::sendPoll()
 {

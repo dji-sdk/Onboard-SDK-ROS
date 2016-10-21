@@ -244,6 +244,7 @@ unsigned short CoreAPI::activate(ActivateData *data, int timeout)
   return ack_data;
 }
 
+
 void CoreAPI::sendToMobile(uint8_t *data, uint8_t len, CallBack callback, UserData userData)
 {
   if (len > 100)
