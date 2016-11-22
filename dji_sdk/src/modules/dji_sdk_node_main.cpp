@@ -146,7 +146,7 @@ void DJISDKNode::broadcast_callback()
 ****************************If using A3****************************
 ******************************************************************/
 
-    if(version == DJI::onboardSDK::versionA3_31) {
+    if(version == DJI::onboardSDK::versionA3_31 || DJI::onboardSDK::versionA3_32) {
 
     	//update gimbal msg
     	if (msg_flags & A3_HAS_GIMBAL) {
@@ -348,11 +348,15 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
 
     if(!drone_version.compare("M100"))
     {
-        user_act_data.version = 0x03010a00;
+        user_act_data.version = versionM100_31;
     }
-    else
+    else if (!drone_version.compare("A3_31"))
     {
-        user_act_data.version = 0x03016400;
+        user_act_data.version = versionA3_31;
+    }
+    else if (!drone_version.compare("A3_32"))
+    {
+      user_act_data.version = versionA3_32;
     }
     user_act_data.encKey = app_key;
     strcpy(user_act_data.encKey, enc_key.c_str());

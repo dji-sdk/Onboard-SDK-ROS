@@ -1,6 +1,7 @@
 <launch>
 	<node pkg="dji_sdk" type="dji_sdk_node" name="dji_sdk" output="screen">
 		<!-- node parameters -->
+		<!-- For Drone Version enter M100 or A3_31 or A3_32 depending on your Flight Controller/Aircraft -->
                 <param name="drone_version" type="string" value="M100"/>
 		<param name="serial_name" type="string" value="/dev/ttyUSB0"/>
 		<param name="baud_rate" type="int" value="230400"/>
