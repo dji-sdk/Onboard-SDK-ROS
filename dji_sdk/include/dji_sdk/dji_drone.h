@@ -35,14 +35,14 @@ private:
 
 	ros::ServiceClient activation_service;
 	ros::ServiceClient attitude_control_service;
-    	ros::ServiceClient camera_action_control_service;
-    	ros::ServiceClient drone_task_control_service;
-    	ros::ServiceClient gimbal_angle_control_service;
-    	ros::ServiceClient gimbal_speed_control_service;
-    	ros::ServiceClient global_position_control_service;
-    	ros::ServiceClient local_position_control_service;
-    	ros::ServiceClient sdk_permission_control_service;
-    	ros::ServiceClient velocity_control_service;
+	ros::ServiceClient camera_action_control_service;
+	ros::ServiceClient drone_task_control_service;
+	ros::ServiceClient gimbal_angle_control_service;
+	ros::ServiceClient gimbal_speed_control_service;
+	ros::ServiceClient global_position_control_service;
+	ros::ServiceClient local_position_control_service;
+	ros::ServiceClient sdk_permission_control_service;
+	ros::ServiceClient velocity_control_service;
 	ros::ServiceClient version_check_service;
 
 	ros::ServiceClient virtual_rc_enable_control_service;
@@ -66,19 +66,19 @@ private:
 	ros::ServiceClient mission_fm_set_target_service;
 	//ros::ServiceClient mobile_commands_service;
 
-    	ros::Subscriber acceleration_subscriber;
-    	ros::Subscriber attitude_quaternion_subscriber;
-    	ros::Subscriber compass_subscriber;
-    	ros::Subscriber flight_control_info_subscriber;
-    	ros::Subscriber flight_status_subscriber;
-    	ros::Subscriber gimbal_subscriber;
-    	ros::Subscriber global_position_subscriber;
-    	ros::Subscriber local_position_subscriber;
-    	ros::Subscriber power_status_subscriber;
-    	ros::Subscriber rc_channels_subscriber;
-    	ros::Subscriber velocity_subscriber;
-    	ros::Subscriber activation_subscriber;
-    	ros::Subscriber odometry_subscriber;
+	ros::Subscriber acceleration_subscriber;
+	ros::Subscriber attitude_quaternion_subscriber;
+	ros::Subscriber compass_subscriber;
+	ros::Subscriber flight_control_info_subscriber;
+	ros::Subscriber flight_status_subscriber;
+	ros::Subscriber gimbal_subscriber;
+	ros::Subscriber global_position_subscriber;
+	ros::Subscriber local_position_subscriber;
+	ros::Subscriber power_status_subscriber;
+	ros::Subscriber rc_channels_subscriber;
+	ros::Subscriber velocity_subscriber;
+	ros::Subscriber activation_subscriber;
+	ros::Subscriber odometry_subscriber;
 
 	ros::Subscriber time_stamp_subscriber;
 	ros::Subscriber mission_status_subscriber;
@@ -87,20 +87,20 @@ private:
 
 public:
 
-   	 dji_sdk::Acceleration acceleration;
-    	dji_sdk::AttitudeQuaternion attitude_quaternion;
-    	dji_sdk::Compass compass;
-    	dji_sdk::FlightControlInfo flight_control_info;
-    	uint8_t flight_status;
-    	uint8_t mobile_new_data;
-    	dji_sdk::Gimbal gimbal;
-    	dji_sdk::GlobalPosition global_position;
-    	dji_sdk::GlobalPosition global_position_ref;
-    	dji_sdk::LocalPosition local_position;
-    	dji_sdk::LocalPosition local_position_ref;
-    	dji_sdk::PowerStatus power_status;
-    	dji_sdk::TransparentTransmissionData mobile_data;
-    	dji_sdk::RCChannels rc_channels;
+	  dji_sdk::Acceleration acceleration;
+		dji_sdk::AttitudeQuaternion attitude_quaternion;
+		dji_sdk::Compass compass;
+		dji_sdk::FlightControlInfo flight_control_info;
+		uint8_t flight_status;
+		uint8_t mobile_new_data;
+		dji_sdk::Gimbal gimbal;
+		dji_sdk::GlobalPosition global_position;
+		dji_sdk::GlobalPosition global_position_ref;
+		dji_sdk::LocalPosition local_position;
+		dji_sdk::LocalPosition local_position_ref;
+		dji_sdk::PowerStatus power_status;
+		dji_sdk::TransparentTransmissionData mobile_data;
+		dji_sdk::RCChannels rc_channels;
    	dji_sdk::Velocity velocity;
    	nav_msgs::Odometry odometry;
    	dji_sdk::TimeStamp time_stamp;
@@ -257,152 +257,188 @@ private:
 	CallBackHandler globalNavigationTestCallback;
 	CallBackHandler virtualRCTestCallback;
 	CallBackHandler gimbalControlDemoCallback;
+	CallBackHandler startMapLASLoggingCallback;
+	CallBackHandler stopMapLASLoggingCallback;
+	CallBackHandler startCollisionAvoidanceCallback;
+	CallBackHandler stopCollisionAvoidanceCallback;
+
 
 	void mobile_data_push_info_callback(dji_sdk::TransparentTransmissionData information)
 	{
 		this->mobile_data = information;
 		mobile_new_data = 1;
-        int cmdID = mobile_data.data[0];
-        printf("Command ID code is %d \n", cmdID);
+		int cmdID = mobile_data.data[0];
+		printf("Command ID code is %d \n", cmdID);
 
-        switch(cmdID)
-        {
-        	case 2: 
-        	if (obtainControlCallback.callback)
-        	{
-       		 obtainControlCallback.callback(this);          
-            }
-            break;
+		switch(cmdID)
+		{
+			case 2:
+			if (obtainControlCallback.callback)
+			{
+			 obtainControlCallback.callback(this);
+				}
+				break;
 
-            case 3: 
-            if (releaseControlCallback.callback)
-        	{
-       		 releaseControlCallback.callback(this);          
-            }
-            break;
+				case 3:
+				if (releaseControlCallback.callback)
+			{
+			 releaseControlCallback.callback(this);
+				}
+				break;
 
-            case 4: 
-            //if (obtainControlCallback.callback)
-        	//{
-       		// obtainControlCallback.callback();          
-            //}
-            break;
+				case 4:
+				//if (obtainControlCallback.callback)
+			//{
+			// obtainControlCallback.callback();
+				//}
+				break;
 
-            case 5: 
-            if (armCallback.callback)
-        	{
-       		 armCallback.callback(this);          
-            }
-            break;
+				case 5:
+				if (armCallback.callback)
+			{
+			 armCallback.callback(this);
+				}
+				break;
 
-            case 6: 
-            if (disArmCallback.callback)
-        	{
-       		 disArmCallback.callback(this);          
-            }
-            break;
+				case 6:
+				if (disArmCallback.callback)
+			{
+			 disArmCallback.callback(this);
+				}
+				break;
 
-            case 7: 
-            if (takeOffCallback.callback)
-        	{
-       		 takeOffCallback.callback(this);          
-            }
-            break;
+				case 7:
+				if (takeOffCallback.callback)
+			{
+			 takeOffCallback.callback(this);
+				}
+				break;
 
-            case 8: 
-            if (landingCallback.callback)
-        	{
-       		 landingCallback.callback(this);          
-            }
-            break;
+				case 8:
+				if (landingCallback.callback)
+			{
+			 landingCallback.callback(this);
+				}
+				break;
 
-            case 9: 
-            if (goHomeCallback.callback)
-        	{
-       		 goHomeCallback.callback(this);          
-            }
-            break;
+				case 9:
+				if (goHomeCallback.callback)
+			{
+			 goHomeCallback.callback(this);
+				}
+				break;
 
-            case 10: 
-            if (takePhotoCallback.callback)
-        	{
-       		 takePhotoCallback.callback(this);          
-            }
-            break;
+				case 10:
+				if (takePhotoCallback.callback)
+			{
+			 takePhotoCallback.callback(this);
+				}
+				break;
 
-            case 11: 
-            if (startVideoCallback.callback)
-        	{
-       		 startVideoCallback.callback(this);          
-            }
-            break;
+				case 11:
+				if (startVideoCallback.callback)
+			{
+			 startVideoCallback.callback(this);
+				}
+				break;
 
-            case 13: 
-            if (stopVideoCallback.callback)
-        	{
-       		 stopVideoCallback.callback(this);          
-            }
-            break;
+				case 13:
+				if (stopVideoCallback.callback)
+			{
+			 stopVideoCallback.callback(this);
+				}
+				break;
 
-            case 61: 
-            if (drawCircleDemoCallback.callback)
-        	{
-       		 drawCircleDemoCallback.callback(this);          
-            }
-            break;
+			case 20:
+				if (startMapLASLoggingCallback.callback)
+				{
+					startMapLASLoggingCallback.callback(this);
+				}
 
+				break;
 
-            case 62: 
-            if (drawSquareDemoCallback.callback)
-        	{
-       		 drawSquareDemoCallback.callback(this);          
-            }
-            break;
+			case 21:
+				if (stopMapLASLoggingCallback.callback)
+				{
+					stopMapLASLoggingCallback.callback(this);
+				}
+				break;
 
-            case 63: 
-            if (attitudeControlDemoCallback.callback)
-        	{
-       		 attitudeControlDemoCallback.callback(this);          
-            }
-            break;
+			case 22:
+				if (startCollisionAvoidanceCallback.callback)
+				{
+					startCollisionAvoidanceCallback.callback(this);
+				}
 
-            case 64: 
-            if (gimbalControlDemoCallback.callback)
-        	{
-       		 gimbalControlDemoCallback.callback(this);          
-            }
-            break;
+				break;
 
-            case 65: 
-            if (waypointNavigationTestCallback.callback)
-        	{
-       		 waypointNavigationTestCallback.callback(this);          
-            }
-            break;
-
-            case 66: 
-            if (localNavigationTestCallback.callback)
-        	{
-       		 localNavigationTestCallback.callback(this);          
-            }
-            break;
-
-            case 67: 
-            if (globalNavigationTestCallback.callback)
-        	{
-       		 globalNavigationTestCallback.callback(this);          
-            }
-            break;
-
-            case 68: 
-            if (virtualRCTestCallback.callback)
-        	{
-       		 virtualRCTestCallback.callback(this);          
-            }
-            break;
+			case 23:
+				if (stopCollisionAvoidanceCallback.callback)
+				{
+					stopCollisionAvoidanceCallback.callback(this);
+				}
+				break;
 
 
-        }
+				case 61:
+				if (drawCircleDemoCallback.callback)
+			{
+			 drawCircleDemoCallback.callback(this);
+				}
+				break;
+
+
+				case 62:
+				if (drawSquareDemoCallback.callback)
+			{
+			 drawSquareDemoCallback.callback(this);
+				}
+				break;
+
+				case 63:
+				if (attitudeControlDemoCallback.callback)
+			{
+			 attitudeControlDemoCallback.callback(this);
+				}
+				break;
+
+				case 64:
+				if (gimbalControlDemoCallback.callback)
+			{
+			 gimbalControlDemoCallback.callback(this);
+				}
+				break;
+
+				case 65:
+				if (waypointNavigationTestCallback.callback)
+			{
+			 waypointNavigationTestCallback.callback(this);
+				}
+				break;
+
+				case 66:
+				if (localNavigationTestCallback.callback)
+			{
+			 localNavigationTestCallback.callback(this);
+				}
+				break;
+
+				case 67:
+				if (globalNavigationTestCallback.callback)
+			{
+			 globalNavigationTestCallback.callback(this);
+				}
+				break;
+
+				case 68:
+				if (virtualRCTestCallback.callback)
+			{
+			 virtualRCTestCallback.callback(this);
+				}
+				break;
+
+
+		}
 	}
 
 	void mission_event_push_info_callback(dji_sdk::MissionPushInfo event_push_info)
@@ -610,6 +646,30 @@ public:
     	gimbalControlDemoCallback.callback = userCallback;
 		gimbalControlDemoCallback.userData = userData;
     }
+
+	void setStartMapLASLoggingMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+		startMapLASLoggingCallback.callback = userCallback;
+		startMapLASLoggingCallback.userData = userData;
+	}
+
+	void setStopMapLASLoggingMobileCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+		stopMapLASLoggingCallback.callback = userCallback;
+		stopMapLASLoggingCallback.userData = userData;
+	}
+
+	void setStartCollisionAvoidanceCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+		startCollisionAvoidanceCallback.callback = userCallback;
+		startCollisionAvoidanceCallback.userData = userData;
+	}
+
+	void setStopCollisionAvoidanceCallback(DJIDrone::CallBack userCallback, UserData userData)
+	{
+		stopCollisionAvoidanceCallback.callback = userCallback;
+		stopCollisionAvoidanceCallback.userData = userData;
+	}
 
 	bool activate()
 	{

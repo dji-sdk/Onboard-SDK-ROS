@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <dji_sdk/dji_drone.h>
 #include <cstdlib>
+#include <stdlib.h>
 #include <actionlib/client/simple_action_client.h>
 #include <actionlib/client/terminal_state.h>
 
@@ -41,6 +42,12 @@ void LocalNavigationTestMobileCallback(DJIDrone *drone);
 void GlobalNavigationTestMobileCallback(DJIDrone *drone);
 void WaypointNavigationTestMobileCallback(DJIDrone *drone);
 void VirtuaRCTestMobileCallback(DJIDrone *drone);
+
+//! For LAS logging
+void StartMapLASLoggingMobileCallback(DJIDrone *drone);
+void StopMapLASLoggingMobileCallback(DJIDrone *drone);
+void StartCollisionAvoidanceCallback(DJIDrone *drone);
+void StopCollisionAvoidanceCallback(DJIDrone *drone);
 
 
 static void Display_Main_Menu(void)
@@ -130,6 +137,11 @@ int main(int argc, char *argv[])
     drone->setGlobalNavigationTestMobileCallback(GlobalNavigationTestMobileCallback, &userData);
     drone->setWaypointNavigationTestMobileCallback(WaypointNavigationTestMobileCallback, &userData);
     drone->setVirtuaRCTestMobileCallback(VirtuaRCTestMobileCallback, &userData);
+
+    drone->setStartMapLASLoggingMobileCallback(StartMapLASLoggingMobileCallback, &userData);
+    drone->setStopMapLASLoggingMobileCallback(StopMapLASLoggingMobileCallback, &userData);
+    drone->setStartCollisionAvoidanceCallback(StartCollisionAvoidanceCallback, &userData);
+    drone->setStopCollisionAvoidanceCallback(StopCollisionAvoidanceCallback, &userData);
 
 	
     Display_Main_Menu();
@@ -1018,3 +1030,43 @@ int main(int argc, char *argv[])
         }
         drone->virtual_rc_disable();
     }
+
+void StartMapLASLoggingMobileCallback(DJIDrone *drone)
+{
+  system("roslaunch point_cloud_las start_velodyne_and_loam.launch &");
+  system("rosrun point_cloud_las write _topic:=/laser_cloud_surround _folder_path:=. &");
+}
+
+void StopMapLASLoggingMobileCallback(DJIDrone *drone)
+{
+  system("rosnode kill /write_LAS /scanRegistration /laserMapping /transformMaintenance /laserOdometry  &");
+}
+
+void StartCollisionAvoidanceCallback(DJIDrone *drone)
+{ 
+  uint8_t freq[16];
+  freq[0] = 1;    // 0 - Timestamp
+  freq[1] = 4;    // 1 - Attitude Quaterniouns
+  freq[2] = 1;    // 2 - Acceleration
+  freq[3] = 4;    // 3 - Velocity (Ground Frame)
+  freq[4] = 4;    // 4 - Angular Velocity (Body Frame)
+  freq[5] = 3;    // 5 - Position
+  freq[6] = 0;    // 6 - Magnetometer
+  freq[7] = 3;    // 7 - M100:RC Channels Data, A3:RTK Detailed Information
+  freq[8] = 0;    // 8 - M100:Gimbal Data, A3: Magnetometer
+  freq[9] = 3;    // 9 - M100:Flight Status, A3: RC Channels
+  freq[10] = 0;   // 10 - M100:Battery Level, A3: Gimble Data
+  freq[11] = 2;   // 11 - M100:Control Information, A3: Flight Status
+
+  drone->set_message_frequency(freq);
+  usleep(1e4);
+  system("roslaunch dji_collision_avoidance from_DJI_ros_demo.launch &");
+}
+
+void StopCollisionAvoidanceCallback(DJIDrone *drone)
+{
+  drone->release_sdk_permission_control();
+  system("rosnode kill /drone_tf_builder /dji_occupancy_grid_node /dji_collision_detection_node /collision_velodyne_nodelet_manager /manual_fly");
+  usleep(1e4);
+  drone->request_sdk_permission_control();
+}

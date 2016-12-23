@@ -71,7 +71,6 @@ void CoreAPI::appHandler(Header *protocolHeader)
           data = CMDSessionTab[protocolHeader->sessionID].userData;
           freeSession(&CMDSessionTab[protocolHeader->sessionID]);
           serialDevice->freeMemory();
-
           if (callBack)
           {
 	    //! Non-blocking callback thread

@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(dji_sdk)
 
+option(GTEST "Build with Google Test framework" ON)
+
+# Add module path for <name>.cmake conf files
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Onboard-SDK-ROS/contrib)
+include(${CMAKE_MODULE_PATH}/External_GTest.cmake)
+
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
@@ -18,7 +24,6 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -166,7 +171,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-	include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -193,6 +198,54 @@ add_dependencies(dji_sdk_node
 target_link_libraries(dji_sdk_node
   ${catkin_LIBRARIES}
 )
+
+#############
+## Testing ##
+#############
+find_package(rostest REQUIRED)
+find_package(GTest QUIET)
+
+if(GTEST_FOUND)
+  message("Found GTest on the system\n")
+endif()
+
+# Create a gtest executable with target name "dji_sdk_test"
+# which is not built by "make all" but only by "make tests"
+# add one/multiple source files to the executable target
+# register the rostest launch file "test/dji_sdk-node.test"
+add_rostest_gtest(${PROJECT_NAME}_test
+  test/${PROJECT_NAME}-node.test
+  src/test/${PROJECT_NAME}_test.cpp
+  src/modules/dji_sdk_node_actions.cpp
+  src/modules/dji_sdk_node_services.cpp
+  src/modules/dji_sdk_node_main.cpp
+  src/modules/dji_sdk_node_mission.cpp)
+
+if(TARGET ${PROJECT_NAME}_test)
+  add_dependencies(${PROJECT_NAME}_test
+    dji_sdk_generate_messages_cpp
+    dji_sdk_lib)
+
+  target_link_libraries(${PROJECT_NAME}_test
+     ${catkin_LIBRARIES}
+     dji_sdk_lib
+     gtest
+     gtest_main
+     pthread)
+endif()
+
+## Add folders to be run by python nosetests
+# catkin_add_nosetests(test)
+
+option(USE_COLLISION_AVOIDANCE "Use DJI collision avoidance library" OFF)
+if(USE_COLLISION_AVOIDANCE)
+  include(${CMAKE_MODULE_PATH}/External_CollisionAvoidance.cmake)
+endif()
+
+option(USE_POINTCLOUD2LAS "Use DJI Pointcloud to LAS converter library" OFF)
+if(USE_POINTCLOUD2LAS)
+  include(${CMAKE_MODULE_PATH}/External_Pointcloud2Las.cmake)
+endif()
 
 #############
 ## Install ##
@@ -236,15 +289,4 @@ install(DIRECTORY launch
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
-#############
-## Testing ##
-#############
 
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_dji_sdk.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
-
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
