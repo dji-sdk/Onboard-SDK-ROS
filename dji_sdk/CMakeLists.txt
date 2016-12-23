@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(dji_sdk)
 
-option(GTEST "Build with Google Test framework" ON)
+option(GTEST "Build with Google Test framework" OFF)
 
 # Add module path for <name>.cmake conf files
 set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/Onboard-SDK-ROS/contrib)
+if (GTEST) 
 include(${CMAKE_MODULE_PATH}/External_GTest.cmake)
+endif () 
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
