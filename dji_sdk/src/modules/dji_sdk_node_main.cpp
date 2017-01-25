@@ -146,7 +146,7 @@ void DJISDKNode::broadcast_callback()
 ****************************If using A3****************************
 ******************************************************************/
 
-    if(version == DJI::onboardSDK::versionA3_31 || DJI::onboardSDK::versionA3_32) {
+    if(version == DJI::onboardSDK::versionA3_31 || version == DJI::onboardSDK::versionA3_32) {
 
     	//update gimbal msg
     	if (msg_flags & A3_HAS_GIMBAL) {
