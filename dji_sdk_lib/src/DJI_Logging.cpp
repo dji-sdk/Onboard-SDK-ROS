@@ -13,25 +13,26 @@
 #include "DJI_API.h"
 #include "DJI_Link.h"
 #include "DJI_Type.h"
+#ifdef API_TRACE_DATA
 #include <pthread.h>
 
 namespace DJI {
 namespace onboardSDK {
 
-    pthread_mutex_t _logging_lock = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t _logging_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void printFrame(HardDriver *serialDevice, Header *header, bool onboardToAircraft) {
     pthread_mutex_lock(&_logging_lock);
 
-    uint32_t *crc32 = (uint32_t*) ((uint8_t*)header + header->length - 4);
+  uint32_t *crc32 = (uint32_t *)((uint8_t *)header + header->length - 4);
 
-    if (!header->isAck) {
-        __Command* command = (__Command*)((uint8_t*)header + sizeof(Header));
+  if (!header->isAck) {
+    __Command *command = (__Command *)((uint8_t *)header + sizeof(Header));
 
-        if (!onboardToAircraft && command->set_id == SET_BROADCAST) {
-            pthread_mutex_unlock(&_logging_lock);
-            return;
-        }
+    if (!onboardToAircraft && command->set_id == SET_BROADCAST) {
+      pthread_mutex_unlock(&_logging_lock);
+      return;
+    }
 
         API_LOG(serialDevice, DEBUG_LOG, "\n\n");
         if (onboardToAircraft) {
@@ -77,3 +78,4 @@ void printFrame(HardDriver *serialDevice, Header *header, bool onboardToAircraft
 }
 }
 }
+#endif  // API_TRACE_DATA

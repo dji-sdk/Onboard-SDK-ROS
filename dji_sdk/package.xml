@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <package>
   <name>dji_sdk</name>
-  <version>0.1.9</version>
+  <version>3.2.0</version>
   <description>A ROS package using DJI Onboard SDK. </description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag --> 
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
   <maintainer email="norman.li@dji.com">Norman Li</maintainer>
-  <maintainer email="me@botao.hu">Botao Hu</maintainer>
+  <maintainer email="arjun.menon@dji.com">Arjun Menon</maintainer>
 
 
   <!-- One license tag required, multiple allowed, one license per tag -->
@@ -20,13 +20,13 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/dji_sdk</url> -->
+  <url type="website">http://developer.dji.com/onboard-sdk/documentation/github-platform-docs/ROS/README.html</url>
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
   <!-- Authors do not have to be maintianers, but could be -->
   <!-- Example: -->
-  <author email="me@botao.hu">Botao Hu</author>
+  <author email="arjun.menon@dji.com">Arjun Menon</author>
 
 
   <!-- The *_depend tags are used to specify dependencies -->

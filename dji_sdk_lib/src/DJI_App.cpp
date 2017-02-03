@@ -42,14 +42,16 @@ unsigned char getCmdCode(Header *protocolHeader)
   return *ptemp;
 }
 
-BroadcastData DJI::onboardSDK::CoreAPI::getBroadcastData() const { return broadcastData; }
-
-BatteryData DJI::onboardSDK::CoreAPI::getBatteryCapacity() const
-{
-  return broadcastData.battery;
+BroadcastData DJI::onboardSDK::CoreAPI::getBroadcastData() const {
+  serialDevice->lockMSG();
+  BroadcastData data = broadcastData;
+  serialDevice->freeMSG();
+  return data;
 }
 
-CtrlInfoData DJI::onboardSDK::CoreAPI::getCtrlInfo() const { return broadcastData.ctrlInfo; }
+BatteryData DJI::onboardSDK::CoreAPI::getBatteryCapacity() const { return getBroadcastData().battery; }
+
+CtrlInfoData DJI::onboardSDK::CoreAPI::getCtrlInfo() const { return getBroadcastData().ctrlInfo; }
 
 void DJI::onboardSDK::CoreAPI::setBroadcastFrameStatus(bool isFrame)
 {
@@ -78,7 +80,17 @@ void DJI::onboardSDK::CoreAPI::broadcast(Header *protocolHeader)
   uint16_t DATA_FLAG = 0x0001;
   //! @todo better algorithm
 
-  if (versionData.version != versionM100_23)
+  /** 
+   *@note Write activation status
+   *
+   * Default value: 0xFF
+   * Activation successful: 0x00
+   * Activation error codes: 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08
+   * (see DJI_API.h for detailed description of the error codes)
+   */
+  broadcastData.activation = ack_activation;
+
+  if (versionData.fwVersion > MAKE_VERSION(3,1,0,0))
     passData(*enableFlag, DATA_FLAG, &broadcastData.timeStamp, pdata, sizeof(TimeStampData),
         len);
   else
@@ -91,7 +103,7 @@ void DJI::onboardSDK::CoreAPI::broadcast(Header *protocolHeader)
   passData(*enableFlag, DATA_FLAG, &broadcastData.w, pdata, sizeof(CommonData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.pos, pdata, sizeof(PositionData), len);
 
-  if (versionData.version == versionA3_31 || versionData.version == versionA3_32)
+  if (strcmp(versionData.hwVersion, "M100") != 0) //! N3/A3/M600
   {
     passData(*enableFlag, DATA_FLAG, &broadcastData.gps, pdata, sizeof(GPSData), len);
     passData(*enableFlag, DATA_FLAG, &broadcastData.rtk, pdata, sizeof(RTKData), len);
@@ -103,11 +115,11 @@ void DJI::onboardSDK::CoreAPI::broadcast(Header *protocolHeader)
   passData(*enableFlag, DATA_FLAG, &broadcastData.mag, pdata, sizeof(MagnetData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.rc, pdata, sizeof(RadioData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.gimbal, pdata,
-      sizeof(GimbalData) - ((versionData.version == versionM100_23) ? 1 : 0), len);
+      sizeof(GimbalData) - ((versionData.fwVersion < MAKE_VERSION(3,1,0,0)) ? 1 : 0), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.status, pdata, sizeof(FlightStatus), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.battery, pdata, sizeof(BatteryData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.ctrlInfo, pdata,
-      sizeof(CtrlInfoData) - ((versionData.version == versionM100_23) ? 1 : 0), len);
+      sizeof(CtrlInfoData) - ((versionData.fwVersion < MAKE_VERSION(3,1,0,0)) ? 1 : 0), len);
   serialDevice->freeMSG();
 
   /**
