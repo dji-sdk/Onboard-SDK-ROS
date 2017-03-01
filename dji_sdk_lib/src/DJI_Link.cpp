@@ -102,6 +102,10 @@ void CoreAPI::appHandler(Header *protocolHeader)
           serialDevice->freeMemory();
         }
       }  
+      else
+      {
+        serialDevice->freeMemory();
+      }
     }
   }
   else
