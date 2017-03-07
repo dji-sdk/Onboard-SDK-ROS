@@ -107,7 +107,7 @@ int main(int argc, char **argv)
 			}else{
                 cvtColor(imageOri,imageOri,CV_YUV2GRAY_NV12);
             }
-            imageCut = imageOri(Range(0, 720), Range(160, 1120));
+            //imageCut = imageOri(Range(0, 720), Range(160, 1120));
 			time=ros::Time::now();
 			cvi.header.stamp = time;
 			cvi.header.frame_id = "image";
@@ -116,7 +116,7 @@ int main(int argc, char **argv)
 			}else{
 				cvi.encoding = "mono8";
 			}
-            cvi.image = imageCut;
+            cvi.image = imageOri;//imageCut;
 			cvi.toImageMsg(im);
 			cam_info.header.seq = nCount;
 			cam_info.header.stamp = time;
