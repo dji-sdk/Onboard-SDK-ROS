@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 		if(ret != -1)
 		{
 
-            camera = Mat(720 * 3 / 2, 1280, CV_8UC1, buffer);
+            imageOri = Mat(IMAGE_H * 3 / 2, IMAGE_W, CV_8UC1, buffer);
 			if(gray_or_rgb){
                 cvtColor(imageOri,imageOri,CV_YUV2BGR_NV12);
 			}else{
