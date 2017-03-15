@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 #encoding = utf-8
 import rospy
-import std_msgs.msg 
-import dji_sdk.msg 
-import nav_msgs.msg 
-import dji_sdk.srv 
+import std_msgs.msg
+import dji_sdk.msg
+import nav_msgs.msg
+import dji_sdk.srv
 import math
 import time
 import actionlib
@@ -66,6 +66,9 @@ class DJIDrone:
     def time_stamp_subscriber_callback(self, time_stamp):
         self.time_stamp = time_stamp
 
+    def mobile_data_callback(self, data):
+        self.latest_mobile_data = data
+
     def init_subscribers(self):
         self.acceleration_subscriber = rospy.Subscriber("dji_sdk/acceleration", dji_sdk.msg.Acceleration, self.acceleration_subscriber_callback)
         self.attitude_quaternion_subscriber = rospy.Subscriber("dji_sdk/attitude_quaternion", dji_sdk.msg.AttitudeQuaternion, self.attitude_quaternion_subscriber_callback)
@@ -81,8 +84,10 @@ class DJIDrone:
         self.activation_subscriber = rospy.Subscriber("dji_sdk/activation", std_msgs.msg.UInt8, self.activation_subscriber_callback)
         self.odometry_subscriber = rospy.Subscriber("dji_sdk/odometry", nav_msgs.msg.Odometry, self.odometry_subscriber_callback)
         self.time_stamp_subscriber = rospy.Subscriber("dji_sdk/time_stamp", dji_sdk.msg.TimeStamp, self.time_stamp_subscriber_callback)
+        self.mobile_data_callback = rospy.Subscriber("dji_sdk/data_received_from_remote_device", dji_sdk.msg.TransparentTransmissionData, self.mobile_data_callback)
 
     def init_services(self):
+        rospy.wait_for_service("dji_sdk/activation")
         rospy.wait_for_service("dji_sdk/attitude_control")
         rospy.wait_for_service("dji_sdk/camera_action_control")
         rospy.wait_for_service("dji_sdk/drone_task_control")
@@ -96,8 +101,10 @@ class DJIDrone:
         rospy.wait_for_service("dji_sdk/virtual_rc_enable_control")
         rospy.wait_for_service("dji_sdk/virtual_rc_data_control")
         rospy.wait_for_service("dji_sdk/sync_flag_control")
+        rospy.wait_for_service("dji_sdk/send_data_to_remote_device")
 
-        self.attitude_control_service = rospy.ServiceProxy("dji_sdk/attitude_control", dji_sdk.srv.AttitudeControl)
+        self.activation_service = rospy.ServiceProxy("dji_sdk/activation", dji_sdk.srv.Activation)
+        self.attitude_control_service = rospy.ServiceProxy("dji_sdk/attitude_conrol", dji_sdk.srv.AttitudeControl)
         self.camera_action_control_service = rospy.ServiceProxy("dji_sdk/camera_action_control", dji_sdk.srv.CameraActionControl)
         self.drone_task_control_service = rospy.ServiceProxy("dji_sdk/drone_task_control", dji_sdk.srv.DroneTaskControl)
         self.gimbal_angle_control_service = rospy.ServiceProxy("dji_sdk/gimbal_angle_control", dji_sdk.srv.GimbalAngleControl)
@@ -110,6 +117,7 @@ class DJIDrone:
         self.drone_vrc_enable_service = rospy.ServiceProxy("dji_sdk/virtual_rc_enable_control", dji_sdk.srv.VirtualRCEnableControl)
         self.drone_vrc_data_service = rospy.ServiceProxy("dji_sdk/virtual_rc_data_control", dji_sdk.srv.VirtualRCDataControl)
         self.sync_timestamp_service = rospy.ServiceProxy("dji_sdk/sync_flag_control", dji_sdk.srv.SyncFlagControl)
+        self.send_data_to_remote_device = rospy.ServiceProxy("dji_sdk/send_data_to_remote_device", dji_sdk.srv.SendDataToRemoteDevice)
 
     def init_actions(self):
         self.local_position_navigation_action_client = actionlib.SimpleActionClient("dji_sdk/local_position_navigation_action", dji_sdk.msg.LocalPositionNavigationAction)
@@ -118,6 +126,9 @@ class DJIDrone:
         self.global_position_navigation_action_client.wait_for_server()
         self.waypoint_navigation_action_client = actionlib.SimpleActionClient("dji_sdk/waypoint_navigation_action", dji_sdk.msg.WaypointNavigationAction)
         self.waypoint_navigation_action_client.wait_for_server()
+
+    def activation(self):
+        self.activation_service()
 
     def local_position_navigation_send_request(self, x, y, z):
         goal = dji_sdk.msg.LocalPositionNavigationGoal(x = x, y = y, z = z)
@@ -199,6 +210,9 @@ class DJIDrone:
         self.gimbal_angle_control_service(flag = flag, yaw = yaw, roll = 0, pitch = 0, duration = duration)
         self.local_position_control_service(x = x, y = y, z = z, yaw = yaw)
 
+    def send_data_to_remote_device(self, data):
+        self.send_data_to_remote_device(data)
+
     def __init__(self, namespace=''):
         rospy.init_node('dji_sdk_connector')
         self.namespace = namespace
@@ -214,8 +228,9 @@ class DJIDrone:
         self.local_position = dji_sdk.msg.LocalPosition()
         self.local_position_ref = dji_sdk.msg.LocalPosition()
         self.power_status = dji_sdk.msg.PowerStatus()
-        self.rc_channels = dji_sdk.msg.RCChannels() 
+        self.rc_channels = dji_sdk.msg.RCChannels()
         self.time_stamp = dji_sdk.msg.TimeStamp()
+        self.latest_mobile_data = dji_sdk.msg.TransparentTransmissionData()
         self.velocity = dji_sdk.msg.Velocity()
         self.odometry = nav_msgs.msg.Odometry()
 

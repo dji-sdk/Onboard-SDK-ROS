@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from dji_sdk.dji_drone import DJIDrone
-import dji_sdk.msg 
+import dji_sdk.msg
 import time
 import sys
 import math
@@ -27,7 +27,8 @@ def display_main_menu():
     print "[q] Disarm Test"
     print "[r] Vrc Test"
     print "[s] Sync Test"
-    print "[t] Exit"
+    print "[t] Send Data to Mobile"
+    print "[u] Exit"
     print "\ninput a/b/c etc..then press enter key"
     print "\nuse `rostopic echo` to query drone status"
     print "----------------------------------------"
@@ -158,11 +159,11 @@ def main():
         elif main_operate_code == 'h':
             R = 2
             V = 2
-            # start to draw circle 
+            # start to draw circle
             for i in range(300):
                 vx = V * math.sin((V/R)*i/50.0)
                 vy = V * math.cos((V/R)*i/50.0)
-    
+
                 drone.attitude_control(DJIDrone.HORIZ_POS|DJIDrone.VERT_VEL|DJIDrone.YAW_ANG|DJIDrone.HORIZ_BODY|DJIDrone.STABLE_ON, vx, vy, 0, 0)
                 time.sleep(0.02)
         elif main_operate_code == 'i':
@@ -189,13 +190,13 @@ def main():
             # stop video
             drone.stop_video()
         elif main_operate_code == 'm':
-            # Local Navi Test 
+            # Local Navi Test
             drone.local_position_navigation_send_request(-100, -100, 100)
         elif main_operate_code == 'n':
-            # GPS Navi Test 
+            # GPS Navi Test
             drone.global_position_navigation_send_request(22.535, 113.95, 100)
         elif main_operate_code == 'o':
-            # Waypoint List Navi Test 
+            # Waypoint List Navi Test
             newWaypointList = [
                 dji_sdk.msg.Waypoint(latitude = 22.535, longitude = 113.95, altitude = 100, staytime = 5, heading = 0),
                 dji_sdk.msg.Waypoint(latitude = 22.535, longitude = 113.96, altitude = 100, staytime = 0, heading = 90),
@@ -211,17 +212,19 @@ def main():
             drone.vrc_start();
             for i in range(100):
                 drone.vrc_control(1024-660, 1024-660, 1024-660, 1024+660)
-                time.sleep(0.02)	
+                time.sleep(0.02)
             for i in range(1000):
                 drone.vrc_control(1024, 1024, 1024+660, 1024+660)
-                time.sleep(0.02)	
+                time.sleep(0.02)
             for i in range(1000):
                 drone.vrc_control(1024-660, 1024-660)
-                time.sleep(0.02)	
+                time.sleep(0.02)
             drone.vrc_stop()
         elif main_operate_code == 's':
             drone.sync_timestamp(50)
         elif main_operate_code == 't':
+            drone.send_data_to_remote_device([1, 2, 3])
+        elif main_operate_code == 'u':
             return
         else:
             display_main_menu()
