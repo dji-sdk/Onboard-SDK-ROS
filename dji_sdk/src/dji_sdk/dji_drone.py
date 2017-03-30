@@ -104,7 +104,7 @@ class DJIDrone:
         rospy.wait_for_service("dji_sdk/send_data_to_remote_device")
 
         self.activation_service = rospy.ServiceProxy("dji_sdk/activation", dji_sdk.srv.Activation)
-        self.attitude_control_service = rospy.ServiceProxy("dji_sdk/attitude_conrol", dji_sdk.srv.AttitudeControl)
+        self.attitude_control_service = rospy.ServiceProxy("dji_sdk/attitude_control", dji_sdk.srv.AttitudeControl)
         self.camera_action_control_service = rospy.ServiceProxy("dji_sdk/camera_action_control", dji_sdk.srv.CameraActionControl)
         self.drone_task_control_service = rospy.ServiceProxy("dji_sdk/drone_task_control", dji_sdk.srv.DroneTaskControl)
         self.gimbal_angle_control_service = rospy.ServiceProxy("dji_sdk/gimbal_angle_control", dji_sdk.srv.GimbalAngleControl)
