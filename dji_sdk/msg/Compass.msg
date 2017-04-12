@@ -1,5 +1,5 @@
 Header header
 int32 ts
-int8 x
-int8 y
-int8 z
+int16 x
+int16 y
+int16 z
