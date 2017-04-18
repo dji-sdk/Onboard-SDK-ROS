@@ -1,4 +1,4 @@
-##DJI Onboard SDK ROS Core Package
+## DJI Onboard SDK ROS Core Package
 
 Documentation has been moved to the developer website. 
 

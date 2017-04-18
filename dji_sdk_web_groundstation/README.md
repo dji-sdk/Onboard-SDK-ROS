@@ -1,4 +1,4 @@
-##DJI SDK ROS Package Map Waypoint Navigation Demo
+## DJI SDK ROS Package Map Waypoint Navigation Demo
 
 Documentation has been moved to the developer website. 
 

@@ -1,4 +1,4 @@
-##DJI Onboard SDK ROS Package for Video Decoding on Manifold
+## DJI Onboard SDK ROS Package for Video Decoding on Manifold
 
 Documentation has been moved to the developer website. 
 

@@ -1,4 +1,4 @@
-##Notes: 
+## Notes: 
 
 
 There are two timestamps you can find in the message declaration.
