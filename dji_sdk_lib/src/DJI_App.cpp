@@ -124,11 +124,13 @@ void DJI::onboardSDK::CoreAPI::broadcast(Header *protocolHeader)
   passData(*enableFlag, DATA_FLAG, &broadcastData.ctrlInfo, pdata,
       sizeof(CtrlInfoData) - ((versionData.fwVersion < MAKE_VERSION(3,1,0,0)) ? 1 : 0), len);
   serialDevice->freeMSG();
+
   /**
    * Set broadcast frame status
    * @todo Implement proper notification mechanism
    */
   setBroadcastFrameStatus(true);
+  static int counter=0;
 
   //! State Machine for MSL Altitude bug in A3 and M600
   //! Handles the case if users start OSDK after arming aircraft (STATUS_ON_GROUND)/after takeoff (STATUS_IN_AIR)
@@ -144,11 +146,11 @@ void DJI::onboardSDK::CoreAPI::broadcast(Header *protocolHeader)
         if (prevState == Flight::STATUS_MOTOR_OFF && currentState == Flight::STATUS_GROUND_STANDBY) {
           homepointAltitude = getBroadcastData().pos.altitude;
         }
-        if (prevState == Flight::STATUS_TAKE_OFF && currentState == Flight::STATUS_GROUND_STANDBY) {
+        if (prevState == Flight::STATUS_SKY_STANDBY && currentState == Flight::STATUS_GROUND_STANDBY) {
           homepointAltitude = getBroadcastData().pos.altitude;
         }
         //! This case would exist if the user starts OSDK after take off.
-        else if (prevState == Flight::STATUS_MOTOR_OFF && currentState == Flight::STATUS_TAKE_OFF) {
+        else if (prevState == Flight::STATUS_MOTOR_OFF && currentState == Flight::STATUS_SKY_STANDBY) {
           homepointAltitude = 999999;
         }
       }

@@ -237,7 +237,7 @@ void Flight::armCallback(CoreAPI *api, Header *protocolHeader, UserData userData
   }
 }
 
-void Flight::taskCallback(CoreAPI *api, Header *protocolHeader, UserData userData __UNUSED)
+void Flight::taskCallback(CoreAPI *api, Header *protocolHeader, UserData userData)
 {
   unsigned short ack_data;
   if (protocolHeader->length - EXC_DATA_SIZE <= 2)
