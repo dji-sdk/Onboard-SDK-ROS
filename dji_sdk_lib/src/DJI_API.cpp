@@ -362,12 +362,13 @@ CoreAPI::parseDroneVersionInfo(unsigned char* ackPtrIncoming)
 
   //! Special cases
   //! M100:
-  if (strcmp(versionData.hwVersion, "M100") == 0)
+  if (strcmp(versionData.hwVersion, "M100") == 0 || strcmp(versionData.hwVersion, "WM610") == 0)
   {
     //! Bug in M100 does not report the right FW.
     ver3                        = 10 * ver3;
     this->versionData.fwVersion = MAKE_VERSION(ver1, ver2, ver3, ver4);
   }
+
   //! M600/A3 FW 3.2.10
   if (versionData.fwVersion == MAKE_VERSION(3, 2, 10, 0))
   {
