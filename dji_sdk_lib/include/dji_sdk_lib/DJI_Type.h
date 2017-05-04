@@ -1,6 +1,6 @@
 /*! @file DJI_Type.h
- *  @version 3.1.7
- *  @date Jul 01 2016
+ *  @version 3.1.9
+ *  @date November 10, 2016
  *
  *  @brief
  *  Type definition for DJI onboardSDK library.
@@ -22,6 +22,8 @@
 #include "DJI_Config.h"
 #include "DJICommonType.h"
 #include <stdio.h>
+#include <exception>
+#include <stdexcept>
 
 #define NAME(x) #x
 
@@ -62,6 +64,13 @@
     else                                                                  \
       (driver)->displayLog("ERROR: log printer inner fault\n");           \
   }
+
+#ifdef API_TRACE_DATA
+#define TRACE_LOG "TRACE"
+#else
+#define TRACE_LOG 0
+#endif
+
 #ifdef API_DEBUG_DATA
 #define DEBUG_LOG "DEBUG"
 #else
@@ -114,6 +123,11 @@ extern uint8_t encrypt;
 
 const size_t SESSION_TABLE_NUM = 32;
 const size_t CALLBACK_LIST_NUM = 10;
+
+/**
+ * @note size is in Bytes
+ */
+const size_t MAX_ACK_SIZE = 107;
 
 //! The CoreAPI class definition is detailed in DJI_API.h 
 class CoreAPI;
@@ -310,7 +324,7 @@ typedef struct WayPointData
  */
 
 typedef uint8_t MissionACK;
-typedef uint32_t SimpleACK;
+typedef uint16_t SimpleACK;
 
 typedef struct HotPointStartACK
 {
@@ -318,10 +332,17 @@ typedef struct HotPointStartACK
   float32_t maxRadius;
 } HotpointStartACK;
 
+typedef struct WayPointInitACK
+{
+  uint8_t ack;
+  WayPointInitData data;
+} WayPointInitACK;
+
 typedef struct WayPointDataACK
 {
   uint8_t ack;
   uint8_t index;
+  WayPointData data;
 } WayPointDataACK;
 
 typedef struct WayPointVelocityACK
@@ -330,29 +351,42 @@ typedef struct WayPointVelocityACK
   float32_t idleVelocity;
 } WayPointVelocityACK;
 
-
-typedef union MissionACKUnion
-{ 
-  uint8_t raw_ack_array[5];
-  MissionACK missionACK;
-  SimpleACK simpleACK;
-  HotPointStartACK hotpointStartACK;
-  WayPointDataACK waypointDataACK; 
-  WayPointVelocityACK waypointVelocityACK;
-} MissionACKUnion; 
-
-// These big structs have structs within and don't seem to be used 
+// HotPoint data read from flight controller
 typedef struct HotPointReadACK
 {
   MissionACK ack;
   HotPointData data;
 } HotpointReadACK;
 
-typedef struct WayPointInitACK
+typedef struct DroneVersionACK
 {
-  uint8_t ack;
-  WayPointInitData data;
-} WayPointInitACK;
+  unsigned char ack[MAX_ACK_SIZE];
+} DroneVersionACK;
+
+typedef union MissionACKUnion
+{ 
+  uint8_t raw_ack_array[MAX_ACK_SIZE];
+  DroneVersionACK droneVersion;
+  MissionACK missionACK;
+
+  SimpleACK simpleACK;
+
+  HotPointStartACK hotpointStartACK;
+
+  // Contains 1-Byte ACK plus hotpoint mission
+  // information read from flight controller
+  HotpointReadACK hotpointReadACK;
+
+  // Contains 1-Byte ACK plus waypoint mission
+  // information read from flight controller
+  WayPointInitACK waypointInitACK;
+
+  // Contains 1-Byte ACK plus waypoint mission
+  // information read from flight controller
+  WayPointDataACK waypointDataACK;
+
+  WayPointVelocityACK waypointVelocityACK;
+} MissionACKUnion; 
 
 typedef struct QuaternionData
 {
@@ -556,8 +590,7 @@ typedef struct BroadcastData
   BatteryData battery;
   CtrlInfoData ctrlInfo;
 
-  //! @note these variables are not sent from FC,
-  //! just a record for user.
+  //! @note this variable is not set by the FC but populated by the API
   uint8_t activation;
 } BroadcastData;
 #endif // SDK_DEV
@@ -601,14 +634,22 @@ typedef struct ActivateData
   char *encKey;
 } ActivateData;
 
+/**
+ * Versioning. VersionData struct updated @ FW 3.2.15.73
+ */
+
 typedef struct VersionData
 {
   unsigned short version_ack;
   unsigned int version_crc;
-  char version_ID[11];
+  char hw_serial_num[16];
+  char hwVersion[12]; //! Current longest product code: pm820v3pro
+  DJI::onboardSDK::Version fwVersion;
+
+  //! Legacy member
   char version_name[32];
-  DJI::onboardSDK::Version version;
 } VersionData;
+
 
 #pragma pack()
 #ifdef SDK_DEV

@@ -141,7 +141,6 @@ class ROSAdapter {
 
         void activate(ActivateData *data, CallBack callback) {
             
-            coreAPI->setVersion(data->version);
             coreAPI->activate(data, callback);
             
         }

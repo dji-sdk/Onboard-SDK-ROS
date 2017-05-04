@@ -22,15 +22,7 @@ bool DJISDKNode::activation_callback(dji_sdk::Activation::Request& request, dji_
 
 bool DJISDKNode::attitude_control_callback(dji_sdk::AttitudeControl::Request& request, dji_sdk::AttitudeControl::Response& response)
 {
-    DJI::onboardSDK::FlightData flight_ctrl_data;
-    flight_ctrl_data.flag = request.flag;
-    flight_ctrl_data.x = request.x;
-    flight_ctrl_data.y = request.y;
-    flight_ctrl_data.z = request.z;
-    flight_ctrl_data.yaw = request.yaw;
-
-    rosAdapter->flight->setFlight(&flight_ctrl_data);
-
+    rosAdapter->flight->setMovementControl(request.flag, request.x, request.y, request.z, request.yaw);
     response.result = true;
     return true;
 }
@@ -133,15 +125,8 @@ bool DJISDKNode::global_position_control_callback(dji_sdk::GlobalPositionControl
             request.longitude, request.latitude,
             global_position.longitude,  global_position.latitude);
 
-    DJI::onboardSDK::FlightData flight_ctrl_data;
-    flight_ctrl_data.flag = 0x90;
-    flight_ctrl_data.x = dst_x - local_position.x;
-    flight_ctrl_data.y = dst_y - local_position.y;
-    flight_ctrl_data.z = dst_z;
-    flight_ctrl_data.yaw = request.yaw;
-
-    rosAdapter->flight->setFlight(&flight_ctrl_data);
-
+    uint8_t flag = 0x90;
+    rosAdapter->flight->setMovementControl(flag, dst_x - local_position.x, dst_y - local_position.y, dst_z, request.yaw);
     response.result = true;
     return true;
 }
@@ -161,14 +146,8 @@ bool DJISDKNode::local_position_control_callback(dji_sdk::LocalPositionControl::
     }
 
     DJI::onboardSDK::FlightData flight_ctrl_data;
-    flight_ctrl_data.flag = 0x90;
-    flight_ctrl_data.x = dst_x - local_position.x;
-    flight_ctrl_data.y = dst_y - local_position.y;
-    flight_ctrl_data.z = dst_z;
-    flight_ctrl_data.yaw = request.yaw;
-
-    rosAdapter->flight->setFlight(&flight_ctrl_data);
-
+    uint8_t flag = 0x90;
+    rosAdapter->flight->setMovementControl(flag, dst_x - local_position.x, dst_y - local_position.y, dst_z, request.yaw);
     response.result = true;
     return true;
 }
@@ -218,7 +197,7 @@ bool DJISDKNode::velocity_control_callback(dji_sdk::VelocityControl::Request& re
 bool DJISDKNode::version_check_callback(dji_sdk::VersionCheck::Request& request, dji_sdk::VersionCheck::Response& response)
 {
     int sdkVer;
-    sdkVer = rosAdapter->coreAPI->getSDKVersion();
+    sdkVer = rosAdapter->coreAPI->getFwVersion();
     std::cout << std::hex << sdkVer << '\n';
 	response.result = true;
 	return true;

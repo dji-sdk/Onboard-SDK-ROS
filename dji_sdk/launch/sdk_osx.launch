@@ -1,7 +1,6 @@
 <launch>
 	<node pkg="dji_sdk" type="dji_sdk_node" name="dji_sdk" output="screen">
 		<!-- node parameters -->
-		<param name="drone_version" type="string" value="M100"/>
 		<param name="serial_name" type="string" value="/dev/cu.usbserial-A603T4HK"/>
 		<param name="baud_rate" type="int" value="230400"/>
 		<param name="app_id" type="int" value="1022384"/>

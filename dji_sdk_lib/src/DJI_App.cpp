@@ -11,6 +11,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <DJI_Flight.h>
 #include "DJI_App.h"
 #include "DJI_API.h"
 
@@ -42,14 +43,16 @@ unsigned char getCmdCode(Header *protocolHeader)
   return *ptemp;
 }
 
-BroadcastData DJI::onboardSDK::CoreAPI::getBroadcastData() const { return broadcastData; }
-
-BatteryData DJI::onboardSDK::CoreAPI::getBatteryCapacity() const
-{
-  return broadcastData.battery;
+BroadcastData DJI::onboardSDK::CoreAPI::getBroadcastData() const {
+  serialDevice->lockMSG();
+  BroadcastData data = broadcastData;
+  serialDevice->freeMSG();
+  return data;
 }
 
-CtrlInfoData DJI::onboardSDK::CoreAPI::getCtrlInfo() const { return broadcastData.ctrlInfo; }
+BatteryData DJI::onboardSDK::CoreAPI::getBatteryCapacity() const { return getBroadcastData().battery; }
+
+CtrlInfoData DJI::onboardSDK::CoreAPI::getCtrlInfo() const { return getBroadcastData().ctrlInfo; }
 
 void DJI::onboardSDK::CoreAPI::setBroadcastFrameStatus(bool isFrame)
 {
@@ -73,12 +76,24 @@ void DJI::onboardSDK::CoreAPI::broadcast(Header *protocolHeader)
   enableFlag = (unsigned short *)pdata;
   broadcastData.dataFlag = *enableFlag;
   size_t len = MSG_ENABLE_FLAG_LEN;
+  static int currentState = 0;
+  static int prevState = 0;
 
   //! @warning Change to const (+change interface for passData) in next release
   uint16_t DATA_FLAG = 0x0001;
   //! @todo better algorithm
 
-  if (versionData.version != versionM100_23)
+  /** 
+   *@note Write activation status
+   *
+   * Default value: 0xFF
+   * Activation successful: 0x00
+   * Activation error codes: 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08
+   * (see DJI_API.h for detailed description of the error codes)
+   */
+  broadcastData.activation = ack_activation;
+
+  if (versionData.fwVersion > MAKE_VERSION(3,1,0,0))
     passData(*enableFlag, DATA_FLAG, &broadcastData.timeStamp, pdata, sizeof(TimeStampData),
         len);
   else
@@ -91,23 +106,23 @@ void DJI::onboardSDK::CoreAPI::broadcast(Header *protocolHeader)
   passData(*enableFlag, DATA_FLAG, &broadcastData.w, pdata, sizeof(CommonData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.pos, pdata, sizeof(PositionData), len);
 
-  if (versionData.version == versionA3_31)
+  if (strcmp(versionData.hwVersion, "M100") != 0) //! N3/A3/M600
   {
     passData(*enableFlag, DATA_FLAG, &broadcastData.gps, pdata, sizeof(GPSData), len);
     passData(*enableFlag, DATA_FLAG, &broadcastData.rtk, pdata, sizeof(RTKData), len);
     if (((*enableFlag) & 0x0040))
-      API_LOG(serialDevice, RTK_LOG, "receive GPS data %lld\n", serialDevice->getTimeStamp());
+      API_LOG(serialDevice, RTK_LOG, "receive GPS data %llu\n", (unsigned long long)serialDevice->getTimeStamp());
     if (((*enableFlag) & 0x0080))
-      API_LOG(serialDevice, RTK_LOG, "receive RTK data %lld\n", serialDevice->getTimeStamp());
+      API_LOG(serialDevice, RTK_LOG, "receive RTK data %llu\n", (unsigned long long)serialDevice->getTimeStamp());
   }
   passData(*enableFlag, DATA_FLAG, &broadcastData.mag, pdata, sizeof(MagnetData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.rc, pdata, sizeof(RadioData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.gimbal, pdata,
-      sizeof(GimbalData) - ((versionData.version == versionM100_23) ? 1 : 0), len);
+      sizeof(GimbalData) - ((versionData.fwVersion < MAKE_VERSION(3,1,0,0)) ? 1 : 0), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.status, pdata, sizeof(FlightStatus), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.battery, pdata, sizeof(BatteryData), len);
   passData(*enableFlag, DATA_FLAG, &broadcastData.ctrlInfo, pdata,
-      sizeof(CtrlInfoData) - ((versionData.version == versionM100_23) ? 1 : 0), len);
+      sizeof(CtrlInfoData) - ((versionData.fwVersion < MAKE_VERSION(3,1,0,0)) ? 1 : 0), len);
   serialDevice->freeMSG();
 
   /**
@@ -115,7 +130,35 @@ void DJI::onboardSDK::CoreAPI::broadcast(Header *protocolHeader)
    * @todo Implement proper notification mechanism
    */
   setBroadcastFrameStatus(true);
+  static int counter=0;
 
+  //! State Machine for MSL Altitude bug in A3 and M600
+  //! Handles the case if users start OSDK after arming aircraft (STATUS_ON_GROUND)/after takeoff (STATUS_IN_AIR)
+  //! Transition from STATUS_MOTOR_STOPPED to STATUS_ON_GROUND can be seen with Takeoff command with 1hz flight status data
+  //! Transition from STATUS_ON_GROUND to STATUS_MOTOR_STOPPED can be seen with Landing command only for frequencies >= 50Hz
+  if (strcmp(getHwVersion(), "M100") != 0)
+  {//! Only runs if Flight status is available
+  if((*enableFlag) & (1<<11)) {
+    if (getBroadcastData().pos.health > 3) {
+      if (getFlightStatus() != currentState) {
+        prevState = currentState;
+        currentState = getFlightStatus();
+        if (prevState == Flight::STATUS_MOTOR_OFF && currentState == Flight::STATUS_GROUND_STANDBY) {
+          homepointAltitude = getBroadcastData().pos.altitude;
+        }
+        if (prevState == Flight::STATUS_SKY_STANDBY && currentState == Flight::STATUS_GROUND_STANDBY) {
+          homepointAltitude = getBroadcastData().pos.altitude;
+        }
+        //! This case would exist if the user starts OSDK after take off.
+        else if (prevState == Flight::STATUS_MOTOR_OFF && currentState == Flight::STATUS_SKY_STANDBY) {
+          homepointAltitude = 999999;
+        }
+      }
+    } else {
+      homepointAltitude = 999999;
+    }
+   }
+  }
   if (broadcastCallback.callback)
     broadcastCallback.callback(this, protocolHeader, broadcastCallback.userData);
 }

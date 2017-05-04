@@ -1,11 +1,6 @@
 var searchData=
 [
-  ['tagaes256context',['tagAES256Context',['../structtagAES256Context.html',1,'']]],
-  ['task',['task',['../classDJI_1_1onboardSDK_1_1Flight.html#a758a6c38d51b77ba943024ad8aee26e6',1,'DJI::onboardSDK::Flight']]],
-  ['taskdata',['TaskData',['../structDJI_1_1onboardSDK_1_1TaskData.html',1,'DJI::onboardSDK']]],
-  ['time',['time',['../structDJI_1_1onboardSDK_1_1TimeStampData.html#aea9d03bc043adf819a0529665db64fa8',1,'DJI::onboardSDK::TimeStampData']]],
-  ['timestampdata',['TimeStampData',['../structDJI_1_1onboardSDK_1_1TimeStampData.html',1,'DJI::onboardSDK']]],
-  ['todo_20list',['Todo List',['../todo.html',1,'']]],
-  ['toeulerianangle',['toEulerianAngle',['../classDJI_1_1onboardSDK_1_1Flight.html#a782c40da11ad290e1156e78d72170f08',1,'DJI::onboardSDK::Flight']]],
-  ['toradiodata',['toRadioData',['../classDJI_1_1onboardSDK_1_1VirtualRC.html#a73145c476b89e8eb38a7d858411b8457',1,'DJI::onboardSDK::VirtualRC']]]
+  ['updatetarget',['updateTarget',['../classDJI_1_1onboardSDK_1_1Follow.html#af8f6a63b95c36febe8164e2002fd813d',1,'DJI::onboardSDK::Follow']]],
+  ['uploadindexdata',['uploadIndexData',['../classDJI_1_1onboardSDK_1_1WayPoint.html#ae2f37131569b4e0ee50e6ff0e69af86b',1,'DJI::onboardSDK::WayPoint::uploadIndexData(WayPointData *data, CallBack callback=0, UserData userData=0)'],['../classDJI_1_1onboardSDK_1_1WayPoint.html#a6a49aa300981094c6be97b0d198ae876',1,'DJI::onboardSDK::WayPoint::uploadIndexData(uint8_t pos, CallBack callback=0, UserData userData=0)']]],
+  ['use_5fencrypt',['USE_ENCRYPT',['../DJI__Config_8h.html#ab711b1ed161a4ec825c22523cda3dc6d',1,'DJI_Config.h']]]
 ];

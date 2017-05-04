@@ -47,7 +47,7 @@ void DJISDKNode::broadcast_callback()
 {
     DJI::onboardSDK::BroadcastData bc_data = rosAdapter->coreAPI->getBroadcastData();
 
-    DJI::onboardSDK::Version version = rosAdapter->coreAPI->getSDKVersion();
+    DJI::onboardSDK::Version version = rosAdapter->coreAPI->getFwVersion();
     unsigned short msg_flags = bc_data.dataFlag;
 
     static int frame_id = 0;
@@ -191,10 +191,10 @@ void DJISDKNode::broadcast_callback()
     }
 
 /******************************************************************
-****************************If using A3****************************
+****************************If using A3/N3/M600********************
 ******************************************************************/
 
-    if(version == DJI::onboardSDK::versionA3_31) {
+    if(version > MAKE_VERSION(3,1,10,0)) {
 
     	//update gimbal msg
     	if (msg_flags & A3_HAS_GIMBAL) {
@@ -386,7 +386,6 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     std::string serial_name;
     int baud_rate;
     int app_id;
-    int app_version;
     std::string app_bundle_id; //reserved
     std::string enc_key;
     int uart_or_usb;
@@ -395,7 +394,6 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     nh_private.param("serial_name", serial_name, std::string("/dev/ttyTHS1"));
     nh_private.param("baud_rate", baud_rate, 230400);
     nh_private.param("app_id", app_id, 1022384);
-    nh_private.param("app_version", app_version, 1);
     nh_private.param("enc_key", enc_key,
             std::string("e7bad64696529559318bb35d0a8c6050d3b88e791e1808cfe8f7802150ee6f0d"));
 
@@ -404,28 +402,12 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
 
     // activation
     user_act_data.ID = app_id;
-
-    if((uart_or_usb)&&(drone_version.compare("M100")))
-    {
-        printf("M100 does not support USB API.\n");
-        return -1;
-    }
-
-    if(!drone_version.compare("M100"))
-    {
-        user_act_data.version = 0x03010a00;
-    }
-    else
-    {
-        user_act_data.version = 0x03016400;
-    }
     user_act_data.encKey = app_key;
     strcpy(user_act_data.encKey, enc_key.c_str());
 
     printf("=================================================\n");
-    printf("app id: %d\n", user_act_data.ID);
-    printf("app version: 0x0%X\n", user_act_data.version);
-    printf("app key: %s\n", user_act_data.encKey);
+    printf("app id   : %d\n", user_act_data.ID);
+    printf("app key  : %s\n", user_act_data.encKey);
     printf("=================================================\n");
 
     if(uart_or_usb) //use usb port for SDK
@@ -434,6 +416,14 @@ int DJISDKNode::init_parameters(ros::NodeHandle& nh_private)
     }
 
     rosAdapter->init(serial_name, baud_rate);
+    rosAdapter->coreAPI->getDroneVersion();
+    //usleep(1000000);
+    ros::Duration(1.0).sleep();
+    printf("=================================================\n");
+    printf("Hardware : %s\n", rosAdapter->coreAPI->getHwVersion());
+    printf("Firmware : 0x0%X\n", rosAdapter->coreAPI->getFwVersion());
+    printf("=================================================\n");
+
     rosAdapter->activate(&user_act_data, NULL);
     rosAdapter->setBroadcastCallback(&DJISDKNode::broadcast_callback, this);
 	rosAdapter->setFromMobileCallback(&DJISDKNode::transparent_transmission_callback,this);

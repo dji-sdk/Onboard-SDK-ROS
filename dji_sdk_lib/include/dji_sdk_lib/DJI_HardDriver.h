@@ -25,6 +25,7 @@ class HardDriver
 {
   public:
   HardDriver() {}
+  virtual ~HardDriver() {}
 
   /*! @note How to use
    *  In order to provide platform crossable DJI onboardSDK library,
@@ -82,6 +83,7 @@ class HardDriver
   virtual time_ms getTimeStamp() = 0;
   virtual size_t send(const uint8_t *buf, size_t len) = 0;
   virtual size_t readall(uint8_t *buf, size_t maxlen) = 0;
+  virtual bool getDeviceStatus() {return true;}
 
   public:
   virtual void lockMemory() = 0;
@@ -95,6 +97,15 @@ class HardDriver
 
   virtual void notify() = 0;
   virtual void wait(int timeout) = 0;
+
+  virtual void lockProtocolHeader() {;}
+  virtual void freeProtocolHeader() {;}
+
+  virtual void lockNonBlockCBAck() {;}
+  virtual void freeNonBlockCBAck() {;}
+
+  virtual void notifyNonBlockCBAckRecv() {;}
+  virtual void nonBlockWait() {;}
 
   public:
   virtual void displayLog(const char *buf = 0);
