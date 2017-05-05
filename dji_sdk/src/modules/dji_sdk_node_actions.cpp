@@ -54,7 +54,7 @@ bool DJISDKNode::process_waypoint(dji_sdk::Waypoint new_waypoint)
 
         flight_ctrl_data.x = ((d_lat) *C_PI/180) * C_EARTH;
         flight_ctrl_data.y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
-        rosAdapter->flight->setFlight(&flight_ctrl_data);
+        rosAdapter->flight->setMovementControl(flight_ctrl_data.flag, flight_ctrl_data.x, flight_ctrl_data.y, flight_ctrl_data.z, flight_ctrl_data.yaw);
 
         det_x = (100 * (dst_latitude - global_position.latitude))/dis_x;
         det_y = (100 * (dst_longitude - global_position.longitude))/dis_y;
@@ -148,7 +148,7 @@ bool DJISDKNode::local_position_navigation_action_callback(const dji_sdk::LocalP
 
      flight_ctrl_data.x = dst_x - local_position.x;
      flight_ctrl_data.y = dst_y - local_position.y;
-     rosAdapter->flight->setFlight(&flight_ctrl_data);
+     rosAdapter->flight->setMovementControl(flight_ctrl_data.flag, flight_ctrl_data.x, flight_ctrl_data.y, flight_ctrl_data.z, flight_ctrl_data.yaw);
 
      det_x = (100 * (dst_x - local_position.x)) / dis_x;
      det_y = (100 * (dst_y - local_position.y)) / dis_y;
@@ -215,7 +215,7 @@ bool DJISDKNode::global_position_navigation_action_callback(const dji_sdk::Globa
 
         flight_ctrl_data.x = ((d_lat) *C_PI/180) * C_EARTH;
         flight_ctrl_data.y = ((d_lon) * C_PI/180) * C_EARTH * cos((dst_latitude)*C_PI/180);
-        rosAdapter->flight->setFlight(&flight_ctrl_data);
+        rosAdapter->flight->setMovementControl(flight_ctrl_data.flag, flight_ctrl_data.x, flight_ctrl_data.y, flight_ctrl_data.z, flight_ctrl_data.yaw);
 
         det_x = (100* (dst_latitude - global_position.latitude))/dis_x;
         det_y = (100* (dst_longitude - global_position.longitude))/dis_y;
