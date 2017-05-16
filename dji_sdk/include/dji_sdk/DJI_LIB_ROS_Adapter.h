@@ -115,10 +115,10 @@ class ROSAdapter {
             printf("Baudrate: %u\n", baudrate);
             printf("-----\n");
 
-            m_hd = new HardDriver_Manifold(device, baudrate);
+            HardDriver_Manifold* m_hd = new HardDriver_Manifold(device, baudrate);
             m_hd->init();
 
-            coreAPI = new CoreAPI( (HardDriver*)m_hd );
+            CoreAPI* coreAPI = new CoreAPI( (HardDriver*)m_hd );
             //no log output while running hotpoint mission
             coreAPI->setHotPointData(false);
 
