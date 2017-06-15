@@ -1,5 +1,0 @@
-uint8 mission_type
-uint8 mission_status
-uint16 hotpoint_radius
-uint8 error_code
-uint8 hotpoint_velocity

@@ -1,4 +1,0 @@
-#length(data) <= 100
-uint8[] data
----
-bool result

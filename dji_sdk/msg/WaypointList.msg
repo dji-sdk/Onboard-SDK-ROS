@@ -1,1 +1,0 @@
-Waypoint[] waypoint_list

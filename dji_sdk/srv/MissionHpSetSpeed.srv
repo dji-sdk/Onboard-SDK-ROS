@@ -1,4 +1,0 @@
-float32 speed
-uint8 direction 
----
-bool result

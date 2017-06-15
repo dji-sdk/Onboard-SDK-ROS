@@ -1,7 +1,0 @@
-<launch>
-	<node pkg="dji_sdk_read_cam" type="dji_sdk_read_cam" name="dji_sdk_read_cam" output="screen">
-		<!-- node parameters -->
-		<param name="gray_or_rgb" type="int" value="0"/>
-		<param name="to_mobile" type="int" value="1"/>
-	</node>
-</launch>

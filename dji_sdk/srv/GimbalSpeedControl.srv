@@ -1,8 +1,0 @@
-# yaw_rate, roll_rate, pitch_rate's unit is in 0.1 degree/s
-
-int16 yaw_rate
-int16 roll_rate
-int16 pitch_rate
-
----
-bool result 

@@ -1,3 +1,0 @@
-uint8 incident_type
-uint8 waypoint_index
-uint8 current_status
