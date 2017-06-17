@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
       ("dji_sdk/gps_position", 10, &gpsPosCallback);
 
   Display_Main_Menu();
-  while (!userExitCommand) {
+  while (!userExitCommand && ros::ok()) {
     ros::spinOnce();
     std::cout << "Enter Input Val: ";
     while (!(std::cin >> temp32)) {
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
       case 1: {
         ROS_INFO("Mobile Data Commands mode entered. Use OSDK Mobile App to use this feature");
         ROS_INFO("End program to exit this mode");
-        while (1) {
+        while (ros::ok()) {
           ros::spinOnce();
           ros::Duration(0.005).sleep();
         }
