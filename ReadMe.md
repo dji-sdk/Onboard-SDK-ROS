@@ -1,5 +1,9 @@
 # DJI Onboard SDK ROS  3.3
 
+**Version 3.3 was developed to support N3/A3 FW 1.7.5 and above.**
+
+**M100 users please use version 3.2.**
+
 ## Quick Start Guide 
 
 This repository contains the Onboard SDK ROS wrapper and demos. The ROS package requires Onboard SDK (djiosdk-core) to be installed to your system prior to running it. For detailed setup instructions, please follow the documentation [here](http://developer.dji.com/onboard-sdk/documentation/sample-doc/sample-setup.html#ros-oes). 

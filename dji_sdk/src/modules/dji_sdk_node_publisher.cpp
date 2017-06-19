@@ -253,7 +253,6 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   Telemetry::TypeMap<Telemetry::TOPIC_VELOCITY>::type v_FC =
     vehicle->subscribe->getValue<Telemetry::TOPIC_VELOCITY>();
   geometry_msgs::Vector3Stamped v;
-  // v_FC has 2 fields, data and info. The latter contains the health
 
   /*!
    * note: We are now following REP 103 to use ENU for
@@ -284,7 +283,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   p->gimbal_angle_publisher.publish(gimbal_angle_vec3);
 
 
-  // TODO: documentation to explain display mode
+  // See dji_sdk.h for details about display_mode
   Telemetry::TypeMap<Telemetry::TOPIC_STATUS_DISPLAYMODE>::type dm =
     vehicle->subscribe->getValue<Telemetry::TOPIC_STATUS_DISPLAYMODE>();
 
@@ -366,28 +365,6 @@ DJISDKNode::publish100HzData(Vehicle *vehicle, RecvContainer recvFrame,
 
   ros::Time now_time = ros::Time::now();
   ros::Time msg_time = now_time;
-
-  if(p->align_time_with_FC)
-  {
-    if(p->curr_align_state == ALIGNED)
-    {
-      msg_time = p->base_time + _TICK2ROSTIME(packageTimeStamp.time_ms);
-
-      // Check if time is drifting
-      double dt = std::fabs((now_time - msg_time).toSec());
-      if(dt > TIME_DIFF_ALERT)
-      {
-        static int cnt = 0;
-        cnt++;
-        ROS_WARN_THROTTLE(
-                1.0, "[dji_sdk] ros::Time::now() - TickTime = %.0f ms [%d]", dt * 1000, cnt);
-      }
-    }
-    else
-    {
-      return;
-    }
-  }
 
   Telemetry::TypeMap<Telemetry::TOPIC_QUATERNION>::type quat =
           vehicle->subscribe->getValue<Telemetry::TOPIC_QUATERNION>();
