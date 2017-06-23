@@ -315,7 +315,6 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   *               V                              V
   *            -10000                         -10000
   *
-  *   In this code, before publish, RC is transformed to M100 style to be compatible with controller
   *****************************/
 
 //  sensor_msgs::Joy rc_joy;

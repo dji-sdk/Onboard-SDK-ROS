@@ -213,6 +213,7 @@ DJISDKNode::MFIOConfigCallback(dji_sdk::MFIOConfig::Request&  request,
                         (MFIO::CHANNEL)request.channel,
                         (uint32_t)request.init_on_time_us,
                         (uint16_t)request.pwm_freq, WAIT_TIMEOUT);
+  return true;
 }
 
 bool
@@ -223,6 +224,7 @@ DJISDKNode::MFIOSetValueCallback(dji_sdk::MFIOSetValue::Request&  request,
 
   vehicle->mfio->setValue((MFIO::CHANNEL)request.channel,
                           (uint32_t)request.init_on_time_us, WAIT_TIMEOUT);
+  return true;
 }
 
 bool
