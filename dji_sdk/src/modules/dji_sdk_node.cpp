@@ -420,12 +420,7 @@ bool DJISDKNode::validateSerialDevice(LinuxSerialDevice* serialDevice)
   //! Check the serial channel for data
   uint8_t buf[BUFFER_SIZE];
   if (!serialDevice->setSerialPureTimedRead()) {
-    ROS_ERROR("Failed to set up port for timed read.\n"
-               "This usually means the serial port is not correctly set up; \n"
-               "however on a small number of machines this error can come up\n"
-               "even when the port is correctly set up. If you are absolutely certain\n"
-               "your connections are okay, try commenting out L77-L89 in file dji_sdk_node.cpp\n"
-               "and build again.\n");
+    ROS_ERROR("Failed to set up port for timed read.\n");
     return (false);
   };
   usleep(100000);

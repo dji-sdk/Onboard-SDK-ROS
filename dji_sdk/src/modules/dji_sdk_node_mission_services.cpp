@@ -19,7 +19,6 @@ DJISDKNode::missionStatusCallback(dji_sdk::MissionStatus::Request&  request,
 
   response.waypoint_mission_count = vehicle->missionManager->wayptCounter;
   response.hotpoint_mission_count = vehicle->missionManager->hotptCounter;
-
   return true;
 }
 

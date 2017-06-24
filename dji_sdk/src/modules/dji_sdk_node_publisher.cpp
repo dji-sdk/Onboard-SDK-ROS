@@ -253,6 +253,8 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   Telemetry::TypeMap<Telemetry::TOPIC_VELOCITY>::type v_FC =
     vehicle->subscribe->getValue<Telemetry::TOPIC_VELOCITY>();
   geometry_msgs::Vector3Stamped v;
+  // v_FC has 2 fields, data and info. The latter contains the health
+
 
   /*!
    * note: We are now following REP 103 to use ENU for
@@ -282,8 +284,8 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   gimbal_angle_vec3.vector.z     = gimbal_angle.z;
   p->gimbal_angle_publisher.publish(gimbal_angle_vec3);
 
-
   // See dji_sdk.h for details about display_mode
+
   Telemetry::TypeMap<Telemetry::TOPIC_STATUS_DISPLAYMODE>::type dm =
     vehicle->subscribe->getValue<Telemetry::TOPIC_STATUS_DISPLAYMODE>();
 
@@ -315,6 +317,8 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   *               V                              V
   *            -10000                         -10000
   *
+  *   In this code, before publish, RC is transformed to M100 style to be compatible with controller
+
   *****************************/
 
 //  sensor_msgs::Joy rc_joy;

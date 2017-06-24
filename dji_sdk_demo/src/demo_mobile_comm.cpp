@@ -94,6 +94,7 @@ int main(int argc, char *argv[]) {
 
   Display_Main_Menu();
   while (!userExitCommand && ros::ok()) {
+
     ros::spinOnce();
     std::cout << "Enter Input Val: ";
     while (!(std::cin >> temp32)) {
