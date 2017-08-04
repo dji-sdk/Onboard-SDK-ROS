@@ -10,6 +10,7 @@
  */
 
 #include <dji_sdk_demo/demo_mobile_comm.h>
+#include "dji_sdk/dji_sdk.h"
 
 using namespace DJI::OSDK;
 
@@ -24,6 +25,7 @@ Mission square_mission;
 //! Services
 ros::ServiceClient drone_arm_service;
 ros::ServiceClient drone_task_service;
+ros::ServiceClient query_version_service;
 ros::ServiceClient mobile_data_service;
 ros::ServiceClient drone_activation_service;
 ros::ServiceClient sdk_ctrl_authority_service;
@@ -91,6 +93,8 @@ int main(int argc, char *argv[]) {
       ("dji_sdk/mission_hotpoint_updateYawRate");
   gps_pos_subscriber = nh.subscribe<sensor_msgs::NavSatFix>
       ("dji_sdk/gps_position", 10, &gpsPosCallback);
+  query_version_service      = nh.serviceClient<dji_sdk::QueryDroneVersion>
+      ("dji_sdk/query_drone_version");
 
   Display_Main_Menu();
   while (!userExitCommand && ros::ok()) {
@@ -273,13 +277,24 @@ void fromMobileDataSubscriberCallback(const dji_sdk::MobileData::ConstPtr& from_
     case 62: {
 
       bool obtain_control_result = obtain_control();
-      bool takeoff_result = monitoredTakeoff();
+      bool takeoff_result;
+
+      if(is_M100())
+      {
+        ROS_INFO("M100 taking off!");
+        takeoff_result = M100monitoredTakeoff();
+      }
+      else
+      {
+        ROS_INFO("A3/N3 taking off!");
+        takeoff_result = monitoredTakeoff();
+      }
 
       if(takeoff_result)
       {
         square_mission.reset();
         square_mission.start_gps_location = current_gps;
-        square_mission.setTarget(0, 6, 3, 60);
+        square_mission.setTarget(0, 20, 3, 60);
         square_mission.state = 1;
         ROS_INFO("##### Start route %d ....", square_mission.state);
       }
@@ -561,6 +576,20 @@ bool obtain_control()
 
   return true;
 }
+
+bool is_M100()
+{
+  dji_sdk::QueryDroneVersion query;
+  query_version_service.call(query);
+
+  if(query.response.version == DJISDK::DroneFirmwareVersion::M100_31)
+  {
+    return true;
+  }
+
+  return false;
+}
+
 void attitude_callback(const geometry_msgs::QuaternionStamped::ConstPtr& msg)
 {
   current_atti = msg->quaternion;
@@ -574,7 +603,6 @@ void gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
   // Down sampled to 50Hz loop
   if(elapsed_time > ros::Duration(0.02))
   {
-    //ROS_DEBUG("Elapsed time: %f; GPS: lat=%.3f, long=%.3f", elapsed_time.toSec(), msg->latitude, msg->longitude);
     start_time = ros::Time::now();
     switch(square_mission.state)
     {
@@ -590,13 +618,41 @@ void gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
         {
           square_mission.reset();
           square_mission.start_gps_location = current_gps;
-          square_mission.setTarget(6, 0, 0, 0);
+          square_mission.setTarget(20, 0, 0, 0);
           square_mission.state = 2;
           ROS_INFO("##### Start route %d ....", square_mission.state);
         }
         break;
 
       case 2:
+        if(!square_mission.finished)
+        {
+          square_mission.step();
+        }
+        else
+        {
+          square_mission.reset();
+          square_mission.start_gps_location = current_gps;
+          square_mission.setTarget(0, -20, 0, 0);
+          square_mission.state = 3;
+          ROS_INFO("##### Start route %d ....", square_mission.state);
+        }
+        break;
+      case 3:
+        if(!square_mission.finished)
+        {
+          square_mission.step();
+        }
+        else
+        {
+          square_mission.reset();
+          square_mission.start_gps_location = current_gps;
+          square_mission.setTarget(-20, 0, 0, 0);
+          square_mission.state = 4;
+          ROS_INFO("##### Start route %d ....", square_mission.state);
+        }
+        break;
+      case 4:
         if(!square_mission.finished)
         {
           square_mission.step();
@@ -620,13 +676,12 @@ void display_mode_callback(const std_msgs::UInt8::ConstPtr& msg)
 {
   display_mode = msg->data;
 }
-
 bool
 monitoredTakeoff()
 {
   ros::Time start_time = ros::Time::now();
 
-  if(!takeoff_land(TASK_TAKE_OFF)) {
+  if(!takeoff_land(dji_sdk::DroneTaskControl::Request::TASK_TAKEOFF)) {
     return false;
   }
 
@@ -634,14 +689,14 @@ monitoredTakeoff()
   ros::spinOnce();
 
   // Step 1.1: Spin the motor
-  while (flight_status !=  DJI::OSDK::OpenProtocol::ErrorCode::CommonACK::FlightStatus::ON_GROUND &&
-         display_mode != DJI::OSDK::VehicleStatus::MODE_ENGINE_START &&
-         ros::Time::now() - start_time < ros::Duration(7)) {
+  while (flight_status != DJISDK::FlightStatus::STATUS_ON_GROUND &&
+         display_mode != DJISDK::DisplayMode::MODE_ENGINE_START &&
+         ros::Time::now() - start_time < ros::Duration(5)) {
     ros::Duration(0.01).sleep();
     ros::spinOnce();
   }
 
-  if(ros::Time::now() - start_time > ros::Duration(7)) {
+  if(ros::Time::now() - start_time > ros::Duration(5)) {
     ROS_ERROR("Takeoff failed. Motors are not spinnning.");
     return false;
   }
@@ -653,12 +708,11 @@ monitoredTakeoff()
 
 
   // Step 1.2: Get in to the air
-  while (flight_status != DJI::OSDK::OpenProtocol::ErrorCode::CommonACK::FlightStatus::IN_AIR &&
-         (display_mode != DJI::OSDK::VehicleStatus::MODE_ASSISTED_TAKEOFF || display_mode != DJI::OSDK::VehicleStatus::MODE_AUTO_TAKEOFF) &&
+  while (flight_status != DJISDK::FlightStatus::STATUS_IN_AIR &&
+         (display_mode != DJISDK::DisplayMode::MODE_ASSISTED_TAKEOFF || display_mode != DJISDK::DisplayMode::MODE_AUTO_TAKEOFF) &&
          ros::Time::now() - start_time < ros::Duration(20)) {
     ros::Duration(0.01).sleep();
     ros::spinOnce();
-    ROS_DEBUG("Flight status is %d",flight_status);
   }
 
   if(ros::Time::now() - start_time > ros::Duration(20)) {
@@ -672,13 +726,13 @@ monitoredTakeoff()
   }
 
   // Final check: Finished takeoff
-  while ( (display_mode == DJI::OSDK::VehicleStatus::MODE_ASSISTED_TAKEOFF || display_mode == DJI::OSDK::VehicleStatus::MODE_AUTO_TAKEOFF) &&
+  while ( (display_mode == DJISDK::DisplayMode::MODE_ASSISTED_TAKEOFF || display_mode == DJISDK::DisplayMode::MODE_AUTO_TAKEOFF) &&
           ros::Time::now() - start_time < ros::Duration(20)) {
     ros::Duration(0.01).sleep();
     ros::spinOnce();
   }
 
-  if ( display_mode != DJI::OSDK::VehicleStatus::MODE_P_GPS || display_mode != DJI::OSDK::VehicleStatus::MODE_ATTITUDE)
+  if ( display_mode != DJISDK::DisplayMode::MODE_P_GPS || display_mode != DJISDK::DisplayMode::MODE_ATTITUDE)
   {
     ROS_INFO("Successful takeoff!");
     start_time = ros::Time::now();
@@ -687,6 +741,44 @@ monitoredTakeoff()
   {
     ROS_ERROR("Takeoff finished, but the aircraft is in an unexpected mode. Please connect DJI GO.");
     return false;
+  }
+
+  return true;
+}
+
+
+bool
+M100monitoredTakeoff()
+{
+  ros::Time start_time = ros::Time::now();
+
+  float home_altitude = current_gps.altitude;
+  if(!takeoff_land(dji_sdk::DroneTaskControl::Request::TASK_TAKEOFF))
+  {
+    return false;
+  }
+
+  ros::Duration(0.01).sleep();
+  ros::spinOnce();
+
+  // Step 1: If M100 is not in the air after 10 seconds, fail.
+  while (ros::Time::now() - start_time < ros::Duration(10))
+  {
+    ros::Duration(0.01).sleep();
+    ros::spinOnce();
+  }
+
+  if(flight_status != DJISDK::M100FlightStatus::M100_STATUS_IN_AIR ||
+     current_gps.altitude - home_altitude < 1.0)
+  {
+    ROS_ERROR("Takeoff failed.");
+    return false;
+  }
+  else
+  {
+    start_time = ros::Time::now();
+    ROS_INFO("Successful takeoff!");
+    ros::spinOnce();
   }
 
   return true;

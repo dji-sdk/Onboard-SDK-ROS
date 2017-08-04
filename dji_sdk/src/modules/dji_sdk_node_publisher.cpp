@@ -31,12 +31,11 @@ DJISDKNode::dataBroadcastCallback()
 
   ros::Time now_time = ros::Time::now();
 
-  short int data_enable_flag = vehicle->broadcast->getPassFlag();
+  uint16_t data_enable_flag = vehicle->broadcast->getPassFlag();
 
-  /*!
-   * rc gear reading will be positive when no RC is connected
-   */
-  if (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_RC)
+  uint16_t flag_has_rc = isM100() ? (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::HAS_RC) :
+                         (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_RC);
+  if (flag_has_rc)
   {
     sensor_msgs::Joy rc_joy;
     rc_joy.header.stamp    = now_time;
@@ -114,11 +113,15 @@ DJISDKNode::dataBroadcastCallback()
 
     sensor_msgs::NavSatFix gps_pos;
     gps_pos.header.stamp    = now_time;
-    gps_pos.header.frame_id = "/gps";
+    gps_pos.header.frame_id = "gps";
     gps_pos.latitude        = global_pos.latitude * 180 / C_PI;
     gps_pos.longitude       = global_pos.longitude * 180 / C_PI;
     gps_pos.altitude        = global_pos.altitude;
     gps_position_publisher.publish(gps_pos);
+
+    std_msgs::Float32 agl_height;
+    agl_height.data = global_pos.height;
+    height_publisher.publish(agl_height);
   }
 
   if (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::HAS_V)
@@ -133,13 +136,17 @@ DJISDKNode::dataBroadcastCallback()
     velocity_publisher.publish(velocity);
   }
 
-  if ( data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_BATTERY )
+  uint16_t flag_has_battery =
+          isM100() ? (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::HAS_BATTERY) :
+                     (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_BATTERY);
+
+  if ( flag_has_battery )
   {
     sensor_msgs::BatteryState msg_battery_state;
     msg_battery_state.capacity = NAN;
     msg_battery_state.voltage  = vehicle->broadcast->getBatteryInfo().voltage / 1000.0;
     msg_battery_state.current  = NAN;
-    msg_battery_state.percentage = NAN;
+    msg_battery_state.percentage = vehicle->broadcast->getBatteryInfo().percentage;
     msg_battery_state.charge   = NAN;
     msg_battery_state.design_capacity = NAN;
     msg_battery_state.power_supply_health = msg_battery_state.POWER_SUPPLY_HEALTH_UNKNOWN;
@@ -149,7 +156,11 @@ DJISDKNode::dataBroadcastCallback()
     battery_state_publisher.publish(msg_battery_state);
   }
 
-  if ( data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_STATUS )
+  uint16_t flag_has_status =
+          isM100() ? (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::HAS_STATUS) :
+          (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_STATUS);
+
+  if ( flag_has_status)
   {
     Telemetry::TypeMap<Telemetry::TOPIC_STATUS_FLIGHT>::type fs =
       vehicle->broadcast->getStatus().flight;
@@ -159,6 +170,25 @@ DJISDKNode::dataBroadcastCallback()
     flight_status_publisher.publish(flight_status);
   }
 
+  uint16_t flag_has_gimbal = 
+          isM100() ? (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::HAS_GIMBAL) :
+          (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_GIMBAL);
+  if (flag_has_gimbal)
+  {
+    Telemetry::Gimbal gimbal_reading;
+
+    
+    Telemetry::Gimbal gimbal_angle = vehicle->broadcast->getGimbal();
+
+    geometry_msgs::Vector3Stamped gimbal_angle_vec3;
+
+    gimbal_angle_vec3.header.stamp = ros::Time::now();
+    gimbal_angle_vec3.header.frame_id = "ground_ENU";
+    gimbal_angle_vec3.vector.x     = gimbal_angle.roll;
+    gimbal_angle_vec3.vector.y     = gimbal_angle.pitch;
+    gimbal_angle_vec3.vector.z     = gimbal_angle.yaw;
+    gimbal_angle_publisher.publish(gimbal_angle_vec3);
+  }
 }
 
 void
@@ -194,7 +224,7 @@ DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
   msg_battery_state.capacity = NAN;
   msg_battery_state.voltage  = battery_info.voltage / 1000.0;
   msg_battery_state.current  = NAN;
-  msg_battery_state.percentage = NAN;
+  msg_battery_state.percentage = battery_info.percentage;
   msg_battery_state.charge   = NAN;
   msg_battery_state.design_capacity = NAN;
   msg_battery_state.power_supply_health = msg_battery_state.POWER_SUPPLY_HEALTH_UNKNOWN;
@@ -238,10 +268,16 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   sensor_msgs::NavSatFix gps_pos;
   gps_pos.header.frame_id = "/gps";
   gps_pos.header.stamp    = msg_time;
-  gps_pos.latitude        = fused_gps.latitude * 180 / C_PI;   //degree
-  gps_pos.longitude       = fused_gps.longitude * 180 / C_PI;  //degree
+  gps_pos.latitude        = fused_gps.latitude * 180.0 / C_PI;   //degree
+  gps_pos.longitude       = fused_gps.longitude * 180.0 / C_PI;  //degree
   gps_pos.altitude        = fused_gps.altitude;                //meter
   p->gps_position_publisher.publish(gps_pos);
+
+  Telemetry::TypeMap<Telemetry::TOPIC_HEIGHT_FUSION>::type fused_height =
+    vehicle->subscribe->getValue<Telemetry::TOPIC_HEIGHT_FUSION>();
+  std_msgs::Float32 height;
+  height.data = fused_height;
+  p->height_publisher.publish(height);
 
   Telemetry::TypeMap<Telemetry::TOPIC_STATUS_FLIGHT>::type fs =
     vehicle->subscribe->getValue<Telemetry::TOPIC_STATUS_FLIGHT>();

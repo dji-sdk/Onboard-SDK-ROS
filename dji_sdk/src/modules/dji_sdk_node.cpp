@@ -24,7 +24,6 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
   nh_private.param("app_id",        app_id,    123456);
   nh_private.param("app_version",   app_version, 1);
   nh_private.param("enc_key",       enc_key, std::string("abcd1234"));
-  nh_private.param("uart_or_usb",   uart_or_usb, 0); // chosse uart as default
   nh_private.param("drone_version", drone_version, std::string("M100")); // choose M100 as default
   nh_private.param("gravity_const", gravity_const, 9.801);
   nh_private.param("align_time",    align_time_with_FC, true);
@@ -63,7 +62,10 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
 
 DJISDKNode::~DJISDKNode()
 {
-  cleanUpSubscribeFromFC();
+  if(!isM100())
+  {
+    cleanUpSubscribeFromFC();
+  }
   if (vehicle)
   {
     delete vehicle;
@@ -89,14 +91,20 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private)
 
   //! @note currently does not work without thread support
   vehicle = new Vehicle(serial_device.c_str(), baud_rate, threadSupport);
-  if(vehicle->getFwVersion() < mandatoryVersionBase)
+
+  // This version of ROS Node works for:
+  //    1. A3/N3/M600 with latest FW
+  //    2. M100 with FW version M100_31
+  if(vehicle->getFwVersion() < mandatoryVersionBase && (!isM100()))
   {
     return false;
   }
 
-  for (int i = 0; i < MAX_SUBSCRIBE_PACKAGES; i++)
-    vehicle->subscribe->removePackage(i, WAIT_TIMEOUT);
-
+  if(!isM100())
+  {
+    for(int i = 0; i < MAX_SUBSCRIBE_PACKAGES; i++)
+      vehicle->subscribe->removePackage(i, WAIT_TIMEOUT);
+  }
   /*!
    * @note activate the drone for the user at the beginning
    *        user can also call it as a service
@@ -119,13 +127,12 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private)
 
 // clang-format off
 bool DJISDKNode::initServices(ros::NodeHandle& nh) {
+  // Common to A3/N3 and M100
   drone_activation_server   = nh.advertiseService("dji_sdk/activation",                     &DJISDKNode::droneActivationCallback,        this);
   drone_arm_server          = nh.advertiseService("dji_sdk/drone_arm_control",              &DJISDKNode::droneArmCallback,               this);
   drone_task_server         = nh.advertiseService("dji_sdk/drone_task_control",             &DJISDKNode::droneTaskCallback,              this);
   sdk_ctrlAuthority_server  = nh.advertiseService("dji_sdk/sdk_control_authority",          &DJISDKNode::sdkCtrlAuthorityCallback,       this);
   camera_action_server      = nh.advertiseService("dji_sdk/camera_action",                  &DJISDKNode::cameraActionCallback,           this);
-  mfio_config_server        = nh.advertiseService("dji_sdk/mfio_config",                    &DJISDKNode::MFIOConfigCallback,             this);
-  mfio_set_value_server     = nh.advertiseService("dji_sdk/mfio_set_value",                 &DJISDKNode::MFIOSetValueCallback,           this);
   waypoint_upload_server    = nh.advertiseService("dji_sdk/mission_waypoint_upload",        &DJISDKNode::missionWpUploadCallback,        this);
   waypoint_action_server    = nh.advertiseService("dji_sdk/mission_waypoint_action",        &DJISDKNode::missionWpActionCallback,        this);
   waypoint_getInfo_server   = nh.advertiseService("dji_sdk/mission_waypoint_getInfo",       &DJISDKNode::missionWpGetInfoCallback,       this);
@@ -137,9 +144,17 @@ bool DJISDKNode::initServices(ros::NodeHandle& nh) {
   hotpoint_setSpeed_server  = nh.advertiseService("dji_sdk/mission_hotpoint_updateYawRate", &DJISDKNode::missionHpUpdateYawRateCallback, this);
   hotpoint_resetYaw_server  = nh.advertiseService("dji_sdk/mission_hotpoint_resetYaw",      &DJISDKNode::missionHpResetYawCallback,      this);
   hotpoint_setRadius_server = nh.advertiseService("dji_sdk/mission_hotpoint_updateRadius",  &DJISDKNode::missionHpUpdateRadiusCallback,  this);
-  mission_status_server     = nh.advertiseService("dji_sdkmission_status",                  &DJISDKNode::missionStatusCallback,          this);
+  mission_status_server     = nh.advertiseService("dji_sdk/mission_status",                 &DJISDKNode::missionStatusCallback,          this);
   send_to_mobile_server     = nh.advertiseService("dji_sdk/send_data_to_mobile",            &DJISDKNode::sendToMobileCallback,           this);
-  set_hardsync_server       = nh.advertiseService("dji_sdk/set_hardsyc",                    &DJISDKNode::setHardsyncCallback,            this);
+  query_version_server      = nh.advertiseService("dji_sdk/query_drone_version",            &DJISDKNode::queryVersionCallback,           this);
+
+  // A3/N3 only
+  if(!isM100())
+  {
+    set_hardsync_server   = nh.advertiseService("dji_sdk/set_hardsyc", &DJISDKNode::setHardsyncCallback, this);
+    mfio_config_server    = nh.advertiseService("dji_sdk/mfio_config", &DJISDKNode::MFIOConfigCallback, this);
+    mfio_set_value_server = nh.advertiseService("dji_sdk/mfio_set_value", &DJISDKNode::MFIOSetValueCallback, this);
+  }
   return true;
 }
 // clang-format on
@@ -167,6 +182,11 @@ DJISDKNode::initFlightControl(ros::NodeHandle& nh)
       &DJISDKNode::flightControlRollPitchPzYawrateCallback, this);
 
   return true;
+}
+
+bool DJISDKNode::isM100()
+{
+  return(vehicle->getFwVersion() == Version::M100_31);
 }
 
 ACK::ErrorCode
@@ -212,11 +232,14 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
    */
   imu_publisher = nh.advertise<sensor_msgs::Imu>("dji_sdk/imu", 10);
 
-  //TODO: documentation
+  // Refer to dji_sdk.h for different enums for M100 and A3/N3
   flight_status_publisher =
     nh.advertise<std_msgs::UInt8>("dji_sdk/flight_status", 10);
 
-  //TODO: documentation
+  /*!
+   * gps_health needs to be greater than 3 for gps_position and velocity topics
+   * to be trusted
+   */
   gps_health_publisher =
     nh.advertise<std_msgs::UInt8>("dji_sdk/gps_health", 10);
 
@@ -229,6 +252,13 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
    */
   gps_position_publisher =
     nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/gps_position", 10);
+
+  /*!
+   * Height above home altitude. It is valid only after drone
+   * is armed.
+   */
+  height_publisher =
+    nh.advertise<std_msgs::Float32>("dji_sdk/height_above_takeoff", 10);
 
   velocity_publisher =
     nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/velocity", 10);
@@ -244,9 +274,21 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
   {
     ACK::ErrorCode broadcast_set_freq_ack;
     ROS_INFO("Use legacy data broadcast to get telemetry data!");
-    // default freq 50Hz
+
+    uint8_t defaultFreq[16];
+
+    if(isM100())
+    {
+      setUpM100DefaultFreq(defaultFreq);
+    }
+    else
+    {
+      setUpA3N3DefaultFreq(defaultFreq);
+    }
+
     broadcast_set_freq_ack =
-      vehicle->broadcast->setBroadcastFreqDefaults(WAIT_TIMEOUT);
+      vehicle->broadcast->setBroadcastFreq(defaultFreq, WAIT_TIMEOUT);
+//      vehicle->broadcast->setBroadcastFreqDefaults(WAIT_TIMEOUT);
 
     if (ACK::getError(broadcast_set_freq_ack))
     {
@@ -329,6 +371,7 @@ DJISDKNode::initDataSubscribeFromFC()
   // 50 Hz package from FC
   Telemetry::TopicName topicList50Hz[] = {
     Telemetry::TOPIC_GPS_FUSED,
+    Telemetry::TOPIC_HEIGHT_FUSION,
     Telemetry::TOPIC_STATUS_FLIGHT,
     Telemetry::TOPIC_STATUS_DISPLAYMODE,
     Telemetry::TOPIC_GIMBAL_ANGLES,
@@ -437,4 +480,40 @@ bool DJISDKNode::validateSerialDevice(LinuxSerialDevice* serialDevice)
   // All the tests passed and the serial device is properly set up
   serialDevice->unsetSerialPureTimedRead();
   return (true);
+}
+
+void
+DJISDKNode::setUpM100DefaultFreq(uint8_t freq[16])
+{
+  freq[0]  = DataBroadcast::FREQ_100HZ;
+  freq[1]  = DataBroadcast::FREQ_100HZ;
+  freq[2]  = DataBroadcast::FREQ_100HZ;
+  freq[3]  = DataBroadcast::FREQ_50HZ;
+  freq[4]  = DataBroadcast::FREQ_100HZ;
+  freq[5]  = DataBroadcast::FREQ_50HZ;
+  freq[6]  = DataBroadcast::FREQ_10HZ;
+  freq[7]  = DataBroadcast::FREQ_50HZ;
+  freq[8]  = DataBroadcast::FREQ_50HZ;
+  freq[9]  = DataBroadcast::FREQ_50HZ;
+  freq[10] = DataBroadcast::FREQ_10HZ;
+  freq[11] = DataBroadcast::FREQ_10HZ;
+}
+
+void
+DJISDKNode::setUpA3N3DefaultFreq(uint8_t freq[16])
+{
+  freq[0]  = DataBroadcast::FREQ_400HZ;
+  freq[1]  = DataBroadcast::FREQ_400HZ;
+  freq[2]  = DataBroadcast::FREQ_400HZ;
+  freq[3]  = DataBroadcast::FREQ_50HZ;
+  freq[4]  = DataBroadcast::FREQ_400HZ;
+  freq[5]  = DataBroadcast::FREQ_50HZ;
+  freq[6]  = DataBroadcast::FREQ_50HZ;
+  freq[7]  = DataBroadcast::FREQ_50HZ;
+  freq[8]  = DataBroadcast::FREQ_10HZ;
+  freq[9]  = DataBroadcast::FREQ_50HZ;
+  freq[10] = DataBroadcast::FREQ_50HZ;
+  freq[11] = DataBroadcast::FREQ_50HZ;
+  freq[12] = DataBroadcast::FREQ_10HZ;
+  freq[13] = DataBroadcast::FREQ_10HZ;
 }

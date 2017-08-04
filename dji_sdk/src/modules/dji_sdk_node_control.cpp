@@ -46,7 +46,7 @@ void DJISDKNode::flightControl(uint8_t flag, float xSP, float ySP, float zSP, fl
     }
     else
     {
-      ROS_DEBUG("GROUND frame is specified, but angle and rate command is generated in body frame");
+      //ROS_DEBUG("GROUND frame is specified, but angle and rate command is generated in body frame");
       xCmd = RAD2DEG(xSP);
       yCmd = RAD2DEG(-ySP);
     }
@@ -58,7 +58,7 @@ void DJISDKNode::flightControl(uint8_t flag, float xSP, float ySP, float zSP, fl
     }
     else
     {
-      ROS_WARN_THROTTLE(1.0, "GROUND frame is specified, but thrust command is generated in body frame");
+      //ROS_WARN_THROTTLE(1.0, "GROUND frame is specified, but thrust command is generated in body frame");
       zCmd = zSP;
     }
   }
@@ -83,7 +83,7 @@ void DJISDKNode::flightControl(uint8_t flag, float xSP, float ySP, float zSP, fl
     // 2.2 Vertical channel
     if ( (VERT == Control::VERTICAL_VELOCITY) || (VERT == Control::VERTICAL_POSITION)  )
     {
-      ROS_WARN_THROTTLE(1.0, "BODY frame is specified, but hight and z-velocity is generated in ground frame");
+      //ROS_WARN_THROTTLE(1.0, "BODY frame is specified, but hight and z-velocity is generated in ground frame");
       zCmd = zSP;
     }
     else

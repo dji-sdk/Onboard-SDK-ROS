@@ -246,7 +246,7 @@ DJISDKNode::missionWpGetInfoCallback(
   DJI::OSDK::WayPointInitSettings info;
   if (vehicle->missionManager->wayptCounter > 0)
   {
-    info = vehicle->missionManager->wpMission->getInfo();
+    info = vehicle->missionManager->wpMission->getWaypointSettings(10).data;
   }
   else
   {

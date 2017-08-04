@@ -17,6 +17,7 @@ const float rad2deg = 180.0/C_PI;
 
 ros::ServiceClient sdk_ctrl_authority_service;
 ros::ServiceClient drone_task_service;
+ros::ServiceClient query_version_service;
 
 ros::Publisher ctrlPosYawPub;
 ros::Publisher ctrlVelYawRatePub;
@@ -47,15 +48,26 @@ int main(int argc, char** argv)
   // Basic services
   sdk_ctrl_authority_service = nh.serviceClient<dji_sdk::SDKControlAuthority> ("dji_sdk/sdk_control_authority");
   drone_task_service         = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
+  query_version_service      = nh.serviceClient<dji_sdk::QueryDroneVersion>("dji_sdk/query_drone_version");
 
   bool obtain_control_result = obtain_control();
-  bool takeoff_result = monitoredTakeoff();
+  bool takeoff_result;
+  if(is_M100())
+  {
+    ROS_INFO("M100 taking off!");
+    takeoff_result = M100monitoredTakeoff();
+  }
+  else
+  {
+    ROS_INFO("A3/N3 taking off!");
+    takeoff_result = monitoredTakeoff();
+  }
 
   if(takeoff_result)
   {
     square_mission.reset();
     square_mission.start_gps_location = current_gps;
-    square_mission.setTarget(0, 6, 3, 60);
+    square_mission.setTarget(0, 20, 3, 60);
     square_mission.state = 1;
     ROS_INFO("##### Start route %d ....", square_mission.state);
   }
@@ -236,22 +248,22 @@ bool obtain_control()
   return true;
 }
 
+bool is_M100()
+{
+  dji_sdk::QueryDroneVersion query;
+  query_version_service.call(query);
+
+  if(query.response.version == DJISDK::DroneFirmwareVersion::M100_31)
+  {
+    return true;
+  }
+
+  return false;
+}
+
 void attitude_callback(const geometry_msgs::QuaternionStamped::ConstPtr& msg)
 {
   current_atti = msg->quaternion;
-
-/* For debugging or down-sampling
-  static ros::Time start_time = ros::Time::now();
-  ros::Duration elapsed_time = ros::Time::now() - start_time;
-
-  if(elapsed_time > ros::Duration(0.2))
-  {
-    //ROS_INFO("Elapsed time: %f; Quaternion: x=%.3f, y=%.3f, z=%.3f, w=%.3f", elapsed_time.toSec(), msg->x, msg->y, msg->z, msg->w);
-	geometry_msgs::Vector3 rpy = toEulerAngle(current_atti);
-    ROS_INFO("Measured Roll=%2.3f, Pitch=%2.3f, Yaw=%2.3f", rpy.x, rpy.y, rpy.z);  
-    start_time = ros::Time::now();
-  }
-*/
 }
 
 void gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
@@ -263,7 +275,6 @@ void gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
   // Down sampled to 50Hz loop
   if(elapsed_time > ros::Duration(0.02))
   {
-    //ROS_INFO("Elapsed time: %f; GPS: lat=%.3f, long=%.3f", elapsed_time.toSec(), msg->latitude, msg->longitude);
     start_time = ros::Time::now();
     switch(square_mission.state)
     {
@@ -279,13 +290,41 @@ void gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg)
         {
           square_mission.reset();
           square_mission.start_gps_location = current_gps;
-          square_mission.setTarget(6, 0, 0, 0);
+          square_mission.setTarget(20, 0, 0, 0);
           square_mission.state = 2;
           ROS_INFO("##### Start route %d ....", square_mission.state);
         }
         break;
 
       case 2:
+        if(!square_mission.finished)
+        {
+          square_mission.step();
+        }
+        else
+        {
+          square_mission.reset();
+          square_mission.start_gps_location = current_gps;
+          square_mission.setTarget(0, -20, 0, 0);
+          square_mission.state = 3;
+          ROS_INFO("##### Start route %d ....", square_mission.state);
+        }
+        break;
+      case 3:
+        if(!square_mission.finished)
+        {
+          square_mission.step();
+        }
+        else
+        {
+          square_mission.reset();
+          square_mission.start_gps_location = current_gps;
+          square_mission.setTarget(-20, 0, 0, 0);
+          square_mission.state = 4;
+          ROS_INFO("##### Start route %d ....", square_mission.state);
+        }
+        break;
+      case 4:
         if(!square_mission.finished)
         {
           square_mission.step();
@@ -310,12 +349,20 @@ void display_mode_callback(const std_msgs::UInt8::ConstPtr& msg)
   display_mode = msg->data;
 }
 
+
+/*!
+ * This function demos how to use the flight_status
+ * and the more detailed display_mode (only for A3/N3)
+ * to monitor the take off process with some error
+ * handling. Note M100 flight status is different
+ * from A3/N3 flight status.
+ */
 bool
 monitoredTakeoff()
 {
   ros::Time start_time = ros::Time::now();
 
-  if(!takeoff_land(TASK_TAKEOFF)) {
+  if(!takeoff_land(dji_sdk::DroneTaskControl::Request::TASK_TAKEOFF)) {
     return false;
   }
 
@@ -323,7 +370,7 @@ monitoredTakeoff()
   ros::spinOnce();
 
   // Step 1.1: Spin the motor
-  while (flight_status != FLIGHT_STATUS_ON_GROUND &&
+  while (flight_status != DJISDK::FlightStatus::STATUS_ON_GROUND &&
          display_mode != DJISDK::DisplayMode::MODE_ENGINE_START &&
          ros::Time::now() - start_time < ros::Duration(5)) {
     ros::Duration(0.01).sleep();
@@ -342,7 +389,7 @@ monitoredTakeoff()
 
 
   // Step 1.2: Get in to the air
-  while (flight_status != FLIGHT_STATUS_IN_AIR &&
+  while (flight_status != DJISDK::FlightStatus::STATUS_IN_AIR &&
           (display_mode != DJISDK::DisplayMode::MODE_ASSISTED_TAKEOFF || display_mode != DJISDK::DisplayMode::MODE_AUTO_TAKEOFF) &&
           ros::Time::now() - start_time < ros::Duration(20)) {
     ros::Duration(0.01).sleep();
@@ -380,3 +427,46 @@ monitoredTakeoff()
   return true;
 }
 
+
+/*!
+ * This function demos how to use M100 flight_status
+ * to monitor the take off process with some error
+ * handling. Note M100 flight status is different
+ * from A3/N3 flight status.
+ */
+bool
+M100monitoredTakeoff()
+{
+  ros::Time start_time = ros::Time::now();
+
+  float home_altitude = current_gps.altitude;
+  if(!takeoff_land(dji_sdk::DroneTaskControl::Request::TASK_TAKEOFF))
+  {
+    return false;
+  }
+
+  ros::Duration(0.01).sleep();
+  ros::spinOnce();
+
+  // Step 1: If M100 is not in the air after 10 seconds, fail.
+  while (ros::Time::now() - start_time < ros::Duration(10))
+  {
+    ros::Duration(0.01).sleep();
+    ros::spinOnce();
+  }
+
+  if(flight_status != DJISDK::M100FlightStatus::M100_STATUS_IN_AIR ||
+      current_gps.altitude - home_altitude < 1.0)
+  {
+    ROS_ERROR("Takeoff failed.");
+    return false;
+  }
+  else
+  {
+    start_time = ros::Time::now();
+    ROS_INFO("Successful takeoff!");
+    ros::spinOnce();
+  }
+
+  return true;
+}

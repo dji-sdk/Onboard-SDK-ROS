@@ -259,3 +259,15 @@ DJISDKNode::setHardsyncCallback(dji_sdk::SetHardSync::Request&  request,
   response.result = false;
   return true;
 }
+
+bool DJISDKNode::queryVersionCallback(dji_sdk::QueryDroneVersion::Request& request,
+                                      dji_sdk::QueryDroneVersion::Response& response)
+{
+  response.version = vehicle->getFwVersion();
+  if(response.version == 0)
+  {
+    ROS_INFO("Failed to get a valid Firmware version from drone!");
+  }
+
+  return true;
+}

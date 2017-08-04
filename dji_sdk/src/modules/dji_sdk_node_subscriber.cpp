@@ -35,8 +35,8 @@ DJISDKNode::gimbalSpeedCtrlCallback(
 
   DJI::OSDK::Gimbal::SpeedData speed_data;
   //! OSDK takes 0.1 deg as unit
-  speed_data.roll  = RAD2DEG(msg->vector.y)*10;
-  speed_data.pitch = RAD2DEG(msg->vector.x)*10;
+  speed_data.roll  = RAD2DEG(msg->vector.x)*10;
+  speed_data.pitch = RAD2DEG(msg->vector.y)*10;
   speed_data.yaw   = RAD2DEG(msg->vector.z)*10;
   vehicle->gimbal->setSpeed(&speed_data);
 }
