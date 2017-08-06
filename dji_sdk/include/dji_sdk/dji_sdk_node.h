@@ -271,6 +271,7 @@ private:
   ros::Publisher gimbal_angle_publisher;
   ros::Publisher displaymode_publisher;
   ros::Publisher rc_publisher;
+  ros::Publisher device_status_publisher;
 
   //! constant
   const int WAIT_TIMEOUT           = 10;

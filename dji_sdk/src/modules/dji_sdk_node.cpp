@@ -198,6 +198,10 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
 {
   rc_publisher = nh.advertise<sensor_msgs::Joy>("dji_sdk/rc", 10);
 
+  // device control status, 0=RC, 1=MSDK, 2=OSDK
+  device_status_publisher =
+    nh.advertise<std_msgs::UInt8>("dji_sdk/control_status", 10);
+
   attitude_publisher =
     nh.advertise<geometry_msgs::QuaternionStamped>("dji_sdk/attitude", 10);
 
@@ -266,7 +270,7 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
     }
     else
     {
-      ROS_INFO("align_time_with_FC set to false. We will time stamp messages based on flight controller time!");
+      ROS_INFO("align_time_with_FC set to true. We will time stamp messages based on flight controller time!");
     }
 
     // Extra topics that is only available from subscription
