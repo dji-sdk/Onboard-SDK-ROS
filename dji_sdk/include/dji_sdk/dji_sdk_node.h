@@ -25,6 +25,7 @@
 #include <sensor_msgs/TimeReference.h>
 #include <sensor_msgs/BatteryState.h>
 #include <std_msgs/UInt8.h>
+#include <std_msgs/Float32.h>
 
 
 //! msgs
@@ -59,7 +60,7 @@
 #include <dji_sdk/MFIOSetValue.h>
 #include <dji_sdk/SDKControlAuthority.h>
 #include <dji_sdk/SendMobileData.h>
-
+#include <dji_sdk/QueryDroneVersion.h>
 //! SDK library
 #include <djiosdk/dji_vehicle.hpp>
 
@@ -99,6 +100,7 @@ private:
   bool initDataSubscribeFromFC();
   void cleanUpSubscribeFromFC();
   bool validateSerialDevice(LinuxSerialDevice* serialDevice);
+  bool isM100();
   /*!
    * @note this function exists here instead of inside the callback function
    *        due to the usages, i.e. we not only provide service call but also
@@ -141,6 +143,10 @@ private:
   //! Mobile Data Service
   bool sendToMobileCallback(dji_sdk::SendMobileData::Request&  request,
                             dji_sdk::SendMobileData::Response& response);
+  //! Query Drone FW version
+  bool queryVersionCallback(dji_sdk::QueryDroneVersion::Request& request,
+                            dji_sdk::QueryDroneVersion::Response& response);
+
   bool cameraActionCallback(dji_sdk::CameraAction::Request&  request,
                             dji_sdk::CameraAction::Response& response);
   //! mfio service callbacks
@@ -241,10 +247,12 @@ private:
   ros::ServiceServer hotpoint_setSpeed_server;
   ros::ServiceServer hotpoint_resetYaw_server;
   ros::ServiceServer hotpoint_setRadius_server;
-
+  // send data to mobile device
   ros::ServiceServer send_to_mobile_server;
   //! hardsync service
   ros::ServiceServer set_hardsync_server;
+  //! Query FW version of FC
+  ros::ServiceServer query_version_server;
 
   //! flight control subscribers
   ros::Subscriber flight_control_sub;
@@ -266,6 +274,7 @@ private:
   ros::Publisher flight_status_publisher;
   ros::Publisher gps_health_publisher;
   ros::Publisher gps_position_publisher;
+  ros::Publisher height_publisher;
   ros::Publisher velocity_publisher;
   ros::Publisher from_mobile_data_publisher;
   ros::Publisher gimbal_angle_publisher;
@@ -314,6 +323,8 @@ private:
   bool align_time_with_FC;
 
   void alignRosTimeWithFlightController(ros::Time now_time, uint32_t tick);
+  void setUpM100DefaultFreq(uint8_t freq[16]);
+  void setUpA3N3DefaultFreq(uint8_t freq[16]);
 };
 
 #endif // DJI_SDK_NODE_MAIN_H

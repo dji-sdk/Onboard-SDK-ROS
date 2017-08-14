@@ -103,12 +103,12 @@ setWaypointInitDefaults(dji_sdk::MissionWaypointTask& waypointTask)
 {
   waypointTask.velocity_range     = 10;
   waypointTask.idle_velocity      = 5;
-  waypointTask.action_on_finish   = 0;
+  waypointTask.action_on_finish   = dji_sdk::MissionWaypointTask::FINISH_NO_ACTION;
   waypointTask.mission_exec_times = 1;
-  waypointTask.yaw_mode           = 0;
-  waypointTask.trace_mode         = 0;
-  waypointTask.action_on_rc_lost  = 1;
-  waypointTask.gimbal_pitch_mode  = 0;
+  waypointTask.yaw_mode           = dji_sdk::MissionWaypointTask::YAW_MODE_AUTO;
+  waypointTask.trace_mode         = dji_sdk::MissionWaypointTask::TRACE_POINT;
+  waypointTask.action_on_rc_lost  = dji_sdk::MissionWaypointTask::ACTION_AUTO;
+  waypointTask.gimbal_pitch_mode  = dji_sdk::MissionWaypointTask::GIMBAL_PITCH_FREE;
 }
 
 std::vector<DJI::OSDK::WayPointSettings>
@@ -212,8 +212,7 @@ runHotpointMission(int initialRadius, int responseTimeout)
   // Start
   ROS_INFO("Start with default rotation rate: 15 deg/s");
   if (missionAction(DJI::OSDK::DJI_MISSION_TYPE::HOTPOINT,
-                    DJI::OSDK::MISSION_ACTION::START)
-        .result)
+                    DJI::OSDK::MISSION_ACTION::START).result)
   {
     ROS_INFO("Mission start command sent successfully");
   }
@@ -227,8 +226,7 @@ runHotpointMission(int initialRadius, int responseTimeout)
   // Pause
   ROS_INFO("Pause for 5s");
   if (missionAction(DJI::OSDK::DJI_MISSION_TYPE::HOTPOINT,
-                    DJI::OSDK::MISSION_ACTION::PAUSE)
-        .result)
+                    DJI::OSDK::MISSION_ACTION::PAUSE).result)
   {
     ROS_INFO("Mission pause command sent successfully");
   }
@@ -242,8 +240,7 @@ runHotpointMission(int initialRadius, int responseTimeout)
   // Resume
   ROS_INFO("Resume");
   if (missionAction(DJI::OSDK::DJI_MISSION_TYPE::HOTPOINT,
-                    DJI::OSDK::MISSION_ACTION::RESUME)
-        .result)
+                    DJI::OSDK::MISSION_ACTION::RESUME).result)
   {
     ROS_INFO("Mission resume command sent successfully");
   }
@@ -549,6 +546,7 @@ main(int argc, char** argv)
     {
       ROS_WARN("Failed Obtain SDK control Authority");
       return -1;
+
     }
   }
 

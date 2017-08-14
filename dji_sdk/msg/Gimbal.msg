@@ -1,5 +1,8 @@
 Header header
+# ts is the time it takes to achieve the desired angle,
+# so the shorter the time, the faster the gimbal rotates.
 int32 ts        # sec
+
 # Mode is 1 byte size:
 # Bit #:      | Set to 0:                             | Set to 1:
 # ----------- | ------------------------------------- | -------------------------------------
@@ -11,6 +14,6 @@ int32 ts        # sec
 # bit 3       |Pitch invalid bit, the same as bit[1]  | Pitch invalid bit, the same as bit[1]
 # bit [4:7]   | bit [4:7]: reserved, set to be 0      |
 uint8 mode
-float32 pitch   # rads
 float32 yaw     # rads
+float32 pitch   # rads
 float32 roll    # rads

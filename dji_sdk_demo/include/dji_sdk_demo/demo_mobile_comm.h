@@ -28,6 +28,7 @@
 #include <dji_sdk/DroneArmControl.h>
 #include <dji_sdk/DroneTaskControl.h>
 #include <dji_sdk/SendMobileData.h>
+#include <dji_sdk/QueryDroneVersion.h>
 
 // ROS includes
 #include <ros/ros.h>
@@ -62,25 +63,6 @@ typedef struct ServiceAck{
 
 typedef float  float32_t;
 typedef double float64_t;
-
-enum {
-  TASK_TAKE_OFF = 4,
-  TASK_LAND = 6
-};
-
-enum {
-  FLIGHT_STATUS_STOPED    = 0,
-  FLIGHT_STATUS_ON_GROUND = 1,
-  FLIGHT_STATUS_IN_AIR    = 2
-};
-
-enum {
-  MODE_A                   = 1,
-  MODE_P_GPS               = 6,
-  MODE_TAKING_OFF_STATUS_1 = 10,
-  MODE_TAKING_OFF_STATUS_2 = 11,
-  MODE_ENGINE_START        = 41
-};
 
 class Mission
 {
@@ -178,9 +160,12 @@ void gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg);
 void attitude_callback(const geometry_msgs::QuaternionStamped::ConstPtr& msg);
 
 bool takeoff_land(int task);
+
 bool obtain_control();
 
+bool is_M100();
 bool monitoredTakeoff();
+bool M100monitoredTakeoff();
 
 bool runWaypointMission(uint8_t numWaypoints,
                         int responseTimeout);

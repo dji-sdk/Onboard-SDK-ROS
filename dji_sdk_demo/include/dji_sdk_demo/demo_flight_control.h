@@ -22,6 +22,7 @@
 // DJI SDK includes
 #include <dji_sdk/DroneTaskControl.h>
 #include <dji_sdk/SDKControlAuthority.h>
+#include <dji_sdk/QueryDroneVersion.h>
 
 #include <tf/tf.h>
 #include <sensor_msgs/Joy.h>
@@ -29,17 +30,6 @@
 #define C_EARTH (double)6378137.0
 #define C_PI (double)3.141592653589793
 #define DEG2RAD(DEG) ((DEG) * ((C_PI) / (180.0)))
-
-enum {
-  TASK_TAKEOFF = 4,
-  TASK_LANDING = 6
-};
-
-enum {
-  FLIGHT_STATUS_STOPED    = 0,
-  FLIGHT_STATUS_ON_GROUND = 1,
-  FLIGHT_STATUS_IN_AIR    = 2
-};
 
 /*!
  * @brief a bare bone state machine to track the stage of the mission
@@ -109,6 +99,10 @@ bool takeoff_land(int task);
 
 bool obtain_control();
 
+bool is_M100();
+
 bool monitoredTakeoff();
+
+bool M100monitoredTakeoff();
 
 #endif // DEMO_FLIGHT_CONTROL_H

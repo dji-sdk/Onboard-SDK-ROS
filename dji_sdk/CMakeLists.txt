@@ -84,6 +84,7 @@ add_service_files(
   MissionHpResetYaw.srv
   SendMobileData.srv
   SetHardSync.srv
+  QueryDroneVersion.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
