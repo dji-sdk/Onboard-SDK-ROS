@@ -11,7 +11,9 @@
 
 #include <dji_sdk/dji_sdk_node.h>
 #include <tf/tf.h>
-
+#include <djiosdk/dji_control.hpp>
+#include <djiosdk/dji_status.hpp>
+#include <djiosdk/dji_version.hpp>
 #include <sensor_msgs/Joy.h>
 
 #define _TICK2ROSTIME(tick) (ros::Duration((double)(tick) / 1000.0))
