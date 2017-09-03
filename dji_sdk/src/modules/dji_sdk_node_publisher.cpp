@@ -309,6 +309,55 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   msg_gps_ctrl_level.data = gps_ctrl_level;
   p->gps_health_publisher.publish(msg_gps_ctrl_level);
 
+
+  Telemetry::TypeMap<Telemetry::TOPIC_RTK_POSITION>::type rtk_position =
+    vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_POSITION>();
+
+  sensor_msgs::NavSatFix rtk_position_msg;
+  rtk_position_msg.header.frame_id = "/rtk";
+  rtk_position_msg.header.stamp    = msg_time;
+  rtk_position_msg.latitude        = rtk_position.latitude;   //degree
+  rtk_position_msg.longitude       = rtk_position.longitude;  //degree
+  rtk_position_msg.altitude        = rtk_position.HFSL;       //meter
+  p->rtk_position_publisher.publish(rtk_position_msg);
+
+
+  Telemetry::TypeMap<Telemetry::TOPIC_RTK_VELOCITY>::type v_RTK_FC =
+    vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_VELOCITY>();
+  geometry_msgs::Vector3Stamped rtk_velocity_msg;
+  /*!
+   * note: We are now following REP 103 to use ENU for
+   *       short-range Cartesian representations
+   */
+  rtk_velocity_msg.header.frame_id = "ground_ENU";
+  rtk_velocity_msg.header.stamp = msg_time;
+  rtk_velocity_msg.vector.x = v_RTK_FC.y;  //x, y are swapped from NE to EN
+  rtk_velocity_msg.vector.y = v_RTK_FC.x;
+  rtk_velocity_msg.vector.z = v_RTK_FC.z; //z sign is already U
+  p->rtk_velocity_publisher.publish(rtk_velocity_msg);
+
+
+  Telemetry::TypeMap<Telemetry::TOPIC_RTK_YAW>::type rtk_yaw =
+    vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_YAW>();
+  std_msgs::Float32 rtk_yaw_msg;
+  rtk_yaw_msg.data = rtk_yaw;
+  p->rtk_yaw_publisher.publish(rtk_yaw_msg);
+
+
+  Telemetry::TypeMap<Telemetry::TOPIC_RTK_POSITION_INFO>::type rtk_position_info =
+    vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_POSITION_INFO>();
+  std_msgs::UInt8 rtk_position_info_msg;
+  rtk_position_info_msg.data = rtk_position_info;
+  p->rtk_position_info_publisher.publish(rtk_position_info_msg);
+
+
+  Telemetry::TypeMap<Telemetry::TOPIC_RTK_YAW_INFO>::type rtk_yaw_info =
+    vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_YAW_INFO>();
+  std_msgs::UInt8 rtk_yaw_info_msg;
+  rtk_yaw_info_msg.data = rtk_yaw_info;
+  p->rtk_yaw_info_publisher.publish(rtk_yaw_info_msg);
+
+
   Telemetry::TypeMap<Telemetry::TOPIC_GIMBAL_ANGLES>::type gimbal_angle =
     vehicle->subscribe->getValue<Telemetry::TOPIC_GIMBAL_ANGLES>();
 

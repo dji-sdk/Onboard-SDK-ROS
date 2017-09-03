@@ -270,6 +270,22 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
   gimbal_angle_publisher =
     nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/gimbal_angle", 10);
 
+  rtk_position_publisher =
+    nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/rtk_position", 10);
+
+  rtk_velocity_publisher =
+    nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/rtk_velocity", 10);
+
+  rtk_yaw_publisher =
+    nh.advertise<std_msgs::Float32>("dji_sdk/rtk_yaw", 10);
+
+  rtk_position_info_publisher =
+      nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_position_info", 10);
+  rtk_yaw_info_publisher =
+      nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_yaw_info", 10);
+
+
+
   if (telemetry_from_fc == USE_BROADCAST)
   {
     ACK::ErrorCode broadcast_set_freq_ack;
@@ -378,7 +394,12 @@ DJISDKNode::initDataSubscribeFromFC()
     Telemetry::TOPIC_GIMBAL_STATUS,
     Telemetry::TOPIC_RC,
     Telemetry::TOPIC_VELOCITY,
-    Telemetry::TOPIC_GPS_CONTROL_LEVEL
+    Telemetry::TOPIC_GPS_CONTROL_LEVEL,
+    Telemetry::TOPIC_RTK_POSITION,             /*!< RTK position @50Hz */
+    Telemetry::TOPIC_RTK_VELOCITY,             /*!< RTK velocity @50Hz */
+    Telemetry::TOPIC_RTK_YAW,                  /*!< RTK yaw @50Hz */
+    Telemetry::TOPIC_RTK_POSITION_INFO,        /*!< RTK status @50Hz */
+    Telemetry::TOPIC_RTK_YAW_INFO             /*!< RTK yaw status @50Hz */
   };
   int nTopic50Hz    = sizeof(topicList50Hz) / sizeof(topicList50Hz[0]);
   if (vehicle->subscribe->initPackageFromTopicList(PACKAGE_ID_50HZ, nTopic50Hz,

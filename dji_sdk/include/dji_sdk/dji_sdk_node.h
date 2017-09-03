@@ -280,6 +280,11 @@ private:
   ros::Publisher gimbal_angle_publisher;
   ros::Publisher displaymode_publisher;
   ros::Publisher rc_publisher;
+  ros::Publisher rtk_position_publisher;
+  ros::Publisher rtk_velocity_publisher;
+  ros::Publisher rtk_yaw_publisher;
+  ros::Publisher rtk_position_info_publisher;
+  ros::Publisher rtk_yaw_info_publisher;
 
   //! constant
   const int WAIT_TIMEOUT           = 10;
