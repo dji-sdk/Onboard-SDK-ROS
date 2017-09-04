@@ -426,7 +426,7 @@ DJISDKNode::initDataSubscribeFromFC()
           Telemetry::TOPIC_GPS_TIME,
           Telemetry::TOPIC_GPS_POSITION,
           Telemetry::TOPIC_GPS_VELOCITY,
-          Telemetry::TOPIC_GPS_DETAILS,
+//          Telemetry::TOPIC_GPS_DETAILS,
           Telemetry::TOPIC_BATTERY_INFO
   };
   int nTopic10Hz = sizeof(topicList10Hz) /sizeof(topicList10Hz[0]);
