@@ -262,6 +262,15 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     }
   }
 
+  Telemetry::TypeMap<Telemetry::TOPIC_GPS_DETAILS>::type gps_details =
+    vehicle->subscribe->getValue<Telemetry::TOPIC_GPS_DETAILS>();
+
+  Telemetry::TypeMap<Telemetry::TOPIC_GPS_CONTROL_LEVEL>::type gps_ctrl_level=
+    vehicle->subscribe->getValue<Telemetry::TOPIC_GPS_CONTROL_LEVEL>();
+  std_msgs::UInt8 msg_gps_ctrl_level;
+  msg_gps_ctrl_level.data = gps_ctrl_level;
+  p->gps_health_publisher.publish(msg_gps_ctrl_level);
+
   Telemetry::TypeMap<Telemetry::TOPIC_GPS_FUSED>::type fused_gps =
     vehicle->subscribe->getValue<Telemetry::TOPIC_GPS_FUSED>();
 
@@ -270,7 +279,12 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   gps_pos.header.stamp    = msg_time;
   gps_pos.latitude        = fused_gps.latitude * 180.0 / C_PI;   //degree
   gps_pos.longitude       = fused_gps.longitude * 180.0 / C_PI;  //degree
-  gps_pos.altitude        = fused_gps.altitude;                //meter
+  gps_pos.altitude        = fused_gps.altitude;                  //meter
+  gps_pos.status.status |= gps_ctrl_level >= 3 ? sensor_msgs::NavSatStatus::STATUS_SBAS_FIX : sensor_msgs::NavSatStatus::STATUS_NO_FIX;
+  if(gps_details.usedGPS > 0)
+    gps_pos.status.service |= sensor_msgs::NavSatStatus::SERVICE_GPS;
+  if(gps_details.usedGLN > 0)
+    gps_pos.status.service |= sensor_msgs::NavSatStatus::SERVICE_GLONASS;
   p->gps_position_publisher.publish(gps_pos);
 
   Telemetry::TypeMap<Telemetry::TOPIC_HEIGHT_FUSION>::type fused_height =
@@ -302,12 +316,6 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   v.vector.y = v_FC.data.x;
   v.vector.z = v_FC.data.z; //z sign is already U
   p->velocity_publisher.publish(v);
-
-  Telemetry::TypeMap<Telemetry::TOPIC_GPS_CONTROL_LEVEL>::type gps_ctrl_level=
-    vehicle->subscribe->getValue<Telemetry::TOPIC_GPS_CONTROL_LEVEL>();
-  std_msgs::UInt8 msg_gps_ctrl_level;
-  msg_gps_ctrl_level.data = gps_ctrl_level;
-  p->gps_health_publisher.publish(msg_gps_ctrl_level);
 
 
   Telemetry::TypeMap<Telemetry::TOPIC_RTK_POSITION>::type rtk_position =

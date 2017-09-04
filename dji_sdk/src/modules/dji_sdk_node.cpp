@@ -387,6 +387,7 @@ DJISDKNode::initDataSubscribeFromFC()
   // 50 Hz package from FC
   Telemetry::TopicName topicList50Hz[] = {
     Telemetry::TOPIC_GPS_FUSED,
+    Telemetry::TOPIC_GPS_DETAILS,
     Telemetry::TOPIC_HEIGHT_FUSION,
     Telemetry::TOPIC_STATUS_FLIGHT,
     Telemetry::TOPIC_STATUS_DISPLAYMODE,
