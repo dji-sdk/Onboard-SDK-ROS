@@ -184,6 +184,14 @@ target_link_libraries(demo_mobile_comm
 		${DJIOSDK_LIBRARIES}
 		)
 add_dependencies(demo_mobile_comm dji_sdk_generate_messages_cpp)
+
+add_executable(demo_local_position_control
+		src/demo_local_position_control.cpp)
+target_link_libraries(demo_local_position_control
+		${catkin_LIBRARIES}
+		${DJIOSDK_LIBRARIES}
+		)
+add_dependencies(demo_local_position_control dji_sdk_generate_messages_cpp)
 #############
 ## Install ##
 #############

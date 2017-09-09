@@ -29,6 +29,10 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
   nh_private.param("align_time",    align_time_with_FC, true);
   nh_private.param("use_broadcast", user_select_BC, false);
 
+  //! Default values for local Position
+  local_pos_ref_latitude = local_pos_ref_longitude = local_pos_ref_altitude = 0;
+  local_pos_ref_set = false;
+
   // @todo need some error handling for init functions
   //! @note parsing launch file to get environment parameters
   if (!initVehicle(nh_private))
@@ -147,6 +151,7 @@ bool DJISDKNode::initServices(ros::NodeHandle& nh) {
   mission_status_server     = nh.advertiseService("dji_sdk/mission_status",                 &DJISDKNode::missionStatusCallback,          this);
   send_to_mobile_server     = nh.advertiseService("dji_sdk/send_data_to_mobile",            &DJISDKNode::sendToMobileCallback,           this);
   query_version_server      = nh.advertiseService("dji_sdk/query_drone_version",            &DJISDKNode::queryVersionCallback,           this);
+  local_pos_ref_server      = nh.advertiseService("dji_sdk/set_local_pos_ref",              &DJISDKNode::setLocalPosRefCallback,         this);
 
   // A3/N3 only
   if(!isM100())
@@ -270,6 +275,9 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
   gimbal_angle_publisher =
     nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/gimbal_angle", 10);
 
+  local_position_publisher =
+      nh.advertise<geometry_msgs::PointStamped>("dji_sdk/local_position", 10);
+
   if (telemetry_from_fc == USE_BROADCAST)
   {
     ACK::ErrorCode broadcast_set_freq_ack;
@@ -308,7 +316,7 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
     }
     else
     {
-      ROS_INFO("align_time_with_FC set to false. We will time stamp messages based on flight controller time!");
+      ROS_INFO("align_time_with_FC set to true. We will time stamp messages based on flight controller time!");
     }
 
     // Extra topics that is only available from subscription
@@ -517,3 +525,13 @@ DJISDKNode::setUpA3N3DefaultFreq(uint8_t freq[16])
   freq[12] = DataBroadcast::FREQ_10HZ;
   freq[13] = DataBroadcast::FREQ_10HZ;
 }
+
+void DJISDKNode::gpsConvertENU(double &ENU_x, double &ENU_y,
+                                 double gps_t_lon, double gps_t_lat,
+                                 double gps_r_lon, double gps_r_lat)
+{
+  double d_lon = gps_t_lon - gps_r_lon;
+  double d_lat = gps_t_lat - gps_r_lat;
+  ENU_y = DEG2RAD(d_lat) * C_EARTH;
+  ENU_x = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
+};

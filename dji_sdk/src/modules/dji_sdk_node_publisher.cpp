@@ -11,7 +11,6 @@
 
 #include <dji_sdk/dji_sdk_node.h>
 #include <tf/tf.h>
-
 #include <sensor_msgs/Joy.h>
 
 #define _TICK2ROSTIME(tick) (ros::Duration((double)(tick) / 1000.0))
@@ -117,7 +116,28 @@ DJISDKNode::dataBroadcastCallback()
     gps_pos.latitude        = global_pos.latitude * 180 / C_PI;
     gps_pos.longitude       = global_pos.longitude * 180 / C_PI;
     gps_pos.altitude        = global_pos.altitude;
+    this->current_gps_latitude = gps_pos.latitude;
+    this->current_gps_longitude = gps_pos.longitude;
+    this->current_gps_altitude = gps_pos.altitude;
+    this->current_gps_health = global_pos.health;
     gps_position_publisher.publish(gps_pos);
+
+    if(local_pos_ref_set)
+    {
+      geometry_msgs::PointStamped local_pos;
+      local_pos.header.frame_id = "/local";
+      local_pos.header.stamp = gps_pos.header.stamp;
+      gpsConvertENU(local_pos.point.x, local_pos.point.y, gps_pos.longitude,
+                       gps_pos.latitude, this->local_pos_ref_longitude, this->local_pos_ref_latitude);
+      local_pos.point.z = gps_pos.altitude - this->local_pos_ref_altitude;
+      /*!
+      * note: We are now following REP 103 to use ENU for
+      *       short-range Cartesian representations. Local position is published
+      *       in ENU Frame
+      */
+
+      this->local_position_publisher.publish(local_pos);
+    }
 
     std_msgs::Float32 agl_height;
     agl_height.data = global_pos.height;
@@ -271,7 +291,26 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   gps_pos.latitude        = fused_gps.latitude * 180.0 / C_PI;   //degree
   gps_pos.longitude       = fused_gps.longitude * 180.0 / C_PI;  //degree
   gps_pos.altitude        = fused_gps.altitude;                //meter
+  p->current_gps_latitude = gps_pos.latitude;
+  p->current_gps_longitude = gps_pos.longitude;
+  p->current_gps_altitude = gps_pos.altitude;
   p->gps_position_publisher.publish(gps_pos);
+
+  if(p->local_pos_ref_set)
+  {
+    geometry_msgs::PointStamped local_pos;
+    local_pos.header.frame_id = "/local";
+    local_pos.header.stamp = gps_pos.header.stamp;
+    p->gpsConvertENU(local_pos.point.x, local_pos.point.y, gps_pos.longitude,
+        gps_pos.latitude, p->local_pos_ref_longitude, p->local_pos_ref_latitude);
+    local_pos.point.z = gps_pos.altitude - p->local_pos_ref_altitude;
+   /*!
+   * note: We are now following REP 103 to use ENU for
+   *       short-range Cartesian representations. Local position is published
+   *       in ENU Frame
+   */
+    p->local_position_publisher.publish(local_pos);
+  }
 
   Telemetry::TypeMap<Telemetry::TOPIC_HEIGHT_FUSION>::type fused_height =
     vehicle->subscribe->getValue<Telemetry::TOPIC_HEIGHT_FUSION>();
@@ -307,6 +346,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     vehicle->subscribe->getValue<Telemetry::TOPIC_GPS_CONTROL_LEVEL>();
   std_msgs::UInt8 msg_gps_ctrl_level;
   msg_gps_ctrl_level.data = gps_ctrl_level;
+  p->current_gps_health = gps_ctrl_level;
   p->gps_health_publisher.publish(msg_gps_ctrl_level);
 
   Telemetry::TypeMap<Telemetry::TOPIC_GIMBAL_ANGLES>::type gimbal_angle =

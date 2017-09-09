@@ -67,6 +67,7 @@ add_service_files(
   CameraAction.srv
   DroneTaskControl.srv
   SDKControlAuthority.srv
+  SetLocalPosRef.srv
   MFIOConfig.srv
   MFIOSetValue.srv
   DroneArmControl.srv

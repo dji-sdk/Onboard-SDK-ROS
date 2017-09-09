@@ -20,7 +20,7 @@ ros::ServiceClient drone_task_service;
 ros::ServiceClient query_version_service;
 
 ros::Publisher ctrlPosYawPub;
-ros::Publisher ctrlVelYawRatePub;
+ros::Publisher ctrlBrakePub;
 
 // global variables for subscribed topics
 uint8_t flight_status = 255;
@@ -44,7 +44,12 @@ int main(int argc, char** argv)
 
   // Publish the control signal
   ctrlPosYawPub = nh.advertise<sensor_msgs::Joy>("/dji_sdk/flight_control_setpoint_ENUposition_yaw", 10);
-  ctrlVelYawRatePub = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_generic", 10);
+  
+  // We could use dji_sdk/flight_control_setpoint_ENUvelocity_yawrate here, but
+  // we use dji_sdk/flight_control_setpoint_generic to demonstrate how to set the flag
+  // properly in function Mission::step()
+  ctrlBrakePub = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_generic", 10);
+  
   // Basic services
   sdk_ctrl_authority_service = nh.serviceClient<dji_sdk::SDKControlAuthority> ("dji_sdk/sdk_control_authority");
   drone_task_service         = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
@@ -158,28 +163,30 @@ void Mission::step()
   else if(break_counter > 0)
   {
     sensor_msgs::Joy controlVelYawRate;
+    uint8_t flag = (DJISDK::VERTICAL_VELOCITY   |
+                DJISDK::HORIZONTAL_VELOCITY |
+                DJISDK::YAW_RATE            |
+                DJISDK::HORIZONTAL_GROUND   |
+                DJISDK::STABLE_ENABLE);
     controlVelYawRate.axes.push_back(0);
     controlVelYawRate.axes.push_back(0);
     controlVelYawRate.axes.push_back(0);
     controlVelYawRate.axes.push_back(0);
-    ctrlVelYawRatePub.publish(controlVelYawRate);
+    controlVelYawRate.axes.push_back(flag);
+
+    ctrlBrakePub.publish(controlVelYawRate);
     break_counter++;
     return;
   }
   else //break_counter = 0, not in break stage
   {
     sensor_msgs::Joy controlPosYaw;
-    uint8_t flag = (DJISDK::VERTICAL_VELOCITY   |
-                    DJISDK::HORIZONTAL_VELOCITY |
-                    DJISDK::YAW_RATE            |
-                    DJISDK::HORIZONTAL_GROUND   |
-                    DJISDK::STABLE_ENABLE);
+
 
     controlPosYaw.axes.push_back(xCmd);
     controlPosYaw.axes.push_back(yCmd);
     controlPosYaw.axes.push_back(zCmd);
     controlPosYaw.axes.push_back(yawDesiredRad);
-    controlPosYaw.axes.push_back(flag);
     ctrlPosYawPub.publish(controlPosYaw);
   }
 

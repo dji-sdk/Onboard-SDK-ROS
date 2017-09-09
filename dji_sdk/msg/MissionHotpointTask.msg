@@ -1,8 +1,8 @@
-float64 latitude
-float64 longitude
-float64 altitude
-float64 radius
-float32 angular_speed
+float64 latitude  # degree
+float64 longitude # degree
+float64 altitude  # meter
+float64 radius    # meter
+float32 angular_speed #deg/s
 uint8 is_clockwise
 uint8 start_point
 uint8 yaw_mode

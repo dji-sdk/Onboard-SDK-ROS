@@ -1,0 +1,6 @@
+#set local position
+# true: set Local position reference
+
+#request
+---
+bool result

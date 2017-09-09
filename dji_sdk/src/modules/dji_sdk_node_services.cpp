@@ -122,6 +122,29 @@ DJISDKNode::sdkCtrlAuthorityCallback(
 }
 
 bool
+DJISDKNode::setLocalPosRefCallback(dji_sdk::SetLocalPosRef::Request &request,
+                                     dji_sdk::SetLocalPosRef::Response &response) {
+  printf("Currrent GPS health is %d \n",current_gps_health );
+  if (current_gps_health > 3)
+  {
+    local_pos_ref_latitude = current_gps_latitude;
+    local_pos_ref_longitude = current_gps_longitude;
+    local_pos_ref_altitude = current_gps_altitude;
+    ROS_INFO("Local Position reference has been set.");
+    ROS_INFO("MONITOR GPS HEALTH WHEN USING THIS TOPIC");
+    local_pos_ref_set = true;
+    return true;
+  }
+  else
+  {
+    ROS_INFO("Not enough GPS Satellites. ");
+    ROS_INFO("Cannot set Local Position reference");
+    local_pos_ref_set = false;
+    return false;
+  }
+}
+
+bool
 DJISDKNode::droneTaskCallback(dji_sdk::DroneTaskControl::Request&  request,
                               dji_sdk::DroneTaskControl::Response& response)
 {

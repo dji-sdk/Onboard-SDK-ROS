@@ -59,6 +59,7 @@
 #include <dji_sdk/MFIOConfig.h>
 #include <dji_sdk/MFIOSetValue.h>
 #include <dji_sdk/SDKControlAuthority.h>
+#include <dji_sdk/SetLocalPosRef.h>
 #include <dji_sdk/SendMobileData.h>
 #include <dji_sdk/QueryDroneVersion.h>
 //! SDK library
@@ -97,6 +98,7 @@ private:
   bool initFlightControl(ros::NodeHandle& nh);
   bool initSubscriber(ros::NodeHandle& nh);
   bool initPublisher(ros::NodeHandle& nh);
+  bool initActions(ros::NodeHandle& nh);
   bool initDataSubscribeFromFC();
   void cleanUpSubscribeFromFC();
   bool validateSerialDevice(LinuxSerialDevice* serialDevice);
@@ -134,6 +136,10 @@ private:
   bool sdkCtrlAuthorityCallback(
     dji_sdk::SDKControlAuthority::Request&  request,
     dji_sdk::SDKControlAuthority::Response& response);
+
+  bool setLocalPosRefCallback(
+      dji_sdk::SetLocalPosRef::Request&  request,
+      dji_sdk::SetLocalPosRef::Response& response);
   //! control service callbacks
   bool droneArmCallback(dji_sdk::DroneArmControl::Request&  request,
                         dji_sdk::DroneArmControl::Response& response);
@@ -253,6 +259,8 @@ private:
   ros::ServiceServer set_hardsync_server;
   //! Query FW version of FC
   ros::ServiceServer query_version_server;
+  //! Set Local position reference
+  ros::ServiceServer local_pos_ref_server;
 
   //! flight control subscribers
   ros::Subscriber flight_control_sub;
@@ -280,6 +288,8 @@ private:
   ros::Publisher gimbal_angle_publisher;
   ros::Publisher displaymode_publisher;
   ros::Publisher rc_publisher;
+  //! Local Position Publisher (Publishes local position in ENU frame)
+  ros::Publisher local_position_publisher;
 
   //! constant
   const int WAIT_TIMEOUT           = 10;
@@ -321,9 +331,19 @@ private:
 
   bool align_time_with_FC;
 
+  bool local_pos_ref_set;
+
   void alignRosTimeWithFlightController(ros::Time now_time, uint32_t tick);
   void setUpM100DefaultFreq(uint8_t freq[16]);
   void setUpA3N3DefaultFreq(uint8_t freq[16]);
+  void gpsConvertENU(double &ENU_x, double &ENU_y,
+                     double gps_t_lon, double gps_t_lat,
+                     double gps_r_lon, double gps_r_lat);
+
+
+  double local_pos_ref_latitude, local_pos_ref_longitude, local_pos_ref_altitude;
+  double current_gps_latitude, current_gps_longitude, current_gps_altitude;
+  int current_gps_health;
 };
 
 #endif // DJI_SDK_NODE_MAIN_H
