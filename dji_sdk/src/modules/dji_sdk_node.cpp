@@ -104,7 +104,7 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private)
     return false;
   }
 
-  if(!isM100())
+  if((!isM100()) && (user_select_BC == false))
   {
     for(int i = 0; i < MAX_SUBSCRIBE_PACKAGES; i++)
       vehicle->subscribe->removePackage(i, WAIT_TIMEOUT);
@@ -510,11 +510,11 @@ DJISDKNode::setUpM100DefaultFreq(uint8_t freq[16])
 void
 DJISDKNode::setUpA3N3DefaultFreq(uint8_t freq[16])
 {
-  freq[0]  = DataBroadcast::FREQ_400HZ;
-  freq[1]  = DataBroadcast::FREQ_400HZ;
-  freq[2]  = DataBroadcast::FREQ_400HZ;
+  freq[0]  = DataBroadcast::FREQ_100HZ;
+  freq[1]  = DataBroadcast::FREQ_100HZ;
+  freq[2]  = DataBroadcast::FREQ_100HZ;
   freq[3]  = DataBroadcast::FREQ_50HZ;
-  freq[4]  = DataBroadcast::FREQ_400HZ;
+  freq[4]  = DataBroadcast::FREQ_100HZ;
   freq[5]  = DataBroadcast::FREQ_50HZ;
   freq[6]  = DataBroadcast::FREQ_50HZ;
   freq[7]  = DataBroadcast::FREQ_50HZ;

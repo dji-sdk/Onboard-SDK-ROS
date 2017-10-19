@@ -164,7 +164,7 @@ DJISDKNode::dataBroadcastCallback()
   {
     sensor_msgs::BatteryState msg_battery_state;
     msg_battery_state.capacity = NAN;
-    msg_battery_state.voltage  = vehicle->broadcast->getBatteryInfo().voltage / 1000.0;
+    msg_battery_state.voltage  = NAN;
     msg_battery_state.current  = NAN;
     msg_battery_state.percentage = vehicle->broadcast->getBatteryInfo().percentage;
     msg_battery_state.charge   = NAN;
