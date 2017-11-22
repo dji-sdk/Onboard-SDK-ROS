@@ -24,7 +24,9 @@
 #include <sensor_msgs/Joy.h>
 #include <sensor_msgs/TimeReference.h>
 #include <sensor_msgs/BatteryState.h>
+#include <sensor_msgs/Image.h>
 #include <std_msgs/UInt8.h>
+#include <std_msgs/Int16.h>
 #include <std_msgs/Float32.h>
 
 
@@ -62,6 +64,12 @@
 #include <dji_sdk/SetLocalPosRef.h>
 #include <dji_sdk/SendMobileData.h>
 #include <dji_sdk/QueryDroneVersion.h>
+#ifdef ADVANCED_SENSING
+#include <dji_sdk/Stereo240pSubscription.h>
+#include <dji_sdk/StereoDepthSubscription.h>
+#include <dji_sdk/StereoVGASubscription.h>
+#endif
+
 //! SDK library
 #include <djiosdk/dji_vehicle.hpp>
 
@@ -100,6 +108,7 @@ private:
   bool initPublisher(ros::NodeHandle& nh);
   bool initActions(ros::NodeHandle& nh);
   bool initDataSubscribeFromFC();
+  bool topic10hzStart(Telemetry::TopicName topicList10Hz[], int size);
   void cleanUpSubscribeFromFC();
   bool validateSerialDevice(LinuxSerialDevice* serialDevice);
   bool isM100();
@@ -196,6 +205,17 @@ private:
   //! hard sync service callback
   bool setHardsyncCallback(dji_sdk::SetHardSync::Request&  request,
                            dji_sdk::SetHardSync::Response& response);
+
+#ifdef ADVANCED_SENSING
+  //! stereo image service callback
+  bool stereo240pSubscriptionCallback(dji_sdk::Stereo240pSubscription::Request&  request,
+                                      dji_sdk::Stereo240pSubscription::Response& response);
+  bool stereoDepthSubscriptionCallback(dji_sdk::StereoDepthSubscription::Request&  request,
+                                       dji_sdk::StereoDepthSubscription::Response& response);
+  bool stereoVGASubscriptionCallback(dji_sdk::StereoVGASubscription::Request&  request,
+                                     dji_sdk::StereoVGASubscription::Response& response);
+#endif
+
   //! data broadcast callback
   void dataBroadcastCallback();
   void fromMobileDataCallback(RecvContainer recvFrame);
@@ -223,6 +243,16 @@ private:
   static void publish400HzData(Vehicle*            vehicle,
                                RecvContainer       recvFrame,
                                DJI::OSDK::UserData userData);
+
+#ifdef ADVANCED_SENSING
+  static void publish240pStereoImage(Vehicle*            vehicle,
+                                     RecvContainer       recvFrame,
+                                     DJI::OSDK::UserData userData);
+
+  static void publishVGAStereoImage(Vehicle*            vehicle,
+                                    RecvContainer       recvFrame,
+                                    DJI::OSDK::UserData userData);
+#endif
 
 private:
   //! OSDK core
@@ -262,6 +292,13 @@ private:
   //! Set Local position reference
   ros::ServiceServer local_pos_ref_server;
 
+#ifdef ADVANCED_SENSING
+  //! stereo image service
+  ros::ServiceServer subscribe_stereo_240p_server;
+  ros::ServiceServer subscribe_stereo_depth_server;
+  ros::ServiceServer subscribe_stereo_vga_server;
+#endif
+
   //! flight control subscribers
   ros::Subscriber flight_control_sub;
 
@@ -288,9 +325,23 @@ private:
   ros::Publisher gimbal_angle_publisher;
   ros::Publisher displaymode_publisher;
   ros::Publisher rc_publisher;
+  ros::Publisher rtk_position_publisher;
+  ros::Publisher rtk_velocity_publisher;
+  ros::Publisher rtk_yaw_publisher;
+  ros::Publisher rtk_position_info_publisher;
+  ros::Publisher rtk_yaw_info_publisher;
   //! Local Position Publisher (Publishes local position in ENU frame)
   ros::Publisher local_position_publisher;
 
+#ifdef ADVANCED_SENSING
+  ros::Publisher stereo_240p_front_left_publisher;
+  ros::Publisher stereo_240p_front_right_publisher;
+  ros::Publisher stereo_240p_down_front_publisher;
+  ros::Publisher stereo_240p_down_back_publisher;
+  ros::Publisher stereo_240p_front_depth_publisher;
+  ros::Publisher stereo_vga_front_left_publisher;
+  ros::Publisher stereo_vga_front_right_publisher;
+#endif
   //! constant
   const int WAIT_TIMEOUT           = 10;
   const int MAX_SUBSCRIBE_PACKAGES = 5;
@@ -308,6 +359,8 @@ private:
 
   //! use broadcast or subscription to get telemetry data
   TELEMETRY_TYPE telemetry_from_fc;
+  bool stereo_subscription_success;
+  bool stereo_vga_subscription_success;
   bool user_select_BC;
   const tf::Matrix3x3 R_FLU2FRD;
   const tf::Matrix3x3 R_ENU2NED;
@@ -340,10 +393,10 @@ private:
                      double gps_t_lon, double gps_t_lat,
                      double gps_r_lon, double gps_r_lat);
 
-
   double local_pos_ref_latitude, local_pos_ref_longitude, local_pos_ref_altitude;
   double current_gps_latitude, current_gps_longitude, current_gps_altitude;
   int current_gps_health;
+  bool rtkSupport;
 };
 
 #endif // DJI_SDK_NODE_MAIN_H

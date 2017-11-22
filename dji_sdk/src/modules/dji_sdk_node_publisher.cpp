@@ -225,8 +225,7 @@ DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
 
   ros::Time msg_time = ros::Time::now();;
 
-  if(p->align_time_with_FC)
-  {
+  if(p->align_time_with_FC)  {
     if(p->curr_align_state == ALIGNED)
     {
       msg_time = p->base_time + _TICK2ROSTIME(packageTimeStamp.time_ms);
@@ -242,7 +241,7 @@ DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
     vehicle->subscribe->getValue<Telemetry::TOPIC_BATTERY_INFO>();
   sensor_msgs::BatteryState msg_battery_state;
   msg_battery_state.capacity = NAN;
-  msg_battery_state.voltage  = battery_info.voltage / 1000.0;
+  msg_battery_state.voltage  = NAN;
   msg_battery_state.current  = NAN;
   msg_battery_state.percentage = battery_info.percentage;
   msg_battery_state.charge   = NAN;
@@ -253,9 +252,47 @@ DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
   msg_battery_state.present = (battery_info.voltage!=0);
   p->battery_state_publisher.publish(msg_battery_state);
 
+  if(p->rtkSupport) {
+  Telemetry::TypeMap<Telemetry::TOPIC_RTK_POSITION>::type rtk_telemetry_position=
+      vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_POSITION>();
+    Telemetry::TypeMap<Telemetry::TOPIC_RTK_VELOCITY>::type rtk_telemetry_velocity=
+        vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_VELOCITY>();
+    Telemetry::TypeMap<Telemetry::TOPIC_RTK_YAW>::type rtk_telemetry_yaw=
+        vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_YAW>();
+    Telemetry::TypeMap<Telemetry::TOPIC_RTK_YAW_INFO>::type rtk_telemetry_yaw_info=
+        vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_YAW_INFO>();
+    Telemetry::TypeMap<Telemetry::TOPIC_RTK_POSITION_INFO>::type rtk_telemetry_position_info=
+        vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_POSITION_INFO>();
+
+    sensor_msgs::NavSatFix rtk_position;
+    rtk_position.latitude = rtk_telemetry_position.latitude;
+    rtk_position.longitude = rtk_telemetry_position.longitude;
+    rtk_position.altitude = rtk_telemetry_position.HFSL;
+    p->rtk_position_publisher.publish(rtk_position);
+
+    //! Velocity converted to m/s to conform to REP103.
+
+    geometry_msgs::Vector3 rtk_velocity;
+    rtk_velocity.x = (rtk_telemetry_velocity.x)/100;
+    rtk_velocity.y = (rtk_telemetry_velocity.y)/100;
+    rtk_velocity.z = (rtk_telemetry_velocity.z)/100;
+    p->rtk_velocity_publisher.publish(rtk_velocity);
+
+    std_msgs::Int16 rtk_yaw;
+    rtk_yaw.data = rtk_telemetry_yaw;
+    p->rtk_yaw_publisher.publish(rtk_yaw);
+
+    std_msgs::UInt8 rtk_yaw_info;
+    rtk_yaw_info.data = (int)rtk_telemetry_yaw_info;
+    p->rtk_yaw_info_publisher.publish(rtk_yaw_info);
+
+    std_msgs::UInt8 rtk_position_info;
+    rtk_position_info.data = (int)rtk_telemetry_position_info;
+    p->rtk_position_info_publisher.publish(rtk_position_info);
+  }
+
   return;
 }
-
 
 void
 DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
@@ -627,3 +664,75 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
     return;
   }
 }
+
+#ifdef ADVANCED_SENSING
+void DJISDKNode::publish240pStereoImage(Vehicle*            vehicle,
+                                        RecvContainer       recvFrame,
+                                        DJI::OSDK::UserData userData)
+{
+  DJISDKNode *node_ptr = (DJISDKNode *)userData;
+
+  node_ptr->stereo_subscription_success = true;
+
+  sensor_msgs::Image img;
+  img.height = 240;
+  img.width = 320;
+  img.data.resize(img.height*img.width);
+  img.encoding = "mono8";
+  img.step = 320;
+  uint8_t img_idx = 0;
+
+  for (int pair_idx = 0; pair_idx < CAMERA_PAIR_NUM; ++pair_idx) {
+    for (int dir_idx = 0; dir_idx < IMAGE_TYPE_NUM; ++dir_idx) {
+
+      uint8_t bit_location = pair_idx * IMAGE_TYPE_NUM + dir_idx;
+      uint8_t bit_val = (recvFrame.recvData.stereoImgData->img_desc >> bit_location) & 1;
+
+      if (bit_val) {
+        img.header.seq = recvFrame.recvData.stereoImgData->frame_index;
+        img.header.stamp = ros::Time::now(); // @todo
+        img.header.frame_id = recvFrame.recvData.stereoImgData->img_vec[img_idx].name;
+        memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoImgData->img_vec[img_idx++].image, 240*320);
+
+        if (bit_location == AdvancedSensing::RECV_FRONT_LEFT)
+          node_ptr->stereo_240p_front_left_publisher.publish(img);
+        if (bit_location == AdvancedSensing::RECV_FRONT_RIGHT)
+          node_ptr->stereo_240p_front_right_publisher.publish(img);
+        if (bit_location == AdvancedSensing::RECV_DOWN_BACK)
+          node_ptr->stereo_240p_down_back_publisher.publish(img);
+        if (bit_location == AdvancedSensing::RECV_DOWN_FRONT)
+          node_ptr->stereo_240p_down_front_publisher.publish(img);
+        if (bit_location == AdvancedSensing::RECV_FRONT_DEPTH)
+          node_ptr->stereo_240p_front_depth_publisher.publish(img);
+      }
+    }
+  }
+}
+
+void DJISDKNode::publishVGAStereoImage(Vehicle*            vehicle,
+                                       RecvContainer       recvFrame,
+                                       DJI::OSDK::UserData userData)
+{
+  DJISDKNode *node_ptr = (DJISDKNode *)userData;
+
+  node_ptr->stereo_vga_subscription_success = true;
+
+  sensor_msgs::Image img;
+  img.height = 480;
+  img.width = 640;
+  img.step = 640;
+  img.encoding = "mono8";
+  img.data.resize(img.height*img.width);
+
+  img.header.seq = recvFrame.recvData.stereoVGAImgData->frame_index;
+  img.header.stamp = ros::Time::now(); // @todo
+  img.header.frame_id = "vga_left";
+  memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[0], 480*640);
+  node_ptr->stereo_vga_front_left_publisher.publish(img);
+
+  img.header.frame_id = "vga_right";
+  memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[1], 480*640);
+  node_ptr->stereo_vga_front_right_publisher.publish(img);
+}
+
+#endif // ADVANCED_SENSING

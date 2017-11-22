@@ -1,8 +1,9 @@
-# DJI Onboard SDK ROS 3.3
+# DJI Onboard SDK ROS 3.4
 
 ## Latest Update
 
-The latest update on Sep 8 2017 brought back the local position topic in Cartesian frame (ENU) and addressed several issues reported on github. The `dji_sdk/SetLocalPosRef` service and the `dji_sdk/local_position` topic were added.
+OSDK-ROS 3.4 was released on 22 Nov 2017. This release introduces support for Matrice 210 and 210 RTK. Developers will now have access to previously unavailable data such as front-facing and downward-facing stereo camera feeds through USB. Please see the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html) for more information.
+
 
 ## Quick Start Guide 
 
@@ -12,26 +13,28 @@ The ROS package is a full rewrite of DJI Onboard SDK ROS, with changes in APIs, 
 
 ROS Wiki can be found [here](http://wiki.ros.org/dji_sdk). Please be sure to read the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html).
 
-DJI Onboard SDK ROS 3.3 was developed to support N3/A3 FW 1.7.5 and above, and is backword compatible with M100 FW 1.3.1.
-
 ## Firmware Compatibility
 
-| Aircraft/FC       | Firmware Package Version | Flight Controller Version | OSDK-ROS Branch            | Notes                                                           |
-|-------------------|--------------------------|---------------------------|----------------------------|-----------------------------------------------------------------|
-| **A3/A3 Pro**     | **1.7.1.5**              | **3.2.36.8**              | **OSDK-ROS 3.3 (Current)** |                                                                 |
-|                   | 1.7.0.5                  | 3.2.15.50                 | OSDK-ROS 3.2               |                                                                 |
-|                   | 1.7.0.0                  | 3.2.15.37                 | OSDK-ROS 3.2               |                                                                 |
-|                   |                          |                           |                            |                                                                 |
-| **N3**            | **1.7.1.5**              | **3.2.36.8**              | **OSDK-ROS 3.3 (Current)** |                                                                 |
-|                   | 1.7.0.0                  | 3.2.15.37                 | OSDK-ROS 3.2               |                                                                 |
-|                   |                          |                           |                            |                                                                 |
-| **M600/M600 Pro** | **1.0.1.65**             | **3.2.41.9**              | **OSDK 3.3 (Current)**     | Released 10/24/17                                               |
-|                   | *1.0.1.60*               | *3.2.41.5*                | *Not Supported*            | Firmware pulled due to instability  				  |
-|                   | **1.0.1.20**             | **3.2.15.62**             | **OSDK-ROS 3.3 (Current)** | 3.3 backward compatiblity released 10/18/17                     |
-|                   | 1.0.0.80                 | 3.2.15.00                 | OSDK-ROS 3.2               |                                                                 |
-|                   |                          |                           |                            |                                                                 |
-| **M100**          | 1.3.1.0                  | 3.1.10.0                  | **OSDK-ROS 3.3 (Current)** |                                                                 |
-|                   |                          |                           | and OSDK-ROS 3.2           |                                                                 |
+| Aircraft/FC       | Firmware Package Version | Flight Controller Version | OSDK Branch                | Notes                                                             |
+|-------------------|--------------------------|---------------------------|----------------------------|-------------------------------------------------------------------|
+| **M210/M210 RTK** | **1.1.0410**             | **3.2.39.12**             | **OSDK-ROS 3.4 (Current)** | Requires DJI Assistant 2 version 1.1.8                            |
+|                   |                          |                           |                            |                                                                   |
+| **M600/M600 Pro** | **1.0.1.65**             | **3.2.41.9**              | **OSDK-ROS 3.4 (Current)** |                                                                   |
+|                   | *1.0.1.65*               | *3.2.41.9*                | OSDK-ROS 3.3               | Firmware released 10/24/17                                        |
+|                   | *1.0.1.60*               | *3.2.41.5*                | *Not Supported*            | Firmware pulled due to instability                                |
+|                   | **1.0.1.20**             | **3.2.15.62**             | **OSDK-ROS 3.3 (Current)** | 3.3 backward compatiblity released 10/18                          |
+|                   | 1.0.0.80                 | 3.2.15.00                 | OSDK-ROS 3.2               |                                                                   |
+|                   |                          |                           |                            |                                                                   |
+| **A3/A3 Pro**     | **1.7.1.5**              | **3.2.36.8**              | **OSDK-ROS 3.4 (Current)** |                                                                   |
+|                   | 1.7.1.5                  | 3.2.36.8                  | OSDK-ROS 3.3               |                                                                   |
+|                   | 1.7.0.5                  | 3.2.15.50                 | OSDK-ROS 3.2               |                                                                   |
+|                   | 1.7.0.0                  | 3.2.15.37                 | OSDK-ROS 3.2               |                                                                   |
+|                   |                          |                           |                            |                                                                   |
+| **N3**            | **1.7.1.5**              | **3.2.36.8**              | **OSDK-ROS 3.4 (Current)** |                                                                   |
+|                   | 1.7.1.5                  | 3.2.36.8                  | OSDK-ROS 3.3               |                                                                   |
+|                   | 1.7.0.0                  | 3.2.15.37                 | OSDK-ROS 3.2               |                                                                   |
+|                   |                          |                           |                            |                                                                   |
+| **M100**          | 1.3.1.0                  | 3.1.10.0                  | **OSDK-ROS 3.4 (Current)** |                                                                   |
 
 
 
