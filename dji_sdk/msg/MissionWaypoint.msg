@@ -1,5 +1,5 @@
-float64 latitude          # radian
-float64 longitude         # radian
+float64 latitude          # degree
+float64 longitude         # degree
 float32 altitude          # relative altitude from takeoff point
 float32 damping_distance  # Bend length (effective coordinated turn mode only)
 int16 target_yaw          # Yaw (degree)

@@ -122,6 +122,30 @@ DJISDKNode::sdkCtrlAuthorityCallback(
 }
 
 bool
+DJISDKNode::setLocalPosRefCallback(dji_sdk::SetLocalPosRef::Request &request,
+                                     dji_sdk::SetLocalPosRef::Response &response) {
+  printf("Currrent GPS health is %d \n",current_gps_health );
+  if (current_gps_health > 3)
+  {
+    local_pos_ref_latitude = current_gps_latitude;
+    local_pos_ref_longitude = current_gps_longitude;
+    local_pos_ref_altitude = current_gps_altitude;
+    ROS_INFO("Local Position reference has been set.");
+    ROS_INFO("MONITOR GPS HEALTH WHEN USING THIS TOPIC");
+    local_pos_ref_set = true;
+    response.result = true;
+  }
+  else
+  {
+    ROS_INFO("Not enough GPS Satellites. ");
+    ROS_INFO("Cannot set Local Position reference");
+    local_pos_ref_set = false;
+    response.result = false;
+  }
+  return true;
+}
+
+bool
 DJISDKNode::droneTaskCallback(dji_sdk::DroneTaskControl::Request&  request,
                               dji_sdk::DroneTaskControl::Response& response)
 {
@@ -271,3 +295,135 @@ bool DJISDKNode::queryVersionCallback(dji_sdk::QueryDroneVersion::Request& reque
 
   return true;
 }
+
+#ifdef ADVANCED_SENSING
+bool
+DJISDKNode::stereo240pSubscriptionCallback(dji_sdk::Stereo240pSubscription::Request&  request,
+                                           dji_sdk::Stereo240pSubscription::Response& response)
+{
+  ROS_DEBUG("called stereo240pSubscriptionCallback");
+
+  if (request.unsubscribe_240p == 1)
+  {
+    vehicle->advancedSensing->unsubscribeStereoImages();
+    response.result = true;
+    ROS_INFO("unsubscribe stereo 240p images");
+    return true;
+  }
+
+  AdvancedSensing::ImageSelection image_select;
+  memset(&image_select, 0, sizeof(AdvancedSensing::ImageSelection));
+
+  if (request.front_right_240p == 1)
+    image_select.front_right = 1;
+
+  if (request.front_left_240p == 1)
+    image_select.front_left = 1;
+
+  if (request.down_front_240p == 1)
+    image_select.down_front = 1;
+
+  if (request.down_back_240p == 1)
+    image_select.down_back = 1;
+
+  this->stereo_subscription_success = false;
+  vehicle->advancedSensing->subscribeStereoImages(&image_select, &publish240pStereoImage, this);
+
+  ros::Duration(1).sleep();
+
+  if (this->stereo_subscription_success == true)
+  {
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+    ROS_WARN("Stereo 240p subscription service failed, please check your request content.");
+  }
+
+  return true;
+}
+
+bool
+DJISDKNode::stereoDepthSubscriptionCallback(dji_sdk::StereoDepthSubscription::Request&  request,
+                                            dji_sdk::StereoDepthSubscription::Response& response)
+{
+  ROS_DEBUG("called stereoDepthSubscriptionCallback");
+
+  if (request.unsubscribe_240p == 1)
+  {
+    vehicle->advancedSensing->unsubscribeStereoImages();
+    response.result = true;
+    ROS_INFO("unsubscribe stereo 240p images");
+    return true;
+  }
+
+  if (request.front_depth_240p == 1)
+  {
+    this->stereo_subscription_success = false;
+    vehicle->advancedSensing->subscribeFrontStereoDisparity(&publish240pStereoImage, this);
+  }
+  else
+  {
+    ROS_WARN("no depth image is subscribed");
+    return true;
+  }
+
+  ros::Duration(1).sleep();
+
+  if (this->stereo_subscription_success == true)
+  {
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+    ROS_WARN("Stereo 240p subscription service failed, please check your request content.");
+  }
+
+  return true;
+}
+
+bool
+DJISDKNode::stereoVGASubscriptionCallback(dji_sdk::StereoVGASubscription::Request&  request,
+                                          dji_sdk::StereoVGASubscription::Response& response)
+{
+  ROS_DEBUG("called stereoVGASubscriptionCallback");
+
+  if (request.unsubscribe_vga == 1)
+  {
+    vehicle->advancedSensing->unsubscribeVGAImages();
+    response.result = true;
+    ROS_INFO("unsubscribe stereo vga images");
+    return true;
+  }
+
+  if (request.vga_freq != request.VGA_20_HZ
+      && request.vga_freq != request.VGA_10_HZ)
+  {
+    ROS_ERROR("VGA subscription frequency is wrong");
+    response.result = false;
+    return true;
+  }
+
+  if (request.front_vga == 1)
+  {
+    this->stereo_vga_subscription_success = false;
+    vehicle->advancedSensing->subscribeFrontStereoVGA(request.vga_freq, &publishVGAStereoImage, this);
+    ros::Duration(1).sleep();
+  }
+
+  if (this->stereo_vga_subscription_success == true)
+  {
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+    ROS_WARN("Stereo VGA subscription service failed, please check your request content.");
+  }
+
+  return true;
+}
+
+#endif // ADVANCED_SENSING

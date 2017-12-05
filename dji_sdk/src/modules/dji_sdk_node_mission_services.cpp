@@ -74,7 +74,7 @@ DJISDKNode::missionWpUploadCallback(
   int                         i = 0;
   for (auto waypoint : request.waypoint_task.mission_waypoint)
   {
-    wpData.latitude        = waypoint.latitude * C_PI / 180;
+    wpData.latitude        = waypoint.latitude  * C_PI / 180;
     wpData.longitude       = waypoint.longitude * C_PI / 180;
     wpData.altitude        = waypoint.altitude;
     wpData.damping         = waypoint.damping_distance;
@@ -251,6 +251,7 @@ DJISDKNode::missionWpGetInfoCallback(
   else
   {
     ROS_ERROR("no waypoint mission initiated ");
+    return false;
   }
 
   response.waypoint_task.mission_waypoint.resize(info.indexNumber);
@@ -263,6 +264,30 @@ DJISDKNode::missionWpGetInfoCallback(
   response.waypoint_task.action_on_rc_lost  = info.RCLostAction;
   response.waypoint_task.gimbal_pitch_mode  = info.gimbalPitch;
 
+  for (int i=0; i< info.indexNumber; i++)
+  {
+    DJI::OSDK::WayPointSettings wpData; 
+    wpData = vehicle->missionManager->wpMission->getIndex(i, 10).data;
+    response.waypoint_task.mission_waypoint[i].latitude            = wpData.latitude  * 180.0 / C_PI;
+    response.waypoint_task.mission_waypoint[i].longitude           = wpData.longitude * 180.0 / C_PI;
+    response.waypoint_task.mission_waypoint[i].altitude            = wpData.altitude;
+    response.waypoint_task.mission_waypoint[i].damping_distance    = wpData.damping;
+    response.waypoint_task.mission_waypoint[i].target_yaw          = wpData.yaw;
+    response.waypoint_task.mission_waypoint[i].target_gimbal_pitch = wpData.gimbalPitch;
+    response.waypoint_task.mission_waypoint[i].turn_mode           = wpData.turnMode;
+    response.waypoint_task.mission_waypoint[i].has_action          = wpData.hasAction;
+    response.waypoint_task.mission_waypoint[i].action_time_limit   = wpData.actionTimeLimit;
+    response.waypoint_task.mission_waypoint[i].waypoint_action.action_repeat = wpData.actionNumber + (wpData.actionRepeat << 4);
+
+    std::copy(std::begin(wpData.commandList),
+              std::end(wpData.commandList), 
+              response.waypoint_task.mission_waypoint[i].waypoint_action.command_list.begin());
+
+    std::copy(std::begin(wpData.commandParameter),
+              std::end(wpData.commandParameter), 
+              response.waypoint_task.mission_waypoint[i].waypoint_action.command_parameter.begin());
+
+  }
   return true;
 }
 
@@ -364,8 +389,8 @@ DJISDKNode::missionHpGetInfoCallback(
     ROS_ERROR("no hotpoint mission initiated ");
   }
 
-  response.hotpoint_task.latitude      = info.latitude;
-  response.hotpoint_task.longitude     = info.longitude;
+  response.hotpoint_task.latitude      = info.latitude  * 180.0 / C_PI;
+  response.hotpoint_task.longitude     = info.longitude * 180.0 / C_PI;
   response.hotpoint_task.altitude      = info.height;
   response.hotpoint_task.radius        = info.radius;
   response.hotpoint_task.angular_speed = info.yawRate;

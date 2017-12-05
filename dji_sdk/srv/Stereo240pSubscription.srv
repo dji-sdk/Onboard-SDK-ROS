@@ -1,0 +1,12 @@
+# assign value to 1 to subscribe
+uint8 front_right_240p
+uint8 front_left_240p
+uint8 down_front_240p
+uint8 down_back_240p
+
+# if unsubscribe_240p is 1,
+# service will unsubscribe no matter what
+uint8 unsubscribe_240p
+
+---
+bool result
