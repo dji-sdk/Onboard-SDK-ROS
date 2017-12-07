@@ -7,6 +7,7 @@
     <param name="app_version" type="int" value="1"/>
     <param name="align_time" type="bool" value="false"/>
     <param name="enc_key" type="string" value="afe96210ea022d24e17808d30229be0cfa5d41d75bb37f4965f1502b6d3cc62b"/>
-    <param name="use_broadcast" type="bool" value="false"/>
+    <param name="use_broadcast" type="bool" value="true"/>
+    <param name="enable_advanced_sensing" type="bool" value="false"/>
     </node>
 </launch>

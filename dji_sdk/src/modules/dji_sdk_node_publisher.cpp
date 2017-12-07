@@ -455,7 +455,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   rc_joy.axes.push_back(static_cast<float>(rc.throttle / 10000.0));
   rc_joy.axes.push_back(static_cast<float>(rc.mode*1.0));
   rc_joy.axes.push_back(static_cast<float>(rc.gear*1.0));
-  p->rc_publisher.publish(rc_joy);
+  //p->rc_publisher.publish(rc_joy);
   //ROS_INFO("XXXRC1 %0.3f  %0.3f  %0.3f  %0.3f  %0.3f  %0.3f  ",
   //         rc_joy.axes[0],rc_joy.axes[1],rc_joy.axes[2],rc_joy.axes[3],rc_joy.axes[4],rc_joy.axes[5]); 
 
@@ -475,7 +475,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
 
     rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().mode));
     rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().gear));
-//    p->rc_publisher.publish(rc_joy);
+    p->rc_publisher.publish(rc_joy);
 //    ROS_INFO("YYYRC2 %0.3f  %0.3f  %0.3f  %0.3f  %0.3f  %0.3f  ",
 //           rc_joy.axes[0],rc_joy.axes[1],rc_joy.axes[2],rc_joy.axes[3],rc_joy.axes[4],rc_joy.axes[5]); 
 
