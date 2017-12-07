@@ -357,6 +357,7 @@ private:
   std::string app_bundle_id; // reserved
   int         uart_or_usb;
   double      gravity_const;
+  bool        enable_advanced_sensing;
 
   //! use broadcast or subscription to get telemetry data
   TELEMETRY_TYPE telemetry_from_fc;
