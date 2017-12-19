@@ -426,4 +426,41 @@ DJISDKNode::stereoVGASubscriptionCallback(dji_sdk::StereoVGASubscription::Reques
   return true;
 }
 
+
+bool
+DJISDKNode::setupCameraStreamCallback(dji_sdk::SetupCameraStream::Request&  request,
+                                      dji_sdk::SetupCameraStream::Response& response)
+{
+  ROS_DEBUG("called cameraStreamCallback");
+  bool result = false;
+
+  if(request.cameraType == request.FPV_CAM)
+  {
+    if(request.start == 1)
+    {
+      result = vehicle->advancedSensing->startFPVCameraStream(&publishFPVCameraImage, this);
+    }
+    else
+    {
+      vehicle->advancedSensing->stopFPVCameraStream();
+      result = true;
+    }
+  }
+  else if(request.cameraType == request.MAIN_CAM)
+  {
+    if(request.start == 1)
+    {
+      result = vehicle->advancedSensing->startMainCameraStream(&publishMainCameraImage, this);
+    }
+    else
+    {
+      vehicle->advancedSensing->stopMainCameraStream();
+      result = true;
+    }
+  }
+
+  response.result = result;
+  return true;
+}
+
 #endif // ADVANCED_SENSING

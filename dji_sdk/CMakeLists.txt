@@ -90,6 +90,7 @@ add_service_files(
   Stereo240pSubscription.srv
   StereoVGASubscription.srv
   StereoDepthSubscription.srv
+  SetupCameraStream.srv
 )
 
 ## Generate added messages and services with any dependencies listed here

@@ -735,4 +735,35 @@ void DJISDKNode::publishVGAStereoImage(Vehicle*            vehicle,
   node_ptr->stereo_vga_front_right_publisher.publish(img);
 }
 
+void DJISDKNode::publishFPVCameraImage(CameraRGBImage rgbImg, void* userData)
+{
+  DJISDKNode *node_ptr = (DJISDKNode *)userData;
+
+  sensor_msgs::Image img;
+  img.height = rgbImg.height;
+  img.width = rgbImg.width;
+  img.step = rgbImg.width*3;
+  img.encoding = "rgb8";
+  img.data = rgbImg.rawData;
+
+  img.header.stamp = ros::Time::now();
+  img.header.frame_id = "FPV_CAMERA";
+  node_ptr->fpv_camera_stream_publisher.publish(img);
+}
+
+void DJISDKNode::publishMainCameraImage(CameraRGBImage rgbImg, void* userData)
+{
+  DJISDKNode *node_ptr = (DJISDKNode *)userData;
+
+  sensor_msgs::Image img;
+  img.height = rgbImg.height;
+  img.width = rgbImg.width;
+  img.step = rgbImg.width*3;
+  img.encoding = "rgb8";
+  img.data = rgbImg.rawData;
+
+  img.header.stamp = ros::Time::now();
+  img.header.frame_id = "MAIN_CAMERA";
+  node_ptr->main_camera_stream_publisher.publish(img);
+}
 #endif // ADVANCED_SENSING

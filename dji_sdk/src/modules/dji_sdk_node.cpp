@@ -166,6 +166,7 @@ bool DJISDKNode::initServices(ros::NodeHandle& nh) {
   subscribe_stereo_240p_server  = nh.advertiseService("dji_sdk/stereo_240p_subscription",   &DJISDKNode::stereo240pSubscriptionCallback, this);
   subscribe_stereo_depth_server = nh.advertiseService("dji_sdk/stereo_depth_subscription",  &DJISDKNode::stereoDepthSubscriptionCallback,this);
   subscribe_stereo_vga_server   = nh.advertiseService("dji_sdk/stereo_vga_subscription",    &DJISDKNode::stereoVGASubscriptionCallback,  this);
+  camera_stream_server          = nh.advertiseService("dji_sdk/setup_camera_stream",        &DJISDKNode::setupCameraStreamCallback,      this);
 #endif
 
   // A3/N3 only
@@ -329,6 +330,12 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
 
   stereo_vga_front_right_publisher =
     nh.advertise<sensor_msgs::Image>("dji_sdk/stereo_vga_front_right_images", 10);
+
+  main_camera_stream_publisher =
+    nh.advertise<sensor_msgs::Image>("dji_sdk/main_camera_images", 10);
+
+  fpv_camera_stream_publisher =
+    nh.advertise<sensor_msgs::Image>("dji_sdk/fpv_camera_images", 10);
 #endif
 
 

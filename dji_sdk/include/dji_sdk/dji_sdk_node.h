@@ -68,6 +68,7 @@
 #include <dji_sdk/Stereo240pSubscription.h>
 #include <dji_sdk/StereoDepthSubscription.h>
 #include <dji_sdk/StereoVGASubscription.h>
+#include <dji_sdk/SetupCameraStream.h>
 #endif
 
 //! SDK library
@@ -214,6 +215,8 @@ private:
                                        dji_sdk::StereoDepthSubscription::Response& response);
   bool stereoVGASubscriptionCallback(dji_sdk::StereoVGASubscription::Request&  request,
                                      dji_sdk::StereoVGASubscription::Response& response);
+  bool setupCameraStreamCallback(dji_sdk::SetupCameraStream::Request&  request,
+                                 dji_sdk::SetupCameraStream::Response& response);
 #endif
 
   //! data broadcast callback
@@ -252,6 +255,10 @@ private:
   static void publishVGAStereoImage(Vehicle*            vehicle,
                                     RecvContainer       recvFrame,
                                     DJI::OSDK::UserData userData);
+
+  static void publishMainCameraImage(CameraRGBImage img, void* userData);
+
+  static void publishFPVCameraImage(CameraRGBImage img, void* userData);
 #endif
 
 private:
@@ -297,6 +304,7 @@ private:
   ros::ServiceServer subscribe_stereo_240p_server;
   ros::ServiceServer subscribe_stereo_depth_server;
   ros::ServiceServer subscribe_stereo_vga_server;
+  ros::ServiceServer camera_stream_server;
 #endif
 
   //! flight control subscribers
@@ -341,6 +349,8 @@ private:
   ros::Publisher stereo_240p_front_depth_publisher;
   ros::Publisher stereo_vga_front_left_publisher;
   ros::Publisher stereo_vga_front_right_publisher;
+  ros::Publisher main_camera_stream_publisher;
+  ros::Publisher fpv_camera_stream_publisher;
 #endif
   //! constant
   const int WAIT_TIMEOUT           = 10;
