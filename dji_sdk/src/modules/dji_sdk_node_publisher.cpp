@@ -1,6 +1,6 @@
 /** @file dji_sdk_node_publisher.cpp
- *  @version 3.3
- *  @date May, 2017
+ *  @version 3.5
+ *  @date Dec, 2017
  *
  *  @brief
  *  Implementation of the publishers of DJISDKNode
