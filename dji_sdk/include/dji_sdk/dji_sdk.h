@@ -26,6 +26,16 @@ enum DroneFirmwareVersion
   M100_31 = DJI::OSDK::Version::M100_31,
 };
 
+typedef enum AircraftVersion
+{
+  UNKNOWN,
+  M100,
+  M600,
+  A3,
+  N3,
+  M210
+} AircraftVersion;
+
 enum FlightControlFlag
 {
   HORIZONTAL_ANGLE         = DJI::OSDK::Control::HORIZONTAL_ANGLE,

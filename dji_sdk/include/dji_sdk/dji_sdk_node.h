@@ -28,7 +28,7 @@
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Int16.h>
 #include <std_msgs/Float32.h>
-
+#include <std_msgs/String.h>
 
 //! msgs
 #include <dji_sdk/Gimbal.h>
@@ -113,6 +113,7 @@ private:
   void cleanUpSubscribeFromFC();
   bool validateSerialDevice(LinuxSerialDevice* serialDevice);
   bool isM100();
+
   /*!
    * @note this function exists here instead of inside the callback function
    *        due to the usages, i.e. we not only provide service call but also
@@ -340,6 +341,7 @@ private:
   ros::Publisher rtk_yaw_info_publisher;
   //! Local Position Publisher (Publishes local position in ENU frame)
   ros::Publisher local_position_publisher;
+  ros::Publisher local_frame_ref_publisher;
 
 #ifdef ADVANCED_SENSING
   ros::Publisher stereo_240p_front_left_publisher;
@@ -355,6 +357,7 @@ private:
   //! constant
   const int WAIT_TIMEOUT           = 10;
   const int MAX_SUBSCRIBE_PACKAGES = 5;
+  const int INVALID_VERSION        = 0;
 
   //! configurations
   int         app_id;

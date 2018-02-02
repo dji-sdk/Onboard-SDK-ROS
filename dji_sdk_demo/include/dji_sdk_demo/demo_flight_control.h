@@ -23,6 +23,8 @@
 #include <dji_sdk/DroneTaskControl.h>
 #include <dji_sdk/SDKControlAuthority.h>
 #include <dji_sdk/QueryDroneVersion.h>
+#include <dji_sdk/SetLocalPosRef.h>
+
 
 #include <tf/tf.h>
 #include <sensor_msgs/Joy.h>
@@ -52,6 +54,7 @@ public:
   float target_offset_z;
   float target_yaw;
   sensor_msgs::NavSatFix start_gps_location;
+  geometry_msgs::Point start_local_position;
 
   bool finished;
 
@@ -95,6 +98,8 @@ void gps_callback(const sensor_msgs::NavSatFix::ConstPtr& msg);
 
 void attitude_callback(const geometry_msgs::QuaternionStamped::ConstPtr& msg);
 
+void local_position_callback(const geometry_msgs::PointStamped::ConstPtr& msg);
+
 bool takeoff_land(int task);
 
 bool obtain_control();
@@ -104,5 +109,7 @@ bool is_M100();
 bool monitoredTakeoff();
 
 bool M100monitoredTakeoff();
+
+bool set_local_position();
 
 #endif // DEMO_FLIGHT_CONTROL_H

@@ -1,6 +1,6 @@
 /** @file dji_sdk_node_services.cpp
- *  @version 3.5
- *  @date Dec, 2017
+ *  @version 3.6
+ *  @date Feb, 2018
  *
  *  @brief
  *  Implementation of the general services of DJISDKNode
@@ -133,6 +133,14 @@ DJISDKNode::setLocalPosRefCallback(dji_sdk::SetLocalPosRef::Request &request,
     ROS_INFO("Local Position reference has been set.");
     ROS_INFO("MONITOR GPS HEALTH WHEN USING THIS TOPIC");
     local_pos_ref_set = true;
+
+    // Create message to publish to a topic
+    sensor_msgs::NavSatFix localFrameLLA;
+    localFrameLLA.latitude = local_pos_ref_latitude;
+    localFrameLLA.longitude = local_pos_ref_longitude;
+    localFrameLLA.altitude = local_pos_ref_altitude;
+    local_frame_ref_publisher.publish(localFrameLLA);
+
     response.result = true;
   }
   else
@@ -288,6 +296,8 @@ bool DJISDKNode::queryVersionCallback(dji_sdk::QueryDroneVersion::Request& reque
                                       dji_sdk::QueryDroneVersion::Response& response)
 {
   response.version = vehicle->getFwVersion();
+  response.hardware = std::string(vehicle->getHwVersion());
+
   if(response.version == 0)
   {
     ROS_INFO("Failed to get a valid Firmware version from drone!");

@@ -40,7 +40,7 @@ int main(int argc, char** argv)
   ros::Subscriber gpsHealth      = nh.subscribe("dji_sdk/gps_health", 10, &gps_health_callback);
 
   // Publish the control signal
-  ctrlPosYawPub = nh.advertise<sensor_msgs::Joy>("/dji_sdk/flight_control_setpoint_ENUposition_yaw", 10);
+  ctrlPosYawPub = nh.advertise<sensor_msgs::Joy>("dji_sdk/flight_control_setpoint_ENUposition_yaw", 10);
   // Basic services
   sdk_ctrl_authority_service = nh.serviceClient<dji_sdk::SDKControlAuthority> ("dji_sdk/sdk_control_authority");
   drone_task_service         = nh.serviceClient<dji_sdk::DroneTaskControl>("dji_sdk/drone_task_control");
@@ -49,7 +49,12 @@ int main(int argc, char** argv)
 
   bool obtain_control_result = obtain_control();
   bool takeoff_result;
-  set_local_position();
+  if (!set_local_position())
+  {
+    ROS_ERROR("GPS health insufficient - No local frame reference for height. Exiting.");
+    return 1;
+  }
+
   if(is_M100())
   {
     ROS_INFO("M100 taking off!");
@@ -343,4 +348,6 @@ bool set_local_position()
 {
   dji_sdk::SetLocalPosRef localPosReferenceSetter;
   set_local_pos_reference.call(localPosReferenceSetter);
+
+  return (bool)localPosReferenceSetter.response.result;
 }
