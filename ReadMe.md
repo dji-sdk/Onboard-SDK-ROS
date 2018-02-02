@@ -1,8 +1,8 @@
-# DJI Onboard SDK ROS 3.3
+# DJI Onboard SDK ROS 3.6
 
 ## Latest Update
 
-OSDK ROS 3.6 was released on Feb 1st 2018. This release brings new features for the Matrice 210 and 210 RTK aircraft. In addition to providing camera feed data from the previous release, this release features several improvements to the main node and new demos for stereo data. Please see the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html) for more information.
+OSDK ROS 3.6 was released on Feb 2nd 2018. This release brings new features for the Matrice 210 and 210 RTK aircraft. In addition to providing camera feed data from the previous release, this release features several improvements to the main node and new demos for stereo data. Please see the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html) for more information.
 
 
 ## Quick Start Guide 
@@ -17,7 +17,7 @@ ROS Wiki can be found [here](http://wiki.ros.org/dji_sdk). Please be sure to rea
 
 | Aircraft/FC       | Firmware Package Version | Flight Controller Version | OSDK Branch                | Notes                                                             |
 |-------------------|--------------------------|---------------------------|----------------------------|-------------------------------------------------------------------|
-| **M210/M210 RTK** | **1.1.0410+**            | **3.2.39.12+**            | **OSDK-ROS 3.6 (Current)**          | Requires DJI Assistant 2 version 1.1.8                            |
+| **M210/M210 RTK** | **1.1.0410+**            | **3.2.39.12+**            | **OSDK-ROS 3.6 (Current)** | Requires DJI Assistant 2 version 1.1.8                            |
 | **M210/M210 RTK** | **1.1.0410+**            | **3.2.39.12+**            | **OSDK-ROS 3.4+**          | Requires DJI Assistant 2 version 1.1.8                            |
 |                   |                          |                           |                            |                                                                   |
 | **M600/M600 Pro** | **1.0.1.65**             | **3.2.41.9**              | **OSDK-ROS 3.6 (Current)** |                                                                   |
