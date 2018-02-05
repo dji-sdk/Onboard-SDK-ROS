@@ -680,3 +680,106 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
     return;
   }
 }
+
+#ifdef ADVANCED_SENSING
+void DJISDKNode::publish240pStereoImage(Vehicle*            vehicle,
+                                        RecvContainer       recvFrame,
+                                        DJI::OSDK::UserData userData)
+{
+  DJISDKNode *node_ptr = (DJISDKNode *)userData;
+
+  node_ptr->stereo_subscription_success = true;
+
+  sensor_msgs::Image img;
+  img.height = 240;
+  img.width = 320;
+  img.data.resize(img.height*img.width);
+  img.encoding = "mono8";
+  img.step = 320;
+  uint8_t img_idx = 0;
+
+  for (int pair_idx = 0; pair_idx < CAMERA_PAIR_NUM; ++pair_idx) {
+    for (int dir_idx = 0; dir_idx < IMAGE_TYPE_NUM; ++dir_idx) {
+
+      uint8_t bit_location = pair_idx * IMAGE_TYPE_NUM + dir_idx;
+      uint8_t bit_val = (recvFrame.recvData.stereoImgData->img_desc >> bit_location) & 1;
+
+      if (bit_val) {
+        img.header.seq = recvFrame.recvData.stereoImgData->frame_index;
+        img.header.stamp = ros::Time::now(); // @todo
+        img.header.frame_id = recvFrame.recvData.stereoImgData->img_vec[img_idx].name;
+        memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoImgData->img_vec[img_idx++].image, 240*320);
+
+        if (bit_location == AdvancedSensing::RECV_FRONT_LEFT)
+          node_ptr->stereo_240p_front_left_publisher.publish(img);
+        if (bit_location == AdvancedSensing::RECV_FRONT_RIGHT)
+          node_ptr->stereo_240p_front_right_publisher.publish(img);
+        if (bit_location == AdvancedSensing::RECV_DOWN_BACK)
+          node_ptr->stereo_240p_down_back_publisher.publish(img);
+        if (bit_location == AdvancedSensing::RECV_DOWN_FRONT)
+          node_ptr->stereo_240p_down_front_publisher.publish(img);
+        if (bit_location == AdvancedSensing::RECV_FRONT_DEPTH)
+          node_ptr->stereo_240p_front_depth_publisher.publish(img);
+      }
+    }
+  }
+}
+
+void DJISDKNode::publishVGAStereoImage(Vehicle*            vehicle,
+                                       RecvContainer       recvFrame,
+                                       DJI::OSDK::UserData userData)
+{
+  DJISDKNode *node_ptr = (DJISDKNode *)userData;
+
+  node_ptr->stereo_vga_subscription_success = true;
+
+  sensor_msgs::Image img;
+  img.height = 480;
+  img.width = 640;
+  img.step = 640;
+  img.encoding = "mono8";
+  img.data.resize(img.height*img.width);
+
+  img.header.seq = recvFrame.recvData.stereoVGAImgData->frame_index;
+  img.header.stamp = ros::Time::now(); // @todo
+  img.header.frame_id = "vga_left";
+  memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[0], 480*640);
+  node_ptr->stereo_vga_front_left_publisher.publish(img);
+
+  img.header.frame_id = "vga_right";
+  memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[1], 480*640);
+  node_ptr->stereo_vga_front_right_publisher.publish(img);
+}
+
+void DJISDKNode::publishFPVCameraImage(CameraRGBImage rgbImg, void* userData)
+{
+  DJISDKNode *node_ptr = (DJISDKNode *)userData;
+
+  sensor_msgs::Image img;
+  img.height = rgbImg.height;
+  img.width = rgbImg.width;
+  img.step = rgbImg.width*3;
+  img.encoding = "rgb8";
+  img.data = rgbImg.rawData;
+
+  img.header.stamp = ros::Time::now();
+  img.header.frame_id = "FPV_CAMERA";
+  node_ptr->fpv_camera_stream_publisher.publish(img);
+}
+
+void DJISDKNode::publishMainCameraImage(CameraRGBImage rgbImg, void* userData)
+{
+  DJISDKNode *node_ptr = (DJISDKNode *)userData;
+
+  sensor_msgs::Image img;
+  img.height = rgbImg.height;
+  img.width = rgbImg.width;
+  img.step = rgbImg.width*3;
+  img.encoding = "rgb8";
+  img.data = rgbImg.rawData;
+
+  img.header.stamp = ros::Time::now();
+  img.header.frame_id = "MAIN_CAMERA";
+  node_ptr->main_camera_stream_publisher.publish(img);
+}
+#endif // ADVANCED_SENSING
