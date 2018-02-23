@@ -267,7 +267,7 @@ DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
         vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_POSITION_INFO>();
 
     sensor_msgs::NavSatFix rtk_position;
-    rtk_position.header.stamp    = now_time;
+    rtk_position.header.stamp    = msg_time;
     rtk_position.header.frame_id = "rtk";
     rtk_position.latitude = rtk_telemetry_position.latitude;
     rtk_position.longitude = rtk_telemetry_position.longitude;
