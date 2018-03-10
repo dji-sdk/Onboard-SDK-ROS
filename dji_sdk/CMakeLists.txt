@@ -79,6 +79,7 @@ add_service_files(
   MissionWpSetSpeed.srv
   MissionWpGetSpeed.srv
   MissionWpGetInfo.srv
+  WayPointReachedData.srv
   MissionHpUpload.srv
   MissionHpGetInfo.srv
   MissionHpUpdateYawRate.srv

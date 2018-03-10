@@ -1,0 +1,6 @@
+---
+uint8 incident_type
+uint8 waypoint_index
+uint8 current_status
+uint8 reserved_1
+uint8 reserved_2

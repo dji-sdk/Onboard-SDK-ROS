@@ -43,6 +43,7 @@
 #include <dji_sdk/MissionWpGetSpeed.h>
 #include <dji_sdk/MissionWpSetSpeed.h>
 #include <dji_sdk/MissionWpUpload.h>
+#include <dji_sdk/WayPointReachedData.h>
 // hotpoint
 #include <dji_sdk/MissionHpAction.h>
 #include <dji_sdk/MissionHpGetInfo.h>
@@ -188,6 +189,9 @@ private:
   bool missionWpSetSpeedCallback(
     dji_sdk::MissionWpSetSpeed::Request&  request,
     dji_sdk::MissionWpSetSpeed::Response& response);
+  bool waypointReachedDataCallback(
+    dji_sdk::WayPointReachedData::Request&  request,
+    dji_sdk::WayPointReachedData::Response& response);
   // hotpoint mission
   bool missionHpUploadCallback(dji_sdk::MissionHpUpload::Request&  request,
                                dji_sdk::MissionHpUpload::Response& response);
@@ -284,6 +288,7 @@ private:
   ros::ServiceServer waypoint_getInfo_server;
   ros::ServiceServer waypoint_getSpeed_server;
   ros::ServiceServer waypoint_setSpeed_server;
+  ros::ServiceServer waypoint_reachedData_server;
   // hotpoint mission
   ros::ServiceServer hotpoint_upload_server;
   ros::ServiceServer hotpoint_action_server;
