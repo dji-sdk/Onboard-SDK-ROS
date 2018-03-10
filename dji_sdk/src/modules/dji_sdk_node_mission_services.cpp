@@ -296,21 +296,29 @@ bool DJISDKNode::waypointReachedDataCallback(
   dji_sdk::WayPointReachedData::Response& response)
 {
   static int8_t incident_type, waypoint_index, current_status;
-  vehicle->missionManager->wpMission->setWaypointEventCallback([](Vehicle *vehicle, RecvContainer recvFrame, DJI::OSDK::UserData userData)
+  if (vehicle->missionManager->wayptCounter > 0)
   {
-    ROS_INFO("wp event callback, \tincident_type: %d\twaypoint_index: %d\tcurrent_status: %d\n",
-              recvFrame.recvData.wayPointReachedData.incident_type,
-              recvFrame.recvData.wayPointReachedData.waypoint_index,
-              recvFrame.recvData.wayPointReachedData.current_status
-    );
-    incident_type = recvFrame.recvData.wayPointReachedData.incident_type;
-    waypoint_index = recvFrame.recvData.wayPointReachedData.waypoint_index;
-    current_status = recvFrame.recvData.wayPointReachedData.current_status;
-  }, this);
-  response.incident_type = incident_type;
-  response.waypoint_index = waypoint_index;
-  response.current_status = current_status;
-  return true;
+    vehicle->missionManager->wpMission->setWaypointEventCallback([](Vehicle *vehicle, RecvContainer recvFrame, DJI::OSDK::UserData userData)
+    {
+      ROS_INFO("wp event callback, \tincident_type: %d\twaypoint_index: %d\tcurrent_status: %d\n",
+                recvFrame.recvData.wayPointReachedData.incident_type,
+                recvFrame.recvData.wayPointReachedData.waypoint_index,
+                recvFrame.recvData.wayPointReachedData.current_status
+      );
+      incident_type = recvFrame.recvData.wayPointReachedData.incident_type;
+      waypoint_index = recvFrame.recvData.wayPointReachedData.waypoint_index;
+      current_status = recvFrame.recvData.wayPointReachedData.current_status;
+    }, this);
+    response.incident_type = incident_type;
+    response.waypoint_index = waypoint_index;
+    response.current_status = current_status;
+    return true;
+  }
+  else
+  {
+    ROS_ERROR("no waypoint mission initiated ");
+    return false;
+  }
 }
 
 bool
