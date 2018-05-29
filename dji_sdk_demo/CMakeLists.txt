@@ -164,6 +164,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
         include
+        ${DJIOSDK_INCLUDE_DIRS}
         ${catkin_INCLUDE_DIRS}
 )
 
