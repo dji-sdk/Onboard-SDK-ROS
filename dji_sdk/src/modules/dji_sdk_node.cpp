@@ -17,7 +17,8 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
   : telemetry_from_fc(USE_BROADCAST),
     R_FLU2FRD(tf::Matrix3x3(1,  0,  0, 0, -1,  0, 0,  0, -1)),
     R_ENU2NED(tf::Matrix3x3(0,  1,  0, 1,  0,  0, 0,  0, -1)),
-    curr_align_state(UNALIGNED)
+    curr_align_state(UNALIGNED),
+    can_control(false)
 {
   nh_private.param("serial_name",   serial_device, std::string("/dev/ttyUSB0"));
   nh_private.param("baud_rate",     baud_rate, 921600);

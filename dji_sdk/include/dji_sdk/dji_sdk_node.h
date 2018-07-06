@@ -266,7 +266,7 @@ private:
 
 private:
   //! If set to false, any Joy control message will be discarded
-  std::atomic<bool> can_control = false;
+  std::atomic<bool> can_control;
 
   //! OSDK core
   Vehicle* vehicle;
