@@ -29,6 +29,12 @@
  */
 void DJISDKNode::flightControl(uint8_t flag, float xSP, float ySP, float zSP, float yawSP)
 {
+  if(can_control == false)
+  {
+    ROS_WARN_THROTTLE(1, "Received Joy ctrl msg but can_control is set to False! Discarding...");
+    return;
+  }
+
   uint8_t HORI  = (flag & 0xC0);
   uint8_t VERT  = (flag & 0x30);
   uint8_t YAW   = (flag & 0x08);
@@ -118,7 +124,7 @@ void DJISDKNode::flightControl(uint8_t flag, float xSP, float ySP, float zSP, fl
 void
 DJISDKNode::flightControlSetpointCallback(
   const sensor_msgs::Joy::ConstPtr& pMsg)
-{ 
+{
   float xSP    = pMsg->axes[0];
   float ySP    = pMsg->axes[1];
   float zSP    = pMsg->axes[2];
@@ -180,4 +186,3 @@ DJISDKNode::flightControlRollPitchPzYawrateCallback(
 
   flightControl(flag, roll, pitch, pz, yawRate);
 }
-

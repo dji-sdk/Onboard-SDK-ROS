@@ -465,6 +465,24 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
 
   if (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_RC)
   {
+    int16_t mode = vehicle->broadcast->getRC().mode;
+
+    /* If mode is in P (10000) than can control the UAV*/
+    if (can_control == false && mode == 10000)
+    {
+      ROS_WARN_STREAM("can_control was False, but mode is now P(10000) " <<
+                      "so activiating control, can_control = true, " <<
+                      "you still need to manual request control authority!");
+      can_control = true;
+    }
+    /* If mode is in F (-10000) than cannot control the UAV*/
+    else if (can_control == true && mode == -10000)
+    {
+      ROS_WARN("can_control was True, but mode is now F(-10000) so " <<
+               "DEACTIVATING control, can_control = false");
+      can_control = false;
+    }
+
     sensor_msgs::Joy rc_joy;
     rc_joy.header.stamp    = msg_time;
     rc_joy.header.frame_id = "rc";
@@ -475,7 +493,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().yaw      / 10000.0));
     rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().throttle / 10000.0));
 
-    rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().mode));
+    rc_joy.axes.push_back(static_cast<float>(mode));
     rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().gear));
     p->rc_publisher.publish(rc_joy);
   }
