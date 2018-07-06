@@ -190,14 +190,14 @@ DJISDKNode::dataBroadcastCallback()
     flight_status_publisher.publish(flight_status);
   }
 
-  uint16_t flag_has_gimbal = 
+  uint16_t flag_has_gimbal =
           isM100() ? (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::HAS_GIMBAL) :
           (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_GIMBAL);
   if (flag_has_gimbal)
   {
     Telemetry::Gimbal gimbal_reading;
 
-    
+
     Telemetry::Gimbal gimbal_angle = vehicle->broadcast->getGimbal();
 
     geometry_msgs::Vector3Stamped gimbal_angle_vec3;
@@ -241,6 +241,9 @@ DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
   Telemetry::TypeMap<Telemetry::TOPIC_BATTERY_INFO>::type battery_info=
     vehicle->subscribe->getValue<Telemetry::TOPIC_BATTERY_INFO>();
   sensor_msgs::BatteryState msg_battery_state;
+
+  msg_battery_state.header.stamp = msg_time;
+
   msg_battery_state.capacity = NAN;
   msg_battery_state.voltage  = NAN;
   msg_battery_state.current  = NAN;
@@ -267,6 +270,9 @@ DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
         vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_POSITION_INFO>();
 
     sensor_msgs::NavSatFix rtk_position;
+    rtk_position.header.stamp = msg_time;
+    rtk_position.header.frame_id = "rtk_WGS84";
+
     rtk_position.latitude = rtk_telemetry_position.latitude;
     rtk_position.longitude = rtk_telemetry_position.longitude;
     rtk_position.altitude = rtk_telemetry_position.HFSL;
@@ -274,10 +280,13 @@ DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
 
     //! Velocity converted to m/s to conform to REP103.
 
-    geometry_msgs::Vector3 rtk_velocity;
-    rtk_velocity.x = (rtk_telemetry_velocity.x)/100;
-    rtk_velocity.y = (rtk_telemetry_velocity.y)/100;
-    rtk_velocity.z = (rtk_telemetry_velocity.z)/100;
+    geometry_msgs::Vector3Stamped rtk_velocity;
+    rtk_velocity.header.stamp = msg_time;
+    rtk_velocity.header.frame_id = "rtk_NED";
+
+    rtk_velocity.vector.x = (rtk_telemetry_velocity.x)/100;
+    rtk_velocity.vector.y = (rtk_telemetry_velocity.y)/100;
+    rtk_velocity.vector.z = (rtk_telemetry_velocity.z)/100;
     p->rtk_velocity_publisher.publish(rtk_velocity);
 
     std_msgs::Int16 rtk_yaw;

@@ -182,7 +182,7 @@ bool
 DJISDKNode::initFlightControl(ros::NodeHandle& nh)
 {
   flight_control_sub = nh.subscribe<sensor_msgs::Joy>(
-    "dji_sdk/flight_control_setpoint_generic", 10, 
+    "dji_sdk/flight_control_setpoint_generic", 10,
     &DJISDKNode::flightControlSetpointCallback,   this);
 
   flight_control_position_yaw_sub =
@@ -300,7 +300,7 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
       nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/rtk_position", 10);
 
   rtk_velocity_publisher =
-      nh.advertise<geometry_msgs::Vector3>("dji_sdk/rtk_velocity", 10);
+      nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/rtk_velocity", 10);
 
   rtk_yaw_publisher =
       nh.advertise<std_msgs::Int16>("dji_sdk/rtk_yaw", 10);
