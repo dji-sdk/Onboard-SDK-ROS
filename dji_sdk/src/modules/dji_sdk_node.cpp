@@ -17,7 +17,8 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
   : telemetry_from_fc(USE_BROADCAST),
     R_FLU2FRD(tf::Matrix3x3(1,  0,  0, 0, -1,  0, 0,  0, -1)),
     R_ENU2NED(tf::Matrix3x3(0,  1,  0, 1,  0,  0, 0,  0, -1)),
-    curr_align_state(UNALIGNED)
+    curr_align_state(UNALIGNED),
+    can_control(false)
 {
   nh_private.param("serial_name",   serial_device, std::string("/dev/ttyUSB0"));
   nh_private.param("baud_rate",     baud_rate, 921600);
@@ -182,7 +183,7 @@ bool
 DJISDKNode::initFlightControl(ros::NodeHandle& nh)
 {
   flight_control_sub = nh.subscribe<sensor_msgs::Joy>(
-    "dji_sdk/flight_control_setpoint_generic", 10, 
+    "dji_sdk/flight_control_setpoint_generic", 10,
     &DJISDKNode::flightControlSetpointCallback,   this);
 
   flight_control_position_yaw_sub =
@@ -300,7 +301,7 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
       nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/rtk_position", 10);
 
   rtk_velocity_publisher =
-      nh.advertise<geometry_msgs::Vector3>("dji_sdk/rtk_velocity", 10);
+      nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/rtk_velocity", 10);
 
   rtk_yaw_publisher =
       nh.advertise<std_msgs::Int16>("dji_sdk/rtk_yaw", 10);
