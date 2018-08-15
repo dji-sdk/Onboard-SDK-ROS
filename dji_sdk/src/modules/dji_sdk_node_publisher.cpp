@@ -1,17 +1,18 @@
 /** @file dji_sdk_node_publisher.cpp
- *  @version 3.6
- *  @date Feb, 2018
+ *  @version 3.7
+ *  @date July, 2018
  *
  *  @brief
  *  Implementation of the publishers of DJISDKNode
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @copyright 2018 DJI. All rights reserved.
  *
  */
 
 #include <dji_sdk/dji_sdk_node.h>
 #include <tf/tf.h>
 #include <sensor_msgs/Joy.h>
+#include <dji_telemetry.hpp>
 
 #define _TICK2ROSTIME(tick) (ros::Duration((double)(tick) / 1000.0))
 
@@ -126,7 +127,7 @@ DJISDKNode::dataBroadcastCallback()
     {
       geometry_msgs::PointStamped local_pos;
       local_pos.header.frame_id = "/local";
-      local_pos.header.stamp = gps_pos.header.stamp;
+      local_pos.header.stamp = now_time;
       gpsConvertENU(local_pos.point.x, local_pos.point.y, gps_pos.longitude,
                        gps_pos.latitude, this->local_pos_ref_longitude, this->local_pos_ref_latitude);
       local_pos.point.z = gps_pos.altitude - this->local_pos_ref_altitude;
@@ -163,6 +164,7 @@ DJISDKNode::dataBroadcastCallback()
   if ( flag_has_battery )
   {
     sensor_msgs::BatteryState msg_battery_state;
+    msg_battery_state.header.stamp = now_time;
     msg_battery_state.capacity = NAN;
     msg_battery_state.voltage  = NAN;
     msg_battery_state.current  = NAN;
@@ -202,7 +204,7 @@ DJISDKNode::dataBroadcastCallback()
 
     geometry_msgs::Vector3Stamped gimbal_angle_vec3;
 
-    gimbal_angle_vec3.header.stamp = ros::Time::now();
+    gimbal_angle_vec3.header.stamp = now_time;
     gimbal_angle_vec3.header.frame_id = "ground_ENU";
     gimbal_angle_vec3.vector.x     = gimbal_angle.roll;
     gimbal_angle_vec3.vector.y     = gimbal_angle.pitch;
@@ -212,13 +214,13 @@ DJISDKNode::dataBroadcastCallback()
 }
 
 void
-DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
+DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
                             DJI::OSDK::UserData userData)
 {
   DJISDKNode *p = (DJISDKNode *)userData;
 
   uint8_t* data = recvFrame.recvData.raw_ack_array;
-  ROS_ASSERT(DJISDKNode::PACKAGE_ID_10HZ == *data );
+  ROS_ASSERT(DJISDKNode::PACKAGE_ID_5HZ == *data );
 
   data++;
   Telemetry::TimeStamp packageTimeStamp = * (reinterpret_cast<Telemetry::TimeStamp *>(data));
@@ -241,6 +243,7 @@ DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
   Telemetry::TypeMap<Telemetry::TOPIC_BATTERY_INFO>::type battery_info=
     vehicle->subscribe->getValue<Telemetry::TOPIC_BATTERY_INFO>();
   sensor_msgs::BatteryState msg_battery_state;
+  msg_battery_state.header.stamp = msg_time;
   msg_battery_state.capacity = NAN;
   msg_battery_state.voltage  = NAN;
   msg_battery_state.current  = NAN;
@@ -257,27 +260,35 @@ DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
   {
     Telemetry::TypeMap<Telemetry::TOPIC_RTK_POSITION>::type rtk_telemetry_position=
         vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_POSITION>();
+
     Telemetry::TypeMap<Telemetry::TOPIC_RTK_VELOCITY>::type rtk_telemetry_velocity=
         vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_VELOCITY>();
+
     Telemetry::TypeMap<Telemetry::TOPIC_RTK_YAW>::type rtk_telemetry_yaw=
         vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_YAW>();
+
     Telemetry::TypeMap<Telemetry::TOPIC_RTK_YAW_INFO>::type rtk_telemetry_yaw_info=
         vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_YAW_INFO>();
+
     Telemetry::TypeMap<Telemetry::TOPIC_RTK_POSITION_INFO>::type rtk_telemetry_position_info=
         vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_POSITION_INFO>();
 
+    Telemetry::TypeMap<Telemetry::TOPIC_RTK_CONNECT_STATUS>::type rtk_telemetry_connect_status=
+            vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_CONNECT_STATUS>();
+
     sensor_msgs::NavSatFix rtk_position;
+    rtk_position.header.stamp = msg_time;
     rtk_position.latitude = rtk_telemetry_position.latitude;
     rtk_position.longitude = rtk_telemetry_position.longitude;
     rtk_position.altitude = rtk_telemetry_position.HFSL;
     p->rtk_position_publisher.publish(rtk_position);
 
     //! Velocity converted to m/s to conform to REP103.
-
-    geometry_msgs::Vector3 rtk_velocity;
-    rtk_velocity.x = (rtk_telemetry_velocity.x)/100;
-    rtk_velocity.y = (rtk_telemetry_velocity.y)/100;
-    rtk_velocity.z = (rtk_telemetry_velocity.z)/100;
+    geometry_msgs::Vector3Stamped rtk_velocity;
+    rtk_velocity.header.stamp = msg_time;
+    rtk_velocity.vector.x = (rtk_telemetry_velocity.x)/100;
+    rtk_velocity.vector.y = (rtk_telemetry_velocity.y)/100;
+    rtk_velocity.vector.z = (rtk_telemetry_velocity.z)/100;
     p->rtk_velocity_publisher.publish(rtk_velocity);
 
     std_msgs::Int16 rtk_yaw;
@@ -291,6 +302,10 @@ DJISDKNode::publish10HzData(Vehicle *vehicle, RecvContainer recvFrame,
     std_msgs::UInt8 rtk_position_info;
     rtk_position_info.data = (int)rtk_telemetry_position_info;
     p->rtk_position_info_publisher.publish(rtk_position_info);
+
+    std_msgs::UInt8 rtk_connection_status;
+    rtk_connection_status.data = (rtk_telemetry_connect_status.rtkConnected == 1) ? 1 : 0;
+    p->rtk_connection_status_publisher.publish(rtk_connection_status);
   }
 
   return;
@@ -354,6 +369,21 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     p->local_position_publisher.publish(local_pos);
   }
 
+  Telemetry::TypeMap<Telemetry::TOPIC_POSITION_VO>::type vo_position =
+            vehicle->subscribe->getValue<Telemetry::TOPIC_POSITION_VO>();
+
+  dji_sdk::VOPosition vo_pos;
+  // This name does not follow the convention because we are not sure it is real NED.
+  vo_pos.header.frame_id = "/ground_nav";
+  vo_pos.header.stamp = msg_time;
+  vo_pos.x  = vo_position.x;
+  vo_pos.y       = vo_position.y;
+  vo_pos.z        = vo_position.z;
+  vo_pos.xHealth = vo_position.xHealth;
+  vo_pos.yHealth = vo_position.yHealth;
+  vo_pos.zHealth = vo_position.zHealth;
+  p->vo_position_publisher.publish(vo_pos);
+
   Telemetry::TypeMap<Telemetry::TOPIC_HEIGHT_FUSION>::type fused_height =
     vehicle->subscribe->getValue<Telemetry::TOPIC_HEIGHT_FUSION>();
   std_msgs::Float32 height;
@@ -411,66 +441,90 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   status_dm.data = dm;
   p->displaymode_publisher.publish(status_dm);
 
-  /**
-    * NOTE: When using SBUS remote controllers, the rc.mode
-    *       does not properly reflect the rc's input.
-    *       Therefore the rc command uses broadcast info
-    *       instead (for now).
-    */
-//  Telemetry::TypeMap<Telemetry::TOPIC_RC>::type rc =
-//    vehicle->subscribe->getValue<Telemetry::TOPIC_RC>();
-
-  /********* RC Map (A3) *********
-  *
-  *       -10000  <--->  0      <---> 10000
-  * MODE: API(F)  <---> ATTI(A) <--->  POS (P)
-  *
-  *        CH3 +10000                     CH1 +10000
-  *               ^                              ^
-  *               |                              |                   / -5000
-  *    CH2        |                   CH0        |                  /
-  *  -10000 <-----------> +10000    -10000 <-----------> +10000    H
-  *               |                              |                  \
-  *               |                              |                   \ -10000
-  *               V                              V
-  *            -10000                         -10000
-  *
-  *   In this code, before publish, RC is transformed to M100 style to be compatible with controller
-
-  *****************************/
-
-//  sensor_msgs::Joy rc_joy;
-//  rc_joy.header.stamp    = msg_time;
-//  rc_joy.header.frame_id = "rc";
-
-//  rc_joy.axes.reserve(6);
-
-//  rc_joy.axes.push_back(static_cast<float>(rc.roll     / 10000.0));
-//  rc_joy.axes.push_back(static_cast<float>(rc.pitch    / 10000.0));
-//  rc_joy.axes.push_back(static_cast<float>(rc.yaw      / 10000.0));
-//  rc_joy.axes.push_back(static_cast<float>(rc.throttle / 10000.0));
-//  rc_joy.axes.push_back(static_cast<float>(rc.mode*1.0));
-//  rc_joy.axes.push_back(static_cast<float>(rc.gear*1.0));
-//  p->rc_publisher.publish(rc_joy);
-  short int data_enable_flag = vehicle->broadcast->getPassFlag();
-
-  if (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_RC)
+  /*!
+   * note: Since FW version 3.3.0 and SDK version 3.7, we expose all the button on the LB2 RC
+   *       as well as the RC connection status via different topics.
+   */
+  if(vehicle->getFwVersion() > versionBase33)
   {
+    Telemetry::TypeMap<Telemetry::TOPIC_RC_WITH_FLAG_DATA>::type rc_with_flag =
+            vehicle->subscribe->getValue<Telemetry::TOPIC_RC_WITH_FLAG_DATA>();
+
+    Telemetry::TypeMap<Telemetry::TOPIC_RC_FULL_RAW_DATA>::type rc_full_raw =
+            vehicle->subscribe->getValue<Telemetry::TOPIC_RC_FULL_RAW_DATA>();
+
+    sensor_msgs::Joy rc_joy;
+    rc_joy.header.stamp    = msg_time;
+    rc_joy.header.frame_id = "rc";
+
+    rc_joy.axes.reserve(12);
+    rc_joy.axes.push_back(static_cast<float>(rc_with_flag.roll));
+    rc_joy.axes.push_back(static_cast<float>(rc_with_flag.pitch));
+    rc_joy.axes.push_back(static_cast<float>(rc_with_flag.yaw));
+    rc_joy.axes.push_back(static_cast<float>(rc_with_flag.throttle));
+
+    rc_joy.axes.push_back(static_cast<float>(-(rc_full_raw.lb2.mode - 1024)    / 660));
+    rc_joy.axes.push_back(static_cast<float>(-(rc_full_raw.lb2.gear - 1519)    / 165));
+    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.camera -364)   / 1320));
+    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.video - 364)    / 1320));
+    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.videoPause-364) / 1320));
+    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.goHome-364) /1320));
+    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.leftWheel-1024.0)  / 660.0));
+    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.rightWheelButton - 364)/ 1320));
+    p->rc_publisher.publish(rc_joy);
+
+    bool temp;
+    temp = rc_with_flag.flag.skyConnected && rc_with_flag.flag.groundConnected;
+
+    std_msgs::UInt8 rc_connected;
+    rc_connected.data = temp ? 1 : 0;
+    p->rc_connection_status_publisher.publish(rc_connected);
+
+    // Publish flight anomaly if FC is supported
+    Telemetry::TypeMap<Telemetry::TOPIC_FLIGHT_ANOMALY>::type flight_anomaly_data =
+            vehicle->subscribe->getValue<Telemetry::TOPIC_FLIGHT_ANOMALY>();
+
+    dji_sdk::FlightAnomaly flight_anomaly_msg;
+    flight_anomaly_msg.data = *(reinterpret_cast<uint32_t*>(&flight_anomaly_data));
+    p->flight_anomaly_publisher.publish(flight_anomaly_msg);
+  }
+  else
+  {
+    /********* RC Map (A3) *********
+    *
+    *       -10000  <--->  0      <---> 10000
+    * MODE: API(F)  <---> ATTI(A) <--->  POS (P)
+    *
+    *        CH3 +10000                     CH1 +10000
+    *               ^                              ^
+    *               |                              |                   / -5000
+    *    CH2        |                   CH0        |                  /
+    *  -10000 <-----------> +10000    -10000 <-----------> +10000    H
+    *               |                              |                  \
+    *               |                              |                   \ -10000
+    *               V                              V
+    *            -10000                         -10000
+    *
+    *   In this code, before publishing, we normalize RC
+    *****************************/
+
+    Telemetry::TypeMap<Telemetry::TOPIC_RC>::type rc =
+            vehicle->subscribe->getValue<Telemetry::TOPIC_RC>();
+
     sensor_msgs::Joy rc_joy;
     rc_joy.header.stamp    = msg_time;
     rc_joy.header.frame_id = "rc";
 
     rc_joy.axes.reserve(6);
-    rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().roll     / 10000.0));
-    rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().pitch    / 10000.0));
-    rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().yaw      / 10000.0));
-    rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().throttle / 10000.0));
 
-    rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().mode));
-    rc_joy.axes.push_back(static_cast<float>(vehicle->broadcast->getRC().gear));
+    rc_joy.axes.push_back(static_cast<float>(rc.roll     / 10000.0));
+    rc_joy.axes.push_back(static_cast<float>(rc.pitch    / 10000.0));
+    rc_joy.axes.push_back(static_cast<float>(rc.yaw      / 10000.0));
+    rc_joy.axes.push_back(static_cast<float>(rc.throttle / 10000.0));
+    rc_joy.axes.push_back(static_cast<float>(rc.mode*1.0));
+    rc_joy.axes.push_back(static_cast<float>(rc.gear*1.0));
     p->rc_publisher.publish(rc_joy);
   }
-
 }
 
 void
@@ -680,106 +734,3 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
     return;
   }
 }
-
-#ifdef ADVANCED_SENSING
-void DJISDKNode::publish240pStereoImage(Vehicle*            vehicle,
-                                        RecvContainer       recvFrame,
-                                        DJI::OSDK::UserData userData)
-{
-  DJISDKNode *node_ptr = (DJISDKNode *)userData;
-
-  node_ptr->stereo_subscription_success = true;
-
-  sensor_msgs::Image img;
-  img.height = 240;
-  img.width = 320;
-  img.data.resize(img.height*img.width);
-  img.encoding = "mono8";
-  img.step = 320;
-  uint8_t img_idx = 0;
-
-  for (int pair_idx = 0; pair_idx < CAMERA_PAIR_NUM; ++pair_idx) {
-    for (int dir_idx = 0; dir_idx < IMAGE_TYPE_NUM; ++dir_idx) {
-
-      uint8_t bit_location = pair_idx * IMAGE_TYPE_NUM + dir_idx;
-      uint8_t bit_val = (recvFrame.recvData.stereoImgData->img_desc >> bit_location) & 1;
-
-      if (bit_val) {
-        img.header.seq = recvFrame.recvData.stereoImgData->frame_index;
-        img.header.stamp = ros::Time::now(); // @todo
-        img.header.frame_id = recvFrame.recvData.stereoImgData->img_vec[img_idx].name;
-        memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoImgData->img_vec[img_idx++].image, 240*320);
-
-        if (bit_location == AdvancedSensing::RECV_FRONT_LEFT)
-          node_ptr->stereo_240p_front_left_publisher.publish(img);
-        if (bit_location == AdvancedSensing::RECV_FRONT_RIGHT)
-          node_ptr->stereo_240p_front_right_publisher.publish(img);
-        if (bit_location == AdvancedSensing::RECV_DOWN_BACK)
-          node_ptr->stereo_240p_down_back_publisher.publish(img);
-        if (bit_location == AdvancedSensing::RECV_DOWN_FRONT)
-          node_ptr->stereo_240p_down_front_publisher.publish(img);
-        if (bit_location == AdvancedSensing::RECV_FRONT_DEPTH)
-          node_ptr->stereo_240p_front_depth_publisher.publish(img);
-      }
-    }
-  }
-}
-
-void DJISDKNode::publishVGAStereoImage(Vehicle*            vehicle,
-                                       RecvContainer       recvFrame,
-                                       DJI::OSDK::UserData userData)
-{
-  DJISDKNode *node_ptr = (DJISDKNode *)userData;
-
-  node_ptr->stereo_vga_subscription_success = true;
-
-  sensor_msgs::Image img;
-  img.height = 480;
-  img.width = 640;
-  img.step = 640;
-  img.encoding = "mono8";
-  img.data.resize(img.height*img.width);
-
-  img.header.seq = recvFrame.recvData.stereoVGAImgData->frame_index;
-  img.header.stamp = ros::Time::now(); // @todo
-  img.header.frame_id = "vga_left";
-  memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[0], 480*640);
-  node_ptr->stereo_vga_front_left_publisher.publish(img);
-
-  img.header.frame_id = "vga_right";
-  memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[1], 480*640);
-  node_ptr->stereo_vga_front_right_publisher.publish(img);
-}
-
-void DJISDKNode::publishFPVCameraImage(CameraRGBImage rgbImg, void* userData)
-{
-  DJISDKNode *node_ptr = (DJISDKNode *)userData;
-
-  sensor_msgs::Image img;
-  img.height = rgbImg.height;
-  img.width = rgbImg.width;
-  img.step = rgbImg.width*3;
-  img.encoding = "rgb8";
-  img.data = rgbImg.rawData;
-
-  img.header.stamp = ros::Time::now();
-  img.header.frame_id = "FPV_CAMERA";
-  node_ptr->fpv_camera_stream_publisher.publish(img);
-}
-
-void DJISDKNode::publishMainCameraImage(CameraRGBImage rgbImg, void* userData)
-{
-  DJISDKNode *node_ptr = (DJISDKNode *)userData;
-
-  sensor_msgs::Image img;
-  img.height = rgbImg.height;
-  img.width = rgbImg.width;
-  img.step = rgbImg.width*3;
-  img.encoding = "rgb8";
-  img.data = rgbImg.rawData;
-
-  img.header.stamp = ros::Time::now();
-  img.header.frame_id = "MAIN_CAMERA";
-  node_ptr->main_camera_stream_publisher.publish(img);
-}
-#endif // ADVANCED_SENSING

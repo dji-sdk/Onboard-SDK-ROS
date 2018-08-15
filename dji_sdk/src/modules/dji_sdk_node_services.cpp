@@ -1,11 +1,11 @@
 /** @file dji_sdk_node_services.cpp
- *  @version 3.6
- *  @date Feb, 2018
+ *  @version 3.7
+ *  @date July, 2018
  *
  *  @brief
  *  Implementation of the general services of DJISDKNode
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @copyright 2018 DJI. All rights reserved.
  *
  */
 

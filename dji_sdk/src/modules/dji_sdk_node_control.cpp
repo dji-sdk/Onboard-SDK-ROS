@@ -1,11 +1,11 @@
 /** @file dji_sdk_node_control.cpp
- *  @version 3.3
- *  @date May, 2017
+ *  @version 3.7
+ *  @date July, 2018
  *
  *  @brief
  *  Implementation of the control functions of DJISDKNode
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @copyright 2018 DJI. All rights reserved.
  *
  */
 
@@ -180,4 +180,3 @@ DJISDKNode::flightControlRollPitchPzYawrateCallback(
 
   flightControl(flag, roll, pitch, pz, yawRate);
 }
-

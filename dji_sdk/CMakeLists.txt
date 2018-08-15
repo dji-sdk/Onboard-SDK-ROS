@@ -59,6 +59,8 @@ add_message_files(
   MissionWaypoint.msg
   MissionWaypointTask.msg
   MissionHotpointTask.msg
+  FlightAnomaly.msg
+  VOPosition.msg
 )
 
 ## Generate services in the 'srv' folder

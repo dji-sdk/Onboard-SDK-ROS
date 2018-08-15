@@ -1,11 +1,11 @@
 /** @file dji_sdk.h
- *  @version 3.3
- *  @date May, 2017
+ *  @version 3.7
+ *  @date July, 2018
  *
  *  @brief
  *  Definitions and Enums for client code to use dji_sdk ros wrapper
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @copyright 2018 DJI. All rights reserved.
  *
  */
 

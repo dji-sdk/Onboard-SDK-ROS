@@ -1,11 +1,11 @@
 /** @file dji_sdk_node.h
- *  @version 3.3
- *  @date May, 2017
+ *  @version 3.7
+ *  @date July, 2018
  *
  *  @brief
  *  A ROS wrapper to interact with DJI onboard SDK
  *
- *  @copyright 2017 DJI. All rights reserved.
+ *  @copyright 2018 DJI. All rights reserved.
  *
  */
 
@@ -33,6 +33,8 @@
 //! msgs
 #include <dji_sdk/Gimbal.h>
 #include <dji_sdk/MobileData.h>
+#include <dji_sdk/FlightAnomaly.h>
+#include <dji_sdk/VOPosition.h>
 
 //! mission service
 // missionManager
@@ -95,7 +97,7 @@ public:
 
   enum
   {
-    PACKAGE_ID_10HZ  = 0,
+    PACKAGE_ID_5HZ   = 0,
     PACKAGE_ID_50HZ  = 1,
     PACKAGE_ID_100HZ = 2,
     PACKAGE_ID_400HZ = 3
@@ -108,8 +110,7 @@ private:
   bool initSubscriber(ros::NodeHandle& nh);
   bool initPublisher(ros::NodeHandle& nh);
   bool initActions(ros::NodeHandle& nh);
-  bool initDataSubscribeFromFC();
-  bool topic10hzStart(Telemetry::TopicName topicList10Hz[], int size);
+  bool initDataSubscribeFromFC(ros::NodeHandle& nh);
   void cleanUpSubscribeFromFC();
   bool validateSerialDevice(LinuxSerialDevice* serialDevice);
   bool isM100();
@@ -232,7 +233,7 @@ private:
                                    RecvContainer       recvFrame,
                                    DJI::OSDK::UserData userData);
 
-  static void publish10HzData(Vehicle*            vehicle,
+  static void publish5HzData(Vehicle*            vehicle,
                               RecvContainer       recvFrame,
                               DJI::OSDK::UserData userData);
 
@@ -328,17 +329,21 @@ private:
   ros::Publisher flight_status_publisher;
   ros::Publisher gps_health_publisher;
   ros::Publisher gps_position_publisher;
+  ros::Publisher vo_position_publisher;
   ros::Publisher height_publisher;
   ros::Publisher velocity_publisher;
   ros::Publisher from_mobile_data_publisher;
   ros::Publisher gimbal_angle_publisher;
   ros::Publisher displaymode_publisher;
   ros::Publisher rc_publisher;
+  ros::Publisher rc_connection_status_publisher;
   ros::Publisher rtk_position_publisher;
   ros::Publisher rtk_velocity_publisher;
   ros::Publisher rtk_yaw_publisher;
   ros::Publisher rtk_position_info_publisher;
   ros::Publisher rtk_yaw_info_publisher;
+  ros::Publisher rtk_connection_status_publisher;
+  ros::Publisher flight_anomaly_publisher;
   //! Local Position Publisher (Publishes local position in ENU frame)
   ros::Publisher local_position_publisher;
   ros::Publisher local_frame_ref_publisher;
@@ -374,7 +379,7 @@ private:
   TELEMETRY_TYPE telemetry_from_fc;
   bool stereo_subscription_success;
   bool stereo_vga_subscription_success;
-  bool user_select_BC;
+  bool user_select_broadcast;
   const tf::Matrix3x3 R_FLU2FRD;
   const tf::Matrix3x3 R_ENU2NED;
 
