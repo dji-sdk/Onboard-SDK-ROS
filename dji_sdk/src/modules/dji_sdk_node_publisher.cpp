@@ -369,21 +369,6 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     p->local_position_publisher.publish(local_pos);
   }
 
-  Telemetry::TypeMap<Telemetry::TOPIC_POSITION_VO>::type vo_position =
-            vehicle->subscribe->getValue<Telemetry::TOPIC_POSITION_VO>();
-
-  dji_sdk::VOPosition vo_pos;
-  // This name does not follow the convention because we are not sure it is real NED.
-  vo_pos.header.frame_id = "/ground_nav";
-  vo_pos.header.stamp = msg_time;
-  vo_pos.x  = vo_position.x;
-  vo_pos.y       = vo_position.y;
-  vo_pos.z        = vo_position.z;
-  vo_pos.xHealth = vo_position.xHealth;
-  vo_pos.yHealth = vo_position.yHealth;
-  vo_pos.zHealth = vo_position.zHealth;
-  p->vo_position_publisher.publish(vo_pos);
-
   Telemetry::TypeMap<Telemetry::TOPIC_HEIGHT_FUSION>::type fused_height =
     vehicle->subscribe->getValue<Telemetry::TOPIC_HEIGHT_FUSION>();
   std_msgs::Float32 height;
@@ -447,6 +432,21 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
    */
   if(vehicle->getFwVersion() > versionBase33)
   {
+    Telemetry::TypeMap<Telemetry::TOPIC_POSITION_VO>::type vo_position =
+          vehicle->subscribe->getValue<Telemetry::TOPIC_POSITION_VO>();
+
+    dji_sdk::VOPosition vo_pos;
+    // This name does not follow the convention because we are not sure it is real NED.
+    vo_pos.header.frame_id = "/ground_nav";
+    vo_pos.header.stamp = msg_time;
+    vo_pos.x  = vo_position.x;
+    vo_pos.y       = vo_position.y;
+    vo_pos.z        = vo_position.z;
+    vo_pos.xHealth = vo_position.xHealth;
+    vo_pos.yHealth = vo_position.yHealth;
+    vo_pos.zHealth = vo_position.zHealth;
+    p->vo_position_publisher.publish(vo_pos);
+  
     Telemetry::TypeMap<Telemetry::TOPIC_RC_WITH_FLAG_DATA>::type rc_with_flag =
             vehicle->subscribe->getValue<Telemetry::TOPIC_RC_WITH_FLAG_DATA>();
 
