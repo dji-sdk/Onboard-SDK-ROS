@@ -450,9 +450,6 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     Telemetry::TypeMap<Telemetry::TOPIC_RC_WITH_FLAG_DATA>::type rc_with_flag =
             vehicle->subscribe->getValue<Telemetry::TOPIC_RC_WITH_FLAG_DATA>();
 
-    Telemetry::TypeMap<Telemetry::TOPIC_RC_FULL_RAW_DATA>::type rc_full_raw =
-            vehicle->subscribe->getValue<Telemetry::TOPIC_RC_FULL_RAW_DATA>();
-
     sensor_msgs::Joy rc_joy;
     rc_joy.header.stamp    = msg_time;
     rc_joy.header.frame_id = "rc";
@@ -463,14 +460,30 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     rc_joy.axes.push_back(static_cast<float>(rc_with_flag.yaw));
     rc_joy.axes.push_back(static_cast<float>(rc_with_flag.throttle));
 
-    rc_joy.axes.push_back(static_cast<float>(-(rc_full_raw.lb2.mode - 1024)    / 660));
-    rc_joy.axes.push_back(static_cast<float>(-(rc_full_raw.lb2.gear - 1519)    / 165));
-    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.camera -364)   / 1320));
-    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.video - 364)    / 1320));
-    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.videoPause-364) / 1320));
-    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.goHome-364) /1320));
-    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.leftWheel-1024.0)  / 660.0));
-    rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.rightWheelButton - 364)/ 1320));
+    // A3 and N3 has access to more buttons on RC
+    std::string hardwareVersion(vehicle->getHwVersion());
+    if( (hardwareVersion == std::string(Version::N3)) || hardwareVersion == std::string(Version::A3))
+    {
+      Telemetry::TypeMap<Telemetry::TOPIC_RC_FULL_RAW_DATA>::type rc_full_raw =
+        vehicle->subscribe->getValue<Telemetry::TOPIC_RC_FULL_RAW_DATA>();
+      rc_joy.axes.push_back(static_cast<float>(-(rc_full_raw.lb2.mode - 1024)    / 660));
+      rc_joy.axes.push_back(static_cast<float>(-(rc_full_raw.lb2.gear - 1519)    / 165));
+      rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.camera -364)   / 1320));
+      rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.video - 364)    / 1320));
+      rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.videoPause-364) / 1320));
+      rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.goHome-364) /1320));
+      rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.leftWheel-1024.0)  / 660.0));
+      rc_joy.axes.push_back(static_cast<float>((rc_full_raw.lb2.rightWheelButton - 364)/ 1320));
+    }
+    else
+    {
+      Telemetry::TypeMap<Telemetry::TOPIC_RC>::type rc =
+        vehicle->subscribe->getValue<Telemetry::TOPIC_RC>();
+
+      rc_joy.axes.push_back(static_cast<float>(rc.mode*1.0));
+      rc_joy.axes.push_back(static_cast<float>(rc.gear*1.0));
+    }
+
     p->rc_publisher.publish(rc_joy);
 
     bool temp;

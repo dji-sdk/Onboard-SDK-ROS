@@ -437,9 +437,15 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
   if(vehicle->getFwVersion() > versionBase33)
   {
     topicList50Hz.push_back(Telemetry::TOPIC_POSITION_VO);
-    topicList50Hz.push_back(Telemetry::TOPIC_RC_FULL_RAW_DATA);
     topicList50Hz.push_back(Telemetry::TOPIC_RC_WITH_FLAG_DATA);
     topicList50Hz.push_back(Telemetry::TOPIC_FLIGHT_ANOMALY);
+
+    // A3 and N3 has access to more buttons on RC
+    std::string hardwareVersion(vehicle->getHwVersion());
+    if( (hardwareVersion == std::string(Version::N3)) || hardwareVersion == std::string(Version::A3))
+    {
+      topicList50Hz.push_back(Telemetry::TOPIC_RC_FULL_RAW_DATA);      
+    }
 
     // Advertise rc connection status only if this topic is supported by FW
     rc_connection_status_publisher =
