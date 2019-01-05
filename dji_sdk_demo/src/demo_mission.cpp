@@ -66,7 +66,7 @@ runWaypointMission(uint8_t numWaypoints, int responseTimeout)
 
   // Waypoint Mission: Start
   if (missionAction(DJI_MISSION_TYPE::WAYPOINT,
-                    MISSION_ACTION::START)
+                    MISSION_ACTION::ACTION_START)
         .result)
   {
     ROS_INFO("Mission start command sent successfully");
@@ -212,7 +212,7 @@ runHotpointMission(int initialRadius, int responseTimeout)
   // Start
   ROS_INFO("Start with default rotation rate: 15 deg/s");
   if (missionAction(DJI::OSDK::DJI_MISSION_TYPE::HOTPOINT,
-                    DJI::OSDK::MISSION_ACTION::START).result)
+                    DJI::OSDK::MISSION_ACTION::ACTION_START).result)
   {
     ROS_INFO("Mission start command sent successfully");
   }
@@ -226,7 +226,7 @@ runHotpointMission(int initialRadius, int responseTimeout)
   // Pause
   ROS_INFO("Pause for 5s");
   if (missionAction(DJI::OSDK::DJI_MISSION_TYPE::HOTPOINT,
-                    DJI::OSDK::MISSION_ACTION::PAUSE).result)
+                    DJI::OSDK::MISSION_ACTION::ACTION_PAUSE).result)
   {
     ROS_INFO("Mission pause command sent successfully");
   }
@@ -240,7 +240,7 @@ runHotpointMission(int initialRadius, int responseTimeout)
   // Resume
   ROS_INFO("Resume");
   if (missionAction(DJI::OSDK::DJI_MISSION_TYPE::HOTPOINT,
-                    DJI::OSDK::MISSION_ACTION::RESUME).result)
+                    DJI::OSDK::MISSION_ACTION::ACTION_RESUME).result)
   {
     ROS_INFO("Mission resume command sent successfully");
   }
@@ -280,7 +280,7 @@ runHotpointMission(int initialRadius, int responseTimeout)
   // Stop
   ROS_INFO("Stop");
   if (missionAction(DJI::OSDK::DJI_MISSION_TYPE::HOTPOINT,
-                    DJI::OSDK::MISSION_ACTION::STOP)
+                    DJI::OSDK::MISSION_ACTION::ACTION_STOP)
         .result)
   {
     ROS_INFO("Mission stop command sent successfully");
