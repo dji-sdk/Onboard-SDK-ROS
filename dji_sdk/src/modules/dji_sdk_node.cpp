@@ -280,6 +280,9 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
   velocity_publisher =
     nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/velocity", 10);
 
+  odometry_publisher =
+    nh.advertise<nav_msgs::Odometry>("dji_sdk/odometry", 10);
+
   from_mobile_data_publisher =
     nh.advertise<dji_sdk::MobileData>("dji_sdk/from_mobile_data", 10);
 

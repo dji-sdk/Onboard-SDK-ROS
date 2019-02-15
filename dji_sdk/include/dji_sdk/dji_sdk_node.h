@@ -29,6 +29,7 @@
 #include <std_msgs/Int16.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
+#include <nav_msgs/Odometry.h>
 
 //! msgs
 #include <dji_sdk/Gimbal.h>
@@ -332,6 +333,7 @@ private:
   ros::Publisher vo_position_publisher;
   ros::Publisher height_publisher;
   ros::Publisher velocity_publisher;
+  ros::Publisher odometry_publisher;
   ros::Publisher from_mobile_data_publisher;
   ros::Publisher gimbal_angle_publisher;
   ros::Publisher displaymode_publisher;

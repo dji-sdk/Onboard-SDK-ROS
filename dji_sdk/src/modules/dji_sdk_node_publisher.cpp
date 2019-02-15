@@ -446,6 +446,37 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     vo_pos.yHealth = vo_position.yHealth;
     vo_pos.zHealth = vo_position.zHealth;
     p->vo_position_publisher.publish(vo_pos);
+
+    // quaternion
+    Telemetry::TypeMap<Telemetry::TOPIC_QUATERNION>::type quat =
+            vehicle->subscribe->getValue<Telemetry::TOPIC_QUATERNION>();
+    geometry_msgs::QuaternionStamped q;
+    tf::Matrix3x3 R_FRD2NED(tf::Quaternion(quat.q1, quat.q2, quat.q3, quat.q0));
+    tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED.transpose() * R_FRD2NED * p->R_FLU2FRD;
+    tf::Quaternion q_FLU2ENU;
+    R_FLU2ENU.getRotation(q_FLU2ENU);
+
+    // angular_rate
+    Telemetry::TypeMap<Telemetry::TOPIC_ANGULAR_RATE_FUSIONED>::type angular_rate =
+      vehicle->subscribe->getValue<Telemetry::TOPIC_ANGULAR_RATE_FUSIONED>();
+
+    nav_msgs::Odometry odometry;
+    odometry.header.frame_id = "/odom";
+    odometry.header.stamp = msg_time;
+    odometry.pose.pose.position.x = vo_pos.x;
+    odometry.pose.pose.position.y = vo_pos.y;
+    odometry.pose.pose.position.z = vo_pos.z;
+    odometry.pose.pose.orientation.w = q_FLU2ENU.getW();
+    odometry.pose.pose.orientation.x = q_FLU2ENU.getX();
+    odometry.pose.pose.orientation.y = q_FLU2ENU.getZ();
+    odometry.pose.pose.orientation.z = q.quaternion.z;
+    odometry.twist.twist.angular.x = angular_rate.x;
+    odometry.twist.twist.angular.y = angular_rate.y;
+    odometry.twist.twist.angular.z = angular_rate.z;
+    odometry.twist.twist.linear.x = v.vector.x;
+    odometry.twist.twist.linear.y = v.vector.y;
+    odometry.twist.twist.linear.z = v.vector.z;
+    p->odometry_publisher.publish(odometry);
   
     Telemetry::TypeMap<Telemetry::TOPIC_RC_WITH_FLAG_DATA>::type rc_with_flag =
             vehicle->subscribe->getValue<Telemetry::TOPIC_RC_WITH_FLAG_DATA>();
