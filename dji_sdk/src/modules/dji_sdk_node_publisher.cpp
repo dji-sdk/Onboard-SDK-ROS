@@ -461,7 +461,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
       vehicle->subscribe->getValue<Telemetry::TOPIC_ANGULAR_RATE_FUSIONED>();
 
     nav_msgs::Odometry odometry;
-    odometry.header.frame_id = "/odom";
+    odometry.header.frame_id = "odom";
     odometry.header.stamp = msg_time;
     odometry.pose.pose.position.x = vo_pos.x;
     odometry.pose.pose.position.y = vo_pos.y;
