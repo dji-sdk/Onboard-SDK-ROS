@@ -13,6 +13,21 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
 )
+
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake-modules")
+find_package(djiosdk-core QUIET)
+if(NOT djiosdk-core_FOUND)
+  MESSAGE(STATUS "DO NOT FIND THE djiosdk-core LIB, WILL TRY TO DOWNLOAD FORM GITHUB, COMPILE, INSTALL")
+  execute_process(COMMAND mkdir ${CMAKE_CURRENT_SOURCE_DIR}/../cmake-modules/build)
+  execute_process(
+          COMMAND cmake ..
+          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../cmake-modules/build)
+
+  execute_process(
+          COMMAND make
+          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../cmake-modules/build)
+endif()
+
 find_package(DJIOSDK REQUIRED)
 
 ## System dependencies are found with CMake's conventions
@@ -51,10 +66,13 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 add_message_files(
   FILES
+  FCTimeInUTC.msg
+  GPSUTC.msg
   Gimbal.msg
   Waypoint.msg
   WaypointList.msg
   MobileData.msg
+  PayloadData.msg
   MissionWaypointAction.msg
   MissionWaypoint.msg
   MissionWaypointTask.msg
@@ -87,6 +105,7 @@ add_service_files(
   MissionHpUpdateRadius.srv
   MissionHpResetYaw.srv
   SendMobileData.srv
+  SendPayloadData.srv
   SetHardSync.srv
   QueryDroneVersion.srv
   Stereo240pSubscription.srv
@@ -120,6 +139,7 @@ catkin_package(
         geometry_msgs
         nav_msgs
         std_msgs
+        nmea_msgs
 )
 
 ###########
@@ -150,7 +170,8 @@ add_executable(dji_sdk_node
   src/modules/dji_sdk_node_subscriber.cpp
   src/modules/dji_sdk_node_publisher.cpp
   src/modules/dji_sdk_node_mobile_comm.cpp
-)
+  src/modules/dji_sdk_node_payload_comm.cpp
+  src/modules/dji_sdk_node_time_sync.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

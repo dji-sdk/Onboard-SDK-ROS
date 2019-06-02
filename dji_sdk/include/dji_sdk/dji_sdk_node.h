@@ -29,12 +29,16 @@
 #include <std_msgs/Int16.h>
 #include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
+#include <nmea_msgs/Sentence.h>
 
 //! msgs
 #include <dji_sdk/Gimbal.h>
 #include <dji_sdk/MobileData.h>
+#include <dji_sdk/PayloadData.h>
 #include <dji_sdk/FlightAnomaly.h>
 #include <dji_sdk/VOPosition.h>
+#include <dji_sdk/FCTimeInUTC.h>
+#include <dji_sdk/GPSUTC.h>
 
 //! mission service
 // missionManager
@@ -65,6 +69,7 @@
 #include <dji_sdk/SDKControlAuthority.h>
 #include <dji_sdk/SetLocalPosRef.h>
 #include <dji_sdk/SendMobileData.h>
+#include <dji_sdk/SendPayloadData.h>
 #include <dji_sdk/QueryDroneVersion.h>
 #ifdef ADVANCED_SENSING
 #include <dji_sdk/Stereo240pSubscription.h>
@@ -161,6 +166,9 @@ private:
   //! Mobile Data Service
   bool sendToMobileCallback(dji_sdk::SendMobileData::Request&  request,
                             dji_sdk::SendMobileData::Response& response);
+  //! Payload Data Service
+  bool sendToPayloadCallback(dji_sdk::SendPayloadData::Request& request,
+                             dji_sdk::SendPayloadData::Response& response);
   //! Query Drone FW version
   bool queryVersionCallback(dji_sdk::QueryDroneVersion::Request& request,
                             dji_sdk::QueryDroneVersion::Response& response);
@@ -225,8 +233,31 @@ private:
   void dataBroadcastCallback();
   void fromMobileDataCallback(RecvContainer recvFrame);
 
+  void fromPayloadDataCallback(RecvContainer recvFrame);
+
+  static void NMEACallback(Vehicle* vehiclePtr,
+                           RecvContainer recvFrame,
+                           UserData userData);
+
+  static void GPSUTCTimeCallback(Vehicle *vehiclePtr,
+                                 RecvContainer recvFrame,
+                                 UserData userData);
+
+
+  static void FCTimeInUTCCallback(Vehicle* vehiclePtr,
+                                  RecvContainer recvFrame,
+                                  UserData userData);
+
+  static void PPSSourceCallback(Vehicle* vehiclePtr,
+                                RecvContainer recvFrame,
+                                UserData userData);
+
   static void SDKfromMobileDataCallback(Vehicle*            vehicle,
                                         RecvContainer       recvFrame,
+                                        DJI::OSDK::UserData userData);
+
+  static void SDKfromPayloadDataCallback(Vehicle *vehicle,
+                                        RecvContainer recvFrame,
                                         DJI::OSDK::UserData userData);
 
   static void SDKBroadcastCallback(Vehicle*            vehicle,
@@ -294,6 +325,8 @@ private:
   ros::ServiceServer hotpoint_setRadius_server;
   // send data to mobile device
   ros::ServiceServer send_to_mobile_server;
+  // send data to payload device
+  ros::ServiceServer send_to_payload_server;
   //! hardsync service
   ros::ServiceServer set_hardsync_server;
   //! Query FW version of FC
@@ -333,6 +366,7 @@ private:
   ros::Publisher height_publisher;
   ros::Publisher velocity_publisher;
   ros::Publisher from_mobile_data_publisher;
+  ros::Publisher from_payload_data_publisher;
   ros::Publisher gimbal_angle_publisher;
   ros::Publisher displaymode_publisher;
   ros::Publisher rc_publisher;
@@ -347,6 +381,10 @@ private:
   //! Local Position Publisher (Publishes local position in ENU frame)
   ros::Publisher local_position_publisher;
   ros::Publisher local_frame_ref_publisher;
+  ros::Publisher time_sync_nmea_publisher;
+  ros::Publisher time_sync_gps_utc_publisher;
+  ros::Publisher time_sync_fc_utc_publisher;
+  ros::Publisher time_sync_pps_source_publisher;
 
 #ifdef ADVANCED_SENSING
   ros::Publisher stereo_240p_front_left_publisher;

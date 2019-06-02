@@ -147,6 +147,7 @@ bool DJISDKNode::initServices(ros::NodeHandle& nh) {
   hotpoint_setRadius_server = nh.advertiseService("dji_sdk/mission_hotpoint_updateRadius",  &DJISDKNode::missionHpUpdateRadiusCallback,  this);
   mission_status_server     = nh.advertiseService("dji_sdk/mission_status",                 &DJISDKNode::missionStatusCallback,          this);
   send_to_mobile_server     = nh.advertiseService("dji_sdk/send_data_to_mobile",            &DJISDKNode::sendToMobileCallback,           this);
+  send_to_payload_server    = nh.advertiseService("dji_sdk/send_data_to_payload",           &DJISDKNode::sendToPayloadCallback,          this);
   query_version_server      = nh.advertiseService("dji_sdk/query_drone_version",            &DJISDKNode::queryVersionCallback,           this);
   local_pos_ref_server      = nh.advertiseService("dji_sdk/set_local_pos_ref",              &DJISDKNode::setLocalPosRefCallback,         this);
 #ifdef ADVANCED_SENSING
@@ -283,6 +284,9 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
   from_mobile_data_publisher =
     nh.advertise<dji_sdk::MobileData>("dji_sdk/from_mobile_data", 10);
 
+  from_payload_data_publisher =
+    nh.advertise<dji_sdk::PayloadData>("dji_sdk/from_payload_data", 10);
+
   // TODO: documentation and proper frame id
   gimbal_angle_publisher =
     nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/gimbal_angle", 10);
@@ -292,6 +296,18 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
 
   local_frame_ref_publisher =
       nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/local_frame_ref", 10, true);
+
+  time_sync_nmea_publisher =
+      nh.advertise<nmea_msgs::Sentence>("dji_sdk/time_sync_nmea_msg", 10);
+
+  time_sync_gps_utc_publisher =
+      nh.advertise<dji_sdk::GPSUTC>("dji_sdk/time_sync_gps_utc", 10);
+
+  time_sync_fc_utc_publisher =
+      nh.advertise<dji_sdk::FCTimeInUTC>("dji_sdk/time_sync_fc_time_utc", 10);
+
+  time_sync_pps_source_publisher =
+      nh.advertise<std_msgs::String>("dji_sdk/time_sync_pps_source", 10);
 
 #ifdef ADVANCED_SENSING
   stereo_240p_front_left_publisher =
@@ -386,6 +402,18 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
   }
   vehicle->moc->setFromMSDKCallback(&DJISDKNode::SDKfromMobileDataCallback,
                                     this);
+  if (vehicle->payloadDevice)
+  {
+    vehicle->payloadDevice->setFromPSDKCallback(&DJISDKNode::SDKfromPayloadDataCallback, this);
+  }
+
+  if (vehicle->hardSync)
+  {
+    vehicle->hardSync->subscribeNMEAMsgs(NMEACallback, this);
+    vehicle->hardSync->subscribeUTCTime(GPSUTCTimeCallback, this);
+    vehicle->hardSync->subscribeFCTimeInUTCRef(FCTimeInUTCCallback, this);
+    vehicle->hardSync->subscribePPSSource(PPSSourceCallback, this);
+  }
   return true;
 }
 
@@ -588,6 +616,13 @@ DJISDKNode::cleanUpSubscribeFromFC()
   vehicle->subscribe->removePackage(1, WAIT_TIMEOUT);
   vehicle->subscribe->removePackage(2, WAIT_TIMEOUT);
   vehicle->subscribe->removePackage(3, WAIT_TIMEOUT);
+  if (vehicle->hardSync)
+  {
+    vehicle->hardSync->unsubscribeNMEAMsgs();
+    vehicle->hardSync->unsubscribeUTCTime();
+    vehicle->hardSync->unsubscribeFCTimeInUTCRef();
+    vehicle->hardSync->unsubscribePPSSource();
+  }
 }
 
 bool DJISDKNode::validateSerialDevice(LinuxSerialDevice* serialDevice)

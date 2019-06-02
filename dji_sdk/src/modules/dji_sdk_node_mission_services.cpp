@@ -17,8 +17,8 @@ DJISDKNode::missionStatusCallback(dji_sdk::MissionStatus::Request&  request,
 {
   ROS_DEBUG("called missionStatusCallback");
 
-  response.waypoint_mission_count = vehicle->missionManager->wayptCounter;
-  response.hotpoint_mission_count = vehicle->missionManager->hotptCounter;
+  response.waypoint_mission_count = vehicle->missionManager->wpMissionVector.size();
+  response.hotpoint_mission_count = vehicle->missionManager->hpMissionVector.size();
   return true;
 }
 
@@ -128,7 +128,7 @@ DJISDKNode::missionWpActionCallback(
 {
   ROS_DEBUG("called missionWpActionCallback");
 
-  if (vehicle->missionManager->wayptCounter == 0)
+  if (vehicle->missionManager->wpMissionVector.size() == 0)
   {
     ROS_ERROR("no waypoint mission uploaded");
     response.result = false;
@@ -185,7 +185,7 @@ DJISDKNode::missionWpGetSpeedCallback(
 {
   ROS_DEBUG("called wpGetSpeedCallback");
 
-  if (vehicle->missionManager->wayptCounter > 0)
+  if (vehicle->missionManager->wpMissionVector.size() > 0)
   {
     //! @todo bug here
     //    response.speed =
@@ -212,7 +212,7 @@ DJISDKNode::missionWpSetSpeedCallback(
 
   ACK::WayPointVelocity velAck;
 
-  if (vehicle->missionManager->wayptCounter > 0)
+  if (vehicle->missionManager->wpMissionVector.size() > 0)
   {
     velAck = (vehicle->missionManager->wpMission->updateIdleVelocity(
       request.speed, WAIT_TIMEOUT));
@@ -244,7 +244,7 @@ DJISDKNode::missionWpGetInfoCallback(
   ROS_DEBUG("called missionWpGetInfoCallback");
 
   DJI::OSDK::WayPointInitSettings info;
-  if (vehicle->missionManager->wayptCounter > 0)
+  if (vehicle->missionManager->wpMissionVector.size() > 0)
   {
     info = vehicle->missionManager->wpMission->getWaypointSettings(10).data;
   }
@@ -322,7 +322,7 @@ DJISDKNode::missionHpActionCallback(
 {
   ROS_DEBUG("called missionHpActionCallback");
 
-  if (vehicle->missionManager->hotptCounter == 0)
+  if (vehicle->missionManager->hpMissionVector.size() == 0)
   {
     ROS_ERROR("no hotpoint mission uploaded");
     response.result = false;
@@ -380,7 +380,7 @@ DJISDKNode::missionHpGetInfoCallback(
   ROS_DEBUG("called missionHpGetInfoCallback");
 
   DJI::OSDK::HotPointSettings info;
-  if (vehicle->missionManager->hotptCounter > 0)
+  if (vehicle->missionManager->hpMissionVector.size() > 0)
   {
     info = vehicle->missionManager->hpMission->getData();
   }
@@ -413,7 +413,7 @@ DJISDKNode::missionHpUpdateYawRateCallback(
   yawRate.clockwise = request.direction;
 
   ACK::ErrorCode ack;
-  if (vehicle->missionManager->hotptCounter > 0)
+  if (vehicle->missionManager->hpMissionVector.size() > 0)
   {
     ack =
       vehicle->missionManager->hpMission->updateYawRate(yawRate, WAIT_TIMEOUT);
@@ -451,7 +451,7 @@ DJISDKNode::missionHpResetYawCallback(
   ROS_DEBUG("called missionHpResetYawCallback");
 
   ACK::ErrorCode ack;
-  if (vehicle->missionManager->hotptCounter > 0)
+  if (vehicle->missionManager->hpMissionVector.size() > 0)
   {
     ack = vehicle->missionManager->hpMission->resetYaw(WAIT_TIMEOUT);
   }
@@ -488,7 +488,7 @@ DJISDKNode::missionHpUpdateRadiusCallback(
   ROS_DEBUG("called missionHpUpdateRadiusCallback");
 
   ACK::ErrorCode ack;
-  if (vehicle->missionManager->hotptCounter > 0)
+  if (vehicle->missionManager->hpMissionVector.size() > 0)
   {
     ack = vehicle->missionManager->hpMission->updateRadius(request.radius,
                                                            WAIT_TIMEOUT);

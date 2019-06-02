@@ -1,8 +1,8 @@
-# DJI Onboard SDK ROS 3.7
+# DJI Onboard SDK ROS 3.8.1
 
 ## Latest Update
 
-OSDK-ROS 3.7 was released on 14 Aug 2018. This release adds many new telemetry topics, an emergency stop API and more for the A3, N3 and M210/M210RTK platforms. Please see the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html) for more information.
+OSDK-ROS 3.8.1 was released on 4 June 2019. This release adds support of Onboard-Payload SDK communication and time sync function. Additionally, the dependency of djiosdk-core is auto-update in the release. Please see the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html) and [ROS sample setup](https://developer.dji.com/onboard-sdk/documentation/sample-doc/sample-setup.html#ros-onboard-computer) for more information.
 
 ## Quick Start Guide 
 
@@ -16,17 +16,19 @@ ROS Wiki can be found [here](http://wiki.ros.org/dji_sdk). Please be sure to rea
 
 This chart shows the latest firmware that were available and are supported at the time of 3.7 release.
 
-| Aircraft/FC       | Firmware Package Version | Flight Controller Version | OSDK Branch                | Notes                                                                 |
-|-------------------|--------------------------|---------------------------|----------------------------|-----------------------------------------------------------------------|
-| **M210/M210 RTK** | **1.1.0913**             | **3.3.10.4**              | **OSDK-ROS 3.7**           |                                                                       |
-|                   |                          |                           |                            |                                                                       |
-| **M600/M600 Pro** | **1.0.1.66**             | **3.2.41.13**             | **OSDK-ROS 3.7**           |                                                                       |
-|                   |                          |                           |                            |                                                                       |
-| **A3/A3 Pro**     | **1.7.6.0**              | **3.3.8.39**              | **OSDK-ROS 3.7**           |                                                                       |
-|                   |                          |                           |                            |                                                                       |
-| **N3**            | **1.7.6.0**              | **3.3.8.39**              | **OSDK-ROS 3.7**           |                                                                       |
-|                   |                          |                           |                            |                                                                       |
-| **M100**          | 1.3.1.82                 | **3.1.10.0**              | **OSDK-ROS 3.7**           |                                                                       |
+| Aircraft/FC           | Firmware Package Version | Flight Controller Version | OSDK Branch            | Notes                                                                 |
+|-----------------------|--------------------------|---------------------------|------------------------|-----------------------------------------------------------------------|
+| **M210/M210 RTK V2**  | **1.0.0450**             | **3.4.3.31**              | **OSDK 3.8.1**         |                                                                       |
+|                       |                          |                           |                        |                                                                       |
+| **M210/M210 RTK**     | **1.2.0440**             | **3.3.10.12**             | **OSDK 3.8.1**         |                                                                       |
+|                       |                          |                           |                        |                                                                       |
+| **M600/M600 Pro**     | **1.0.1.66**             | **3.2.41.13**             | **OSDK 3.8.1**         |                                                                       |
+|                       |                          |                           |                        |                                                                       |
+| **A3/A3 Pro**         | **1.7.6.0**              | **3.3.8.39**              | **OSDK 3.8.1**         |                                                                       |
+|                       |                          |                           |                        |                                                                       |
+| **N3**                | **1.7.6.0**              | **3.3.8.39**              | **OSDK 3.8.1**         |                                                                       |
+|                       |                          |                           |                        |                                                                       |
+| **M100**              | 1.3.1.82                 | **3.1.10.0**              | **OSDK 3.8.1**         |                                                                       |
 
 ## Notes on differences between M100 and A3/N3/M600/M210 setup
 
