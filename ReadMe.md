@@ -2,11 +2,11 @@
 
 ## Latest Update
 
-OSDK-ROS 3.8.1 was released on 4 June 2019. This release adds support of Onboard-Payload SDK communication and time sync function. Additionally, the dependency of djiosdk-core is auto-update in the release. Please see the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html) and [ROS sample setup](https://developer.dji.com/onboard-sdk/documentation/sample-doc/sample-setup.html#ros-onboard-computer) for more information.
+OSDK-ROS 3.8.1 was released on 4 June 2019. This release adds support of Onboard-Payload SDK communication and time sync function. Additionally, the dependency of djiosdk-core is auto-update in the release. Please see the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html) and [ROS sample setup](https://developer.dji.com/onboard-sdk/documentation/development-workflow/sample-setup.html#ros-onboard-computer) for more information.
 
 ## Quick Start Guide 
 
-This repository contains the Onboard SDK ROS wrapper and demos. The ROS package requires Onboard SDK (djiosdk-core) to be installed to your system prior to running it. For detailed setup instructions, please follow the documentation [here](http://developer.dji.com/onboard-sdk/documentation/sample-doc/sample-setup.html#ros-oes). 
+This repository contains the Onboard SDK ROS wrapper and demos. The ROS package requires Onboard SDK (djiosdk-core) to be installed to your system prior to running it. For detailed setup instructions, please follow the documentation [here](https://developer.dji.com/onboard-sdk/documentation/development-workflow/sample-setup.html#ros-onboard-computer). 
 
 We encourage you to take a look at the documentation for full details. 
 
@@ -54,8 +54,6 @@ You can get support from DJI and the community with the following methods:
 
 - **Email to dev@dji.com**
 - Report issue on github
-- [**DJI Forum**](http://forum.dev.dji.com/en)
-
 
 
 
