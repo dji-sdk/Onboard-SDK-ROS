@@ -165,9 +165,9 @@ DJISDKNode::dataBroadcastCallback()
   {
     sensor_msgs::BatteryState msg_battery_state;
     msg_battery_state.header.stamp = now_time;
-    msg_battery_state.capacity = NAN;
-    msg_battery_state.voltage  = NAN;
-    msg_battery_state.current  = NAN;
+    msg_battery_state.capacity = vehicle->broadcast->getBatteryInfo().capacity;
+    msg_battery_state.voltage  = vehicle->broadcast->getBatteryInfo().voltage;
+    msg_battery_state.current  = vehicle->broadcast->getBatteryInfo().current;
     msg_battery_state.percentage = vehicle->broadcast->getBatteryInfo().percentage;
     msg_battery_state.charge   = NAN;
     msg_battery_state.design_capacity = NAN;
@@ -244,9 +244,9 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     vehicle->subscribe->getValue<Telemetry::TOPIC_BATTERY_INFO>();
   sensor_msgs::BatteryState msg_battery_state;
   msg_battery_state.header.stamp = msg_time;
-  msg_battery_state.capacity = NAN;
-  msg_battery_state.voltage  = NAN;
-  msg_battery_state.current  = NAN;
+  msg_battery_state.capacity = battery_info.capacity;
+  msg_battery_state.voltage  = battery_info.voltage;
+  msg_battery_state.current  = battery_info.current;
   msg_battery_state.percentage = battery_info.percentage;
   msg_battery_state.charge   = NAN;
   msg_battery_state.design_capacity = NAN;
