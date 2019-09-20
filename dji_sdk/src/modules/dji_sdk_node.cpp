@@ -509,7 +509,7 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
 
   int nTopicRTKSupport    = sizeof(topicRTKSupport)/sizeof(topicRTKSupport[0]);
   if (vehicle->subscribe->initPackageFromTopicList(PACKAGE_ID_5HZ, nTopicRTKSupport,
-                                                   topicRTKSupport, 1, 10))
+                                                   topicRTKSupport, 1, 5))
   {
     ack = vehicle->subscribe->startPackage(PACKAGE_ID_5HZ, WAIT_TIMEOUT);
     if (ack.data == ErrorCode::SubscribeACK::SOURCE_DEVICE_OFFLINE)
