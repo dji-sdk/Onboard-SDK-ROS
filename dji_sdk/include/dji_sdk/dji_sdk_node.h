@@ -407,6 +407,7 @@ private:
   std::string enc_key;
   std::string drone_version;
   std::string serial_device;
+  std::string acm_device;
   int         baud_rate;
   int         app_version;
   std::string app_bundle_id; // reserved
