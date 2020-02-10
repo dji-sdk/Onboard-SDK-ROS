@@ -161,19 +161,19 @@ DJISDKNode::droneTaskCallback(dji_sdk::DroneTaskControl::Request&  request,
   ROS_DEBUG("called droneTaskCallback");
 
   ACK::ErrorCode ack;
-  if (request.task == 4)
+  if (request.task == dji_sdk::DroneTaskControl::Request::TASK_TAKEOFF)
   {
     // takeoff
     ack = vehicle->control->takeoff(WAIT_TIMEOUT);
     ROS_DEBUG("called vehicle->control->takeoff()");
   }
-  else if (request.task == 6)
+  else if (request.task == dji_sdk::DroneTaskControl::Request::TASK_LAND)
   {
     // landing
     ack = vehicle->control->land(WAIT_TIMEOUT);
     ROS_DEBUG("called vehicle->control->land()");
   }
-  else if (request.task == 1)
+  else if (request.task == dji_sdk::DroneTaskControl::Request::TASK_GOHOME)
   {
     // gohome
     ack = vehicle->control->goHome(WAIT_TIMEOUT);
@@ -211,17 +211,17 @@ DJISDKNode::cameraActionCallback(dji_sdk::CameraAction::Request&  request,
 {
   ROS_DEBUG("called cameraActionCallback");
 
-  if (request.camera_action == 0)
+  if (request.camera_action == dji_sdk::CameraAction::Request::CAMERA_ACTION_TAKE_PICTURE)
   {
     vehicle->camera->shootPhoto();
     response.result = true;
   }
-  else if (request.camera_action == 1)
+  else if (request.camera_action == dji_sdk::CameraAction::Request::CAMERA_ACTION_START_RECORD)
   {
     vehicle->camera->videoStart();
     response.result = true;
   }
-  else if (request.camera_action == 2)
+  else if (request.camera_action == dji_sdk::CameraAction::Request::CAMERA_ACTION_STOP_RECORD)
   {
     vehicle->camera->videoStop();
     response.result = true;
