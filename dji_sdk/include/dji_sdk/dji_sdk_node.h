@@ -80,6 +80,7 @@
 
 //! SDK library
 #include <djiosdk/dji_vehicle.hpp>
+#include <dji_linux_helpers.hpp>
 
 #define C_EARTH (double)6378137.0
 #define C_PI (double)3.141592653589793
@@ -91,7 +92,7 @@ using namespace DJI::OSDK;
 class DJISDKNode
 {
 public:
-  DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private);
+  DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private, int argc, char** argv);
   ~DJISDKNode();
 
   enum TELEMETRY_TYPE
@@ -109,7 +110,7 @@ public:
   };
 
 private:
-  bool initVehicle(ros::NodeHandle& nh_private);
+  bool initVehicle(ros::NodeHandle& nh_private, int argc, char** argv);
   bool initServices(ros::NodeHandle& nh);
   bool initFlightControl(ros::NodeHandle& nh);
   bool initSubscriber(ros::NodeHandle& nh);
@@ -117,7 +118,7 @@ private:
   bool initActions(ros::NodeHandle& nh);
   bool initDataSubscribeFromFC(ros::NodeHandle& nh);
   void cleanUpSubscribeFromFC();
-  bool validateSerialDevice(LinuxSerialDevice* serialDevice);
+//  bool validateSerialDevice(LinuxSerialDevice* serialDevice);
   bool isM100();
 
   /*!

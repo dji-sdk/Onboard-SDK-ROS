@@ -415,8 +415,7 @@ DJISDKNode::missionHpUpdateYawRateCallback(
   ACK::ErrorCode ack;
   if (vehicle->missionManager->hpMissionVector.size() > 0)
   {
-    ack =
-      vehicle->missionManager->hpMission->updateYawRate(yawRate, WAIT_TIMEOUT);
+    vehicle->missionManager->hpMission->updateYawRate(yawRate);
   }
   else
   {
@@ -490,8 +489,7 @@ DJISDKNode::missionHpUpdateRadiusCallback(
   ACK::ErrorCode ack;
   if (vehicle->missionManager->hpMissionVector.size() > 0)
   {
-    ack = vehicle->missionManager->hpMission->updateRadius(request.radius,
-                                                           WAIT_TIMEOUT);
+    vehicle->missionManager->hpMission->updateRadius(request.radius);
   }
   else
   {

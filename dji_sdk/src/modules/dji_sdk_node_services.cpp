@@ -92,12 +92,12 @@ DJISDKNode::sdkCtrlAuthorityCallback(
   ACK::ErrorCode ack;
   if (request.control_enable)
   {
-    ack = vehicle->obtainCtrlAuthority(WAIT_TIMEOUT);
+    ack = vehicle->control->obtainCtrlAuthority(WAIT_TIMEOUT);
     ROS_DEBUG("called vehicle->obtainCtrlAuthority");
   }
   else
   {
-    ack = vehicle->releaseCtrlAuthority(WAIT_TIMEOUT);
+    ack = vehicle->control->releaseCtrlAuthority(WAIT_TIMEOUT);
     ROS_DEBUG("called vehicle->releaseCtrlAuthority");
   }
 

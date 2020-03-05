@@ -13,7 +13,7 @@
 
 using namespace DJI::OSDK;
 
-DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
+DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private, int argc, char** argv)
   : telemetry_from_fc(USE_BROADCAST),
     R_FLU2FRD(tf::Matrix3x3(1,  0,  0, 0, -1,  0, 0,  0, -1)),
     R_ENU2NED(tf::Matrix3x3(0,  1,  0, 1,  0,  0, 0,  0, -1)),
@@ -40,7 +40,7 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
 
   // @todo need some error handling for init functions
   //! @note parsing launch file to get environment parameters
-  if (!initVehicle(nh_private))
+  if (!initVehicle(nh_private, argc, argv))
   {
     ROS_ERROR("Vehicle initialization failed");
   }
@@ -82,7 +82,7 @@ DJISDKNode::~DJISDKNode()
 }
 
 bool
-DJISDKNode::initVehicle(ros::NodeHandle& nh_private)
+DJISDKNode::initVehicle(ros::NodeHandle& nh_private, int argc, char** argv)
 {
   bool threadSupport = true;
   bool enable_advanced_sensing = false;
@@ -93,7 +93,9 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private)
 #endif
 
   //! @note currently does not work without thread support
-  vehicle = new Vehicle(serial_device.c_str(), baud_rate, threadSupport, enable_advanced_sensing);
+  LinuxSetup linuxEnvironment(argc, argv);
+  Vehicle* vehicle = linuxEnvironment.getVehicle();
+//  vehicle = new Vehicle(serial_device.c_str(), baud_rate, threadSupport, enable_advanced_sensing);
 
   /*!
    * @note activate the drone for the user at the beginning
@@ -400,7 +402,7 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
       return false;
     }
   }
-  vehicle->moc->setFromMSDKCallback(&DJISDKNode::SDKfromMobileDataCallback,
+  vehicle->mobileDevice->setFromMSDKCallback(&DJISDKNode::SDKfromMobileDataCallback,
                                     this);
   if (vehicle->payloadDevice)
   {
@@ -625,31 +627,31 @@ DJISDKNode::cleanUpSubscribeFromFC()
   }
 }
 
-bool DJISDKNode::validateSerialDevice(LinuxSerialDevice* serialDevice)
-{
-  static const int BUFFER_SIZE = 2048;
-  //! Check the serial channel for data
-  uint8_t buf[BUFFER_SIZE];
-  if (!serialDevice->setSerialPureTimedRead())
-  {
-    ROS_ERROR("Failed to set up port for timed read.\n");
-    return (false);
-  };
-  usleep(100000);
-  if(serialDevice->serialRead(buf, BUFFER_SIZE))
-  {
-    ROS_INFO("Succeeded to read from serial device");
-  }
-  else
-  {
-    ROS_ERROR("Failed to read from serial device. The Onboard SDK is not communicating with your drone.");
-    return (false);
-  }
-
-  // All the tests passed and the serial device is properly set up
-  serialDevice->unsetSerialPureTimedRead();
-  return (true);
-}
+//bool DJISDKNode::validateSerialDevice(LinuxSerialDevice* serialDevice)
+//{
+//  static const int BUFFER_SIZE = 2048;
+//  //! Check the serial channel for data
+//  uint8_t buf[BUFFER_SIZE];
+//  if (!serialDevice->setSerialPureTimedRead())
+//  {
+//    ROS_ERROR("Failed to set up port for timed read.\n");
+//    return (false);
+//  };
+//  usleep(100000);
+//  if(serialDevice->serialRead(buf, BUFFER_SIZE))
+//  {
+//    ROS_INFO("Succeeded to read from serial device");
+//  }
+//  else
+//  {
+//    ROS_ERROR("Failed to read from serial device. The Onboard SDK is not communicating with your drone.");
+//    return (false);
+//  }
+//
+//  // All the tests passed and the serial device is properly set up
+//  serialDevice->unsetSerialPureTimedRead();
+//  return (true);
+//}
 
 void
 DJISDKNode::setUpM100DefaultFreq(uint8_t freq[16])

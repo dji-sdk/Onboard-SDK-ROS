@@ -31,7 +31,7 @@ void DJISDKNode::fromMobileDataCallback(RecvContainer recvFrame) {
 
 bool DJISDKNode::sendToMobileCallback(dji_sdk::SendMobileData::Request& request,
                                       dji_sdk::SendMobileData::Response& response){
-  vehicle->moc->sendDataToMSDK(&request.data[0], request.data.size());
+  vehicle->mobileDevice->sendDataToMSDK(&request.data[0], request.data.size());
   response.result = true;
   return true;
 }

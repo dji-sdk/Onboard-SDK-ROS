@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
+set(CMAKE_CXX_FLAGS "-std=c++14 -fPIC ${CMAKE_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../cmake-modules")
 find_package(djiosdk-core QUIET)
 if(NOT djiosdk-core_FOUND)
@@ -171,7 +173,11 @@ add_executable(dji_sdk_node
   src/modules/dji_sdk_node_publisher.cpp
   src/modules/dji_sdk_node_mobile_comm.cpp
   src/modules/dji_sdk_node_payload_comm.cpp
-  src/modules/dji_sdk_node_time_sync.cpp)
+  src/modules/dji_sdk_node_time_sync.cpp
+  src/osdkhal_linux.c
+  src/osdkosal_linux.c
+  src/dji_linux_environment.cpp
+  src/dji_linux_helpers.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
