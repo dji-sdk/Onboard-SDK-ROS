@@ -33,10 +33,11 @@
 
 #include <iostream>
 #include <fstream>
+#include <djiosdk/dji_vehicle.hpp>
+#include <djiosdk/dji_platform.hpp>
+#include <djiosdk/dji_setup_helpers.hpp>
 #include <dji_linux_environment.hpp>
-#include <dji_vehicle.hpp>
-#include <dji_platform.hpp>
-#include <dji_setup_helpers.hpp>
+
 
 using namespace std;
 

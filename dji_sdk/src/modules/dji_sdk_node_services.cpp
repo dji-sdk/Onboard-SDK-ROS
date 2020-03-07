@@ -161,17 +161,20 @@ DJISDKNode::droneTaskCallback(dji_sdk::DroneTaskControl::Request&  request,
   ROS_DEBUG("called droneTaskCallback");
 
   ACK::ErrorCode ack;
+  bool task_result = false;
   if (request.task == 4)
   {
     // takeoff
-    ack = vehicle->control->takeoff(WAIT_TIMEOUT);
-    ROS_DEBUG("called vehicle->control->takeoff()");
+//    ack = vehicle->control->takeoff(WAIT_TIMEOUT);
+//    ROS_DEBUG("called vehicle->control->takeoff()");
+    task_result = monitoredTakeoff(vehicle, WAIT_TIMEOUT, ack);
   }
   else if (request.task == 6)
   {
     // landing
-    ack = vehicle->control->land(WAIT_TIMEOUT);
-    ROS_DEBUG("called vehicle->control->land()");
+//    ack = vehicle->control->land(WAIT_TIMEOUT);
+//    ROS_DEBUG("called vehicle->control->land()");
+    task_result = monitoredLanding(vehicle, WAIT_TIMEOUT, ack);
   }
   else if (request.task == 1)
   {
@@ -201,8 +204,9 @@ DJISDKNode::droneTaskCallback(dji_sdk::DroneTaskControl::Request&  request,
   {
     response.result = true;
   }
+  response.result = task_result;
 
-  return true;
+  return task_result;
 }
 
 bool

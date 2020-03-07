@@ -61,7 +61,7 @@ find_package(AdvancedSensing QUIET)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-fPIC -std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -189,72 +189,74 @@ include_directories(
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(demo_mission
-        src/demo_mission.cpp)
-target_link_libraries(demo_mission
-        ${catkin_LIBRARIES}
-        ${DJIOSDK_LIBRARIES}
-        )
-add_dependencies(demo_mission dji_sdk_generate_messages_cpp)
+add_subdirectory(src)
 
-add_executable(demo_camera_gimbal
-        src/demo_camera_gimbal.cpp )
-target_link_libraries(demo_camera_gimbal
-        ${catkin_LIBRARIES}
-        ${DJIOSDK_LIBRARIES}
-        )
-add_dependencies(demo_camera_gimbal dji_sdk_generate_messages_cpp)
-
-add_executable(demo_mfio
-        src/demo_mfio.cpp)
-target_link_libraries(demo_mfio
-        ${catkin_LIBRARIES}
-        ${DJIOSDK_LIBRARIES}
-        )
-add_dependencies(demo_mfio dji_sdk_generate_messages_cpp)
-
-add_executable(demo_flight_control
-        src/demo_flight_control.cpp)
-
-target_link_libraries(demo_flight_control
-        ${catkin_LIBRARIES}
-        ${DJIOSDK_LIBRARIES}
-        )
-add_dependencies(demo_flight_control dji_sdk_generate_messages_cpp)
-
-add_executable(demo_mobile_comm
-        src/demo_mobile_comm.cpp)
-
-target_link_libraries(demo_mobile_comm
-        ${catkin_LIBRARIES}
-        ${DJIOSDK_LIBRARIES}
-        )
-add_dependencies(demo_mobile_comm dji_sdk_generate_messages_cpp)
-
-add_executable(demo_payload_comm
-        src/demo_payload_comm.cpp)
-
-target_link_libraries(demo_payload_comm
-        ${catkin_LIBRARIES}
-        ${DJIOSDK_LIBRARIES}
-        )
-add_dependencies(demo_payload_comm dji_sdk_generate_messages_cpp)
-
-add_executable(demo_local_position_control
-        src/demo_local_position_control.cpp)
-target_link_libraries(demo_local_position_control
-        ${catkin_LIBRARIES}
-        ${DJIOSDK_LIBRARIES}
-        )
-add_dependencies(demo_local_position_control dji_sdk_generate_messages_cpp)
-
-add_executable(demo_time_sync
-        src/demo_time_sync.cpp)
-target_link_libraries(demo_time_sync
-        ${catkin_LIBRARIES}
-        ${DJIOSDK_LIBRARIES}
-        )
-add_dependencies(demo_time_sync dji_sdk_generate_messages_cpp)
+#add_executable(demo_mission
+#        src/demo_mission.cpp)
+#target_link_libraries(demo_mission
+#        ${catkin_LIBRARIES}
+#        ${DJIOSDK_LIBRARIES}
+#        )
+#add_dependencies(demo_mission dji_sdk_generate_messages_cpp)
+#
+#add_executable(demo_camera_gimbal
+#        src/demo_camera_gimbal.cpp )
+#target_link_libraries(demo_camera_gimbal
+#        ${catkin_LIBRARIES}
+#        ${DJIOSDK_LIBRARIES}
+#        )
+#add_dependencies(demo_camera_gimbal dji_sdk_generate_messages_cpp)
+#
+#add_executable(demo_mfio
+#        src/demo_mfio.cpp)
+#target_link_libraries(demo_mfio
+#        ${catkin_LIBRARIES}
+#        ${DJIOSDK_LIBRARIES}
+#        )
+#add_dependencies(demo_mfio dji_sdk_generate_messages_cpp)
+#
+#add_executable(demo_flight_control
+#        src/demo_flight_control.cpp)
+#
+#target_link_libraries(demo_flight_control
+#        ${catkin_LIBRARIES}
+#        ${DJIOSDK_LIBRARIES}
+#        )
+#add_dependencies(demo_flight_control dji_sdk_generate_messages_cpp)
+#
+#add_executable(demo_mobile_comm
+#        src/demo_mobile_comm.cpp)
+#
+#target_link_libraries(demo_mobile_comm
+#        ${catkin_LIBRARIES}
+#        ${DJIOSDK_LIBRARIES}
+#        )
+#add_dependencies(demo_mobile_comm dji_sdk_generate_messages_cpp)
+#
+#add_executable(demo_payload_comm
+#        src/demo_payload_comm.cpp)
+#
+#target_link_libraries(demo_payload_comm
+#        ${catkin_LIBRARIES}
+#        ${DJIOSDK_LIBRARIES}
+#        )
+#add_dependencies(demo_payload_comm dji_sdk_generate_messages_cpp)
+#
+#add_executable(demo_local_position_control
+#        src/demo_local_position_control.cpp)
+#target_link_libraries(demo_local_position_control
+#        ${catkin_LIBRARIES}
+#        ${DJIOSDK_LIBRARIES}
+#        )
+#add_dependencies(demo_local_position_control dji_sdk_generate_messages_cpp)
+#
+#add_executable(demo_time_sync
+#        src/demo_time_sync.cpp)
+#target_link_libraries(demo_time_sync
+#        ${catkin_LIBRARIES}
+#        ${DJIOSDK_LIBRARIES}
+#        )
+#add_dependencies(demo_time_sync dji_sdk_generate_messages_cpp)
 
 
 if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ AND FOUND_ADVANCED_SENSING)

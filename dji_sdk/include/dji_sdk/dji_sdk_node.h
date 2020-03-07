@@ -120,6 +120,8 @@ private:
   void cleanUpSubscribeFromFC();
 //  bool validateSerialDevice(LinuxSerialDevice* serialDevice);
   bool isM100();
+  bool monitoredTakeoff(Vehicle* vehicle, int timeout,  ACK::ErrorCode& ret_ec);
+  bool monitoredLanding(Vehicle* vehicle, int timeout, ACK::ErrorCode& ret_ec);
 
   /*!
    * @note this function exists here instead of inside the callback function
@@ -408,6 +410,7 @@ private:
   std::string enc_key;
   std::string drone_version;
   std::string serial_device;
+  std::string acm_device;
   int         baud_rate;
   int         app_version;
   std::string app_bundle_id; // reserved
