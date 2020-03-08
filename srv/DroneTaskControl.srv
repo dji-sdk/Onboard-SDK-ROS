@@ -1,0 +1,17 @@
+#constant for tasks
+uint8 TASK_GOHOME = 1
+uint8 TASK_GO_LOCAL_POS = 2
+uint8 TASK_TAKEOFF = 4
+uint8 TASK_LAND = 6
+
+#request
+uint8 task    # see constants above for possible tasks
+float64[] pos_offset
+float64[] yaw_params
+---
+bool result
+# for debugging usage
+uint8 cmd_set
+uint8 cmd_id
+uint32 ack_data
+
