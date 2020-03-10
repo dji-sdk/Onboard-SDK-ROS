@@ -3,9 +3,9 @@
   * @date: 2020
   * @file: dji_vehicle_node.cc
   * @version: v0.0.1
-  * @author: @gmail.com
+  * @author: kevin.hoo@dji.com
   * @create_date: 2020-03-08 16:08:55
-  * @last_modified_date: 2020-03-08 22:20:45
+  * @last_modified_date: 2020-03-10 11:42:43
   * @brief: TODO
   * @details: TODO
   */
@@ -42,22 +42,26 @@ VehicleNode::VehicleNode(int test)
   }
   ROS_INFO_STREAM("VehicleNode Start");
 
+  initSubscribe();
   initService();
 }
 
 void VehicleNode::initService()
 {
   task_control_server_ = nh_.advertiseService("drone_task_control", &VehicleNode::taskCtrlCallback, this);
+  gimbal_control_server_ = nh_.advertiseService("gimbal_task_control", &VehicleNode::gimbalCtrlCallback, this);
+  camera_action_control_server_ = nh_.advertiseService("camera_task_control", &VehicleNode::cameraCtrlCallback, this);
 }
 
 bool VehicleNode::taskCtrlCallback(DroneTaskControl::Request&  request, DroneTaskControl::Response& response)
 {
   ROS_DEBUG("called droneTaskCallback");
+  response.result = false;
   ACK::ErrorCode ack;
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
-    return false;
+    return true;
   }
 
   switch (request.task)
@@ -123,6 +127,172 @@ bool VehicleNode::taskCtrlCallback(DroneTaskControl::Request&  request, DroneTas
     response.result = true;
   }
 
+  return true;
+}
+
+bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response)
+{
+  response.result = false;
+  RotationAngle initial_angle;
+  //if(getCurrentGimbal(initial_angle) == false)
+  //{
+  //  ROS_ERROR_STREAM("Get Current Gimbal Angle Failed");
+  //  return false;
+  //}
+  GimbalContainer gimbal(request.yaw, request.pitch, request.roll, 0, 1, initial_angle);
+  response.result = setGimbalAngle(gimbal);
+  return true;
+}
+
+bool VehicleNode::cameraCtrlCallback(CameraAction::Request& request, CameraAction::Response& response)
+{
+  response.result = false;
+  switch (request.action)
+  {
+    case CameraAction::Request::CAMERA_ACTION_TAKE_PICTURE:
+      {
+        ROS_INFO_STREAM("Call take picture.");
+        response.result = takePicture();
+        break;
+      }
+    case CameraAction::Request::CAMERA_ACTION_START_RECORD:
+      {
+        ROS_INFO_STREAM("Call record video.");
+        response.result = startCaptureVideo();
+        break;
+      }
+    case CameraAction::Request::CAMERA_ACTION_STOP_RECORD:
+      {
+        ROS_INFO_STREAM("Call stop video.");
+        response.result = stopCaptureVideo();
+        break;
+      }
+    defaule:
+      response.result = false;
+      break;
+  }
+  //return response.result;
+  return true;
+}
+
+
+bool VehicleNode::takePicture()
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("VehicleWrapper not initialized");
+    return false;
+  }
+  // Take picture
+  std::cout << "Ensure SD card is present.\n";
+  std::cout << "Taking picture..\n";
+  ptr_wrapper_->getVehicle()->camera->shootPhoto();
+  std::cout << "Check DJI GO App or SD card for a new picture.\n";
+
+  std::cout << "Setting new Gimbal rotation angle to [0,-50, 0] using absolute "
+               "control:\n";
+  return true;
+}
+
+bool VehicleNode::startCaptureVideo()
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("VehicleWrapper not initialized");
+    return false;
+  }
+  std::cout << "Ensure SD card is present.\n";
+  std::cout << "Starting video..\n";
+  ptr_wrapper_->getVehicle()->camera->videoStart();
+  return true;
+}
+
+bool VehicleNode::stopCaptureVideo()
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("VehicleWrapper not initialized");
+    return false;
+  }
+    // Stop the video
+  std::cout << "Stopping video...\n";
+  ptr_wrapper_->getVehicle()->camera->videoStop();
+  std::cout << "Check DJI GO App or SD card for a new video.\n";
+  return true;
+}
+
+bool VehicleNode::getCurrentGimbal(RotationAngle& initial_angle)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    return false;
+  }
+  // Get Gimbal initial values
+  if (!ptr_wrapper_->getVehicle()->isM100() && !ptr_wrapper_->getVehicle()->isLegacyM600())
+  {
+    initial_angle.roll  = ptr_wrapper_->getVehicle()->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().y;
+    initial_angle.pitch = ptr_wrapper_->getVehicle()->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().x;
+    initial_angle.yaw   = ptr_wrapper_->getVehicle()->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().z;
+  }
+  else
+  {
+    initial_angle.roll  = ptr_wrapper_->getVehicle()->broadcast->getGimbal().roll;
+    initial_angle.pitch = ptr_wrapper_->getVehicle()->broadcast->getGimbal().pitch;
+    initial_angle.yaw   = ptr_wrapper_->getVehicle()->broadcast->getGimbal().yaw;
+  }
+  return true;
+}
+
+bool VehicleNode::initSubscribe()
+{
+  int responseTimeout = 1;
+  int pkgIndex;
+
+  /*
+   * Subscribe to gimbal data not supported in MAtrice 100
+   */
+
+  if (!ptr_wrapper_->getVehicle()->isM100() && !ptr_wrapper_->getVehicle()->isLegacyM600())
+  {
+    // Telemetry: Verify the subscription
+    ACK::ErrorCode subscribeStatus;
+    subscribeStatus = ptr_wrapper_->getVehicle()->subscribe->verify(responseTimeout);
+    if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
+    {
+      ACK::getErrorCodeMessage(subscribeStatus, __func__);
+      return false;
+    }
+
+    // Telemetry: Subscribe to gimbal status and gimbal angle at freq 10 Hz
+    pkgIndex                  = 0;
+    int       freq            = 10;
+    TopicName topicList10Hz[] = { TOPIC_GIMBAL_ANGLES, TOPIC_GIMBAL_STATUS };
+    int       numTopic = sizeof(topicList10Hz) / sizeof(topicList10Hz[0]);
+    bool      enableTimestamp = false;
+
+    bool pkgStatus = ptr_wrapper_->getVehicle()->subscribe->initPackageFromTopicList(
+      pkgIndex, numTopic, topicList10Hz, enableTimestamp, freq);
+    if (!(pkgStatus))
+    {
+      return pkgStatus;
+    }
+    subscribeStatus =
+      ptr_wrapper_->getVehicle()->subscribe->startPackage(pkgIndex, responseTimeout);
+    if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
+    {
+      ACK::getErrorCodeMessage(subscribeStatus, __func__);
+      // Cleanup before return
+      ptr_wrapper_->getVehicle()->subscribe->removePackage(pkgIndex, responseTimeout);
+      return false;
+    }
+  }
+
+  sleep(1);
+
+  std::cout
+    << "Please note that the gimbal yaw angle you see in the telemetry is "
+       "w.r.t absolute North"
+       ", and the accuracy depends on your magnetometer calibration.\n\n"; 
   return true;
 }
 
@@ -855,6 +1025,7 @@ bool VehicleNode::moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOff
   return ACK::SUCCESS;
 }
 
+
 bool VehicleNode::startGlobalPositionBroadcast()
 {
   uint8_t freq[16];
@@ -956,6 +1127,30 @@ Telemetry::Vector3f VehicleNode::toEulerAngle(void* quaternionData)
 
   return ans;
 }
+
+bool VehicleNode::setGimbalAngle(const GimbalContainer& gimbal)
+{
+  DJI::OSDK::Gimbal::AngleData gimbalAngle = {};
+  gimbalAngle.roll     = gimbal.roll;
+  gimbalAngle.pitch    = gimbal.pitch;
+  gimbalAngle.yaw      = gimbal.yaw;
+  gimbalAngle.duration = gimbal.duration;
+  gimbalAngle.mode |= 0;
+  gimbalAngle.mode |= gimbal.isAbsolute;
+  gimbalAngle.mode |= gimbal.yaw_cmd_ignore << 1;
+  gimbalAngle.mode |= gimbal.roll_cmd_ignore << 2;
+  gimbalAngle.mode |= gimbal.pitch_cmd_ignore << 3;
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    return false;
+  }
+  ptr_wrapper_->getVehicle()->gimbal->setAngle(&gimbalAngle);
+  // Give time for gimbal to sync
+  sleep(4);
+  return true;
+}
+
 
 
 int main(int argc, char** argv)

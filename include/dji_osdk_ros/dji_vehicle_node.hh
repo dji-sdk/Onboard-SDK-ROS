@@ -7,7 +7,7 @@
   * @version: v0.0.1
   * @author: kevin.hoo@dji.com
   * @create_date: 2020-03-08 16:08:55
-  * @last_modified_date: 2020-03-08 22:29:36
+  * @last_modified_date: 2020-03-10 12:36:21
   * @brief: TODO
   * @details: TODO
   *-----------------------------------------------*/
@@ -23,6 +23,8 @@
 #include <string>
 
 #include <dji_osdk_ros/DroneTaskControl.h>
+#include <dji_osdk_ros/GimbalAction.h>
+#include <dji_osdk_ros/CameraAction.h>
 
 #define C_EARTH (double)6378137.0
 #define DEG2RAD 0.01745329252
@@ -42,18 +44,38 @@ namespace dji_osdk_ros
 
       void initService();
 
+      // Flight Control
       bool monitoredTakeoff(ACK::ErrorCode& ack, int timeout);
       bool monitoredLanding(ACK::ErrorCode& ack, int timeout);
       bool moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset);
 
+      // CameraGimbal
+      bool gimbalControl(ACK::ErrorCode& ack, int timeout);
+      bool cameraControl(ACK::ErrorCode& ack, int timeout);
+      bool takePicture();
+      bool startCaptureVideo();
+      bool stopCaptureVideo();
+      bool setGimbalAngle(const GimbalContainer& gimbal);
+
     protected:
       ros::ServiceServer task_control_server_;
+      ros::ServiceServer gimbal_control_server_;
+      ros::ServiceServer camera_action_control_server_;
+      //ros::ServiceServer camera_zoom_control_server_;
 
     protected:
       bool taskCtrlCallback(DroneTaskControl::Request& request, DroneTaskControl::Response& response);
+      bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);
+      bool cameraCtrlCallback(CameraAction::Request& request, CameraAction::Response& response);
+
+
       bool startGlobalPositionBroadcast();
       Telemetry::Vector3f toEulerAngle(void* quaternionData);
       void localOffsetFromGpsOffset(Telemetry::Vector3f& deltaNed, void* target, void* origin);
+      bool getCurrentGimbal(RotationAngle& initial_angle);
+
+      bool initSubscribe();
+
 
     private:
       ros::NodeHandle nh_;

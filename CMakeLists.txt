@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
     rospy
     message_generation
     std_msgs
+    geometry_msgs
   )
 
 ## System dependencies are found with CMake's conventions
@@ -55,14 +56,14 @@ catkin_python_setup()
 ## Generate messages in the 'msg' folder
 # add_message_files(
 #   FILES
-#   Message1.msg
-#   Message2.msg
 # )
 
 ## Generate services in the 'srv' folder
  add_service_files(
    FILES
    DroneTaskControl.srv
+   GimbalAction.srv
+   CameraAction.srv
  )
 
 ## Generate actions in the 'action' folder
