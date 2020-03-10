@@ -25,6 +25,7 @@
 #include <dji_osdk_ros/DroneTaskControl.h>
 #include <dji_osdk_ros/GimbalAction.h>
 #include <dji_osdk_ros/CameraAction.h>
+#include <dji_osdk_ros/MFIO.h>
 
 
 
@@ -47,12 +48,16 @@ namespace dji_osdk_ros
       ros::ServiceServer task_control_server_;
       ros::ServiceServer gimbal_control_server_;
       ros::ServiceServer camera_action_control_server_;
-      //ros::ServiceServer camera_zoom_control_server_;
+      ros::ServiceServer mfio_control_server_;
+
+    //ros::ServiceServer camera_zoom_control_server_;
 
     protected:
       bool taskCtrlCallback(DroneTaskControl::Request& request, DroneTaskControl::Response& response);
       bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);
       bool cameraCtrlCallback(CameraAction::Request& request, CameraAction::Response& response);
+      bool mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response);
+
       bool initSubscribe();
 
     private:

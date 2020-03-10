@@ -64,6 +64,7 @@ catkin_python_setup()
    DroneTaskControl.srv
    GimbalAction.srv
    CameraAction.srv
+   MFIO.srv
  )
 
 ## Generate actions in the 'action' folder

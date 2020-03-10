@@ -1084,4 +1084,69 @@ static T_OsdkOsalHandler osalHandler = {
     sleep(4);
     return true;
   }
+
+  uint8_t VehicleWrapper::outputMFIO(uint8_t mode, uint8_t channel, uint32_t init_on_time_us, uint16_t freq, bool block, uint8_t gpio_set_value)
+  {
+    int responseTimeout = 1;
+    uint32_t initOnTimeUs = init_on_time_us; // us
+    uint16_t io_freq = freq;
+    switch (MFIO::MODE(mode))
+    {
+      case MFIO::MODE::MODE_PWM_OUT:
+      {
+        break;
+      }
+      case MFIO::MODE::MODE_GPIO_OUT:
+      {
+        initOnTimeUs = gpio_set_value;
+        io_freq = 0;
+        break;
+      }
+      default:
+        break;
+    }
+    std::cout << "Configuring channel\n";
+    std::cout << "Channel: " << channel << " configured to output " << freq << "Hz PWM with " << double(initOnTimeUs)/20000 << " duty cycle.\n";
+    vehicle->mfio->config(MFIO::MODE(mode), MFIO::CHANNEL(channel), initOnTimeUs, io_freq, responseTimeout);
+
+    if(block == true)
+    {
+      vehicle->mfio->setValue(MFIO::CHANNEL(channel), initOnTimeUs, responseTimeout);
+    }
+    else
+    {
+      vehicle->mfio->setValue(MFIO::CHANNEL(channel), initOnTimeUs);
+    }
+
+  }
+
+  uint8_t VehicleWrapper::stopMFIO(uint8_t mode, uint8_t channel)
+  {
+    int responseTimeout = 1;
+    std::cout << "Turning off the PWM signal\n";
+    uint32_t digitalValue = 0;
+    uint16_t digitalFreq  = 0;
+    vehicle->mfio->config(MFIO::MODE(mode), MFIO::CHANNEL(channel), digitalValue, digitalFreq, responseTimeout);
+    return 10;
+  }
+
+  uint32_t VehicleWrapper::inputMFIO(uint8_t mode, uint8_t channel, bool block)
+  {
+    int responseTimeout = 1;
+    // Set SDK5 to ADC input
+    uint32_t initOnTimeUs = 0; // us
+    uint16_t pwmFreq      = 0; // Hz
+
+    std::cout << "Configuring channel\n";
+    vehicle->mfio->config(MFIO::MODE(mode), MFIO::CHANNEL(channel), initOnTimeUs, pwmFreq, responseTimeout);
+    std::cout << "Channel " << channel <<" configured to ADC input.\n";
+
+    ACK::MFIOGet ack;
+    ack = vehicle->mfio->getValue(MFIO::CHANNEL(channel), responseTimeout);
+
+    std::cout << "ADC status:" << ack.ack.data << std::endl;
+    std::cout << "ADC value:" << ack.value << std::endl;
+    return ack.value;
+  }
+
 }

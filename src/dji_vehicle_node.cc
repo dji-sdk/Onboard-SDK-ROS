@@ -51,6 +51,7 @@ void VehicleNode::initService()
   task_control_server_ = nh_.advertiseService("drone_task_control", &VehicleNode::taskCtrlCallback, this);
   gimbal_control_server_ = nh_.advertiseService("gimbal_task_control", &VehicleNode::gimbalCtrlCallback, this);
   camera_action_control_server_ = nh_.advertiseService("camera_task_control", &VehicleNode::cameraCtrlCallback, this);
+  mfio_control_server_ = nh_.advertiseService("mfio_control", &VehicleNode::mfioCtrlCallback, this);
 }
 
 bool VehicleNode::taskCtrlCallback(DroneTaskControl::Request&  request, DroneTaskControl::Response& response)
@@ -178,6 +179,41 @@ bool VehicleNode::cameraCtrlCallback(CameraAction::Request& request, CameraActio
   //return response.result;
   return true;
 }
+
+bool VehicleNode::mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response)
+{
+  ROS_INFO_STREAM("MFIO Control callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+
+  if(request.mode == MFIO::Request::MODE_PWM_OUT ||
+     request.mode == MFIO::Request::MODE_GPIO_OUT)
+  {
+    switch (request.action)
+    {
+      case MFIO::Request::TURN_ON:
+        {
+          ptr_wrapper_->outputMFIO(request.mode, request.channel, request.init_on_time_us, request.pwm_freq, request.block, request.gpio_value);
+        break;
+        }
+      default:
+        {
+          response.read_value = ptr_wrapper_->stopMFIO(request.mode, request.channel);
+          break;
+        }
+    }
+  }
+  else if(request.mode == MFIO::Request::MODE_GPIO_IN ||
+          request.mode == MFIO::Request::MODE_ADC)
+  {
+    response.read_value = ptr_wrapper_->inputMFIO(request.mode, request.channel, request.block);
+  }
+  return true;
+}
+
 
 bool VehicleNode::initSubscribe()
 {
