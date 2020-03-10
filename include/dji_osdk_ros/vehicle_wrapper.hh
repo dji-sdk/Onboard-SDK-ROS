@@ -15,12 +15,17 @@
 // Header include
 #include <djiosdk/dji_setup_helpers.hpp>
 #include <djiosdk/dji_vehicle.hpp>
+#include <dji_osdk_ros/common_type.hh>
 #include <string>
+#include <cmath>
 
+const double C_EARTH = 6378137.0;
+const double DEG2RAD = 0.01745329252;
 // Declaration
 namespace dji_osdk_ros
 {
   using namespace DJI::OSDK;
+  using namespace Telemetry;
   class VehicleWrapper : private Setup
   {
     public:
@@ -34,6 +39,24 @@ namespace dji_osdk_ros
     public:
       void setupEnvironment(bool enable_advanced_sensing);
       bool initVehicle();
+
+    public:
+      bool takePicture();
+      bool startCaptureVideo();
+      bool stopCaptureVideo();
+      bool setGimbalAngle(const GimbalContainer& gimbal);
+
+      bool goHome(int timeout);
+      bool monitoredTakeoff(ACK::ErrorCode& ack, int timeout);
+      bool monitoredLanding(ACK::ErrorCode& ack, int timeout);
+      bool moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset);
+      bool getCurrentGimbal(RotationAngle& initial_angle);
+
+
+  protected:
+      bool startGlobalPositionBroadcast();
+      Telemetry::Vector3f toEulerAngle(void* quaternionData);
+      void localOffsetFromGpsOffset(Telemetry::Vector3f& deltaNed, void* target, void* origin);
     
     public:
       Vehicle::ActivateData *getActivateData()
