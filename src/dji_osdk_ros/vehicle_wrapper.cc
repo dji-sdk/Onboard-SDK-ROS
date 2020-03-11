@@ -11,8 +11,10 @@
   */
 
 //INCLUDE
-#include <dji_osdk_ros/vehicle_wrapper.hh>
 #include <djiosdk/dji_platform.hpp>
+#include <djiosdk/dji_vehicle_callback.hpp>
+
+#include <dji_osdk_ros/vehicle_wrapper.hh>
 #include <dji_osdk_ros/osdkhal_linux.h>
 #include <dji_osdk_ros/osdkosal_linux.h>
 #include <iostream>
@@ -745,6 +747,28 @@ static T_OsdkOsalHandler osalHandler = {
     return false;
   }
 
+  bool VehicleWrapper::zoomCtrl(const CameraZoomDataType& zoom_data)
+  {
+    auto zoom_fun = [](Vehicle* vehiclePtr, RecvContainer recvFrame,UserData userData)
+    {
+      uint16_t ack_data_len = recvFrame.recvInfo.len - OpenProtocol::PackageMin;
+      std::cout << "ack data: " <<  __func__  << " ";
+      for (uint16_t i = 0; i < ack_data_len; i++)
+      {
+        std::cout << "0x" << std::hex << (unsigned int) recvFrame.recvData.raw_ack_array[i] << " ";
+      }
+      std::cout << std::endl;
+    };
+
+    void (*z30_zoom_cb)(Vehicle*, RecvContainer, UserData) = zoom_fun;
+
+    const uint8_t z30_zoom_cmd[] = {0x01, 0x30};
+    vehicle->legacyLinker->sendAsync(z30_zoom_cmd, (unsigned char *) (&zoom_data),
+                                     sizeof(CameraZoomDataType), 500, 2,
+                                     z30_zoom_cb, NULL);
+    std::cout << "z30_zoom_test running" << std::endl;
+  }
+
 
 
 
@@ -1144,20 +1168,28 @@ static T_OsdkOsalHandler osalHandler = {
     return ans;
   }
 
-  bool VehicleWrapper::getCurrentGimbal(RotationAngle& initial_angle)
+  bool VehicleWrapper::getCurrentGimbal(RotationAngle& current_angle)
   {
     // Get Gimbal initial values
     if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
-      initial_angle.roll  = vehicle->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().y;
-      initial_angle.pitch = vehicle->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().x;
-      initial_angle.yaw   = vehicle->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().z;
+      current_angle.roll  = vehicle->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().y;
+      current_angle.pitch = vehicle->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().x;
+      current_angle.yaw   = vehicle->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().z;
     }
     else
     {
-      initial_angle.roll  = vehicle->broadcast->getGimbal().roll;
-      initial_angle.pitch = vehicle->broadcast->getGimbal().pitch;
-      initial_angle.yaw   = vehicle->broadcast->getGimbal().yaw;
+      current_angle.roll  = vehicle->broadcast->getGimbal().roll;
+      current_angle.pitch = vehicle->broadcast->getGimbal().pitch;
+      current_angle.yaw   = vehicle->broadcast->getGimbal().yaw;
+    }
+
+    {
+      std::cout << "New Gimbal rotation angle is [";
+      std::cout << current_angle.roll << " ";
+      std::cout << current_angle.pitch << " ";
+      std::cout << current_angle.yaw;
+      std::cout << "]\n\n";
     }
     return true;
   }

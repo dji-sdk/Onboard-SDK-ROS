@@ -5,7 +5,7 @@
   * @version: v0.0.1
   * @author: kevin.hoo@dji.com
   * @create_date: 2020-03-08 16:08:55
-  * @last_modified_date: 2020-03-10 11:42:43
+  * @last_modified_date: 2020-03-11 20:49:32
   * @brief: TODO
   * @details: TODO
   */
@@ -17,13 +17,13 @@
 using namespace dji_osdk_ros;
 const int WAIT_TIMEOUT = 10;
 
-VehicleNode::VehicleNode()
+VehicleNode::VehicleNode(int test)
 {
 
   initService();
 }
 
-VehicleNode::VehicleNode(int test)
+VehicleNode::VehicleNode()
 {
   nh_.param("app_id",        app_id_,    123456);
   nh_.param("enc_key",       enc_key_, std::string("abcd1234"));
@@ -56,6 +56,7 @@ void VehicleNode::initService()
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
   set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
   avoid_enable_server_ = nh_.advertiseService("enable_avoid", &VehicleNode::setAvoidCallback,this);
+  ROS_INFO_STREAM("Services startup!");
 }
 
 bool VehicleNode::taskCtrlCallback(DroneTaskControl::Request&  request, DroneTaskControl::Response& response)
@@ -137,6 +138,11 @@ bool VehicleNode::taskCtrlCallback(DroneTaskControl::Request&  request, DroneTas
 
 bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response)
 {
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
   response.result = false;
   RotationAngle initial_angle;
   //if(getCurrentGimbal(initial_angle) == false)
@@ -175,6 +181,21 @@ bool VehicleNode::cameraCtrlCallback(CameraAction::Request& request, CameraActio
       {
         ROS_INFO_STREAM("Call stop video.");
         response.result = ptr_wrapper_->stopCaptureVideo();
+        break;
+      }
+    case CameraAction::Request::CAMERA_ACTION_ZOOM:
+      {
+        ROS_INFO_STREAM("Call Camera Zoom");
+        CameraZoomDataType zoom_data;
+
+        memcpy(&zoom_data.func_index, &request.func_index, sizeof(zoom_data.func_index));
+        memcpy(&zoom_data.cam_index, &request.cam_index, sizeof(zoom_data.cam_index));
+        memcpy(&zoom_data.zoom_config, &request.zoom_config, sizeof(zoom_data.zoom_config));
+        memcpy(&zoom_data.optical_zoom_param.step_param, &request.step_param, sizeof(zoom_data.optical_zoom_param.step_param));
+        memcpy(&zoom_data.optical_zoom_param.cont_param, &request.cont_param, sizeof(zoom_data.optical_zoom_param.cont_param));
+        memcpy(&zoom_data.optical_zoom_param.pos_param, &request.pos_param, sizeof(zoom_data.optical_zoom_param.pos_param));
+
+        response.result = ptr_wrapper_->zoomCtrl(zoom_data);
         break;
       }
     defaule:
@@ -342,7 +363,7 @@ bool VehicleNode::initSubscribe()
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "vehicle_node");
-  VehicleNode vh_node;
+  VehicleNode vh_node(1);
 
   ros::spin();
   return 0;
