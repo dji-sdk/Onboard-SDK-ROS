@@ -20,7 +20,6 @@
 using namespace dji_osdk_ros;
 
 void packGimbalAction(const GimbalContainer& gimbal_container, GimbalAction& action);
-
 void packZoomParams(const CameraZoomDataType& zoom_data, CameraAction& camera_action);
 
 int main(int argc, char** argv)
