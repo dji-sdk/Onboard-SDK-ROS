@@ -21,7 +21,7 @@ namespace dji_osdk_ros
   struct MoveOffset
   {
     MoveOffset(double x_in, double y_in, double z_in,
-               double yaw_in, double pos_threshold_in, double yaw_threshold_in)
+               double yaw_in, double pos_threshold_in = 0.5, double yaw_threshold_in = 1.0)
       : x(x_in),
         y(y_in),
         z(z_in),

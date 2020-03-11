@@ -651,6 +651,102 @@ static T_OsdkOsalHandler osalHandler = {
     }
   }
 
+  bool VehicleWrapper::setNewHomeLocation(int timeout)
+  {
+    HomeLocationSetStatus homeLocationSetStatus;
+    HomeLocationData originHomeLocation;
+    ErrorCode::ErrorCodeType ret = ErrorCode::FlightControllerErr::SetHomeLocationErr::Fail;
+    auto fun_get_home_location = [&](HomeLocationSetStatus& homeLocationSetStatus,
+                                    HomeLocationData& homeLocationInfo,
+                                    int responseTimeout) {
+      ACK::ErrorCode subscribeStatus;
+      subscribeStatus = vehicle->subscribe->verify(responseTimeout);
+      if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
+      {
+        ACK::getErrorCodeMessage(subscribeStatus, __func__);
+        return false;
+      }
+      int pkgIndex = 0;
+      int freq = 1;
+      TopicName topicList[] = {TOPIC_HOME_POINT_SET_STATUS, TOPIC_HOME_POINT_INFO};
+
+      int numTopic = sizeof(topicList) / sizeof(topicList[0]);
+      bool enableTimestamp = false;
+
+      bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
+        pkgIndex, numTopic, topicList, enableTimestamp, freq);
+
+      if (!(pkgStatus))
+      {
+        return pkgStatus;
+      }
+      subscribeStatus = vehicle->subscribe->startPackage(pkgIndex, responseTimeout);
+      if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
+      {
+        ACK::getErrorCodeMessage(subscribeStatus, __func__);
+        /*! Cleanup before return */
+        vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
+        return false;
+      }
+      /*! Wait for the data to start coming in.*/
+      Platform::instance().taskSleepMs(2000);
+      homeLocationSetStatus =
+        vehicle->subscribe->getValue<TOPIC_HOME_POINT_SET_STATUS>();
+      homeLocationInfo = vehicle->subscribe->getValue<TOPIC_HOME_POINT_INFO>();
+      ACK::ErrorCode ack =
+        vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
+      if (ACK::getError(ack))
+      {
+        DERROR("Error unsubscription; please restart the drone/FC to get back "
+          "to a clean state.");
+      }
+      return true;
+    };
+    bool retCode = fun_get_home_location(homeLocationSetStatus, originHomeLocation, timeout);
+    if (retCode && (homeLocationSetStatus.status == 1))
+    {
+      ret = vehicle->flightController->setHomeLocationUsingCurrentAircraftLocationSync(timeout);
+      if (ret != ErrorCode::SysCommonErr::Success)
+      {
+        DSTATUS("Set new home location failed, ErrorCode is:%8x", ret);
+      }
+      else
+      {
+        DSTATUS("Set new home location successfully");
+        return true;
+      }
+    }
+    return ret;
+  }
+
+  bool VehicleWrapper::setHomeAltitude(uint16_t altitude, int timeout)
+  {
+    ErrorCode::ErrorCodeType ret = vehicle->flightController->setGoHomeAltitudeSync(altitude, timeout);
+    if (ret != ErrorCode::SysCommonErr::Success)
+    {
+      DSTATUS("Set go home altitude failed, ErrorCode is:%8x", ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Set go home altitude successfully,altitude is: %d", altitude);
+      return true;
+    }
+  }
+
+  bool VehicleWrapper::setAvoid(bool enable)
+  {
+    auto enum_enable = enable ? FlightController::AvoidEnable::AVOID_ENABLE : FlightController::AvoidEnable::AVOID_DISABLE;
+    ErrorCode::ErrorCodeType ack = vehicle->flightController->setCollisionAvoidanceEnabledSync(enum_enable, 1);
+    if (ack == ErrorCode::SysCommonErr::Success)
+    {
+      return true;
+    }
+    return false;
+  }
+
+
+
 
   bool VehicleWrapper::moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset)
   {

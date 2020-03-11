@@ -46,7 +46,12 @@ namespace dji_osdk_ros
       bool stopCaptureVideo();
       bool setGimbalAngle(const GimbalContainer& gimbal);
 
+      /* Parts of Flight Control*/
+      bool setNewHomeLocation(int timeout = 1);
+      bool setHomeAltitude(uint16_t altitude, int timeout = 1);
       bool goHome(int timeout);
+      bool setAvoid(bool enable);
+
       bool monitoredTakeoff(ACK::ErrorCode& ack, int timeout);
       bool monitoredLanding(ACK::ErrorCode& ack, int timeout);
       bool moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset);
@@ -55,6 +60,10 @@ namespace dji_osdk_ros
       uint8_t outputMFIO(uint8_t mode, uint8_t channel, uint32_t init_on_time_us, uint16_t freq, bool block, uint8_t gpio_value);
       uint32_t inputMFIO(uint8_t mode, uint8_t channel, bool block);
       uint8_t stopMFIO(uint8_t mode, uint8_t channel);
+
+#ifdef ADVANCED_SENSING
+      bool startMainCameraH264();
+#endif
 
   protected:
       bool startGlobalPositionBroadcast();

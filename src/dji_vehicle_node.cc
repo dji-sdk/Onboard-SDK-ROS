@@ -52,6 +52,10 @@ void VehicleNode::initService()
   gimbal_control_server_ = nh_.advertiseService("gimbal_task_control", &VehicleNode::gimbalCtrlCallback, this);
   camera_action_control_server_ = nh_.advertiseService("camera_task_control", &VehicleNode::cameraCtrlCallback, this);
   mfio_control_server_ = nh_.advertiseService("mfio_control", &VehicleNode::mfioCtrlCallback, this);
+
+  set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
+  set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
+  avoid_enable_server_ = nh_.advertiseService("enable_avoid", &VehicleNode::setAvoidCallback,this);
 }
 
 bool VehicleNode::taskCtrlCallback(DroneTaskControl::Request&  request, DroneTaskControl::Response& response)
@@ -214,6 +218,72 @@ bool VehicleNode::mfioCtrlCallback(MFIO::Request& request, MFIO::Response& respo
   return true;
 }
 
+bool VehicleNode::setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request, SetGoHomeAltitude::Response& response)
+{
+  ROS_INFO_STREAM("Set go home altitude callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  if(request.altitude < 5)
+  {
+    ROS_WARN_STREAM("Altitude for going Home is TOO LOW");
+    response.result = false;
+    return true;
+  }
+  if(ptr_wrapper_->setHomeAltitude(request.altitude) == true)
+  {
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+  }
+  return true;
+}
+
+bool VehicleNode::setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response)
+{
+  ROS_INFO_STREAM("Set new home point callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+
+  if(ptr_wrapper_->setNewHomeLocation() == true)
+  {
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+  }
+
+  return true;
+}
+
+bool VehicleNode::setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response)
+{
+  ROS_INFO_STREAM("Set avoid function callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+
+  if(ptr_wrapper_->setAvoid(request.enable) == true)
+  {
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+  }
+
+  return true;
+}
 
 bool VehicleNode::initSubscribe()
 {

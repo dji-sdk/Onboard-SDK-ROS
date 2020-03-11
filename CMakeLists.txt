@@ -65,6 +65,9 @@ catkin_python_setup()
    GimbalAction.srv
    CameraAction.srv
    MFIO.srv
+   SetGoHomeAltitude.srv
+   SetNewHomePoint.srv
+   AvoidEnable.srv
  )
 
 ## Generate actions in the 'action' folder

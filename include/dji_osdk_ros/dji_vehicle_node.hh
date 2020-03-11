@@ -26,6 +26,10 @@
 #include <dji_osdk_ros/GimbalAction.h>
 #include <dji_osdk_ros/CameraAction.h>
 #include <dji_osdk_ros/MFIO.h>
+#include <dji_osdk_ros/SetGoHomeAltitude.h>
+#include <dji_osdk_ros/SetNewHomePoint.h>
+#include <dji_osdk_ros/AvoidEnable.h>
+
 
 
 
@@ -50,6 +54,10 @@ namespace dji_osdk_ros
       ros::ServiceServer camera_action_control_server_;
       ros::ServiceServer mfio_control_server_;
 
+      ros::ServiceServer set_home_altitude_server_;
+      ros::ServiceServer set_current_point_as_home_server_;
+      ros::ServiceServer avoid_enable_server_;
+
     //ros::ServiceServer camera_zoom_control_server_;
 
     protected:
@@ -57,6 +65,10 @@ namespace dji_osdk_ros
       bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);
       bool cameraCtrlCallback(CameraAction::Request& request, CameraAction::Response& response);
       bool mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response);
+      bool setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request, SetGoHomeAltitude::Response& response);
+      bool setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response);
+      bool setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
+
 
       bool initSubscribe();
 
