@@ -13,6 +13,7 @@
 //INCLUDE
 #include <dji_osdk_ros/dji_vehicle_node.hh>
 #include <dji_osdk_ros/vehicle_wrapper.hh>
+#include <vector>
 //CODE
 using namespace dji_osdk_ros;
 const int WAIT_TIMEOUT = 10;
@@ -56,8 +57,78 @@ void VehicleNode::initService()
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
   set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
   avoid_enable_server_ = nh_.advertiseService("enable_avoid", &VehicleNode::setAvoidCallback,this);
+#ifdef ADVANCED_SENSING
+  advanced_sensing_server_ = nh_.advertiseService("advanced_sensing", &VehicleNode::advancedSensingCallback,this);
+#endif
   ROS_INFO_STREAM("Services startup!");
 }
+
+#ifdef ADVANCED_SENSING
+bool VehicleNode::advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response)
+{
+    ROS_DEBUG("called advancedSensingCallback");
+    response.result = false;
+    ACK::ErrorCode ack;
+    if(ptr_wrapper_ == nullptr)
+    {
+        ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+        return true;
+    }
+
+    if (request.is_open)
+    {
+        if (ptr_wrapper_->startStream(request.is_h264, request.request_view))
+        {
+            switch (request.is_h264)
+            {
+                case true:
+                    std::vector<uint8_t> rawData;
+                    rawData.clear();
+                    rawData = ptr_wrapper_->getCameraRawData();
+                    for (int i = 0; i < rawData.size(); i++)
+                    {
+                        reponse.raw_data[i] = rawData[i];
+                    }
+                    reponse.result = true;
+                    break;
+                case false:
+                    CameraRGBImage cameraRgbImage = ptr_wrapper_->getCameraImage();
+                    for (int i = 0; i < rawData.size(); i++)
+                    {
+                        reponse.raw_data[i] = cameraRgbImage.rawData[i];
+                    }
+                    reponse.height = cameraRgbImage.height;
+                    reponse.width  = cameraRgbImage.width;
+                    reponse.result = true;
+                    break;
+                default:
+                {
+                    ROS_DEBUG("No recognized cmd");
+                    response.result = false;
+                    break;
+                }
+            }
+        }
+    }
+    else
+    {
+        ptr_wrapper_->stopStream(request.is_h264, request.request_view)
+    }
+
+
+    if (ACK::getError(ack))
+    {
+        ACK::getErrorCodeMessage(ack, __func__);
+        response.result = false;
+    }
+    else
+    {
+        response.result = true;
+    }
+
+    return true;
+}
+#endif
 
 bool VehicleNode::taskCtrlCallback(DroneTaskControl::Request&  request, DroneTaskControl::Response& response)
 {

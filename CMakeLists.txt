@@ -69,6 +69,12 @@ catkin_python_setup()
    SetNewHomePoint.srv
    AvoidEnable.srv
  )
+ if(ADVANCED_SENSING)
+ add_service_files(
+   FILES
+   AdvancedSensing.srv
+ )
+ endif()
 
 ## Generate actions in the 'action' folder
 # add_action_files(

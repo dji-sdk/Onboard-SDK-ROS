@@ -45,6 +45,25 @@ static T_OsdkHalUSBBulkHandler halUSBBulkHandler = {
     .USBBulkWriteData = OsdkLinux_USBBulkSendData,
     .USBBulkReadData = OsdkLinux_USBBulkReadData,
 };
+
+static void liveViewCb(uint8_t* buf, int bufLen, void* userData) {
+  if (userData) {
+      VehicleWrapper* vehicleWrapper = (VehicleWrapper*)userData;
+      vehicleWrapper->setCameraRawData(buf, bufLen);
+  } else {
+  DERROR("userData is a null value (should be a pointer to VehicleWrapper).");
+  }
+}
+
+static void setCameraImage(CameraRGBImage img, void *p)
+{
+ if (p) {
+     VehicleWrapper* vehicleWrapper = (VehicleWrapper*)p;
+     vehicleWrapper->setCameraImage(img);
+ } else{
+     DERROR("p is a null value (should be a pointer to VehicleWrapper).");
+     }
+}
 #endif
 
 static T_OsdkOsalHandler osalHandler = {
@@ -1277,4 +1296,80 @@ static T_OsdkOsalHandler osalHandler = {
     return ack.value;
   }
 
+#ifdef ADVANCED_SENSING
+  bool VehicleWrapper::startStream(bool is_h264, uint8_t request_view)
+  {
+      if(is_h264)
+      {
+          return vehicle->advancedSensing->startH264Stream(request_view, &liveViewCb, this);
+      }
+      else
+      {
+          switch(request_view)
+          {
+              case LiveView::OSDK_CAMERA_POSITION_FPV:
+                  ROS_DEBUG("called open FPV_CAMERA");
+                  return vehicle->advancedSensing->startFPVCameraStream(setCameraImage, this);
+              case LiveView::OSDK_CAMERA_POSITION_NO_1:
+                  ROS_DEBUG("called open MAIN_CAMERA");
+                  return vehicle->advancedSensing->startMainCameraStream(setCameraImage,this);
+              default:
+               {
+                  ROS_DEBUG("No recognized camera view");
+                  return false;
+               }
+          }
+      }
+  }
+
+  bool VehicleWrapper::stopStream(bool is_h264, uint8_t request_view)
+  {
+      if(is_h264)
+      {
+          return vehicle->advancedSensing->stopH264Stream(request_view);
+      }
+      else
+      {
+          switch(request_view)
+          {
+              case LiveView::OSDK_CAMERA_POSITION_FPV:
+                  ROS_DEBUG("called stop FPV_CAMERA");
+                  return vehicle->advancedSensing->stopFPVCameraStream();
+              case LiveView::OSDK_CAMERA_POSITION_NO_1:
+                  ROS_DEBUG("called stop MAIN_CAMERA");
+                  return vehicle->advancedSensing->stopMainCameraStream();
+              default:
+              {
+                  ROS_DEBUG("No recognized camera view");
+                  return false;
+              }
+          }
+      }
+  }
+
+  CameraRGBImage& VehicleWrapper::getCameraImage()
+  {
+    return this->image_from_camera_;
+  }
+
+  std::vector<uint8_t>& VehicleWrapper::getCameraRawData()
+  {
+    return this->raw_data_from_camera_;
+  }
+
+  void VehicleWrapper::setCameraRawData(uint8_t *rawData, int bufLen)
+  {
+      raw_data_from_camera_.clear();
+      raw_data_from_camera_.resize(bufLen);
+      for (int i = 0; i < bufLen; i++)
+      {
+          raw_data_from_camera_.assign(i, rawData[i]);
+      }
+  }
+
+  void VehicleWrapper::setCameraImage(const CameraRGBImage& img)
+  {
+      this->image_from_camera_ = img;
+  }
+#endif
 }

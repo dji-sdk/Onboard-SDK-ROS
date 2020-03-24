@@ -18,6 +18,7 @@
 #include <dji_osdk_ros/common_type.hh>
 #include <string>
 #include <cmath>
+#include <vector>
 
 const double C_EARTH = 6378137.0;
 const double DEG2RAD = 0.01745329252;
@@ -64,7 +65,13 @@ namespace dji_osdk_ros
       uint8_t stopMFIO(uint8_t mode, uint8_t channel);
 
 #ifdef ADVANCED_SENSING
-      bool startMainCameraH264();
+      bool startStream(bool is_h264, uint8_t request_view);
+      bool stopStream(bool is_h264, uint8_t request_view);
+
+      CameraRGBImage& getCameraImage();
+      std::vector<uint8_t>& getCameraRawData();
+      void setCameraRawData(uint8_t* rawData, int bufLen);
+      void setCameraImage(const CameraRGBImage& img);
 #endif
 
   protected:
@@ -98,6 +105,9 @@ namespace dji_osdk_ros
       unsigned int baudrate_;
       std::string  sample_case_;
       const static unsigned int default_acm_baudrate = 921600;
+
+      CameraRGBImage image_from_camera_;
+      std::vector<uint8_t> raw_data_from_camera_;
   };
 }
 

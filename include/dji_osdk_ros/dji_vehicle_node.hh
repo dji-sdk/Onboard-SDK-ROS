@@ -57,6 +57,9 @@ namespace dji_osdk_ros
       ros::ServiceServer set_home_altitude_server_;
       ros::ServiceServer set_current_point_as_home_server_;
       ros::ServiceServer avoid_enable_server_;
+#ifdef ADVANCED_SENSING
+      ros::ServiceServer advanced_sensing_server_;
+#endif
 
     protected:
       bool taskCtrlCallback(DroneTaskControl::Request& request, DroneTaskControl::Response& response);
@@ -70,6 +73,9 @@ namespace dji_osdk_ros
       bool setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response);
       bool setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
 
+#ifdef ADVANCED_SENSING
+      bool advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response);
+#endif
 
       bool initSubscribe();
 

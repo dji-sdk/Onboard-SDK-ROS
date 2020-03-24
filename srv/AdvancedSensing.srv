@@ -1,0 +1,19 @@
+#constant
+
+uint8 FPV_CAMERA  = 7
+uint8 MAIN_CAMERA = 0
+uint8 VICE_CAMERA = 1
+uint8 TOP_CAMERA  = 2
+
+#request
+
+bool is_h264
+bool is_open
+uint8 request_view
+---
+#reponse
+
+uint8[] raw_data
+int height
+int width
+bool result
