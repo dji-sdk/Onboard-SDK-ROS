@@ -22,7 +22,9 @@ set(CMAKE_CXX_FLAGS "-std=c++14 -fPIC ${CMAKE_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules")
 
-find_package(DJIOSDK REQUIRED)
+#find_package(DJIOSDK REQUIRED)
+find_package(LibUSB REQUIRED)
+find_package(FFMPEG REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -138,7 +140,7 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
  include
- ${DJIOSDK_INCLUDE_DIRS}
+ #${DJIOSDK_INCLUDE_DIRS}
  ${catkin_INCLUDE_DIRS}
 )
 
