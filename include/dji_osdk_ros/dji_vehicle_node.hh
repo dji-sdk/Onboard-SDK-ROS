@@ -14,7 +14,7 @@
 
 // Header include
 #include <ros/ros.h>
-#include <djiosdk/dji_vehicle.hpp>
+#include <dji_vehicle.hpp>
 
 #include <dji_osdk_ros/vehicle_wrapper.hh>
 #include <dji_osdk_ros/common_type.hh>

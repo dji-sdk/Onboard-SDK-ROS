@@ -13,8 +13,8 @@
   *-----------------------------------------------*/
 
 // Header include
-#include <djiosdk/dji_setup_helpers.hpp>
-#include <djiosdk/dji_vehicle.hpp>
+#include <dji_setup_helpers.hpp>
+#include <dji_vehicle.hpp>
 #include <dji_osdk_ros/common_type.hh>
 #include <string>
 #include <cmath>

@@ -26,7 +26,10 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "dji_osdk_ros/osdkhal_linux.h"
+#include <stdio.h>
 
+#define MODULE_NAME_PLATFORM "platform"
+#define RLOG_ERROR(module, fmt, ...)  printf(module fmt, ##__VA_ARGS__)
 /* Exported functions definition ---------------------------------------------*/
 
 /**
@@ -41,7 +44,7 @@ E_OsdkStat OsdkLinux_UartSendData(const T_HalObj *obj, const uint8_t *pBuf,
   int32_t realLen;
 
   if (obj->uartObject.fd == -1) {
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "uart fd error");
+    RLOG_ERROR(MODULE_NAME_PLATFORM, "uart fd error");
     return OSDK_STAT_ERR;
   }
 
@@ -49,7 +52,7 @@ E_OsdkStat OsdkLinux_UartSendData(const T_HalObj *obj, const uint8_t *pBuf,
   if (realLen == bufLen) {
     return OSDK_STAT_OK;
   } else {
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "uart send error");
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "uart send error");
     return OSDK_STAT_ERR;
   }
 }
@@ -64,7 +67,7 @@ E_OsdkStat OsdkLinux_UartSendData(const T_HalObj *obj, const uint8_t *pBuf,
 E_OsdkStat OsdkLinux_UartReadData(const T_HalObj *obj, uint8_t *pBuf,
                                 uint32_t *bufLen) {
   if (obj->uartObject.fd == -1) {
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "uart fd error");
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "uart fd error");
     return OSDK_STAT_ERR;
   }
 
@@ -85,7 +88,7 @@ E_OsdkStat OsdkLinux_UdpSendData(const T_HalObj *obj, const uint8_t *pBuf,
   int32_t realLen;
 
   if (obj->udpObject.fd == -1) {
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "udp fd error");
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "udp fd error");
     return OSDK_STAT_ERR;
   }
 
@@ -136,14 +139,14 @@ E_OsdkStat OsdkLinux_UartInit(const char *port, const int baudrate,
 
   obj->uartObject.fd = open(port, O_RDWR | O_NOCTTY | O_NDELAY);
   if (obj->uartObject.fd == -1) {
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "uart device %s open error", port);
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "uart device %s open error", port);
     OsdkStat = OSDK_STAT_ERR;
     goto out;
   }
 
   if (tcgetattr(obj->uartObject.fd, &options) != 0) {
     close(obj->uartObject.fd);
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "uart device getattr error");
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "uart device getattr error");
     OsdkStat = OSDK_STAT_ERR;
 
     goto out;
@@ -159,7 +162,7 @@ E_OsdkStat OsdkLinux_UartInit(const char *port, const int baudrate,
   }
   if (i == sizeof(std_rate) / sizeof(int)) {
     close(obj->uartObject.fd);
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "invalid baud param");
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "invalid baud param");
     OsdkStat = OSDK_STAT_ERR;
 
     goto out;
@@ -183,7 +186,7 @@ E_OsdkStat OsdkLinux_UartInit(const char *port, const int baudrate,
 
   if (tcsetattr(obj->uartObject.fd, TCSANOW, &options) != 0) {
     close(obj->uartObject.fd);
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "uart device setattr error");
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "uart device setattr error");
     OsdkStat = OSDK_STAT_ERR;
 
     goto out;
@@ -203,7 +206,7 @@ out:
  */
 E_OsdkStat OsdkLinux_UdpInit(const char *addr, uint16_t port, T_HalObj *obj) {
   if ((obj->udpObject.fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "Osdk udp socket init error!");
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "Osdk udp socket init error!");
     return OSDK_STAT_SYS_ERR;
   }
 
@@ -234,7 +237,7 @@ E_OsdkStat OsdkLinux_USBBulkInit(uint16_t pid, uint16_t vid, uint16_t num, uint1
 
   int ret = libusb_init(NULL);
   if(ret < 0) {
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "Failed to Initialized libusb session...\n");
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "Failed to Initialized libusb session...\n");
     return OSDK_STAT_ERR;
   }
 
@@ -243,8 +246,8 @@ E_OsdkStat OsdkLinux_USBBulkInit(uint16_t pid, uint16_t vid, uint16_t num, uint1
   handle = libusb_open_device_with_vid_pid(NULL, vid, pid);
   if (!handle)
   {
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "Failed to open DJI USB device...ret = %d\n", handle);
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "please check if the pid and vid are correct.\n");
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "Failed to open DJI USB device...ret = %d\n", handle);
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "please check if the pid and vid are correct.\n");
     return OSDK_STAT_ERR;
   }
 
@@ -274,7 +277,7 @@ E_OsdkStat OsdkLinux_USBBulkSendData(const T_HalObj *obj, const uint8_t *pBuf,
                              (uint8_t *)pBuf, bufLen,
                              &sent_len, 50);
   if (0 != ret){
-    OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "LIBUSB send error");
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "LIBUSB send error");
     OsdkLinux_USBBulkSendData(obj, pBuf, bufLen);
     return OSDK_STAT_ERR;
   }
@@ -292,9 +295,9 @@ E_OsdkStat OsdkLinux_USBBulkReadData(const T_HalObj *obj, uint8_t *pBuf,
                              pBuf, 512*1024, bufLen, (unsigned int)(-1));
   if (ret != 0) {
     if (-7 == ret)
-      OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "LIBUSB read timeout");
+      //RLOG_ERROR(MODULE_NAME_PLATFORM, "LIBUSB read timeout");
     else
-      OSDK_LOG_ERROR(MODULE_NAME_PLATFORM, "LIBUSB read error, ret = %d", ret);
+      //RLOG_ERROR(MODULE_NAME_PLATFORM, "LIBUSB read error, ret = %d", ret);
     return OSDK_STAT_ERR;
   }
 

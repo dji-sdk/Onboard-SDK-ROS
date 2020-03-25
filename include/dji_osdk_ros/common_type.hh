@@ -13,7 +13,7 @@
   *-----------------------------------------------*/
 
 // Header include
-#include <djiosdk/dji_type.hpp>
+#include <dji_type.hpp>
 
 // Declaration
 namespace dji_osdk_ros

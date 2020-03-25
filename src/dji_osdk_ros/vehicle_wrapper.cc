@@ -11,8 +11,8 @@
   */
 
 //INCLUDE
-#include <djiosdk/dji_platform.hpp>
-#include <djiosdk/dji_vehicle_callback.hpp>
+#include <dji_platform.hpp>
+#include <dji_vehicle_callback.hpp>
 
 #include <dji_osdk_ros/vehicle_wrapper.hh>
 #include <dji_osdk_ros/osdkhal_linux.h>
@@ -146,18 +146,16 @@ static T_OsdkOsalHandler osalHandler = {
     }
 
     /*! Linker add uart channel */
-    if (!addUartChannel(device_.c_str(),
-                        baudrate_,
-                        FC_UART_CHANNEL_ID))
+    if (!addFCUartChannel(device_.c_str(),
+                          baudrate_))
     {
       DERROR("Failed to initialize Linker channel");
       return false;
     }
 
     /*! Linker add USB acm channel */
-    if (!addUartChannel(device_acm_.c_str(),
-                        default_acm_baudrate,
-                        USB_ACM_CHANNEL_ID))
+    if (!addUSBACMChannel(device_acm_.c_str(),
+                          default_acm_baudrate))
     {
       DERROR("Failed to initialize ACM Linker channel!");
     }
