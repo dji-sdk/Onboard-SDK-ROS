@@ -44,7 +44,7 @@ E_OsdkStat OsdkLinux_UartSendData(const T_HalObj *obj, const uint8_t *pBuf,
   int32_t realLen;
 
   if (obj->uartObject.fd == -1) {
-    RLOG_ERROR(MODULE_NAME_PLATFORM, "uart fd error");
+    //RLOG_ERROR(MODULE_NAME_PLATFORM, "uart fd error");
     return OSDK_STAT_ERR;
   }
 
@@ -232,7 +232,7 @@ E_OsdkStat OsdkLinux_UdpInit(const char *addr, uint16_t port, T_HalObj *obj) {
  */
 E_OsdkStat OsdkLinux_USBBulkInit(uint16_t pid, uint16_t vid, uint16_t num, uint16_t epIn,
                                  uint16_t epOut, T_HalObj *obj) {
-  OSDK_LOG_DEBUG(MODULE_NAME_PLATFORM, "Looking for USB device...\n");
+  //RLOG_ERROR(MODULE_NAME_PLATFORM, "Looking for USB device...\n");
   struct libusb_device_handle *handle = NULL;
 
   int ret = libusb_init(NULL);
@@ -241,7 +241,7 @@ E_OsdkStat OsdkLinux_USBBulkInit(uint16_t pid, uint16_t vid, uint16_t num, uint1
     return OSDK_STAT_ERR;
   }
 
-  OSDK_LOG_DEBUG(MODULE_NAME_PLATFORM, "Attempting to open DJI USB device...\n");
+  //RLOG_ERROR(MODULE_NAME_PLATFORM, "Attempting to open DJI USB device...\n");
 
   handle = libusb_open_device_with_vid_pid(NULL, vid, pid);
   if (!handle)
@@ -261,7 +261,7 @@ E_OsdkStat OsdkLinux_USBBulkInit(uint16_t pid, uint16_t vid, uint16_t num, uint1
   obj->bulkObject.epIn = epIn;
   obj->bulkObject.epOut = epOut;
 
-  OSDK_LOG_DEBUG(MODULE_NAME_PLATFORM, "...DJI USB device started successfully.\n");
+  //RLOG_ERROR(MODULE_NAME_PLATFORM, "...DJI USB device started successfully.\n");
 
   return OSDK_STAT_OK;
 }
@@ -293,11 +293,16 @@ E_OsdkStat OsdkLinux_USBBulkReadData(const T_HalObj *obj, uint8_t *pBuf,
   handle = (struct libusb_device_handle *)obj->bulkObject.handle;
   ret = libusb_bulk_transfer(handle, obj->bulkObject.epIn,
                              pBuf, 512*1024, bufLen, (unsigned int)(-1));
-  if (ret != 0) {
+  if (ret != 0)
+  {
     if (-7 == ret)
+    {
       //RLOG_ERROR(MODULE_NAME_PLATFORM, "LIBUSB read timeout");
+    }
     else
+    {
       //RLOG_ERROR(MODULE_NAME_PLATFORM, "LIBUSB read error, ret = %d", ret);
+    }
     return OSDK_STAT_ERR;
   }
 

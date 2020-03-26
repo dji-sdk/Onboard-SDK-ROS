@@ -29,6 +29,9 @@
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetNewHomePoint.h>
 #include <dji_osdk_ros/AvoidEnable.h>
+#ifdef ADVANCED_SENSING
+#include <dji_osdk_ros/AdvancedSensing.h>
+#endif
 
 
 

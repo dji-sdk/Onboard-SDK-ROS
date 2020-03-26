@@ -19,6 +19,7 @@
 #include <string>
 #include <cmath>
 #include <vector>
+#include <dji_camera_image.hpp>
 
 const double C_EARTH = 6378137.0;
 const double DEG2RAD = 0.01745329252;
@@ -72,6 +73,7 @@ namespace dji_osdk_ros
       std::vector<uint8_t>& getCameraRawData();
       void setCameraRawData(uint8_t* rawData, int bufLen);
       void setCameraImage(const CameraRGBImage& img);
+      void setAcmDevicePath(const char *acm_path);
 #endif
 
   protected:

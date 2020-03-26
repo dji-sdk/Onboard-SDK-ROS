@@ -5,7 +5,7 @@
   * @version: v0.0.1
   * @author: kevin.hoo@dji.com
   * @create_date: 2020-03-08 16:08:55
-  * @last_modified_date: 2020-03-11 20:49:32
+  * @last_modified_date: 2020-03-25 18:28:21
   * @brief: TODO
   * @details: TODO
   */
@@ -66,7 +66,7 @@ void VehicleNode::initService()
 #ifdef ADVANCED_SENSING
 bool VehicleNode::advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response)
 {
-    ROS_DEBUG("called advancedSensingCallback");
+    //ROS_DEBUG("called advancedSensingCallback");
     response.result = false;
     ACK::ErrorCode ack;
     if(ptr_wrapper_ == nullptr)
@@ -75,44 +75,43 @@ bool VehicleNode::advancedSensingCallback(AdvancedSensing::Request& request, Adv
         return true;
     }
 
+    ptr_wrapper_->setAcmDevicePath(device_acm_.c_str());
+    std::vector<uint8_t> rawData;
     if (request.is_open)
     {
         if (ptr_wrapper_->startStream(request.is_h264, request.request_view))
         {
-            switch (request.is_h264)
+            if(request.is_h264)
             {
-                case true:
-                    std::vector<uint8_t> rawData;
-                    rawData.clear();
-                    rawData = ptr_wrapper_->getCameraRawData();
-                    for (int i = 0; i < rawData.size(); i++)
-                    {
-                        reponse.raw_data[i] = rawData[i];
-                    }
-                    reponse.result = true;
-                    break;
-                case false:
-                    CameraRGBImage cameraRgbImage = ptr_wrapper_->getCameraImage();
-                    for (int i = 0; i < rawData.size(); i++)
-                    {
-                        reponse.raw_data[i] = cameraRgbImage.rawData[i];
-                    }
-                    reponse.height = cameraRgbImage.height;
-                    reponse.width  = cameraRgbImage.width;
-                    reponse.result = true;
-                    break;
-                default:
+                rawData.clear();
+                rawData = ptr_wrapper_->getCameraRawData();
+                for (int i = 0; i < rawData.size(); i++)
                 {
-                    ROS_DEBUG("No recognized cmd");
-                    response.result = false;
-                    break;
+                    response.raw_data[i] = rawData[i];
                 }
+                response.raw_data_len = rawData.size();
+                response.result = true;
+            }
+            else
+            {
+                CameraRGBImage cameraRgbImage = ptr_wrapper_->getCameraImage();
+                for (int i = 0; i < rawData.size(); i++)
+                {
+                    response.raw_data[i] = cameraRgbImage.rawData[i];
+                }
+                response.raw_data_len = rawData.size();
+                response.height = cameraRgbImage.height;
+                response.width  = cameraRgbImage.width;
+                response.result = true;
             }
         }
     }
     else
     {
-        ptr_wrapper_->stopStream(request.is_h264, request.request_view)
+        if(ptr_wrapper_->stopStream(request.is_h264, request.request_view))
+        {
+            response.result = true;
+        }
     }
 
 
@@ -120,6 +119,7 @@ bool VehicleNode::advancedSensingCallback(AdvancedSensing::Request& request, Adv
     {
         ACK::getErrorCodeMessage(ack, __func__);
         response.result = false;
+        return false;
     }
     else
     {

@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(dji_osdk_ros)
-
-## Compile as C++11, supported in ROS Kinetic and newer
+project(dji_osdk_ros) ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
@@ -21,6 +19,12 @@ find_package(catkin REQUIRED COMPONENTS
 set(CMAKE_CXX_FLAGS "-std=c++14 -fPIC ${CMAKE_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules")
+
+if(ENABLE_ADVANCED_SENSING)
+	MESSAGE(STATUS "Support Advanced Sensing")
+	ADD_DEFINITIONS(-DADVANCED_SENSING)
+ENDIF()
+
 
 #find_package(DJIOSDK REQUIRED)
 find_package(LibUSB REQUIRED)
@@ -69,14 +73,9 @@ catkin_python_setup()
    MFIO.srv
    SetGoHomeAltitude.srv
    SetNewHomePoint.srv
+   AdvancedSensing.srv
    AvoidEnable.srv
  )
- if(ADVANCED_SENSING)
- add_service_files(
-   FILES
-   AdvancedSensing.srv
- )
- endif()
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -120,6 +119,7 @@ catkin_python_setup()
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
+MESSAGE(STATUS "USB INCLUDE: ${LIBUSB_1_INCLUDE_DIR}")
 catkin_package(
   INCLUDE_DIRS include
 #  LIBRARIES onboard-sdk-ros
@@ -141,6 +141,7 @@ catkin_package(
 include_directories(
  include
  #${DJIOSDK_INCLUDE_DIRS}
+ ${LIBUSB_1_INCLUDE_DIR}
  ${catkin_INCLUDE_DIRS}
 )
 

@@ -5,7 +5,7 @@
   * @version: v0.0.1
   * @author: kevin.hoo@dji.com
   * @create_date: 2020-03-08 18:11:38
-  * @last_modified_date: 2020-03-10 13:39:17
+  * @last_modified_date: 2020-03-25 17:31:29
   * @brief: TODO
   * @details: TODO
   */
@@ -17,6 +17,7 @@
 #include <dji_osdk_ros/vehicle_wrapper.hh>
 #include <dji_osdk_ros/osdkhal_linux.h>
 #include <dji_osdk_ros/osdkosal_linux.h>
+
 #include <iostream>
 
 //CODE
@@ -55,7 +56,7 @@ static void liveViewCb(uint8_t* buf, int bufLen, void* userData) {
   }
 }
 
-static void setCameraImage(CameraRGBImage img, void *p)
+void setCameraImageCb(CameraRGBImage img, void *p)
 {
  if (p) {
      VehicleWrapper* vehicleWrapper = (VehicleWrapper*)p;
@@ -1299,21 +1300,21 @@ static T_OsdkOsalHandler osalHandler = {
   {
       if(is_h264)
       {
-          return vehicle->advancedSensing->startH264Stream(request_view, &liveViewCb, this);
+          return vehicle->advancedSensing->startH264Stream(LiveView::LiveViewCameraPosition(request_view), &liveViewCb, this);
       }
       else
       {
           switch(request_view)
           {
               case LiveView::OSDK_CAMERA_POSITION_FPV:
-                  ROS_DEBUG("called open FPV_CAMERA");
-                  return vehicle->advancedSensing->startFPVCameraStream(setCameraImage, this);
+                  std::cout << "called open FPV_CAMERA" << std::endl;
+                  return vehicle->advancedSensing->startFPVCameraStream(setCameraImageCb, this);
               case LiveView::OSDK_CAMERA_POSITION_NO_1:
-                  ROS_DEBUG("called open MAIN_CAMERA");
-                  return vehicle->advancedSensing->startMainCameraStream(setCameraImage,this);
+                  std::cout << "called open MAIN_CAMERA" << std::endl;
+                  return vehicle->advancedSensing->startMainCameraStream(setCameraImageCb,this);
               default:
                {
-                  ROS_DEBUG("No recognized camera view");
+                  std::cout << "No recognized camera view" << std::endl;
                   return false;
                }
           }
@@ -1324,25 +1325,28 @@ static T_OsdkOsalHandler osalHandler = {
   {
       if(is_h264)
       {
-          return vehicle->advancedSensing->stopH264Stream(request_view);
+          return vehicle->advancedSensing->stopH264Stream(LiveView::LiveViewCameraPosition(request_view));
       }
       else
       {
           switch(request_view)
           {
               case LiveView::OSDK_CAMERA_POSITION_FPV:
-                  ROS_DEBUG("called stop FPV_CAMERA");
-                  return vehicle->advancedSensing->stopFPVCameraStream();
+                  std::cout << "called stop FPV_CAMERA" << std::endl;
+                  vehicle->advancedSensing->stopFPVCameraStream();
+                  break;
               case LiveView::OSDK_CAMERA_POSITION_NO_1:
-                  ROS_DEBUG("called stop MAIN_CAMERA");
-                  return vehicle->advancedSensing->stopMainCameraStream();
+                  std::cout << "called stop MAIN_CAMERA" << std::endl;
+                  vehicle->advancedSensing->stopMainCameraStream();
+                  break;
               default:
               {
-                  ROS_DEBUG("No recognized camera view");
+                  std::cout << "No recognized camera view" << std::endl;
                   return false;
               }
           }
       }
+      return true;
   }
 
   CameraRGBImage& VehicleWrapper::getCameraImage()
@@ -1368,6 +1372,11 @@ static T_OsdkOsalHandler osalHandler = {
   void VehicleWrapper::setCameraImage(const CameraRGBImage& img)
   {
       this->image_from_camera_ = img;
+  }
+
+  void VehicleWrapper::setAcmDevicePath(const char *acm_path)
+  {
+      vehicle->advancedSensing->setAcmDevicePath(acm_path);
   }
 #endif
 }

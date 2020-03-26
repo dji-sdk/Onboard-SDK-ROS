@@ -7,7 +7,7 @@
   * @version: v0.0.1
   * @author: kevin.hoo@dji.com
   * @create_date: 2020-03-08 22:29:50
-  * @last_modified_date: 2020-03-11 18:00:54
+  * @last_modified_date: 2020-03-25 17:28:38
   * @brief: TODO
   * @details: TODO
   *-----------------------------------------------*/
@@ -111,17 +111,6 @@ namespace dji_osdk_ros
     zoom_param digital_zoom_param;
   } CameraZoomDataType;
 #pragma pack()
-
-  /*! @brief Data structure for the image frames from the
-   *         FPV camera or main camera
-   */
-  typedef struct camera_RGB_image
-  {
-      // rawData.size should be height x width x 3 x sizeof(char)
-      std::vector<uint8_t> rawData;
-      int height;
-      int width;
-  } CameraRGBImage;
 }
 
 #endif // __COMMON_TYPE_HH__
