@@ -13,8 +13,4 @@ uint8 request_view
 ---
 #reponse
 
-uint8[] raw_data
-uint32  raw_data_len
-uint16  height
-uint16  width
 bool result

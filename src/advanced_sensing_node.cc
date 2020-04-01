@@ -13,9 +13,11 @@
 #include <ros/ros.h>
 #include <dji_osdk_ros/common_type.hh>
 #include <string>
+#include <stdio.h>
 
 #include <dji_osdk_ros/AdvancedSensing.h>
 #include <dji_camera_image.hpp>
+#include <dji_osdk_ros/CameraData.h>
 
 #ifdef OPEN_CV_INSTALLED
 #include "opencv2/opencv.hpp"
@@ -25,6 +27,8 @@
 
 //CODE
 using namespace dji_osdk_ros;
+
+bool is_h264 = true;
 
 int writeH264StreamData(const char *fileName, const uint8_t *data, uint32_t len)
 {
@@ -52,12 +56,32 @@ void show_rgb(CameraRGBImage img, void *p)
 {
     std::string name = std::string(reinterpret_cast<char *>(p));
     std::cout << "#### Got image from:\t" << name << std::endl;
-    #ifdef OPEN_CV_INSTALLED
+#ifdef OPEN_CV_INSTALLED
     cv::Mat mat(img.height, img.width, CV_8UC3, img.rawData.data(), img.width*3);
     cv::cvtColor(mat, mat, COLOR_RGB2BGR);
     cv::imshow(name,mat);
     cv::waitKey(1);
-    #endif
+#endif
+}
+
+void cameraDataCallBack(const dji_osdk_ros::CameraData& msg)
+{
+    if (is_h264)
+    {
+        uint8_t tempData[msg.raw_data.size()];
+        memcpy(tempData, msg.raw_data.data(), msg.raw_data.size());
+        writeH264StreamData("H264View.h264", tempData, msg.raw_data.size());
+    }
+    else
+    {
+        CameraRGBImage img;
+        char Name[] = "CAM";
+        img.rawData = msg.raw_data;
+        img.height  = msg.height;
+        img.width   = msg.width;
+        show_rgb(img, &Name);
+    }
+    //std::cout<<"sub msg len is"<<msg.raw_data.size()<<std::endl;
 }
 
 int main(int argc, char** argv)
@@ -65,7 +89,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "advanced_sensing_node");
     ros::NodeHandle nh;
     auto advanced_sensing_client = nh.serviceClient<AdvancedSensing>("/advanced_sensing");
-
+    auto sub = nh.subscribe("cameradata", 1000, cameraDataCallBack);
     std::cout
             << "| Available commands:                                            |"
             << std::endl;
@@ -133,7 +157,7 @@ int main(int argc, char** argv)
         }
         case 'n':
         {
-            advanced_sensing.request.is_h264 = true;
+            advanced_sensing.request.is_h264 = false;
             std::cout << std::endl;
             std::cout
                     << "| Available commands:                                            |"
@@ -168,53 +192,26 @@ int main(int argc, char** argv)
         }
     }
 
+    is_h264 = advanced_sensing.request.is_h264;
+
     advanced_sensing.request.is_open = true;
     advanced_sensing_client.call(advanced_sensing);
+    ros::AsyncSpinner spinner(2);
+    spinner.start();
     if (advanced_sensing.response.result)
     {
         ROS_INFO_STREAM("open advanced sensing task successful!");
-        if(advanced_sensing.request.is_h264)
-        {
-            ros::Time begin_time = ros::Time::now();
-            while (true)
-            {
-                uint8_t raw_data[advanced_sensing.response.raw_data_len];
-                for (int i = 0; i < advanced_sensing.response.raw_data_len; i++)
-                {
-                    raw_data[i] = advanced_sensing.response.raw_data[i];
-                }
-                writeH264StreamData("H264View.h264", raw_data, advanced_sensing.response.raw_data_len);
-                ros::Time current_time = ros::Time::now();
-                if (current_time.sec - begin_time.sec >= 300)
-                {
-                    break;
-                }
-            }
-        }
-        else
-        {
-            CameraRGBImage img;
-            char Name[] = "CAM";
-            ros::Time begin_time = ros::Time::now();
-            while(true)
-            {
-                for (int i = 0; i < advanced_sensing.response.raw_data_len; i++)
-                {
-                    img.rawData[i] = advanced_sensing.response.raw_data[i];
-                }
-                img.height = advanced_sensing.response.height;
-                img.width  = advanced_sensing.response.width;
-                show_rgb(img, &Name);
-
-                ros::Time current_time = ros::Time::now();
-                if (current_time.sec - begin_time.sec >= 300)
-                {
-                    break;
-                }
-            }
-        }
     }
+
+    ros::Duration(10.0).sleep();
 
     advanced_sensing.request.is_open = false;
     advanced_sensing_client.call(advanced_sensing);
+    if (advanced_sensing.response.result)
+    {
+        ROS_INFO_STREAM("close advanced sensing task successful!");
+    }
+    ros::waitForShutdown();
+    ros::spin();
+    return 0;
 }

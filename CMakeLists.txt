@@ -77,6 +77,12 @@ catkin_python_setup()
    AvoidEnable.srv
  )
 
+## Generate msg in the 'srv' folder
+add_message_files(
+        FILES
+        CameraData.msg
+)
+
 ## Generate actions in the 'action' folder
 # add_action_files(
 #   FILES

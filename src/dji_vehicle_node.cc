@@ -26,14 +26,14 @@ VehicleNode::VehicleNode(int test)
 
 VehicleNode::VehicleNode()
 {
-  nh_.param("app_id",        app_id_,    123456);
-  nh_.param("enc_key",       enc_key_, std::string("abcd1234"));
-  nh_.param("acm_name",      device_acm_, std::string("/dev/ttyACM0"));
-  nh_.param("serial_name",   device_, std::string("/dev/ttyUSB0"));
-  nh_.param("baud_rate",     baud_rate_, 921600);
-  nh_.param("app_version",   app_version_, 1);
-  nh_.param("drone_version", drone_version_, std::string("M100")); // choose M100 as default
-  nh_.param("gravity_const", gravity_const_, 9.801);
+  nh_.param("/vehicle_node/app_id",        app_id_,    10086);
+  nh_.param("/vehicle_node/enc_key",       enc_key_, std::string("abcde123"));
+  nh_.param("/vehicle_node/acm_name",      device_acm_, std::string("/dev/ttyACM0"));
+  nh_.param("/vehicle_node/serial_name",   device_, std::string("/dev/ttyUSB0"));
+  nh_.param("/vehicle_node/baud_rate",     baud_rate_, 230400);
+  nh_.param("/vehicle_node/app_version",   app_version_, 1);
+  nh_.param("/vehicle_node/drone_version", drone_version_, std::string("M100")); // choose M100 as default
+  nh_.param("/vehicle_node/gravity_const", gravity_const_, 9.801);
   ptr_wrapper_ = std::make_unique<VehicleWrapper>(app_id_, enc_key_, device_, baud_rate_);
 
   if(ptr_wrapper_ == nullptr)
@@ -66,9 +66,8 @@ void VehicleNode::initService()
 #ifdef ADVANCED_SENSING
 bool VehicleNode::advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response)
 {
-    //ROS_DEBUG("called advancedSensingCallback");
+    ROS_DEBUG("called advancedSensingCallback");
     response.result = false;
-    ACK::ErrorCode ack;
     if(ptr_wrapper_ == nullptr)
     {
         ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
@@ -76,57 +75,36 @@ bool VehicleNode::advancedSensingCallback(AdvancedSensing::Request& request, Adv
     }
 
     ptr_wrapper_->setAcmDevicePath(device_acm_.c_str());
-    std::vector<uint8_t> rawData;
+    is_h264_ = request.is_h264;
+
     if (request.is_open)
     {
-        if (ptr_wrapper_->startStream(request.is_h264, request.request_view))
-        {
-            if(request.is_h264)
-            {
-                rawData.clear();
-                rawData = ptr_wrapper_->getCameraRawData();
-                for (int i = 0; i < rawData.size(); i++)
-                {
-                    response.raw_data[i] = rawData[i];
-                }
-                response.raw_data_len = rawData.size();
-                response.result = true;
-            }
-            else
-            {
-                CameraRGBImage cameraRgbImage = ptr_wrapper_->getCameraImage();
-                for (int i = 0; i < rawData.size(); i++)
-                {
-                    response.raw_data[i] = cameraRgbImage.rawData[i];
-                }
-                response.raw_data_len = rawData.size();
-                response.height = cameraRgbImage.height;
-                response.width  = cameraRgbImage.width;
-                response.result = true;
-            }
-        }
+        response.result = ptr_wrapper_->startStream(request.is_h264, request.request_view);
     }
     else
     {
-        if(ptr_wrapper_->stopStream(request.is_h264, request.request_view))
-        {
-            response.result = true;
-        }
+        response.result = ptr_wrapper_->stopStream(request.is_h264, request.request_view);
     }
 
+    return response.result;
+}
 
-    if (ACK::getError(ack))
+dji_osdk_ros::CameraData VehicleNode::getCameraData()
+{
+    dji_osdk_ros::CameraData cameraData;
+    if (is_h264_)
     {
-        ACK::getErrorCodeMessage(ack, __func__);
-        response.result = false;
-        return false;
+        cameraData.raw_data = ptr_wrapper_->getCameraRawData();
     }
     else
     {
-        response.result = true;
+        CameraRGBImage image = ptr_wrapper_->getCameraImage();
+        cameraData.raw_data = image.rawData;
+        cameraData.height = image.height;
+        cameraData.width = image.width;
     }
 
-    return true;
+    return cameraData;
 }
 #endif
 
@@ -430,12 +408,40 @@ bool VehicleNode::initSubscribe()
   return true;
 }
 
-
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "vehicle_node");
-  VehicleNode vh_node(1);
+//  VehicleNode vh_node(1);
+  VehicleNode vh_node;
 
+#ifdef ADVANCED_SENSING
+  ros::AsyncSpinner spinner(4);
+  spinner.start();
+  ros::NodeHandle nh;
+
+  dji_osdk_ros::CameraData cameraData;
+  ros::Publisher pub = nh.advertise<dji_osdk_ros::CameraData>("cameradata", 1000);
+
+  ros::Rate rate(40);
+
+  std::vector<uint8_t> lastCameraData = cameraData.raw_data;
+
+  while(ros::ok())
+  {
+      cameraData = vh_node.getCameraData();
+      if (cameraData.raw_data != lastCameraData)
+      {
+          lastCameraData = cameraData.raw_data;
+//          ROS_INFO("raw data len is %ld\n",cameraData.raw_data.size());
+          pub.publish(cameraData);
+
+          ros::spinOnce();
+          rate.sleep();
+      }
+  }
+
+  ros::waitForShutdown();
+#endif
   ros::spin();
   return 0;
 }

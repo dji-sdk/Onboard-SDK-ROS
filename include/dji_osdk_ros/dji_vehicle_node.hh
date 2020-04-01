@@ -31,6 +31,7 @@
 #include <dji_osdk_ros/AvoidEnable.h>
 #ifdef ADVANCED_SENSING
 #include <dji_osdk_ros/AdvancedSensing.h>
+#include <dji_osdk_ros/CameraData.h>
 #endif
 
 
@@ -50,7 +51,9 @@ namespace dji_osdk_ros
       ~VehicleNode() = default;
 
       void initService();
-
+#ifdef ADVANCED_SENSING
+      dji_osdk_ros::CameraData getCameraData();
+#endif
     protected:
       ros::ServiceServer task_control_server_;
       ros::ServiceServer gimbal_control_server_;
@@ -96,6 +99,10 @@ namespace dji_osdk_ros
       std::string   sample_case_;
       std::string   drone_version_;
       std::string   app_bundle_id_; // reserved
+
+#ifdef ADVANCED_SENSING
+      bool is_h264_;
+#endif
   };
 }
 #endif // __DJI_VEHICLE_NODE_HH__

@@ -19,7 +19,10 @@
 #include <string>
 #include <cmath>
 #include <vector>
+#ifdef ADVANCED_SENSING
 #include <dji_camera_image.hpp>
+#endif
+#include <mutex>
 
 const double C_EARTH = 6378137.0;
 const double DEG2RAD = 0.01745329252;
@@ -106,10 +109,13 @@ namespace dji_osdk_ros
       std::string  device_;
       unsigned int baudrate_;
       std::string  sample_case_;
-      const static unsigned int default_acm_baudrate = 921600;
+      const static unsigned int default_acm_baudrate = 230400;
 
+#ifdef ADVANCED_SENSING
       CameraRGBImage image_from_camera_;
       std::vector<uint8_t> raw_data_from_camera_;
+      std::mutex camera_data_mutex_;
+#endif
   };
 }
 

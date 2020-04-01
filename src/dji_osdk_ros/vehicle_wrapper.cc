@@ -38,6 +38,7 @@ static T_OsdkHalUartHandler halUartHandler = {
     .UartInit = OsdkLinux_UartInit,
     .UartWriteData = OsdkLinux_UartSendData,
     .UartReadData = OsdkLinux_UartReadData,
+    .UartClose = OsdkLinux_UartClose,
 };
 
 #ifdef ADVANCED_SENSING
@@ -45,12 +46,14 @@ static T_OsdkHalUSBBulkHandler halUSBBulkHandler = {
     .USBBulkInit = OsdkLinux_USBBulkInit,
     .USBBulkWriteData = OsdkLinux_USBBulkSendData,
     .USBBulkReadData = OsdkLinux_USBBulkReadData,
+    .USBBulkClose = OsdkLinux_USBBulkClose,
 };
 
 static void liveViewCb(uint8_t* buf, int bufLen, void* userData) {
   if (userData) {
-      VehicleWrapper* vehicleWrapper = (VehicleWrapper*)userData;
+      VehicleWrapper* vehicleWrapper = reinterpret_cast<VehicleWrapper*>(userData);
       vehicleWrapper->setCameraRawData(buf, bufLen);
+//      writeH264StreamData("H264View1.h264", buf , bufLen);
   } else {
   DERROR("userData is a null value (should be a pointer to VehicleWrapper).");
   }
@@ -59,7 +62,7 @@ static void liveViewCb(uint8_t* buf, int bufLen, void* userData) {
 void setCameraImageCb(CameraRGBImage img, void *p)
 {
  if (p) {
-     VehicleWrapper* vehicleWrapper = (VehicleWrapper*)p;
+     VehicleWrapper* vehicleWrapper = reinterpret_cast<VehicleWrapper*>(p);
      vehicleWrapper->setCameraImage(img);
  } else{
      DERROR("p is a null value (should be a pointer to VehicleWrapper).");
@@ -97,7 +100,7 @@ static T_OsdkOsalHandler osalHandler = {
     : Setup(enableAdvancedSensing),
       app_id_(app_id),
       enc_key_(enc_key),
-      device_acm_(""),
+      device_acm_("/dev/ttyACM0"),
       device_(dev_name),
       baudrate_(baud_rate)
   {
@@ -188,8 +191,14 @@ static T_OsdkOsalHandler osalHandler = {
       ACK::getErrorCodeMessage(ack, __func__);
       return false;
     }
+    ack = vehicle->control->obtainCtrlAuthority(timeout_);
+    if (ACK::getError(ack))
+    {
+        ACK::getErrorCodeMessage(ack, __func__);
+        return false;
+    }
 
-    return true;
+      return true;
   }
 
   bool VehicleWrapper::takePicture()
@@ -228,6 +237,7 @@ static T_OsdkOsalHandler osalHandler = {
     //@todo: remove this once the getErrorCode function signature changes
     char func[50];
     int  pkgIndex;
+
 
     if (vehicle->isM100() && vehicle->isLegacyM600())
     {
@@ -1298,34 +1308,44 @@ static T_OsdkOsalHandler osalHandler = {
 #ifdef ADVANCED_SENSING
   bool VehicleWrapper::startStream(bool is_h264, uint8_t request_view)
   {
+      bool result = true;
       if(is_h264)
       {
-          return vehicle->advancedSensing->startH264Stream(LiveView::LiveViewCameraPosition(request_view), &liveViewCb, this);
+          vehicle->advancedSensing->startH264Stream(LiveView::LiveViewCameraPosition(request_view), liveViewCb, this);
       }
       else
       {
           switch(request_view)
           {
               case LiveView::OSDK_CAMERA_POSITION_FPV:
-                  std::cout << "called open FPV_CAMERA" << std::endl;
-                  return vehicle->advancedSensing->startFPVCameraStream(setCameraImageCb, this);
+              {
+                 std::cout << "called open FPV_CAMERA" << std::endl;
+                 result = vehicle->advancedSensing->startFPVCameraStream(setCameraImageCb, this);
+                 break;
+              }
               case LiveView::OSDK_CAMERA_POSITION_NO_1:
-                  std::cout << "called open MAIN_CAMERA" << std::endl;
-                  return vehicle->advancedSensing->startMainCameraStream(setCameraImageCb,this);
+              {
+                 std::cout << "called open MAIN_CAMERA" << std::endl;
+                 result = vehicle->advancedSensing->startMainCameraStream(setCameraImageCb,this);
+                 break;
+              }
               default:
-               {
-                  std::cout << "No recognized camera view" << std::endl;
-                  return false;
-               }
+              {
+                 std::cout << "No recognized camera view" << std::endl;
+                 result = false;
+                 break;
+              }
           }
       }
+
+      return result;
   }
 
   bool VehicleWrapper::stopStream(bool is_h264, uint8_t request_view)
   {
       if(is_h264)
       {
-          return vehicle->advancedSensing->stopH264Stream(LiveView::LiveViewCameraPosition(request_view));
+         vehicle->advancedSensing->stopH264Stream(LiveView::LiveViewCameraPosition(request_view));
       }
       else
       {
@@ -1346,27 +1366,27 @@ static T_OsdkOsalHandler osalHandler = {
               }
           }
       }
+
       return true;
   }
 
   CameraRGBImage& VehicleWrapper::getCameraImage()
   {
+    std::lock_guard<std::mutex> lock(camera_data_mutex_);
     return this->image_from_camera_;
   }
 
   std::vector<uint8_t>& VehicleWrapper::getCameraRawData()
   {
-    return this->raw_data_from_camera_;
+      std::lock_guard<std::mutex> lock(camera_data_mutex_);
+      return this->raw_data_from_camera_;
   }
 
   void VehicleWrapper::setCameraRawData(uint8_t *rawData, int bufLen)
   {
-      raw_data_from_camera_.clear();
-      raw_data_from_camera_.resize(bufLen);
-      for (int i = 0; i < bufLen; i++)
-      {
-          raw_data_from_camera_.assign(i, rawData[i]);
-      }
+      std::lock_guard<std::mutex> lock(camera_data_mutex_);
+      std::vector<uint8_t> tempRawData(rawData, rawData + bufLen);
+      raw_data_from_camera_ = tempRawData;
   }
 
   void VehicleWrapper::setCameraImage(const CameraRGBImage& img)
