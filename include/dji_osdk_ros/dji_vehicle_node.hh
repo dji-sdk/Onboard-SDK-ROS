@@ -51,6 +51,8 @@ namespace dji_osdk_ros
       ~VehicleNode() = default;
 
       void initService();
+      void initTopic();
+      bool publishTopic();
 #ifdef ADVANCED_SENSING
       dji_osdk_ros::CameraData getCameraData();
 #endif
@@ -65,6 +67,7 @@ namespace dji_osdk_ros
       ros::ServiceServer avoid_enable_server_;
 #ifdef ADVANCED_SENSING
       ros::ServiceServer advanced_sensing_server_;
+      ros::Publisher advanced_sensing_pub_;
 #endif
 
     protected:
@@ -81,6 +84,7 @@ namespace dji_osdk_ros
 
 #ifdef ADVANCED_SENSING
       bool advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response);
+      bool publishAdvancedSeningData();
 #endif
 
       bool initSubscribe();

@@ -101,6 +101,7 @@ int main(int argc, char** argv)
             << std::endl;
 
     char input_device_char;
+    bool input_result = true;
     std::cin >> input_device_char;
 
     AdvancedSensing advanced_sensing;
@@ -150,7 +151,7 @@ int main(int argc, char** argv)
                 default:
                 {
                     std::cout << "No camera selected" << std::endl;
-                    return 1;
+                    input_result = false;
                 }
             }
             break;
@@ -185,11 +186,17 @@ int main(int argc, char** argv)
                 default:
                 {
                     std::cout << "No camera selected" << std::endl;
-                    return 1;
+                    input_result = false;
                 }
             }
             break;
         }
+    }
+
+    if (!input_result)
+    {
+        std::cout << "Please check your input!"<< std::endl;
+        return false;
     }
 
     is_h264 = advanced_sensing.request.is_h264;

@@ -53,13 +53,12 @@ static void liveViewCb(uint8_t* buf, int bufLen, void* userData) {
   if (userData) {
       VehicleWrapper* vehicleWrapper = reinterpret_cast<VehicleWrapper*>(userData);
       vehicleWrapper->setCameraRawData(buf, bufLen);
-//      writeH264StreamData("H264View1.h264", buf , bufLen);
   } else {
   DERROR("userData is a null value (should be a pointer to VehicleWrapper).");
   }
 }
 
-void setCameraImageCb(CameraRGBImage img, void *p)
+static void setCameraImageCb(CameraRGBImage img, void *p)
 {
  if (p) {
      VehicleWrapper* vehicleWrapper = reinterpret_cast<VehicleWrapper*>(p);
@@ -104,6 +103,7 @@ static T_OsdkOsalHandler osalHandler = {
       device_(dev_name),
       baudrate_(baud_rate)
   {
+    std::cout << "EnableAd: " << enableAdvancedSensing << std::endl;
     timeout_ = 1;
     setupEnvironment(enableAdvancedSensing);
     if(initVehicle() == false)
@@ -1343,6 +1343,8 @@ static T_OsdkOsalHandler osalHandler = {
 
   bool VehicleWrapper::stopStream(bool is_h264, uint8_t request_view)
   {
+      bool result = true;
+
       if(is_h264)
       {
          vehicle->advancedSensing->stopH264Stream(LiveView::LiveViewCameraPosition(request_view));
@@ -1352,22 +1354,26 @@ static T_OsdkOsalHandler osalHandler = {
           switch(request_view)
           {
               case LiveView::OSDK_CAMERA_POSITION_FPV:
+              {
                   std::cout << "called stop FPV_CAMERA" << std::endl;
                   vehicle->advancedSensing->stopFPVCameraStream();
                   break;
+              }
               case LiveView::OSDK_CAMERA_POSITION_NO_1:
+              {
                   std::cout << "called stop MAIN_CAMERA" << std::endl;
                   vehicle->advancedSensing->stopMainCameraStream();
                   break;
+              }
               default:
               {
                   std::cout << "No recognized camera view" << std::endl;
-                  return false;
+                  result = false;
               }
           }
       }
 
-      return true;
+      return result;
   }
 
   CameraRGBImage& VehicleWrapper::getCameraImage()
@@ -1394,9 +1400,9 @@ static T_OsdkOsalHandler osalHandler = {
       this->image_from_camera_ = img;
   }
 
-  void VehicleWrapper::setAcmDevicePath(const char *acm_path)
+  void VehicleWrapper::setAcmDevicePath(const std::string& acm_path)
   {
-      vehicle->advancedSensing->setAcmDevicePath(acm_path);
+      vehicle->advancedSensing->setAcmDevicePath(acm_path.c_str());
   }
 #endif
 }

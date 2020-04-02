@@ -76,7 +76,7 @@ namespace dji_osdk_ros
       std::vector<uint8_t>& getCameraRawData();
       void setCameraRawData(uint8_t* rawData, int bufLen);
       void setCameraImage(const CameraRGBImage& img);
-      void setAcmDevicePath(const char *acm_path);
+      void setAcmDevicePath(const std::string& acm_path);
 #endif
 
   protected:
