@@ -218,7 +218,7 @@ int main(int argc, char** argv)
     {
         ROS_INFO_STREAM("close advanced sensing task successful!");
     }
+    ROS_INFO_STREAM("Finished. Press CTRL-C to terminate the node");
     ros::waitForShutdown();
-    ros::spin();
     return 0;
 }
