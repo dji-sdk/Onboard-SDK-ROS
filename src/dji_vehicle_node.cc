@@ -26,7 +26,7 @@ VehicleNode::VehicleNode(int test)
 
 VehicleNode::VehicleNode()
 {
-  nh_.param("/vehicle_node/app_id",        app_id_,    10086);
+  nh_.param("/vehicle_node/app_id",        app_id_,    12345);
   nh_.param("/vehicle_node/enc_key",       enc_key_, std::string("abcde123"));
   nh_.param("/vehicle_node/acm_name",      device_acm_, std::string("/dev/ttyACM0"));
   nh_.param("/vehicle_node/serial_name",   device_, std::string("/dev/ttyUSB0"));

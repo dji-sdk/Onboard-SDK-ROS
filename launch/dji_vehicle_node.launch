@@ -4,10 +4,10 @@
     <param name="acm_name" type="string" value="/dev/ttyACM0"/>
     <param name="serial_name" type="string" value="/dev/ttyUSB0"/>
     <param name="baud_rate" type="int" value="230400"/>
-    <param name="app_id" type="int" value="10086"/>
+    <param name="app_id" type="int" value="your app_id here"/>
     <param name="app_version" type="int" value="1"/>
     <param name="align_time" type="bool" value="false"/>
-    <param name="enc_key" type="string" value="763e95936f04b7e454c2a9107cc97d01da9279e402e014f6c16c0fe76f82435c"/>
+    <param name="enc_key" type="string" value="your app_key here"/>
     <param name="use_broadcast" type="bool" value="false"/>
     </node>
 </launch>

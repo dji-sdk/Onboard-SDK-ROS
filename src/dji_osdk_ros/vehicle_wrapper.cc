@@ -238,7 +238,6 @@ static T_OsdkOsalHandler osalHandler = {
     char func[50];
     int  pkgIndex;
 
-
     if (vehicle->isM100() && vehicle->isLegacyM600())
     {
       // Telemetry: Verify the subscription
