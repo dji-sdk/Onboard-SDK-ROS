@@ -5,7 +5,7 @@
   * @version: v0.0.1
   * @author: kevin.hoo@dji.com
   * @create_date: 2020-03-08 18:11:38
-  * @last_modified_date: 2020-03-10 13:39:17
+  * @last_modified_date: 2020-03-25 17:31:29
   * @brief: TODO
   * @details: TODO
   */
@@ -17,6 +17,7 @@
 #include <dji_osdk_ros/vehicle_wrapper.hh>
 #include <dji_osdk_ros/osdkhal_linux.h>
 #include <dji_osdk_ros/osdkosal_linux.h>
+
 #include <iostream>
 
 //CODE
@@ -37,6 +38,7 @@ static T_OsdkHalUartHandler halUartHandler = {
     .UartInit = OsdkLinux_UartInit,
     .UartWriteData = OsdkLinux_UartSendData,
     .UartReadData = OsdkLinux_UartReadData,
+    .UartClose = OsdkLinux_UartClose,
 };
 
 #ifdef ADVANCED_SENSING
@@ -44,21 +46,22 @@ static T_OsdkHalUSBBulkHandler halUSBBulkHandler = {
     .USBBulkInit = OsdkLinux_USBBulkInit,
     .USBBulkWriteData = OsdkLinux_USBBulkSendData,
     .USBBulkReadData = OsdkLinux_USBBulkReadData,
+    .USBBulkClose = OsdkLinux_USBBulkClose,
 };
 
 static void liveViewCb(uint8_t* buf, int bufLen, void* userData) {
   if (userData) {
-      VehicleWrapper* vehicleWrapper = (VehicleWrapper*)userData;
+      VehicleWrapper* vehicleWrapper = reinterpret_cast<VehicleWrapper*>(userData);
       vehicleWrapper->setCameraRawData(buf, bufLen);
   } else {
   DERROR("userData is a null value (should be a pointer to VehicleWrapper).");
   }
 }
 
-static void setCameraImage(CameraRGBImage img, void *p)
+static void setCameraImageCb(CameraRGBImage img, void *p)
 {
  if (p) {
-     VehicleWrapper* vehicleWrapper = (VehicleWrapper*)p;
+     VehicleWrapper* vehicleWrapper = reinterpret_cast<VehicleWrapper*>(p);
      vehicleWrapper->setCameraImage(img);
  } else{
      DERROR("p is a null value (should be a pointer to VehicleWrapper).");
@@ -96,10 +99,11 @@ static T_OsdkOsalHandler osalHandler = {
     : Setup(enableAdvancedSensing),
       app_id_(app_id),
       enc_key_(enc_key),
-      device_acm_(""),
+      device_acm_("/dev/ttyACM0"),
       device_(dev_name),
       baudrate_(baud_rate)
   {
+    std::cout << "EnableAd: " << enableAdvancedSensing << std::endl;
     timeout_ = 1;
     setupEnvironment(enableAdvancedSensing);
     if(initVehicle() == false)
@@ -187,8 +191,14 @@ static T_OsdkOsalHandler osalHandler = {
       ACK::getErrorCodeMessage(ack, __func__);
       return false;
     }
+    ack = vehicle->control->obtainCtrlAuthority(timeout_);
+    if (ACK::getError(ack))
+    {
+        ACK::getErrorCodeMessage(ack, __func__);
+        return false;
+    }
 
-    return true;
+      return true;
   }
 
   bool VehicleWrapper::takePicture()
@@ -1297,77 +1307,101 @@ static T_OsdkOsalHandler osalHandler = {
 #ifdef ADVANCED_SENSING
   bool VehicleWrapper::startStream(bool is_h264, uint8_t request_view)
   {
+      bool result = true;
       if(is_h264)
       {
-          return vehicle->advancedSensing->startH264Stream(request_view, &liveViewCb, this);
+          vehicle->advancedSensing->startH264Stream(LiveView::LiveViewCameraPosition(request_view), liveViewCb, this);
       }
       else
       {
           switch(request_view)
           {
               case LiveView::OSDK_CAMERA_POSITION_FPV:
-                  ROS_DEBUG("called open FPV_CAMERA");
-                  return vehicle->advancedSensing->startFPVCameraStream(setCameraImage, this);
+              {
+                 std::cout << "called open FPV_CAMERA" << std::endl;
+                 result = vehicle->advancedSensing->startFPVCameraStream(setCameraImageCb, this);
+                 break;
+              }
               case LiveView::OSDK_CAMERA_POSITION_NO_1:
-                  ROS_DEBUG("called open MAIN_CAMERA");
-                  return vehicle->advancedSensing->startMainCameraStream(setCameraImage,this);
+              {
+                 std::cout << "called open MAIN_CAMERA" << std::endl;
+                 result = vehicle->advancedSensing->startMainCameraStream(setCameraImageCb,this);
+                 break;
+              }
               default:
-               {
-                  ROS_DEBUG("No recognized camera view");
-                  return false;
-               }
+              {
+                 std::cout << "No recognized camera view" << std::endl;
+                 result = false;
+                 break;
+              }
           }
       }
+
+      return result;
   }
 
   bool VehicleWrapper::stopStream(bool is_h264, uint8_t request_view)
   {
+      bool result = true;
+
       if(is_h264)
       {
-          return vehicle->advancedSensing->stopH264Stream(request_view);
+         vehicle->advancedSensing->stopH264Stream(LiveView::LiveViewCameraPosition(request_view));
       }
       else
       {
           switch(request_view)
           {
               case LiveView::OSDK_CAMERA_POSITION_FPV:
-                  ROS_DEBUG("called stop FPV_CAMERA");
-                  return vehicle->advancedSensing->stopFPVCameraStream();
+              {
+                  std::cout << "called stop FPV_CAMERA" << std::endl;
+                  vehicle->advancedSensing->stopFPVCameraStream();
+                  break;
+              }
               case LiveView::OSDK_CAMERA_POSITION_NO_1:
-                  ROS_DEBUG("called stop MAIN_CAMERA");
-                  return vehicle->advancedSensing->stopMainCameraStream();
+              {
+                  std::cout << "called stop MAIN_CAMERA" << std::endl;
+                  vehicle->advancedSensing->stopMainCameraStream();
+                  break;
+              }
               default:
               {
-                  ROS_DEBUG("No recognized camera view");
-                  return false;
+                  std::cout << "No recognized camera view" << std::endl;
+                  result = false;
               }
           }
       }
+
+      return result;
   }
 
   CameraRGBImage& VehicleWrapper::getCameraImage()
   {
+    std::lock_guard<std::mutex> lock(camera_data_mutex_);
     return this->image_from_camera_;
   }
 
   std::vector<uint8_t>& VehicleWrapper::getCameraRawData()
   {
-    return this->raw_data_from_camera_;
+      std::lock_guard<std::mutex> lock(camera_data_mutex_);
+      return this->raw_data_from_camera_;
   }
 
   void VehicleWrapper::setCameraRawData(uint8_t *rawData, int bufLen)
   {
-      raw_data_from_camera_.clear();
-      raw_data_from_camera_.resize(bufLen);
-      for (int i = 0; i < bufLen; i++)
-      {
-          raw_data_from_camera_.assign(i, rawData[i]);
-      }
+      std::lock_guard<std::mutex> lock(camera_data_mutex_);
+      std::vector<uint8_t> tempRawData(rawData, rawData + bufLen);
+      raw_data_from_camera_ = tempRawData;
   }
 
   void VehicleWrapper::setCameraImage(const CameraRGBImage& img)
   {
       this->image_from_camera_ = img;
+  }
+
+  void VehicleWrapper::setAcmDevicePath(const std::string& acm_path)
+  {
+      vehicle->advancedSensing->setAcmDevicePath(acm_path.c_str());
   }
 #endif
 }

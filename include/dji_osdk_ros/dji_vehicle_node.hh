@@ -29,6 +29,10 @@
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetNewHomePoint.h>
 #include <dji_osdk_ros/AvoidEnable.h>
+#ifdef ADVANCED_SENSING
+#include <dji_osdk_ros/AdvancedSensing.h>
+#include <dji_osdk_ros/CameraData.h>
+#endif
 
 
 
@@ -47,7 +51,11 @@ namespace dji_osdk_ros
       ~VehicleNode() = default;
 
       void initService();
-
+      void initTopic();
+      bool publishTopic();
+#ifdef ADVANCED_SENSING
+      dji_osdk_ros::CameraData getCameraData();
+#endif
     protected:
       ros::ServiceServer task_control_server_;
       ros::ServiceServer gimbal_control_server_;
@@ -59,6 +67,7 @@ namespace dji_osdk_ros
       ros::ServiceServer avoid_enable_server_;
 #ifdef ADVANCED_SENSING
       ros::ServiceServer advanced_sensing_server_;
+      ros::Publisher advanced_sensing_pub_;
 #endif
 
     protected:
@@ -75,6 +84,7 @@ namespace dji_osdk_ros
 
 #ifdef ADVANCED_SENSING
       bool advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response);
+      bool publishAdvancedSeningData();
 #endif
 
       bool initSubscribe();
@@ -93,6 +103,10 @@ namespace dji_osdk_ros
       std::string   sample_case_;
       std::string   drone_version_;
       std::string   app_bundle_id_; // reserved
+
+#ifdef ADVANCED_SENSING
+      bool is_h264_;
+#endif
   };
 }
 #endif // __DJI_VEHICLE_NODE_HH__
