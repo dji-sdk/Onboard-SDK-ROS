@@ -14,13 +14,13 @@
 #include <ros/ros.h>
 #include <dji_osdk_ros/common_type.hh>
 #include <dji_osdk_ros/GimbalAction.h>
-#include <dji_osdk_ros/CameraAction.h>
+#include <dji_osdk_ros/CameraTaskControl.h>
 
 //CODE
 using namespace dji_osdk_ros;
 
 void packGimbalAction(const GimbalContainer& gimbal_container, GimbalAction& action);
-void packZoomParams(const CameraZoomDataType& zoom_data, CameraAction& camera_action);
+void packZoomParams(const CameraZoomDataType& zoom_data, CameraTaskControl& camera_action);
 
 int main(int argc, char** argv)
 {
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
 
   auto gimbal_control_client = nh.serviceClient<GimbalAction>("gimbal_task_control");
-  auto camera_control_client = nh.serviceClient<CameraAction>("camera_task_control");
+  auto camera_control_client = nh.serviceClient<CameraTaskControl>("camera_task_control");
 
   // Display interactive prompt
   std::cout
@@ -56,20 +56,20 @@ int main(int argc, char** argv)
 
       {
         // Take a Picture
-        CameraAction camera_action;
-        camera_action.request.action = CameraAction::Request::CAMERA_ACTION_TAKE_PICTURE;
+        CameraTaskControl camera_action;
+        camera_action.request.action = CameraTaskControl::Request::CAMERA_ACTION_TAKE_PICTURE;
         camera_control_client.call(camera_action);
       }
 
       {
-        CameraAction camera_action;
+        CameraTaskControl camera_action;
         // Record a video
-        camera_action.request.action = CameraAction::Request::CAMERA_ACTION_START_RECORD;
+        camera_action.request.action = CameraTaskControl::Request::CAMERA_ACTION_START_RECORD;
         camera_control_client.call(camera_action);
 
         ros::Duration(2.0).sleep();
         // Stop Recording
-        camera_action.request.action = CameraAction::Request::CAMERA_ACTION_STOP_RECORD;
+        camera_action.request.action = CameraTaskControl::Request::CAMERA_ACTION_STOP_RECORD;
         camera_control_client.call(camera_action);
       }
 
@@ -78,8 +78,8 @@ int main(int argc, char** argv)
 
     case 'b':
     {
-      CameraAction camera_action;
-      camera_action.request.action = CameraAction::Request::CAMERA_ACTION_ZOOM;
+      CameraTaskControl camera_action;
+      camera_action.request.action = CameraTaskControl::Request::CAMERA_ACTION_ZOOM;
       CameraZoomDataType zoom_data;
 
       zoom_data.func_index = 19;
@@ -115,7 +115,7 @@ void packGimbalAction(const GimbalContainer& gimbal_value, GimbalAction& gimbal_
   gimbal_action.request.mode |= gimbal_value.pitch_cmd_ignore << 3;
 }
 
-void packZoomParams(const CameraZoomDataType& zoom_data, CameraAction& camera_action)
+void packZoomParams(const CameraZoomDataType& zoom_data, CameraTaskControl& camera_action)
 {
   memcpy(&camera_action.request.func_index, &zoom_data.func_index, sizeof(zoom_data.func_index));
   memcpy(&camera_action.request.cam_index, &zoom_data.cam_index, sizeof(zoom_data.cam_index));

@@ -1,5 +1,0 @@
-  uint8_t func_index;
-  uint8_t cam_index;
-  zoom_config_t zoom_config;
-  zoom_param_t optical_zoom_param;
-  zoom_param_t digital_zoom_param;

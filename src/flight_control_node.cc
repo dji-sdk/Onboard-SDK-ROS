@@ -14,7 +14,7 @@
 #include <ros/ros.h>
 #include <dji_osdk_ros/common_type.hh>
 
-#include <dji_osdk_ros/DroneTaskControl.h>
+#include <dji_osdk_ros/FlightTaskControl.h>
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetNewHomePoint.h>
 #include <dji_osdk_ros/AvoidEnable.h>
@@ -24,14 +24,14 @@ using namespace dji_osdk_ros;
 
 ros::ServiceClient task_control_client;
 
-bool moveByPosOffset(DroneTaskControl& task, MoveOffset&& move_offset);
+bool moveByPosOffset(FlightTaskControl& task, MoveOffset&& move_offset);
 
 
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "flight_control_node");
   ros::NodeHandle nh;
-  task_control_client = nh.serviceClient<DroneTaskControl>("/drone_task_control");
+  task_control_client = nh.serviceClient<FlightTaskControl>("/flight_task_control");
   auto set_go_home_altitude_client = nh.serviceClient<SetGoHomeAltitude>("/set_go_home_altitude");
   auto set_current_point_as_home_client = nh.serviceClient<SetNewHomePoint>("/set_current_point_as_home");
   auto enable_avoid_client = nh.serviceClient<SetNewHomePoint>("/enable_avoid");
@@ -53,13 +53,13 @@ int main(int argc, char** argv)
   char inputChar;
   std::cin >> inputChar;
 
-  DroneTaskControl control_task;
+  FlightTaskControl control_task;
 
   switch (inputChar)
   {
     case 'a':
       {
-        control_task.request.task = DroneTaskControl::Request::TASK_TAKEOFF;
+        control_task.request.task = FlightTaskControl::Request::TASK_TAKEOFF;
         ROS_INFO_STREAM("Takeoff request sending ...");
         task_control_client.call(control_task);
         if(control_task.response.result == true)
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
           ros::Duration(2.0).sleep();
 
           ROS_INFO_STREAM("Land request sending ...");
-          control_task.request.task = DroneTaskControl::Request::TASK_LAND;
+          control_task.request.task = FlightTaskControl::Request::TASK_LAND;
           task_control_client.call(control_task);
           if(control_task.response.result == true)
           {
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
       }
     case 'b':
       {
-        control_task.request.task = DroneTaskControl::Request::TASK_TAKEOFF;
+        control_task.request.task = FlightTaskControl::Request::TASK_TAKEOFF;
         ROS_INFO_STREAM("Takeoff request sending ...");
         task_control_client.call(control_task);
         if(control_task.response.result == false)
@@ -105,7 +105,7 @@ int main(int argc, char** argv)
           moveByPosOffset(control_task, MoveOffset(0.0, -6.0, 0.0, -30.0));
           ros::Duration(2.0).sleep();
 
-          control_task.request.task = DroneTaskControl::Request::TASK_TAKEOFF;
+          control_task.request.task = FlightTaskControl::Request::TASK_TAKEOFF;
           ROS_INFO_STREAM("Takeoff request sending ...");
           task_control_client.call(control_task);
           if(control_task.response.result == true)
@@ -120,7 +120,7 @@ int main(int argc, char** argv)
       }
     case 'c':
       {
-        control_task.request.task = DroneTaskControl::Request::TASK_TAKEOFF;
+        control_task.request.task = FlightTaskControl::Request::TASK_TAKEOFF;
         ROS_INFO_STREAM("Takeoff request sending ...");
         task_control_client.call(control_task);
         if(control_task.response.result == false)
@@ -158,7 +158,7 @@ int main(int argc, char** argv)
           ROS_ERROR_STREAM("Disable Avoid FAILED");
         }
 
-        control_task.request.task = DroneTaskControl::Request::TASK_TAKEOFF;
+        control_task.request.task = FlightTaskControl::Request::TASK_TAKEOFF;
         task_control_client.call(control_task);
         if(control_task.response.result == false)
         {
@@ -184,9 +184,9 @@ int main(int argc, char** argv)
 }
 
 
-bool moveByPosOffset(DroneTaskControl& task, MoveOffset&& move_offset)
+bool moveByPosOffset(FlightTaskControl& task, MoveOffset&& move_offset)
 {
-  task.request.task = DroneTaskControl::Request::TASK_GO_LOCAL_POS;
+  task.request.task = FlightTaskControl::Request::TASK_GO_LOCAL_POS;
   // pos_offset: A vector contains that position_x_offset, position_y_offset, position_z_offset in order
   task.request.pos_offset.clear();
   task.request.pos_offset.push_back(move_offset.x);

@@ -1,4 +1,5 @@
 add_subdirectory(dji_osdk_ros)
+add_subdirectory(dji_osdk_ros_3.8.1)
 
 FILE(GLOB EXAMPLES *.cc *.c *.cpp)
 FOREACH(EXAMPLE ${EXAMPLES})

@@ -12,7 +12,8 @@ message(STATUS "${EXTERNAL_SOURCE_NAME} ${VERSION} path is ${EXTERNAL_SOURCE_PAT
 set(BRANCH_NAME ${VERSION})
 ExternalProject_Add (
   ${EXTERNAL_SOURCE_NAME}
-  GIT_REPOSITORY https://github.com/dji-sdk/Onboard-SDK.git
+  GIT_REPOSITORY  https://github.com/dji-sdk/Onboard-SDK
+#        https://github.com/dji-sdk/Onboard-SDK.git
   GIT_TAG ${BRANCH_NAME}
   SOURCE_DIR  ${EXTERNAL_SOURCE_PATH}
   BINARY_DIR  ${EXTERNAL_BUILD_PATH}
