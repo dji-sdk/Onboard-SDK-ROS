@@ -100,7 +100,7 @@ bool VehicleNode::publishAdvancedSeningData()
         if (cameraData.raw_data != lastCameraData)
         {
             lastCameraData = cameraData.raw_data;
-//          ROS_INFO("raw data len is %ld\n",cameraData.raw_data.size());
+            ROS_INFO("raw data len is %ld\n",cameraData.raw_data.size());
             advanced_sensing_pub_.publish(cameraData);
 
             ros::spinOnce();
@@ -246,6 +246,7 @@ bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalActio
   //  ROS_ERROR_STREAM("Get Current Gimbal Angle Failed");
   //  return false;
   //}
+  ROS_INFO_STREAM("Call gimbal Ctrl.");
   GimbalContainer gimbal(request.yaw, request.pitch, request.roll, 0, 1, initial_angle);
   response.result = ptr_wrapper_->setGimbalAngle(gimbal);
   return true;

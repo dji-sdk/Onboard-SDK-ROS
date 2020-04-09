@@ -112,11 +112,11 @@ namespace dji_osdk_ros
       const static unsigned int default_acm_baudrate = 230400;
 
 #ifdef ADVANCED_SENSING
-      CameraRGBImage image_from_camera_;
-      std::vector<uint8_t> raw_data_from_camera_;
-      std::mutex camera_data_mutex_;
+    CameraRGBImage image_from_camera_;
+    std::vector<uint8_t> raw_data_from_camera_;
+    std::mutex camera_data_mutex_;
 #endif
-  };
+};
 }
 
 #endif // __VEHICLE_WRAPPER_HH__
