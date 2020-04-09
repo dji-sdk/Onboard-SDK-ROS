@@ -67,66 +67,66 @@ catkin_python_setup()
 #   FILES
 # )
 
-## Generate services in the 'srv' folder
- add_service_files(
-   FILES
-   FlightTaskControl.srv
-   GimbalAction.srv
-   CameraTaskControl.srv
-   MFIO.srv
-   SetGoHomeAltitude.srv
-   SetNewHomePoint.srv
-   AdvancedSensing.srv
-   AvoidEnable.srv
-
-    Activation.srv
-    CameraAction.srv
-    DroneTaskControl.srv
-    SDKControlAuthority.srv
-    SetLocalPosRef.srv
-    MFIOConfig.srv
-    MFIOSetValue.srv
-    DroneArmControl.srv
-    MissionStatus.srv
-    MissionWpAction.srv
-    MissionHpAction.srv
-    MissionWpUpload.srv
-    MissionWpSetSpeed.srv
-    MissionWpGetSpeed.srv
-    MissionWpGetInfo.srv
-    MissionHpUpload.srv
-    MissionHpGetInfo.srv
-    MissionHpUpdateYawRate.srv
-    MissionHpUpdateRadius.srv
-    MissionHpResetYaw.srv
-    SendMobileData.srv
-    SendPayloadData.srv
-    SetHardSync.srv
-    QueryDroneVersion.srv
-    Stereo240pSubscription.srv
-    StereoVGASubscription.srv
-    StereoDepthSubscription.srv
-    SetupCameraStream.srv
- )
-
 ## Generate msg in the 'msg' folder
 add_message_files(
   FILES
   CameraData.msg
 
-   FCTimeInUTC.msg
-   GPSUTC.msg
-   Gimbal.msg
-   Waypoint.msg
-   WaypointList.msg
-   MobileData.msg
-   PayloadData.msg
-   MissionWaypointAction.msg
-   MissionWaypoint.msg
-   MissionWaypointTask.msg
-   MissionHotpointTask.msg
-   FlightAnomaly.msg
-   VOPosition.msg
+  FCTimeInUTC.msg
+  GPSUTC.msg
+  Gimbal.msg
+  Waypoint.msg
+  WaypointList.msg
+  MobileData.msg
+  PayloadData.msg
+  MissionWaypointAction.msg
+  MissionWaypoint.msg
+  MissionWaypointTask.msg
+  MissionHotpointTask.msg
+  FlightAnomaly.msg
+  VOPosition.msg
+)
+
+## Generate services in the 'srv' folder
+add_service_files(
+  FILES
+  FlightTaskControl.srv
+  GimbalAction.srv
+  CameraTaskControl.srv
+  MFIO.srv
+  SetGoHomeAltitude.srv
+  SetNewHomePoint.srv
+  AdvancedSensing.srv
+  AvoidEnable.srv
+
+  Activation.srv
+  CameraAction.srv
+  DroneTaskControl.srv
+  SDKControlAuthority.srv
+  SetLocalPosRef.srv
+  MFIOConfig.srv
+  MFIOSetValue.srv
+  DroneArmControl.srv
+  MissionStatus.srv
+  MissionWpAction.srv
+  MissionHpAction.srv
+  MissionWpUpload.srv
+  MissionWpSetSpeed.srv
+  MissionWpGetSpeed.srv
+  MissionWpGetInfo.srv
+  MissionHpUpload.srv
+  MissionHpGetInfo.srv
+  MissionHpUpdateYawRate.srv
+  MissionHpUpdateRadius.srv
+  MissionHpResetYaw.srv
+  SendMobileData.srv
+  SendPayloadData.srv
+  SetHardSync.srv
+  QueryDroneVersion.srv
+  Stereo240pSubscription.srv
+  StereoVGASubscription.srv
+  StereoDepthSubscription.srv
+  SetupCameraStream.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -211,8 +211,7 @@ add_subdirectory(src)
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 # add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#add_dependencies(dji_osdk_ros
-#        dji_osdk_ros_generate_messages_cpp)
+
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
@@ -228,8 +227,8 @@ add_subdirectory(src)
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(dji_sdk_node
-                 dji_sdk_generate_messages_cpp)
+#add_dependencies(dji_sdk_node
+#                 dji_sdk_generate_messages_cpp)
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}

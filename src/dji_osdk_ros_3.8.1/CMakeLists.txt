@@ -7,20 +7,6 @@ project(dji_sdk)
 
 set(CMAKE_CXX_FLAGS "-std=c++14 -fPIC ${CMAKE_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
-#find_package(djiosdk-core QUIET)
-#if(NOT djiosdk-core_FOUND)
-#  MESSAGE(STATUS "DO NOT FIND THE djiosdk-core LIB, WILL TRY TO DOWNLOAD FORM GITHUB, COMPILE, INSTALL")
-#  execute_process(COMMAND mkdir ${CMAKE_CURRENT_SOURCE_DIR}/../cmake-modules/build)
-#  execute_process(
-#          COMMAND cmake ..
-#          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../cmake-modules/build)
-#
-#  execute_process(
-#          COMMAND make
-#          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../cmake-modules/build)
-#endif()
-
-#find_package(DJIOSDK REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -109,8 +95,8 @@ add_executable(dji_sdk_node
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-#add_dependencies(dji_sdk_node
-#  dji_sdk_generate_messages_cpp)
+add_dependencies(dji_sdk_node
+  dji_osdk_ros_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(dji_sdk_node
