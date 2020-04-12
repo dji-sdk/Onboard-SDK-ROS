@@ -300,6 +300,7 @@ private:
 private:
   //! OSDK core
   Vehicle* vehicle;
+  LinuxSetup* linuxEnvironment;
   //! general service servers
   ros::ServiceServer drone_activation_server;
   ros::ServiceServer sdk_ctrlAuthority_server;

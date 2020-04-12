@@ -21,11 +21,11 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private, int arg
 {
   nh_private.param("acm_name",      acm_device, std::string("/dev/ttyACM0"));
   nh_private.param("serial_name",   serial_device, std::string("/dev/ttyUSB0"));
-  nh_private.param("baud_rate",     baud_rate, 921600);
-  nh_private.param("app_id",        app_id,    123456);
+  nh_private.param("baud_rate",     baud_rate, 230400);
+  nh_private.param("app_id",        app_id,    10086);
   nh_private.param("app_version",   app_version, 1);
   nh_private.param("enc_key",       enc_key, std::string("abcd1234"));
-  nh_private.param("drone_version", drone_version, std::string("M300")); // choose M100 as default
+  nh_private.param("drone_version", drone_version, std::string("M100")); // choose M100 as default
   nh_private.param("gravity_const", gravity_const, 9.801);
   nh_private.param("align_time",    align_time_with_FC, false);
   nh_private.param("use_broadcast", user_select_broadcast, false);
@@ -63,7 +63,7 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private, int arg
       ROS_ERROR("initSubscriber failed");
     }
 
-    if (!initPublisher(nh))
+      if (!initPublisher(nh))
     {
       ROS_ERROR("initPublisher failed");
     }
@@ -94,32 +94,8 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private, int argc, char** argv)
 #endif
 
   //! @note currently does not work without thread support
-  LinuxSetup linuxEnvironment(argc, argv);
-  Vehicle* vehicle = linuxEnvironment.getVehicle();
-//  vehicle = new Vehicle(serial_device.c_str(), baud_rate, threadSupport, enable_advanced_sensing);
-
-  /*!
-   * @note activate the drone for the user at the beginning
-   *        user can also call it as a service
-   *        this has been tested by giving wrong appID in launch file
-   */
-  if (ACK::getError(this->activate(this->app_id, this->enc_key)))
-  {
-    ROS_ERROR("drone activation error");
-    return false;
-  }
-  ROS_INFO("drone activated");
-
-  // This version of ROS Node works for:
-  //    1. A3/N3/M600 with latest FW
-  //    2. M100 with FW version M100_31
-  if(vehicle->getFwVersion() > INVALID_VERSION
-      && vehicle->getFwVersion() < mandatoryVersionBase
-      && (!isM100()))
-  {
-    return false;
-  }
-
+  this->linuxEnvironment = new LinuxSetup(argc, argv);
+  this->vehicle = linuxEnvironment->getVehicle();
 
   if (NULL != vehicle->subscribe && (!user_select_broadcast))
   {
@@ -127,7 +103,7 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private, int argc, char** argv)
   }
 
 #ifdef ADVANCED_SENSING
-  vehicle->advancedSensing->setAcmDevicePath(acm_device.c_str());
+    vehicle->advancedSensing->setAcmDevicePath(acm_device.c_str());
 #endif
 
   return true;
@@ -428,9 +404,10 @@ bool
 DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
 {
   ACK::ErrorCode ack = vehicle->subscribe->verify(WAIT_TIMEOUT);
+    ROS_INFO("getError of subscribe: %d\n",ACK::getError(ack) );
   if (ACK::getError(ack))
   {
-    return false;
+      return false;
   }
 
   std::vector<Telemetry::TopicName> topicList100Hz;

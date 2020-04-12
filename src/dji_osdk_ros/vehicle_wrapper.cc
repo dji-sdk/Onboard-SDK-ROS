@@ -20,11 +20,6 @@
 
 #include <iostream>
 
-//#ifdef OPEN_CV_INSTALLED
-//#include "opencv2/opencv.hpp"
-//#include "opencv2/highgui/highgui.hpp"
-//#endif
-
 //CODE
 namespace dji_osdk_ros
 {
@@ -63,25 +58,11 @@ static void liveViewCb(uint8_t* buf, int bufLen, void* userData) {
   }
 }
 
-//void show_rgb(CameraRGBImage img, void *p)
-//{
-//    std::string name = std::string(reinterpret_cast<char *>(p));
-//    std::cout << "#### Got image from:\t" << name << std::endl;
-//#ifdef OPEN_CV_INSTALLED
-//    cv::Mat mat(img.height, img.width, CV_8UC3, img.rawData.data(), img.width*3);
-//    cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
-//    cv::imshow(name,mat);
-//    cv::waitKey(1);
-//#endif
-//}
-
 static void setCameraImageCb(CameraRGBImage img, void *p)
 {
  if (p) {
      VehicleWrapper* vehicleWrapper = reinterpret_cast<VehicleWrapper*>(p);
      vehicleWrapper->setCameraImage(img);
-//     char Name[] = "CAM";
-//     show_rgb(img, &Name);
  } else{
      DERROR("p is a null value (should be a pointer to VehicleWrapper).");
      }
