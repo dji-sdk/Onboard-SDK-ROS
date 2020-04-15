@@ -20,17 +20,16 @@ const int WAIT_TIMEOUT = 10;
 
 VehicleNode::VehicleNode(int test)
 {
-
   initService();
 }
 
 VehicleNode::VehicleNode()
 {
-  nh_.param("/vehicle_node/app_id",        app_id_,    12345);
+  nh_.param("/vehicle_node/app_id",        app_id_, 12345);
   nh_.param("/vehicle_node/enc_key",       enc_key_, std::string("abcde123"));
   nh_.param("/vehicle_node/acm_name",      device_acm_, std::string("/dev/ttyACM0"));
   nh_.param("/vehicle_node/serial_name",   device_, std::string("/dev/ttyUSB0"));
-  nh_.param("/vehicle_node/baud_rate",     baud_rate_, 230400);
+  nh_.param("/vehicle_node/baud_rate",     baud_rate_, 921600);
   nh_.param("/vehicle_node/app_version",   app_version_, 1);
   nh_.param("/vehicle_node/drone_version", drone_version_, std::string("M100")); // choose M100 as default
   nh_.param("/vehicle_node/gravity_const", gravity_const_, 9.801);
@@ -56,7 +55,7 @@ VehicleNode::VehicleNode()
 
 void VehicleNode::initService()
 {
-  task_control_server_ = nh_.advertiseService("drone_task_control", &VehicleNode::taskCtrlCallback, this);
+  task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
   gimbal_control_server_ = nh_.advertiseService("gimbal_task_control", &VehicleNode::gimbalCtrlCallback, this);
   camera_action_control_server_ = nh_.advertiseService("camera_task_control", &VehicleNode::cameraCtrlCallback, this);
   mfio_control_server_ = nh_.advertiseService("mfio_control", &VehicleNode::mfioCtrlCallback, this);
@@ -101,7 +100,7 @@ bool VehicleNode::publishAdvancedSeningData()
         if (cameraData.raw_data != lastCameraData)
         {
             lastCameraData = cameraData.raw_data;
-//          ROS_INFO("raw data len is %ld\n",cameraData.raw_data.size());
+            ROS_INFO("raw data len is %ld\n",cameraData.raw_data.size());
             advanced_sensing_pub_.publish(cameraData);
 
             ros::spinOnce();
@@ -156,7 +155,7 @@ dji_osdk_ros::CameraData VehicleNode::getCameraData()
 }
 #endif
 
-bool VehicleNode::taskCtrlCallback(DroneTaskControl::Request&  request, DroneTaskControl::Response& response)
+bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightTaskControl::Response& response)
 {
   ROS_DEBUG("called droneTaskCallback");
   response.result = false;
@@ -169,13 +168,13 @@ bool VehicleNode::taskCtrlCallback(DroneTaskControl::Request&  request, DroneTas
 
   switch (request.task)
   {
-    case DroneTaskControl::Request::TASK_GOHOME:
+    case FlightTaskControl::Request::TASK_GOHOME:
       {
         ROS_INFO_STREAM("call go home service");
         ptr_wrapper_->goHome(WAIT_TIMEOUT);
         break;
       }
-    case DroneTaskControl::Request::TASK_GO_LOCAL_POS:
+    case FlightTaskControl::Request::TASK_GO_LOCAL_POS:
       {
         ROS_INFO_STREAM("call move local position service");
         if(request.pos_offset.size() < 3 && request.yaw_params.size() < 3)
@@ -193,13 +192,13 @@ bool VehicleNode::taskCtrlCallback(DroneTaskControl::Request&  request, DroneTas
         ptr_wrapper_->moveByPositionOffset(ack, WAIT_TIMEOUT, tmp_offset);
         break;
       }
-    case DroneTaskControl::Request::TASK_TAKEOFF:
+    case FlightTaskControl::Request::TASK_TAKEOFF:
       {
         ROS_INFO_STREAM("call takeoff service");
         ptr_wrapper_->monitoredTakeoff(ack, WAIT_TIMEOUT);
         break;
       }
-    case DroneTaskControl::Request::TASK_LAND:
+    case FlightTaskControl::Request::TASK_LAND:
       {
         ROS_INFO_STREAM("call land service");
         ptr_wrapper_->monitoredLanding(ack, WAIT_TIMEOUT);
@@ -247,12 +246,13 @@ bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalActio
   //  ROS_ERROR_STREAM("Get Current Gimbal Angle Failed");
   //  return false;
   //}
+  ROS_INFO_STREAM("Call gimbal Ctrl.");
   GimbalContainer gimbal(request.yaw, request.pitch, request.roll, 0, 1, initial_angle);
   response.result = ptr_wrapper_->setGimbalAngle(gimbal);
   return true;
 }
 
-bool VehicleNode::cameraCtrlCallback(CameraAction::Request& request, CameraAction::Response& response)
+bool VehicleNode::cameraCtrlCallback(CameraTaskControl::Request& request, CameraTaskControl::Response& response)
 {
   if(ptr_wrapper_ == nullptr)
   {
@@ -262,25 +262,25 @@ bool VehicleNode::cameraCtrlCallback(CameraAction::Request& request, CameraActio
   response.result = false;
   switch (request.action)
   {
-    case CameraAction::Request::CAMERA_ACTION_TAKE_PICTURE:
+    case CameraTaskControl::Request::CAMERA_ACTION_TAKE_PICTURE:
       {
         ROS_INFO_STREAM("Call take picture.");
         response.result = ptr_wrapper_->takePicture();
         break;
       }
-    case CameraAction::Request::CAMERA_ACTION_START_RECORD:
+    case CameraTaskControl::Request::CAMERA_ACTION_START_RECORD:
       {
         ROS_INFO_STREAM("Call record video.");
         response.result = ptr_wrapper_->startCaptureVideo();
         break;
       }
-    case CameraAction::Request::CAMERA_ACTION_STOP_RECORD:
+    case CameraTaskControl::Request::CAMERA_ACTION_STOP_RECORD:
       {
         ROS_INFO_STREAM("Call stop video.");
         response.result = ptr_wrapper_->stopCaptureVideo();
         break;
       }
-    case CameraAction::Request::CAMERA_ACTION_ZOOM:
+    case CameraTaskControl::Request::CAMERA_ACTION_ZOOM:
       {
         ROS_INFO_STREAM("Call Camera Zoom");
         CameraZoomDataType zoom_data;

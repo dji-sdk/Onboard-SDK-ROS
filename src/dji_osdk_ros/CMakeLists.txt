@@ -34,3 +34,22 @@ SET(WAYPT2_CORE)
                       )
 #endif()
 
+# Try to see if user has OpenCV installed
+# if yes, default callback will display the image
+find_package( OpenCV QUIET )
+if (OpenCV_FOUND)
+	message( "\n${PROJECT_NAME}...")
+	message( STATUS "Found OpenCV installed in the system, will use it to display image in AdvancedSensing APIs")
+	message( STATUS " - Includes: ${OpenCV_INCLUDE_DIRS}")
+	message( STATUS " - Libraries: ${OpenCV_LIBRARIES}")
+	add_definitions(-DOPEN_CV_INSTALLED)
+else()
+	message( STATUS "Did not find OpenCV in the system, image data is inside RecvContainer as raw data")
+endif ()
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
+
+if (OpenCV_FOUND)
+	target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
+endif ()
+

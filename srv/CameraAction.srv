@@ -2,31 +2,8 @@
 uint8 CAMERA_ACTION_TAKE_PICTURE = 0
 uint8 CAMERA_ACTION_START_RECORD = 1
 uint8 CAMERA_ACTION_STOP_RECORD  = 2
-uint8 CAMERA_ACTION_ZOOM  = 3
 
 #request
-
-uint8 action     # see constants above for possible camera_actions
-
-
-######### Zoom Part #######
-uint8 func_index
-uint8 cam_index
-
-uint8 zoom_config #  digital_zoom_mode 	: 2;	/* 0:step 1:position 2:continuous */
-                  #  digital_reserve 	: 1;	/* reserve */
-                  # digital_zoom_enable	: 1;	/* 0:not_ctrl 1:ctrl */
-                  # optical_zoom_mode  	: 2;	/* 0:step 1:position 2:continuous */
-                  # optical_reserve		: 1;	/* reserve */
-                  # optical_zoom_enable	: 1;	/* 0:not_ctrl 1:ctrl */
-
-uint16 cont_param        #uint16_t zoom_cont_speed        : 8;	/* continuous speed 0~100 */
-                         #uint16_t zoom_cont_direction    : 1;
-                         #uint16_t zoom_cont_reserve      : 7;
-
-uint16 step_param        #uint16_t zoom_step_level		  : 8;	/* level time * 100 = 1 times */
-                         #uint16_t zoom_step_direction    : 1;
-                         #uint16_t zoom_step_reserve      : 7;
-uint16 pos_param         #zoom_pos_level: 180 = 1.8times
+uint8 camera_action     # see constants above for possible camera_actions
 ---
 bool result

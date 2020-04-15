@@ -22,9 +22,9 @@
 #include <memory>
 #include <string>
 
-#include <dji_osdk_ros/DroneTaskControl.h>
+#include <dji_osdk_ros/FlightTaskControl.h>
 #include <dji_osdk_ros/GimbalAction.h>
-#include <dji_osdk_ros/CameraAction.h>
+#include <dji_osdk_ros/CameraTaskControl.h>
 #include <dji_osdk_ros/MFIO.h>
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetNewHomePoint.h>
@@ -71,10 +71,10 @@ namespace dji_osdk_ros
 #endif
 
     protected:
-      bool taskCtrlCallback(DroneTaskControl::Request& request, DroneTaskControl::Response& response);
+      bool taskCtrlCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
 
       bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);
-      bool cameraCtrlCallback(CameraAction::Request& request, CameraAction::Response& response);
+      bool cameraCtrlCallback(CameraTaskControl::Request& request, CameraTaskControl::Response& response);
 
       bool mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response);
 

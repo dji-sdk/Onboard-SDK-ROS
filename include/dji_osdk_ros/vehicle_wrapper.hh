@@ -116,7 +116,7 @@ namespace dji_osdk_ros
       std::vector<uint8_t> raw_data_from_camera_;
       std::mutex camera_data_mutex_;
 #endif
-  };
+};
 }
 
 #endif // __VEHICLE_WRAPPER_HH__
