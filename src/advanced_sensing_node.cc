@@ -24,7 +24,6 @@
 #include "opencv2/highgui/highgui.hpp"
 #endif
 
-
 //CODE
 using namespace dji_osdk_ros;
 
@@ -58,7 +57,7 @@ void show_rgb(CameraRGBImage img, void *p)
     std::cout << "#### Got image from:\t" << name << std::endl;
 #ifdef OPEN_CV_INSTALLED
     cv::Mat mat(img.height, img.width, CV_8UC3, img.rawData.data(), img.width*3);
-    cv::cvtColor(mat, mat, COLOR_RGB2BGR);
+    cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
     cv::imshow(name,mat);
     cv::waitKey(1);
 #endif
@@ -75,13 +74,15 @@ void cameraDataCallBack(const dji_osdk_ros::CameraData& msg)
     else
     {
         CameraRGBImage img;
-        char Name[] = "CAM";
         img.rawData = msg.raw_data;
         img.height  = msg.height;
         img.width   = msg.width;
+        char Name[] = "CAM";
         show_rgb(img, &Name);
+        std::cout<<"height is"<<msg.height<<std::endl;
+        std::cout<<"width is"<<msg.width<<std::endl;
     }
-    //std::cout<<"sub msg len is"<<msg.raw_data.size()<<std::endl;
+    std::cout<<"sub msg len is"<<msg.raw_data.size()<<std::endl;
 }
 
 int main(int argc, char** argv)

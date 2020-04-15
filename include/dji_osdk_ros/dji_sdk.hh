@@ -13,9 +13,9 @@
   *-----------------------------------------------*/
 
 // Header include
-#include <djiosdk/dji_control.hpp>
-#include <djiosdk/dji_status.hpp>
-#include <djiosdk/dji_version.hpp>
+#include <dji_control.hpp>
+#include <dji_status.hpp>
+#include <dji_version.hpp>
 
 // Declaration
 namespace DJISDK
