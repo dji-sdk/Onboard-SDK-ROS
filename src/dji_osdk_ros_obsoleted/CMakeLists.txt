@@ -65,7 +65,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-  ../../include/dji_osdk_ros_3.8.1
+        ../../include/dji_osdk_ros_obsoleted
   ../../include
 #  ${DJIOSDK_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
@@ -105,10 +105,10 @@ target_link_libraries(dji_sdk_node
     advanced-sensing.a
     ${LIBUSB_1_LIBRARIES}
     ${FFMPEG_LIBRARIES}
-        waypointv2-interface.a
-        waypointv2-core.a
-        DJIProtobuf.a
-        djisdk-common.a
+#        waypointv2-interface.a
+#        waypointv2-core.a
+#        DJIProtobuf.a
+#        djisdk-common.a
 #  ${DJIOSDK_LIBRARIES}
 )
 

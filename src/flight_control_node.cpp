@@ -12,7 +12,7 @@
 
 //INCLUDE
 #include <ros/ros.h>
-#include <dji_osdk_ros/common_type.hh>
+#include <dji_osdk_ros/common_type.h>
 
 #include <dji_osdk_ros/FlightTaskControl.h>
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
@@ -99,14 +99,17 @@ int main(int argc, char** argv)
           
           ROS_INFO_STREAM("Move by position offset request sending ...");
           moveByPosOffset(control_task, MoveOffset(0.0, 6.0, 6.0, 30.0));
-          ros::Duration(2.0).sleep();
-          moveByPosOffset(control_task, MoveOffset(-6.0, 0.0, -3.0, -30.0));
-          ros::Duration(2.0).sleep();
-          moveByPosOffset(control_task, MoveOffset(0.0, -6.0, 0.0, -30.0));
-          ros::Duration(2.0).sleep();
+//          ros::Duration(2.0).sleep();
+          ROS_INFO_STREAM("Step 1 over!");
+          moveByPosOffset(control_task, MoveOffset(6.0, 0.0, -3.0, -30.0));
+//          ros::Duration(2.0).sleep();
+          ROS_INFO_STREAM("Step 2 over!");
+          moveByPosOffset(control_task, MoveOffset(-6.0, -6.0, 0.0, -30.0));
+//          ros::Duration(2.0).sleep();
+          ROS_INFO_STREAM("Step 3 over!");
 
-          control_task.request.task = FlightTaskControl::Request::TASK_TAKEOFF;
-          ROS_INFO_STREAM("Takeoff request sending ...");
+          control_task.request.task = FlightTaskControl::Request::TASK_LAND;
+          ROS_INFO_STREAM("Landing request sending ...");
           task_control_client.call(control_task);
           if(control_task.response.result == true)
           {

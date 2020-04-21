@@ -14,9 +14,9 @@
 #include <dji_platform.hpp>
 #include <dji_vehicle_callback.hpp>
 
-#include <dji_osdk_ros/vehicle_wrapper.hh>
-#include <dji_osdk_ros/osdkhal_linux.h>
-#include <dji_osdk_ros/osdkosal_linux.h>
+#include <dji_osdk_ros/vehicle_wrapper.h>
+#include <osdkhal_linux.h>
+#include <osdkosal_linux.h>
 
 #include <iostream>
 
@@ -25,7 +25,7 @@ namespace dji_osdk_ros
 {
   static E_OsdkStat OsdkUser_Console(const uint8_t *data, uint16_t dataLen)
 {
-  printf("%s", data);
+//  printf("%s", data);
   return OSDK_STAT_OK;
 }
 
@@ -93,13 +93,14 @@ static T_OsdkOsalHandler osalHandler = {
   VehicleWrapper::VehicleWrapper(
                      int app_id,
                      const std::string& enc_key,
+                     const std::string& device_acm_name,
                      const std::string& dev_name,
                      unsigned int baud_rate,
                      bool enableAdvancedSensing)
     : Setup(enableAdvancedSensing),
       app_id_(app_id),
       enc_key_(enc_key),
-      device_acm_("/dev/ttyACM0"),
+      device_acm_(device_acm_name),
       device_(dev_name),
       baudrate_(baud_rate)
   {

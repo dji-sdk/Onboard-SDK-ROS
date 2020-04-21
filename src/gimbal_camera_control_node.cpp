@@ -12,7 +12,7 @@
 
 //INCLUDE
 #include <ros/ros.h>
-#include <dji_osdk_ros/common_type.hh>
+#include <dji_osdk_ros/common_type.h>
 #include <dji_osdk_ros/GimbalAction.h>
 #include <dji_osdk_ros/CameraTaskControl.h>
 

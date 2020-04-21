@@ -27,10 +27,10 @@ SET(WAYPT2_CORE)
 #if(WAYPT2_CORE)
 	TARGET_LINK_LIBRARIES(${PROJECT_NAME}
                       ${catkin_LIBRARIES}
-		      waypointv2-interface.a
-		      waypointv2-core.a
-		      DJIProtobuf.a
-		      djisdk-common.a
+#		      waypointv2-interface.a
+#		      waypointv2-core.a
+#		      DJIProtobuf.a
+#		      djisdk-common.a
                       )
 #endif()
 

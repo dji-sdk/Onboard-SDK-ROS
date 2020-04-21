@@ -1,59 +1,98 @@
-# DJI Onboard SDK ROS 3.8.1
+# DJI Onboard SDK ROS 4.0.0Beta
 
 ## Latest Update
 
-OSDK-ROS 3.8.1 was released on 4 June 2019. This release adds support of Onboard-Payload SDK communication and time sync function. Additionally, the dependency of djiosdk-core is auto-update in the release. Please see the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html) and [ROS sample setup](https://developer.dji.com/onboard-sdk/documentation/development-workflow/sample-setup.html#ros-onboard-computer) for more information.
+OSDK-ROS 4.0.0(beta) was released on 16 April 2020.You need to read newest update below the readme to get update information. 
 
-## Quick Start Guide 
+## newest update  
+### feature  
+This 4.0(Beta) version releases a feature package: dji_osdk_ros. The package contains two different framework's interface to adapt to two different version of onboard-sdk.  
+(__note:We will cancel support for the OSDK-ROS-obsoleted in the next version.__)
 
-This repository contains the Onboard SDK ROS wrapper and demos. The ROS package requires Onboard SDK (djiosdk-core) to be installed to your system prior to running it. For detailed setup instructions, please follow the documentation [here](https://developer.dji.com/onboard-sdk/documentation/development-workflow/sample-setup.html#ros-onboard-computer). 
+|                     | **OSDK-ROS4.0**            | **OSDK-ROS-obsoleted**                |  
+|---------------------|----------------------------|---------------------------------------|
+| **onboard-sdk4.0**  |files belows in dji_osdk_ros| not support                           |
+| **onboard-sdk3.9**  | not support                | files belows in dji_osdk_ros_obsoleted|
 
-We encourage you to take a look at the documentation for full details. 
+The update mainly includes:  
+1. Redesigned the 4.0 version of the framework (ROS side interacts with the OSDK side through the wrapper layer, business-related interfaces are fully encapsulated into the wrapper layer, and the ROS side provides all services and topics);  
+2. Version 4.0 opens a main node (dji_vehicle_node), which completes the activation of the drone, the acquisition of control rights, and the initialization of all services and topics;  
 
-ROS Wiki can be found [here](http://wiki.ros.org/dji_sdk). Please be sure to read the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html).
+|  **services**                                    | **topics**                            | **nodes(demo)**                | 
+|--------------------------------------------------|-------------------------------------- |--------------------------------|
+|flight_task_control                               |cameraData                             |flight_control_node             |
+|gimbal_task_control(need update,may not work now) |waypoint(will support in next version) |advanced_sensing_node(not test) |
+|camera_task_control                               |                                       |gimbal_camera_control_node      |
+|advanced_sensing                                  |                                       |mfio_conrol_node(not test)      |
+|set_go_home_altitude                              |
+|set_current_point_as_home                         |
+|mfio_control(not test)                            |
+|enable_avoid(not test)                            |
+|waypoint(will support in next version)            |
+ 
+3. At the same time, we keeped all services and topics of osdk-ros 3.8.1 which compatible with onboard-sdk3.9. If you want to use these interfaces,you need to run dji_sdk_node and use it's services and topics. 
+(__note: they will not be supported in next osdk-ros version.__)
+### Prerequisites
+We have tested the library in Ubuntu 18.04, but it should be easy to compile in other platforms.
+#### Ros  
+you need to install ros first.Install instruction can be found at: http://wiki.ros.org/ROS/Installation. We just test ROS Melodic Morenia version.  
+#### C++14 Compiler
+We compile with C + + 14 Standard
+#### djiosdk-core
+you need to download onboard-sdk,and install osdk-core.
+>$mkdir build  
+>$cd build  
+>$cmake..  
+>$sudo make -j7 install
+#### nema-comms
+> $sudo apt install ros-{release}-nmea-comms  
 
-## Firmware Compatibility
+__note:we only test on melodic,but it should be support on other version.__
+#### ffmpeg
+> $sudo apt install ffmpeg  
+#### libusb-1.0-0-dev
+> $sudo apt install libusb-1.0-0-dev
+#### opencv3.x
+We use OpenCV to show images from camera stream. Dowload and install instructions can be found at: http://opencv.org. Tested with OpenCV 3.2.0.
 
-This chart shows the latest firmware that were available and are supported at the time of 3.7 release.
+###  Building dji_osdk_ros pkg
+#### create workspace
+If you don't have a catkin workspace, create one as follows:
+>$mkdir catkin_ws  
+>$cd catkin_ws  
+>$mkdir src  
+>$cd src  
+>$catkin_init_workspace
+#### add osdk-ros 4.0 
+Download osdk-ros 4.0 and put it into src.
+#### Build the dji_osdk_ros ROS package
+>$cd ..
+>$catkin_make
+#### Configuration
+1.Remember to source your setup.bash:
+>$source devel/setup.bash  
 
-| Aircraft/FC           | Firmware Package Version | Flight Controller Version | OSDK Branch            | Notes                                                                 |
-|-----------------------|--------------------------|---------------------------|------------------------|-----------------------------------------------------------------------|
-| **M210/M210 RTK V2**  | **1.0.0450**             | **3.4.3.31**              | **OSDK 3.8.1**         |                                                                       |
-|                       |                          |                           |                        |                                                                       |
-| **M210/M210 RTK**     | **1.2.0440**             | **3.3.10.12**             | **OSDK 3.8.1**         |                                                                       |
-|                       |                          |                           |                        |                                                                       |
-| **M600/M600 Pro**     | **1.0.1.66**             | **3.2.41.13**             | **OSDK 3.8.1**         |                                                                       |
-|                       |                          |                           |                        |                                                                       |
-| **A3/A3 Pro**         | **1.7.6.0**              | **3.3.8.39**              | **OSDK 3.8.1**         |                                                                       |
-|                       |                          |                           |                        |                                                                       |
-| **N3**                | **1.7.6.0**              | **3.3.8.39**              | **OSDK 3.8.1**         |                                                                       |
-|                       |                          |                           |                        |                                                                       |
-| **M100**              | 1.3.1.82                 | **3.1.10.0**              | **OSDK 3.8.1**         |                                                                       |
+2.Edit the launch file and enter your App ID, Key, Baudrate and Port name in the designated places:  
+(__note:there are two launch file.  
+dji_sdk_node.launch is for dji_sdk_node.(3.8.1)  
+dji_vehicle_node is for dji_vehicle_node(4.0.0)__)
+> $rosed dji_osdk_ros dji_sdk_node.launch  
+> $rosed dji_osdk_ros dji_vehicle_node.launch  
 
-## Notes on differences between M100 and A3/N3/M600/M210 setup
+3.Remember to add UserConfig.txt to correct path.(in the current work directory))  
+>If you want to run dji_sdk_node.launch, you need to put UserConfig.txt into /home/{user}/.ros.
+>dji_vehicle_node.launch does not need UserConfig.txt.
+#### Running the Samples
+1.Start up the dji_osdk_ros ROS node:  
+if you want to try 4.0's feature:
+>$roslaunch dji_osdk_ros dji_vehicle_node.launch  
 
-Onboard SDK ROS is backward compatible with M100. However, due to the limitations of the flight controller of M100, some new features such as hardware sync, MFIO, on demand telemetry data (subscription) are only supported by A3/N3, and some settings for M100 are different from those for A3/N3.
-
-1. The DJI Assistant 2 for M100 and for A3/N3 are slighly **different**. Please download DJI Assistant 2 from the corresponding product webpage.
-
-2. The DJI SDK ROS package requires **different baud rate** for M100 and A3/N3. For M100, set the baud rate to 230400 in DJI Assistant 2's "SDK" tab, and the sdk.launch file; while for **A3/N3/M600/M210, use 921600**.
-
-3. For M100, on the right side of the "SDK setting" tab of DJI Assistant 2, set the Data Type of ACC and GYRO to "Raw Data", and ALTI to "Data Fusion". The reason is that the raw data of acc and gyro are part of the `/dji_sdk/imu` message.
-
-4. The `flight_status` enums for M100 and A3/N3 are different. See `dji_sdk.h` for details and `demo_flight_control` for examples.
-
-5. Some topics  are only available on A3/N3: `display_mode`, `angular_velocity_fused`, `acceleration_ground_fused`, `trigger_time`. 
-
-6. The imu topic is published at 400Hz on A3/N3, and at 100Hz on M100.
-
-7. Some services are only available on A3/N3: `mfio_config`, `mfio_set_value`, `set_hardsyc`
-
-## Support
-
-You can get support from DJI and the community with the following methods:
-
-- **Email to dev@dji.com**
-- Report issue on github
-
-
-
+if you want to try 3.8.1's feature:
+>$roslaunch dji_osdk_ros dji_sdk_node.launch    
+>
+2.Open up another terminal and cd to your catkin_ws location, and start up a sample (e.g. flight control sample):
+>$source devel/setup.bash  
+>$rosrun dji_osdk_ros flight_control_node  
+>
+__note:if you want to rosrun dji_sdk_node,you need to put UserConfig.txt into current work directory.__  
+3.Follow the prompt on screen to choose an action for the drone to do.

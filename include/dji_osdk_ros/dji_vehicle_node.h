@@ -16,8 +16,8 @@
 #include <ros/ros.h>
 #include <dji_vehicle.hpp>
 
-#include <dji_osdk_ros/vehicle_wrapper.hh>
-#include <dji_osdk_ros/common_type.hh>
+#include <dji_osdk_ros/vehicle_wrapper.h>
+#include <dji_osdk_ros/common_type.h>
 
 #include <memory>
 #include <string>

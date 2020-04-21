@@ -11,8 +11,8 @@
   */
 
 //INCLUDE
-#include <dji_osdk_ros/dji_vehicle_node.hh>
-#include <dji_osdk_ros/vehicle_wrapper.hh>
+#include <dji_osdk_ros/dji_vehicle_node.h>
+#include <dji_osdk_ros/vehicle_wrapper.h>
 #include <vector>
 //CODE
 using namespace dji_osdk_ros;
@@ -39,7 +39,7 @@ VehicleNode::VehicleNode()
 #else
   enable_ad = false;
 #endif
-  ptr_wrapper_ = std::make_unique<VehicleWrapper>(app_id_, enc_key_, device_, baud_rate_, enable_ad);
+  ptr_wrapper_ = std::make_unique<VehicleWrapper>(app_id_, enc_key_, device_acm_, device_, baud_rate_, enable_ad);
 
   if(ptr_wrapper_ == nullptr)
   {
