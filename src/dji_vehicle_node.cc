@@ -25,11 +25,11 @@ VehicleNode::VehicleNode(int test)
 
 VehicleNode::VehicleNode()
 {
-  nh_.param("/vehicle_node/app_id",        app_id_, 12345);
+  nh_.param("/vehicle_node/app_id",        app_id_, 123456);
   nh_.param("/vehicle_node/enc_key",       enc_key_, std::string("abcde123"));
   nh_.param("/vehicle_node/acm_name",      device_acm_, std::string("/dev/ttyACM0"));
   nh_.param("/vehicle_node/serial_name",   device_, std::string("/dev/ttyUSB0"));
-  nh_.param("/vehicle_node/baud_rate",     baud_rate_, 921600);
+  nh_.param("/vehicle_node/baud_rate",     baud_rate_, 230400);
   nh_.param("/vehicle_node/app_version",   app_version_, 1);
   nh_.param("/vehicle_node/drone_version", drone_version_, std::string("M100")); // choose M100 as default
   nh_.param("/vehicle_node/gravity_const", gravity_const_, 9.801);
