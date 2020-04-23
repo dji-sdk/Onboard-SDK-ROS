@@ -5,7 +5,7 @@ project(dji_sdk)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 
-set(CMAKE_CXX_FLAGS "-std=c++14 -fPIC ${CMAKE_CXX_FLAGS}")
+set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC ${CMAKE_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
 
 ## System dependencies are found with CMake's conventions

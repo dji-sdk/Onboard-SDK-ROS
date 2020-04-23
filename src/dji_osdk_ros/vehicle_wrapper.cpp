@@ -1278,6 +1278,7 @@ static T_OsdkOsalHandler osalHandler = {
       vehicle->mfio->setValue(MFIO::CHANNEL(channel), initOnTimeUs);
     }
 
+    return 0;
   }
 
   uint8_t VehicleWrapper::stopMFIO(uint8_t mode, uint8_t channel)
@@ -1287,7 +1288,7 @@ static T_OsdkOsalHandler osalHandler = {
     uint32_t digitalValue = 0;
     uint16_t digitalFreq  = 0;
     vehicle->mfio->config(MFIO::MODE(mode), MFIO::CHANNEL(channel), digitalValue, digitalFreq, responseTimeout);
-    return 10;
+    return 0;
   }
 
   uint32_t VehicleWrapper::inputMFIO(uint8_t mode, uint8_t channel, bool block)

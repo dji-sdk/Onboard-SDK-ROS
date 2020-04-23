@@ -52,7 +52,7 @@ namespace dji_osdk_ros
 
       void initService();
       void initTopic();
-      bool publishTopic();
+      void publishTopic();
 #ifdef ADVANCED_SENSING
       dji_osdk_ros::CameraData getCameraData();
 #endif
@@ -84,14 +84,14 @@ namespace dji_osdk_ros
 
 #ifdef ADVANCED_SENSING
       bool advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response);
-      bool publishAdvancedSeningData();
+      void publishAdvancedSeningData();
 #endif
 
       bool initSubscribe();
 
     private:
       ros::NodeHandle nh_;
-      std::unique_ptr<VehicleWrapper> ptr_wrapper_;
+      VehicleWrapper* ptr_wrapper_;
 
       int           app_id_;
       int           app_version_;

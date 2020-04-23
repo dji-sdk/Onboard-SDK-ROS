@@ -99,13 +99,10 @@ int main(int argc, char** argv)
           
           ROS_INFO_STREAM("Move by position offset request sending ...");
           moveByPosOffset(control_task, MoveOffset(0.0, 6.0, 6.0, 30.0));
-//          ros::Duration(2.0).sleep();
           ROS_INFO_STREAM("Step 1 over!");
           moveByPosOffset(control_task, MoveOffset(6.0, 0.0, -3.0, -30.0));
-//          ros::Duration(2.0).sleep();
           ROS_INFO_STREAM("Step 2 over!");
           moveByPosOffset(control_task, MoveOffset(-6.0, -6.0, 0.0, 0.0));
-//          ros::Duration(2.0).sleep();
           ROS_INFO_STREAM("Step 3 over!");
 
           control_task.request.task = FlightTaskControl::Request::TASK_LAND;

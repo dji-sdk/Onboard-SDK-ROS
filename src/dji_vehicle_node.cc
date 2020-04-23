@@ -39,7 +39,7 @@ VehicleNode::VehicleNode()
 #else
   enable_ad = false;
 #endif
-  ptr_wrapper_ = std::make_unique<VehicleWrapper>(app_id_, enc_key_, device_acm_, device_, baud_rate_, enable_ad);
+  ptr_wrapper_ = new VehicleWrapper(app_id_, enc_key_, device_acm_, device_, baud_rate_, enable_ad);
 
   if(ptr_wrapper_ == nullptr)
   {
@@ -77,7 +77,7 @@ void VehicleNode::initTopic()
     ROS_INFO_STREAM("Topic startup!");
 }
 
-bool VehicleNode::publishTopic()
+void VehicleNode::publishTopic()
 {
 #ifdef ADVANCED_SENSING
     publishAdvancedSeningData();
@@ -85,7 +85,7 @@ bool VehicleNode::publishTopic()
 }
 
 #ifdef ADVANCED_SENSING
-bool VehicleNode::publishAdvancedSeningData()
+void VehicleNode::publishAdvancedSeningData()
 {
     ros::AsyncSpinner spinner(4);
     spinner.start();
