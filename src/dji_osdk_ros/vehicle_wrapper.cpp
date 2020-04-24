@@ -795,6 +795,7 @@ static T_OsdkOsalHandler osalHandler = {
                                      sizeof(CameraZoomDataType), 500, 2,
                                      z30_zoom_cb, NULL);
     std::cout << "z30_zoom_test running" << std::endl;
+    return true;
   }
 
 

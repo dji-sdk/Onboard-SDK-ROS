@@ -37,12 +37,12 @@ The system environment we have tested is in the table below.
 |                            |                                             |
 |----------------------------|-------------------------------------------- |  
 | **system version**         | ubuntu 16.04                                |
-| **processor architecture** | x86(mainfold2-c),arm(mainfold2-c)           |
+| **processor architecture** | x86(mainfold2-c),armv8(mainfold2-c)           |
 
 #### Ros  
 you need to install ros first.Install instruction can be found at: http://wiki.ros.org/ROS/Installation. We just tested ROS kinetic version.  
 #### C++11 Compiler
-We compile with C + + 11 Standard
+We compile with C + + 11 Standard.
 #### djiosdk-core
 you need to download onboard-sdk,and install osdk-core.
 >$mkdir build  
@@ -60,7 +60,24 @@ __note:we only test on kinetic,but it should be support on other version.__
 #### opencv3.x
 We use OpenCV to show images from camera stream. Dowload and install instructions can be found at: http://opencv.org. Tested with OpenCV 3.2.0.
 
-### 3. Building dji_osdk_ros pkg
+### 3.Permission
+#### uart permission
+You need to add your user to the dialout group to obtain read/write permissions for the uart communication.
+>$sudo usermod -a -G dialout ${USER}  
+>
+Then log out of your user account and log in again for the permissions to take effect.
+
+#### usb permission
+You will need to add an udev file to allow your system to obtain permission and to identify DJI USB port.
+>$cd /etc/udev/rules.d/  
+>$sudo vi DJIDevice.rules
+
+Then add these content into DJIDevice.rules.
+>$SUBSYSTEM=="usb", ATTRS{idVendor}=="2ca3", MODE="0666"
+
+At last,you need to reboot your computer to make sure it works.
+
+### 4. Building dji_osdk_ros pkg
 #### create workspace
 If you don't have a catkin workspace, create one as follows:
 >$mkdir catkin_ws  
@@ -74,10 +91,10 @@ Download osdk-ros 4.0 and put it into src.
 >$cd ..
 >$catkin_make
 #### Configuration
-1.Remember to source your setup.bash:
+1.Remember to source your setup.bash.
 >$source devel/setup.bash  
 
-2.Edit the launch file and enter your App ID, Key, Baudrate and Port name in the designated places:  
+2.Edit the launch file and enter your App ID, Key, Baudrate and Port name in the designated places.  
 (__note:there are two launch file.  
 dji_sdk_node.launch is for dji_sdk_node.(3.8.1's interface)  
 dji_vehicle_node is for dji_vehicle_node(4.0.0's interface)__)
@@ -88,14 +105,14 @@ dji_vehicle_node is for dji_vehicle_node(4.0.0's interface)__)
 >If you want to run dji_sdk_node.launch, you need to put UserConfig.txt into /home/{user}/.ros.
 >dji_vehicle_node.launch does not need UserConfig.txt.
 #### Running the Samples
-1.Start up the dji_osdk_ros ROS node:  
+1.Start up the dji_osdk_ros ROS node.  
 if you want to use OSDK ROS 4.0.0's services and topics:
 >$roslaunch dji_osdk_ros dji_vehicle_node.launch  
 
 if you want to adapt to OSDK ROS 3.8.1's services and topics:
 >$roslaunch dji_osdk_ros dji_sdk_node.launch    
 >
-2.Open up another terminal and cd to your catkin_ws location, and start up a sample (e.g. flight control sample):
+2.Open up another terminal and cd to your catkin_ws location, and start up a sample (e.g. flight control sample).
 >$source devel/setup.bash  
 >$rosrun dji_osdk_ros flight_control_node  
 >
