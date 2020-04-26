@@ -25,7 +25,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "dji_osdk_ros/osdkosal_linux.h"
+#include "osdkosal_linux.h"
 
 /* Private constants ---------------------------------------------------------*/
 

@@ -11,8 +11,8 @@
   */
 
 //INCLUDE
-#include <dji_osdk_ros/dji_vehicle_node.hh>
-#include <dji_osdk_ros/vehicle_wrapper.hh>
+#include <dji_osdk_ros/dji_vehicle_node.h>
+#include <dji_osdk_ros/vehicle_wrapper.h>
 #include <vector>
 //CODE
 using namespace dji_osdk_ros;
@@ -25,11 +25,11 @@ VehicleNode::VehicleNode(int test)
 
 VehicleNode::VehicleNode()
 {
-  nh_.param("/vehicle_node/app_id",        app_id_, 12345);
+  nh_.param("/vehicle_node/app_id",        app_id_, 123456);
   nh_.param("/vehicle_node/enc_key",       enc_key_, std::string("abcde123"));
   nh_.param("/vehicle_node/acm_name",      device_acm_, std::string("/dev/ttyACM0"));
   nh_.param("/vehicle_node/serial_name",   device_, std::string("/dev/ttyUSB0"));
-  nh_.param("/vehicle_node/baud_rate",     baud_rate_, 921600);
+  nh_.param("/vehicle_node/baud_rate",     baud_rate_, 230400);
   nh_.param("/vehicle_node/app_version",   app_version_, 1);
   nh_.param("/vehicle_node/drone_version", drone_version_, std::string("M100")); // choose M100 as default
   nh_.param("/vehicle_node/gravity_const", gravity_const_, 9.801);
@@ -39,7 +39,7 @@ VehicleNode::VehicleNode()
 #else
   enable_ad = false;
 #endif
-  ptr_wrapper_ = std::make_unique<VehicleWrapper>(app_id_, enc_key_, device_, baud_rate_, enable_ad);
+  ptr_wrapper_ = new VehicleWrapper(app_id_, enc_key_, device_acm_, device_, baud_rate_, enable_ad);
 
   if(ptr_wrapper_ == nullptr)
   {
@@ -77,7 +77,7 @@ void VehicleNode::initTopic()
     ROS_INFO_STREAM("Topic startup!");
 }
 
-bool VehicleNode::publishTopic()
+void VehicleNode::publishTopic()
 {
 #ifdef ADVANCED_SENSING
     publishAdvancedSeningData();
@@ -85,7 +85,7 @@ bool VehicleNode::publishTopic()
 }
 
 #ifdef ADVANCED_SENSING
-bool VehicleNode::publishAdvancedSeningData()
+void VehicleNode::publishAdvancedSeningData()
 {
     ros::AsyncSpinner spinner(4);
     spinner.start();

@@ -1,5 +1,5 @@
 add_subdirectory(dji_osdk_ros)
-add_subdirectory(dji_osdk_ros_3.8.1)
+add_subdirectory(dji_osdk_ros_obsoleted)
 
 FILE(GLOB EXAMPLES *.cc *.c *.cpp)
 find_package( OpenCV QUIET )

@@ -11,7 +11,7 @@
 
 //INCLUDE
 #include <ros/ros.h>
-#include <dji_osdk_ros/common_type.hh>
+#include <dji_osdk_ros/common_type.h>
 #include <string>
 #include <stdio.h>
 

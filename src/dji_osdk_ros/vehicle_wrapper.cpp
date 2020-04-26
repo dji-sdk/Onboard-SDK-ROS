@@ -14,9 +14,9 @@
 #include <dji_platform.hpp>
 #include <dji_vehicle_callback.hpp>
 
-#include <dji_osdk_ros/vehicle_wrapper.hh>
-#include <dji_osdk_ros/osdkhal_linux.h>
-#include <dji_osdk_ros/osdkosal_linux.h>
+#include <dji_osdk_ros/vehicle_wrapper.h>
+#include <osdkhal_linux.h>
+#include <osdkosal_linux.h>
 
 #include <iostream>
 
@@ -25,7 +25,7 @@ namespace dji_osdk_ros
 {
   static E_OsdkStat OsdkUser_Console(const uint8_t *data, uint16_t dataLen)
 {
-  printf("%s", data);
+//  printf("%s", data);
   return OSDK_STAT_OK;
 }
 
@@ -93,13 +93,14 @@ static T_OsdkOsalHandler osalHandler = {
   VehicleWrapper::VehicleWrapper(
                      int app_id,
                      const std::string& enc_key,
+                     const std::string& device_acm_name,
                      const std::string& dev_name,
                      unsigned int baud_rate,
                      bool enableAdvancedSensing)
     : Setup(enableAdvancedSensing),
       app_id_(app_id),
       enc_key_(enc_key),
-      device_acm_("/dev/ttyACM0"),
+      device_acm_(device_acm_name),
       device_(dev_name),
       baudrate_(baud_rate)
   {
@@ -794,6 +795,7 @@ static T_OsdkOsalHandler osalHandler = {
                                      sizeof(CameraZoomDataType), 500, 2,
                                      z30_zoom_cb, NULL);
     std::cout << "z30_zoom_test running" << std::endl;
+    return true;
   }
 
 
@@ -812,6 +814,9 @@ static T_OsdkOsalHandler osalHandler = {
     auto posThresholdInM = p_offset.pos_threshold;
     auto yawThresholdInDeg = p_offset.yaw_threshold;
 
+    // Set timeout: this timeout is the time you allow the drone to take to finish
+    // the
+    // mission
     int responseTimeout              = 1;
     int timeoutInMilSec              = 40000;
     int controlFreqInHz              = 50; // Hz
@@ -823,35 +828,36 @@ static T_OsdkOsalHandler osalHandler = {
     //@todo: remove this once the getErrorCode function signature changes
     char func[50];
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       // Telemetry: Verify the subscription
-      ack = vehicle->subscribe->verify(responseTimeout);
-      if (ACK::getError(ack) != ACK::SUCCESS)
+      ACK::ErrorCode subscribeStatus;
+      subscribeStatus = vehicle->subscribe->verify(responseTimeout);
+      if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
       {
-        ACK::getErrorCodeMessage(ack, func);
+        ACK::getErrorCodeMessage(subscribeStatus, func);
         return false;
       }
 
       // Telemetry: Subscribe to quaternion, fused lat/lon and altitude at freq 50
       // Hz
-      pkgIndex                  = 0;
+      pkgIndex                  = 1;
       int       freq            = 50;
       TopicName topicList50Hz[] = { TOPIC_QUATERNION, TOPIC_GPS_FUSED };
       int       numTopic = sizeof(topicList50Hz) / sizeof(topicList50Hz[0]);
       bool      enableTimestamp = false;
 
       bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
-        pkgIndex, numTopic, topicList50Hz, enableTimestamp, freq);
+          pkgIndex, numTopic, topicList50Hz, enableTimestamp, freq);
       if (!(pkgStatus))
       {
         return pkgStatus;
       }
-      ack =
-        vehicle->subscribe->startPackage(pkgIndex, responseTimeout);
-      if (ACK::getError(ack) != ACK::SUCCESS)
+      subscribeStatus =
+          vehicle->subscribe->startPackage(pkgIndex, responseTimeout);
+      if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
       {
-        ACK::getErrorCodeMessage(ack, func);
+        ACK::getErrorCodeMessage(subscribeStatus, func);
         // Cleanup before return
         vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
         return false;
@@ -882,7 +888,7 @@ static T_OsdkOsalHandler osalHandler = {
     // Convert position offset from first position to local coordinates
     Telemetry::Vector3f localOffset;
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       currentSubscriptionGPS = vehicle->subscribe->getValue<TOPIC_GPS_FUSED>();
       originSubscriptionGPS  = currentSubscriptionGPS;
@@ -919,7 +925,7 @@ static T_OsdkOsalHandler osalHandler = {
     Telemetry::Quaternion broadcastQ;
 
     double yawInRad;
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       subscriptionQ = vehicle->subscribe->getValue<TOPIC_QUATERNION>();
       yawInRad = toEulerAngle((static_cast<void*>(&subscriptionQ))).z / DEG2RAD;
@@ -946,7 +952,7 @@ static T_OsdkOsalHandler osalHandler = {
       xCmd = (xOffsetDesired < speedFactor) ? xOffsetDesired : speedFactor;
     else if (xOffsetDesired < 0)
       xCmd =
-        (xOffsetDesired > -1 * speedFactor) ? xOffsetDesired : -1 * speedFactor;
+          (xOffsetDesired > -1 * speedFactor) ? xOffsetDesired : -1 * speedFactor;
     else
       xCmd = 0;
 
@@ -954,11 +960,11 @@ static T_OsdkOsalHandler osalHandler = {
       yCmd = (yOffsetDesired < speedFactor) ? yOffsetDesired : speedFactor;
     else if (yOffsetDesired < 0)
       yCmd =
-        (yOffsetDesired > -1 * speedFactor) ? yOffsetDesired : -1 * speedFactor;
+          (yOffsetDesired > -1 * speedFactor) ? yOffsetDesired : -1 * speedFactor;
     else
       yCmd = 0;
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       zCmd = currentBroadcastGP.height + zOffsetDesired; //Since subscription cannot give us a relative height, use broadcast.
     }
@@ -971,13 +977,13 @@ static T_OsdkOsalHandler osalHandler = {
     while (elapsedTimeInMs < timeoutInMilSec)
     {
       vehicle->control->positionAndYawCtrl(xCmd, yCmd, zCmd,
-                                                              yawDesiredRad / DEG2RAD);
+                                           yawDesiredRad / DEG2RAD);
 
       usleep(cycleTimeInMs * 1000);
       elapsedTimeInMs += cycleTimeInMs;
 
       //! Get current position in required coordinates and units
-      if (vehicle->isM100() && vehicle->isLegacyM600())
+      if (!vehicle->isM100() && !vehicle->isLegacyM600())
       {
         subscriptionQ = vehicle->subscribe->getValue<TOPIC_QUATERNION>();
         yawInRad      = toEulerAngle((static_cast<void*>(&subscriptionQ))).z;
@@ -994,7 +1000,7 @@ static T_OsdkOsalHandler osalHandler = {
         broadcastQ         = vehicle->broadcast->getQuaternion();
         yawInRad           = toEulerAngle((static_cast<void*>(&broadcastQ))).z;
         currentBroadcastGP = vehicle->broadcast->getGlobalPosition();
-        localOffsetFromGpsOffset(localOffset,
+        localOffsetFromGpsOffset( localOffset,
                                  static_cast<void*>(&currentBroadcastGP),
                                  static_cast<void*>(&originBroadcastGP));
       }
@@ -1052,7 +1058,7 @@ static T_OsdkOsalHandler osalHandler = {
 
     //! Set velocity to zero, to prevent any residual velocity from position
     //! command
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       while (brakeCounter < withinControlBoundsTimeReqmt)
       {
@@ -1065,10 +1071,10 @@ static T_OsdkOsalHandler osalHandler = {
     if (elapsedTimeInMs >= timeoutInMilSec)
     {
       std::cout << "Task timeout!\n";
-      if (vehicle->isM100() && vehicle->isLegacyM600())
+      if (!vehicle->isM100() && !vehicle->isLegacyM600())
       {
-        ack =
-          vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
+        ACK::ErrorCode ack =
+            vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
         if (ACK::getError(ack))
         {
           std::cout << "Error unsubscribing; please restart the drone/FC to get "
@@ -1078,15 +1084,15 @@ static T_OsdkOsalHandler osalHandler = {
       return ACK::FAIL;
     }
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
-      ack =
-        vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
+      ACK::ErrorCode ack =
+          vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
       if (ACK::getError(ack))
       {
         std::cout
-          << "Error unsubscribing; please restart the drone/FC to get back "
-             "to a clean state.\n";
+            << "Error unsubscribing; please restart the drone/FC to get back "
+               "to a clean state.\n";
       }
     }
 
@@ -1155,7 +1161,7 @@ static T_OsdkOsalHandler osalHandler = {
       deltaLon   = subscriptionTarget->longitude - subscriptionOrigin->longitude;
       deltaLat   = subscriptionTarget->latitude - subscriptionOrigin->latitude;
       deltaNed.x = deltaLat * C_EARTH;
-      deltaNed.y = deltaLon * C_EARTH * std::cos(subscriptionTarget->latitude);
+      deltaNed.y = deltaLon * C_EARTH * cos(subscriptionTarget->latitude);
       deltaNed.z = subscriptionTarget->altitude - subscriptionOrigin->altitude;
     }
     else
@@ -1165,7 +1171,7 @@ static T_OsdkOsalHandler osalHandler = {
       deltaLon        = broadcastTarget->longitude - broadcastOrigin->longitude;
       deltaLat        = broadcastTarget->latitude - broadcastOrigin->latitude;
       deltaNed.x      = deltaLat * C_EARTH;
-      deltaNed.y      = deltaLon * C_EARTH * std::cos(broadcastTarget->latitude);
+      deltaNed.y      = deltaLon * C_EARTH * cos(broadcastTarget->latitude);
       deltaNed.z      = broadcastTarget->altitude - broadcastOrigin->altitude;
     }
   }
@@ -1273,6 +1279,7 @@ static T_OsdkOsalHandler osalHandler = {
       vehicle->mfio->setValue(MFIO::CHANNEL(channel), initOnTimeUs);
     }
 
+    return 0;
   }
 
   uint8_t VehicleWrapper::stopMFIO(uint8_t mode, uint8_t channel)
@@ -1282,7 +1289,7 @@ static T_OsdkOsalHandler osalHandler = {
     uint32_t digitalValue = 0;
     uint16_t digitalFreq  = 0;
     vehicle->mfio->config(MFIO::MODE(mode), MFIO::CHANNEL(channel), digitalValue, digitalFreq, responseTimeout);
-    return 10;
+    return 0;
   }
 
   uint32_t VehicleWrapper::inputMFIO(uint8_t mode, uint8_t channel, bool block)

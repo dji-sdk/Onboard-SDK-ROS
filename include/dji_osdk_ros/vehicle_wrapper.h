@@ -15,7 +15,7 @@
 // Header include
 #include <dji_setup_helpers.hpp>
 #include <dji_vehicle.hpp>
-#include <dji_osdk_ros/common_type.hh>
+#include <dji_osdk_ros/common_type.h>
 #include <string>
 #include <cmath>
 #include <vector>
@@ -36,6 +36,7 @@ namespace dji_osdk_ros
     public:
       VehicleWrapper(int app_id,
                      const std::string& env_key,
+                     const std::string& dev_acm_name,
                      const std::string& dev_name,
                      unsigned int baud_rate,
                      bool enableAdvancedSensing = false);

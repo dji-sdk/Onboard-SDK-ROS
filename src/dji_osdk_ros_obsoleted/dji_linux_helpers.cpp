@@ -28,57 +28,16 @@
  */
 
 #include "dji_linux_helpers.hpp"
-#include "dji_osdk_ros/osdkhal_linux.h"
-#include "dji_osdk_ros/osdkosal_linux.h"
+#include "osdkhal_linux.h"
+#include "osdkosal_linux.h"
 
-static E_OsdkStat OsdkUser_Console(const uint8_t *data, uint16_t dataLen) 
+static E_OsdkStat OsdkUser_Console(const uint8_t *data, uint16_t dataLen)
 {
-  printf("%s", data);
-
   return OSDK_STAT_OK;
+//  printf("%s", data);
+//
+//  return OSDK_STAT_OK;
 }
-
-static T_OsdkLoggerConsole printConsole = {
-    .consoleLevel = OSDK_LOGGER_CONSOLE_LOG_LEVEL_INFO,
-    .func = OsdkUser_Console,
-};
-
-static T_OsdkHalUartHandler halUartHandler = {
-    .UartInit = OsdkLinux_UartInit,
-    .UartWriteData = OsdkLinux_UartSendData,
-    .UartReadData = OsdkLinux_UartReadData,
-    .UartClose = OsdkLinux_UartClose
-};
-
-#ifdef ADVANCED_SENSING
-static T_OsdkHalUSBBulkHandler halUSBBulkHandler = {
-    .USBBulkInit = OsdkLinux_USBBulkInit,
-    .USBBulkWriteData = OsdkLinux_USBBulkSendData,
-    .USBBulkReadData = OsdkLinux_USBBulkReadData,
-    .USBBulkClose = OsdkLinux_USBBulkClose,
-};
-#endif
-
-static T_OsdkOsalHandler osalHandler = {	
-    .TaskCreate = OsdkLinux_TaskCreate,
-    .TaskDestroy = OsdkLinux_TaskDestroy,
-    .TaskSleepMs = OsdkLinux_TaskSleepMs,
-    .MutexCreate = OsdkLinux_MutexCreate,
-    .MutexDestroy = OsdkLinux_MutexDestroy,
-    .MutexLock = OsdkLinux_MutexLock,
-    .MutexUnlock = OsdkLinux_MutexUnlock,
-    .SemaphoreCreate = OsdkLinux_SemaphoreCreate,
-    .SemaphoreDestroy = OsdkLinux_SemaphoreDestroy,
-    .SemaphoreWait = OsdkLinux_SemaphoreWait,
-    .SemaphoreTimedWait = OsdkLinux_SemaphoreTimedWait,
-    .SemaphorePost = OsdkLinux_SemaphorePost,
-    .GetTimeMs = OsdkLinux_GetTimeMs,
-#ifdef OS_DEBUG
-    .GetTimeUs = OsdkLinux_GetTimeUs,
-#endif
-    .Malloc = OsdkLinux_Malloc,
-    .Free = OsdkLinux_Free,
-  };
 
 using namespace DJI::OSDK;
 
@@ -105,6 +64,47 @@ LinuxSetup::~LinuxSetup()
 void
 LinuxSetup::setupEnvironment(int argc, char** argv)
 {
+  static T_OsdkLoggerConsole printConsole = {
+      .consoleLevel = OSDK_LOGGER_CONSOLE_LOG_LEVEL_INFO,
+      .func = OsdkUser_Console,
+  };
+
+  static T_OsdkHalUartHandler halUartHandler = {
+      .UartInit = OsdkLinux_UartInit,
+      .UartWriteData = OsdkLinux_UartSendData,
+      .UartReadData = OsdkLinux_UartReadData,
+      .UartClose = OsdkLinux_UartClose,
+  };
+
+#ifdef ADVANCED_SENSING
+  static T_OsdkHalUSBBulkHandler halUSBBulkHandler = {
+      .USBBulkInit = OsdkLinux_USBBulkInit,
+      .USBBulkWriteData = OsdkLinux_USBBulkSendData,
+      .USBBulkReadData = OsdkLinux_USBBulkReadData,
+      .USBBulkClose = OsdkLinux_USBBulkClose,
+  };
+#endif
+
+  static T_OsdkOsalHandler osalHandler = {
+      .TaskCreate = OsdkLinux_TaskCreate,
+      .TaskDestroy = OsdkLinux_TaskDestroy,
+      .TaskSleepMs = OsdkLinux_TaskSleepMs,
+      .MutexCreate = OsdkLinux_MutexCreate,
+      .MutexDestroy = OsdkLinux_MutexDestroy,
+      .MutexLock = OsdkLinux_MutexLock,
+      .MutexUnlock = OsdkLinux_MutexUnlock,
+      .SemaphoreCreate = OsdkLinux_SemaphoreCreate,
+      .SemaphoreDestroy = OsdkLinux_SemaphoreDestroy,
+      .SemaphoreWait = OsdkLinux_SemaphoreWait,
+      .SemaphoreTimedWait = OsdkLinux_SemaphoreTimedWait,
+      .SemaphorePost = OsdkLinux_SemaphorePost,
+      .GetTimeMs = OsdkLinux_GetTimeMs,
+#ifdef OS_DEBUG
+      .GetTimeUs = OsdkLinux_GetTimeUs,
+#endif
+      .Malloc = OsdkLinux_Malloc,
+      .Free = OsdkLinux_Free,
+  };
 
   if(DJI_REG_LOGGER_CONSOLE(&printConsole) != true) {
     throw std::runtime_error("logger console register fail");
@@ -181,7 +181,7 @@ LinuxSetup::setupEnvironment(int argc, char** argv)
   {
     // We were unable to read the config file. Exit.
     throw std::runtime_error(
-      "User configuration file is not correctly formatted.");
+        "User configuration file is not correctly formatted.");
   }
 
   /* set ttyACM device */
@@ -211,14 +211,14 @@ LinuxSetup::initVehicle()
 
   /*! Linker add uart channel */
   if (!addFCUartChannel(environment->getDevice().c_str(),
-                      environment->getBaudrate())) {
+                        environment->getBaudrate())) {
     DERROR("Failed to initialize Linker channel");
     return false;
   }
 
   /*! Linker add USB acm channel */
   if (!addUSBACMChannel(environment->getDeviceAcm().c_str(),
-                      environment->getACMDefaultBaudrate())) {
+                        environment->getACMDefaultBaudrate())) {
     DERROR("Failed to initialize ACM Linker channel!");
   }
 
@@ -250,9 +250,13 @@ LinuxSetup::initVehicle()
     goto err;
   }
 
+  if (!vehicle->isM300()) {
+    vehicle->setUSBFlightOn(true);
+  }
+
   return true;
 
-err:
+  err:
   if (vehicle) delete (vehicle);
   if (environment) delete (environment);
   this->environment = nullptr;

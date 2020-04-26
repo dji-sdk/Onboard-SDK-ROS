@@ -25,7 +25,7 @@
  */
 
 /* Includes ------------------------------------------------------------------*/
-#include "dji_osdk_ros/osdkhal_linux.h"
+#include "osdkhal_linux.h"
 
 /* Exported functions definition ---------------------------------------------*/
 
