@@ -1,0 +1,7 @@
+#request
+uint8 payload_index
+float32 x
+float32 y
+---
+#response
+bool result

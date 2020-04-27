@@ -47,13 +47,27 @@ namespace dji_osdk_ros
       bool initVehicle();
 
     public:
-      bool takePicture();
-      bool startCaptureVideo();
-      bool stopCaptureVideo();
-      bool setGimbalAngle(const GimbalContainer& gimbal);
-      bool getCurrentGimbal(RotationAngle& current_angle);
-      bool zoomCtrl(const CameraZoomDataType& zoom_data);
-
+      /*! Parts of Camera */
+      bool setEV(const PayloadIndex& payloadIndex, const ExposureCompensation& exposureCompensation);
+      bool setExposureMode(const PayloadIndex& index, const ExposureMode& dataTarget);
+      bool setISO(const PayloadIndex& payloadIndex, const ISO& ios);
+      bool setShutterSpeed(const PayloadIndex& payloadIndex, const ShutterSpeed& shutterSpeed);
+      bool setAperture(const PayloadIndex& payloadIndex, const Aperture& aperture);
+      bool setFocusPoint(const PayloadIndex& payloadIndex,const float& x, const float& y);
+      bool setTapZoomPoint(const PayloadIndex& payloadIndex,const uint8_t& multiplier, const float& x,const float& y);
+      bool startZoom(const PayloadIndex& payloadIndex,const uint8_t& direction, const uint8_t& speed);
+      bool stopZoom(const PayloadIndex& payloadIndex);
+      bool startShootSinglePhoto(const PayloadIndex& payloadIndex);
+      bool startShootBurstPhoto(const PayloadIndex& payloadIndex, const PhotoBurstCount& photoBurstCount);
+      bool startShootAEBPhoto(const PayloadIndex& index,  const PhotoAEBCount& photoAebCount);
+      bool startShootIntervalPhoto(const PayloadIndex& payloadIndex, const PhotoIntervalData& photoIntervalData);
+      bool shootPhotoStop(const PayloadIndex& payloadIndex);
+      bool startRecordVideo(const PayloadIndex& payloadIndex);
+      bool stopRecordVideo(const PayloadIndex& payloadIndex);
+      /*! Parts of Gimbal */
+      GimbalSingleData getGimbalData(const PayloadIndex& payloadIndex);
+      bool rotateGimbal(const PayloadIndex& PayloadIndex, const GimbalRotationData& rotationData);
+      bool resetGimbal(const PayloadIndex& payloadIndex);
 
     /* Parts of Flight Control*/
       bool setNewHomeLocation(int timeout = 1);

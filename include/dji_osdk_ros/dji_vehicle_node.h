@@ -25,6 +25,19 @@
 #include <dji_osdk_ros/FlightTaskControl.h>
 #include <dji_osdk_ros/GimbalAction.h>
 #include <dji_osdk_ros/CameraTaskControl.h>
+#include <dji_osdk_ros/CameraEV.h>
+#include <dji_osdk_ros/CameraShutterSpeed.h>
+#include <dji_osdk_ros/CameraAperture.h>
+#include <dji_osdk_ros/CameraISO.h>
+#include <dji_osdk_ros/CameraFocusPoint.h>
+#include <dji_osdk_ros/CameraTapZoomPoint.h>
+#include <dji_osdk_ros/CameraZoomCtrl.h>
+#include <dji_osdk_ros/CameraStartShootBurstPhoto.h>
+#include <dji_osdk_ros/CameraStartShootAEBPhoto.h>
+#include <dji_osdk_ros/CameraStartShootSinglePhoto.h>
+#include <dji_osdk_ros/CameraStartShootIntervalPhoto.h>
+#include <dji_osdk_ros/CameraStopShootPhoto.h>
+#include <dji_osdk_ros/CameraRecordVideoAction.h>
 #include <dji_osdk_ros/MFIO.h>
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetNewHomePoint.h>
@@ -48,8 +61,12 @@ namespace dji_osdk_ros
     public:
       VehicleNode();
       VehicleNode(int test);
-      ~VehicleNode() = default;
+      //~VehicleNode() = default;
+      ~VehicleNode();
 
+      bool subscribeGimbalData();
+      bool unSubScribeGimbalData();
+      bool initCameraModule();
       void initService();
       void initTopic();
       void publishTopic();
@@ -59,7 +76,22 @@ namespace dji_osdk_ros
     protected:
       ros::ServiceServer task_control_server_;
       ros::ServiceServer gimbal_control_server_;
-      ros::ServiceServer camera_action_control_server_;
+      /*! for camera*/
+      ros::ServiceServer camera_control_set_EV_server_;
+      ros::ServiceServer camera_control_set_shutter_speed_server_;
+      ros::ServiceServer camera_control_set_aperture_server_;
+      ros::ServiceServer camera_control_set_ISO_server_;
+      ros::ServiceServer camera_control_set_focus_point_server_;
+      ros::ServiceServer camera_control_set_tap_zoom_point_server_;
+      ros::ServiceServer camera_control_zoom_ctrl_server_;
+      ros::ServiceServer camera_control_start_shoot_single_photo_server_;
+      ros::ServiceServer camera_control_start_shoot_burst_photo_server_;
+      ros::ServiceServer camera_control_start_shoot_AEB_photo_server_;
+      ros::ServiceServer camera_control_start_shoot_interval_photo_server_;
+      ros::ServiceServer camera_control_stop_shoot_photo_server_;
+      ros::ServiceServer camera_control_record_video_action_server_;
+
+//      ros::ServiceServer camera_action_control_server_;
       ros::ServiceServer mfio_control_server_;
 
       ros::ServiceServer set_home_altitude_server_;
@@ -72,9 +104,22 @@ namespace dji_osdk_ros
 
     protected:
       bool taskCtrlCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
-
+      /*! for gimbal */
       bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);
-      bool cameraCtrlCallback(CameraTaskControl::Request& request, CameraTaskControl::Response& response);
+      /*! for camera*/
+      bool cameraSetEVCallback(CameraEV::Request& request, CameraEV::Response& response);
+      bool cameraSetShutterSpeedCallback(CameraShutterSpeed::Request& request, CameraShutterSpeed::Response& response);
+      bool cameraSetApertureCallback(CameraAperture::Request& request, CameraAperture::Response& response);
+      bool cameraSetISOCallback(CameraISO::Request& request, CameraISO::Response& response);
+      bool cameraSetFocusPointCallback(CameraFocusPoint::Request& request, CameraFocusPoint::Response& response);
+      bool cameraSetTapZoomPointCallback(CameraTapZoomPoint::Request& request, CameraTapZoomPoint::Response& response);
+      bool cameraZoomCtrlCallback(CameraZoomCtrl::Request& request, CameraZoomCtrl::Response& response);
+      bool cameraStartShootSinglePhotoCallback(CameraStartShootSinglePhoto::Request& request, CameraStartShootSinglePhoto::Response& response);
+      bool cameraStartShootAEBPhotoCallback(CameraStartShootAEBPhoto::Request& request, CameraStartShootAEBPhoto::Response& response);
+      bool cameraStartShootBurstPhotoCallback(CameraStartShootBurstPhoto::Request& request, CameraStartShootBurstPhoto::Response& response);
+      bool cameraStartShootIntervalPhotoCallback(CameraStartShootIntervalPhoto::Request& request, CameraStartShootIntervalPhoto::Response& response);
+      bool cameraStopShootPhotoCallback(CameraStopShootPhoto::Request& request, CameraStopShootPhoto::Response& response);
+      bool cameraRecordVideoActionCallback(CameraRecordVideoAction::Request& request, CameraRecordVideoAction::Response& response);
 
       bool mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response);
 

@@ -1,0 +1,7 @@
+#request
+uint8 payload_index
+uint8 exposure_mode
+uint8 aperture
+---
+#response
+bool result

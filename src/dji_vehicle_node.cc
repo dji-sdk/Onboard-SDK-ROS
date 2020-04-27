@@ -48,16 +48,171 @@ VehicleNode::VehicleNode()
   }
   ROS_INFO_STREAM("VehicleNode Start");
 
-  initSubscribe();
+  subscribeGimbalData();
+  initCameraModule();
   initService();
   initTopic();
+}
+
+VehicleNode::~VehicleNode()
+{
+  unSubScribeGimbalData();
+}
+
+bool VehicleNode::subscribeGimbalData()
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  Vehicle* vehicle = ptr_wrapper_->getVehicle();
+  /*! verify the subscribe function */
+  ACK::ErrorCode ack = vehicle->subscribe->verify(1);
+  if (ACK::getError(ack) != ACK::SUCCESS) {
+    ACK::getErrorCodeMessage(ack, __func__);
+    return false;
+  }
+
+  /*! Package 0: Subscribe to gimbal data at freq 50 Hz */
+  ACK::ErrorCode subscribeStatus;
+  int       pkgIndex        = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::GIMBA_SUB_PACKAGE_INDEX);
+  int       freq            = 50;
+  TopicName topicList50Hz[]  = { vehicle->isM300() ? TOPIC_THREE_GIMBAL_DATA : TOPIC_DUAL_GIMBAL_DATA };
+  int       numTopic        = sizeof(topicList50Hz) / sizeof(topicList50Hz[0]);
+  bool      enableTimestamp = false;
+
+  bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
+      pkgIndex, numTopic, topicList50Hz, enableTimestamp, freq);
+  if (!(pkgStatus))
+  {
+    std::cout << "init package for gimbal data failed." << std::endl;
+    return false;
+  }
+  subscribeStatus = vehicle->subscribe->startPackage(pkgIndex, 1);
+  if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
+  {
+    ACK::getErrorCodeMessage(subscribeStatus, __func__);
+    vehicle->subscribe->removePackage(pkgIndex, 1);
+    std::cout << "subscribe gimbal data failed."<< std::endl;
+    return false;
+  }
+
+  /*! init gimbal modules for gimbalManager */
+  ErrorCode::ErrorCodeType ret;
+  /*! main gimbal init */
+  ret = vehicle->gimbalManager->initGimbalModule(PAYLOAD_INDEX_0,
+                                                 "main_gimbal");
+  if (ret != ErrorCode::SysCommonErr::Success)
+  {
+    std::cout << "Init Camera module main_gimbal failed."<< std::endl;
+    ErrorCode::printErrorCodeMsg(ret);
+    return false;
+  }
+  /*! vice gimbal init */
+  ret = vehicle->gimbalManager->initGimbalModule(PAYLOAD_INDEX_1,
+                                                 "vice_gimbal");
+  if (ret != ErrorCode::SysCommonErr::Success)
+  {
+    std::cout << "Init Camera module vice_gimbal failed." << std::endl;
+    ErrorCode::printErrorCodeMsg(ret);
+    return false;
+  }
+  /*! top gimbal init */
+  if (vehicle->isM300())
+  {
+    ret = vehicle->gimbalManager->initGimbalModule(PAYLOAD_INDEX_2,
+                                                   "top_gimbal");
+    if (ret != ErrorCode::SysCommonErr::Success) {
+      std::cout << "Init Camera module top_gimbal failed." << std::endl;
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool VehicleNode::unSubScribeGimbalData()
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  Vehicle* vehicle = ptr_wrapper_->getVehicle();
+
+  int pkgIndex = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::GIMBA_SUB_PACKAGE_INDEX);
+  ACK::ErrorCode subscribeStatus =
+      vehicle->subscribe->removePackage(pkgIndex, 1);
+  if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
+  {
+    ACK::getErrorCodeMessage(subscribeStatus, __func__);
+    std::cout << "remove subscribe package gimbal data failed." << std::endl;
+    return false;
+  }
+  return true;
+}
+
+bool VehicleNode::initCameraModule()
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  Vehicle* vehicle = ptr_wrapper_->getVehicle();
+
+  /*! init camera modules for cameraManager */
+  /*! main camera init */
+  ErrorCode::ErrorCodeType ret = vehicle->cameraManager->initCameraModule(
+      PAYLOAD_INDEX_0, "main_camera");
+  if (ret != ErrorCode::SysCommonErr::Success) {
+    DERROR("Init Camera module main_camera failed.");
+    ErrorCode::printErrorCodeMsg(ret);
+    return false;
+  }
+  /*! vice camera init */
+  ret = vehicle->cameraManager->initCameraModule(PAYLOAD_INDEX_1,
+                                                 "vice_camera");
+  if (ret != ErrorCode::SysCommonErr::Success) {
+    DERROR("Init Camera module vice_camera failed.");
+    ErrorCode::printErrorCodeMsg(ret);
+    return false;
+  }
+  /*! top camera init for M300 */
+  if (vehicle->isM300()) {
+    ret = vehicle->cameraManager->initCameraModule(PAYLOAD_INDEX_2,
+                                                   "top_camera");
+    if (ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("Init Camera module top_camera failed.");
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+  }
+
+  return true;
 }
 
 void VehicleNode::initService()
 {
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
   gimbal_control_server_ = nh_.advertiseService("gimbal_task_control", &VehicleNode::gimbalCtrlCallback, this);
-  camera_action_control_server_ = nh_.advertiseService("camera_task_control", &VehicleNode::cameraCtrlCallback, this);
+  camera_control_set_EV_server_ = nh_.advertiseService("camera_task_set_EV", &VehicleNode::cameraSetEVCallback, this);
+  camera_control_set_shutter_speed_server_ = nh_.advertiseService("camera_task_set_shutter_speed", &VehicleNode::cameraSetShutterSpeedCallback, this);
+  camera_control_set_aperture_server_ = nh_.advertiseService("camera_task_set_aperture", &VehicleNode::cameraSetApertureCallback, this);
+  camera_control_set_ISO_server_ = nh_.advertiseService("camera_task_set_ISO", &VehicleNode::cameraSetISOCallback, this);
+  camera_control_set_focus_point_server_ = nh_.advertiseService("camera_task_set_focus_point", &VehicleNode::cameraSetFocusPointCallback, this);
+  camera_control_set_tap_zoom_point_server_ = nh_.advertiseService("camera_task_tap_zoom_point", &VehicleNode::cameraSetTapZoomPointCallback, this);
+  camera_control_zoom_ctrl_server_ = nh_.advertiseService("camera_task_zoom_ctrl", &VehicleNode::cameraZoomCtrlCallback, this);
+  camera_control_start_shoot_single_photo_server_ = nh_.advertiseService("camera_start_shoot_single_photo", &VehicleNode::cameraStartShootSinglePhotoCallback, this);
+  camera_control_start_shoot_AEB_photo_server_ = nh_.advertiseService("camera_start_shoot_aeb_photo", &VehicleNode::cameraStartShootAEBPhotoCallback, this);
+  camera_control_start_shoot_burst_photo_server_ = nh_.advertiseService("camera_start_shoot_burst_photo", &VehicleNode::cameraStartShootBurstPhotoCallback, this);
+  camera_control_start_shoot_interval_photo_server_ = nh_.advertiseService("camera_start_shoot_interval_photo", &VehicleNode::cameraStartShootIntervalPhotoCallback, this);
+  camera_control_stop_shoot_photo_server_ = nh_.advertiseService("camera_stop_shoot_photo", &VehicleNode::cameraStopShootPhotoCallback, this);
+  camera_control_record_video_action_server_ = nh_.advertiseService("camera_record_video_action", &VehicleNode::cameraRecordVideoActionCallback, this);
+
   mfio_control_server_ = nh_.advertiseService("mfio_control", &VehicleNode::mfioCtrlCallback, this);
 
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
@@ -240,19 +395,36 @@ bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalActio
     return true;
   }
   response.result = false;
-  RotationAngle initial_angle;
-  //if(getCurrentGimbal(initial_angle) == false)
-  //{
-  //  ROS_ERROR_STREAM("Get Current Gimbal Angle Failed");
-  //  return false;
-  //}
+  ROS_INFO("Current gimbal %d, angle (p,r,y) = (%0.2f, %0.2f, %0.2f)", static_cast<int>(request.payload_index),
+           ptr_wrapper_->getGimbalData(static_cast<PayloadIndex>(request.payload_index)).pitch,
+           ptr_wrapper_->getGimbalData(static_cast<PayloadIndex>(request.payload_index)).roll,
+           ptr_wrapper_->getGimbalData(static_cast<PayloadIndex>(request.payload_index)).yaw);
   ROS_INFO_STREAM("Call gimbal Ctrl.");
-  GimbalContainer gimbal(request.yaw, request.pitch, request.roll, 0, 1, initial_angle);
-  response.result = ptr_wrapper_->setGimbalAngle(gimbal);
+
+  if (request.is_reset)
+  {
+    response.result = ptr_wrapper_->resetGimbal(static_cast<PayloadIndex>(request.payload_index));
+  }
+  else
+  {
+    GimbalRotationData gimbalRotationData;
+    gimbalRotationData.rotationMode = request.rotationMode;
+    gimbalRotationData.pitch = request.pitch;
+    gimbalRotationData.roll  = request.roll;
+    gimbalRotationData.yaw   = request.yaw;
+    gimbalRotationData.time  = request.time;
+    response.result = ptr_wrapper_->rotateGimbal(static_cast<PayloadIndex>(request.payload_index), gimbalRotationData);
+  }
+
+  sleep(2);
+  ROS_INFO("Current gimbal %d , angle (p,r,y) = (%0.2f, %0.2f, %0.2f)", request.payload_index,
+           ptr_wrapper_->getGimbalData(static_cast<PayloadIndex>(request.payload_index)).pitch,
+           ptr_wrapper_->getGimbalData(static_cast<PayloadIndex>(request.payload_index)).roll,
+           ptr_wrapper_->getGimbalData(static_cast<PayloadIndex>(request.payload_index)).yaw);
   return true;
 }
 
-bool VehicleNode::cameraCtrlCallback(CameraTaskControl::Request& request, CameraTaskControl::Response& response)
+bool VehicleNode::cameraSetEVCallback(CameraEV::Request& request, CameraEV::Response& response)
 {
   if(ptr_wrapper_ == nullptr)
   {
@@ -260,46 +432,193 @@ bool VehicleNode::cameraCtrlCallback(CameraTaskControl::Request& request, Camera
     return true;
   }
   response.result = false;
-  switch (request.action)
+  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
   {
-    case CameraTaskControl::Request::CAMERA_ACTION_TAKE_PICTURE:
-      {
-        ROS_INFO_STREAM("Call take picture.");
-        response.result = ptr_wrapper_->takePicture();
-        break;
-      }
-    case CameraTaskControl::Request::CAMERA_ACTION_START_RECORD:
-      {
-        ROS_INFO_STREAM("Call record video.");
-        response.result = ptr_wrapper_->startCaptureVideo();
-        break;
-      }
-    case CameraTaskControl::Request::CAMERA_ACTION_STOP_RECORD:
-      {
-        ROS_INFO_STREAM("Call stop video.");
-        response.result = ptr_wrapper_->stopCaptureVideo();
-        break;
-      }
-    case CameraTaskControl::Request::CAMERA_ACTION_ZOOM:
-      {
-        ROS_INFO_STREAM("Call Camera Zoom");
-        CameraZoomDataType zoom_data;
-
-        memcpy(&zoom_data.func_index, &request.func_index, sizeof(zoom_data.func_index));
-        memcpy(&zoom_data.cam_index, &request.cam_index, sizeof(zoom_data.cam_index));
-        memcpy(&zoom_data.zoom_config, &request.zoom_config, sizeof(zoom_data.zoom_config));
-        memcpy(&zoom_data.optical_zoom_param.step_param, &request.step_param, sizeof(zoom_data.optical_zoom_param.step_param));
-        memcpy(&zoom_data.optical_zoom_param.cont_param, &request.cont_param, sizeof(zoom_data.optical_zoom_param.cont_param));
-        memcpy(&zoom_data.optical_zoom_param.pos_param, &request.pos_param, sizeof(zoom_data.optical_zoom_param.pos_param));
-
-        response.result = ptr_wrapper_->zoomCtrl(zoom_data);
-        break;
-      }
-    defaule:
-      break;
+    return false;
   }
-  //return response.result;
+  if (ptr_wrapper_->setEV(static_cast<PayloadIndex>(request.payload_index),
+                          static_cast<ExposureCompensation>(request.exposure_compensation)))
+  {
+    return false;
+  }
+  response.result = true;
   return true;
+}
+
+bool VehicleNode::cameraSetShutterSpeedCallback(CameraShutterSpeed::Request& request, CameraShutterSpeed::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  response.result = false;
+  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
+  {
+    return false;
+  }
+  if (ptr_wrapper_->setShutterSpeed(static_cast<PayloadIndex>(request.payload_index), static_cast<ShutterSpeed>(request.shutter_speed)))
+  {
+    return false;
+  }
+  response.result = true;
+  return true;
+}
+
+bool VehicleNode::cameraSetApertureCallback(CameraAperture::Request& request, CameraAperture::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  response.result = false;
+  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
+  {
+    return false;
+  }
+  if (ptr_wrapper_->setAperture(static_cast<PayloadIndex>(request.payload_index), static_cast<Aperture>(request.aperture)))
+  {
+    return false;
+  }
+  response.result = true;
+  return true;
+}
+
+bool VehicleNode::cameraSetISOCallback(CameraISO::Request& request, CameraISO::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  response.result = false;
+  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
+  {
+    return false;
+  }
+  if (ptr_wrapper_->setISO(static_cast<PayloadIndex>(request.payload_index), static_cast<ISO>(request.iso_data)))
+  {
+    return false;
+  }
+  response.result = true;
+  return true;
+}
+
+bool VehicleNode::cameraSetFocusPointCallback(CameraFocusPoint::Request& request, CameraFocusPoint::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  response.result = ptr_wrapper_->setFocusPoint(static_cast<PayloadIndex>(request.payload_index), request.x, request.y);
+  return response.result;
+}
+
+bool VehicleNode::cameraSetTapZoomPointCallback(CameraTapZoomPoint::Request& request, CameraTapZoomPoint::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  response.result = ptr_wrapper_->setTapZoomPoint(static_cast<PayloadIndex>(request.payload_index),request.multiplier, request.x, request.y);
+  return response.result;
+}
+
+bool VehicleNode::cameraZoomCtrlCallback(CameraZoomCtrl::Request& request, CameraZoomCtrl::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  if (request.start_stop == 1)
+  {
+    response.result = ptr_wrapper_->startZoom(static_cast<PayloadIndex>(request.payload_index), request.direction, request.speed);
+  }
+  if (request.start_stop == 0)
+  {
+    response.result = ptr_wrapper_->stopZoom(static_cast<PayloadIndex>(request.payload_index));
+  }
+  return response.result;
+}
+
+bool VehicleNode::cameraStartShootSinglePhotoCallback(CameraStartShootSinglePhoto::Request& request, CameraStartShootSinglePhoto::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  response.result = ptr_wrapper_->startShootSinglePhoto(static_cast<PayloadIndex>(request.payload_index));
+  return response.result;
+}
+
+bool VehicleNode::cameraStartShootAEBPhotoCallback(CameraStartShootAEBPhoto::Request& request, CameraStartShootAEBPhoto::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  response.result = ptr_wrapper_->startShootAEBPhoto(static_cast<PayloadIndex>(request.payload_index), static_cast<PhotoAEBCount>(request.photo_aeb_count));
+  return response.result;
+}
+
+bool VehicleNode::cameraStartShootBurstPhotoCallback(CameraStartShootBurstPhoto::Request& request, CameraStartShootBurstPhoto::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  response.result = ptr_wrapper_->startShootBurstPhoto(static_cast<PayloadIndex>(request.payload_index),static_cast<PhotoBurstCount>(request.photo_burst_count));
+  return response.result;
+}
+
+bool VehicleNode::cameraStartShootIntervalPhotoCallback(CameraStartShootIntervalPhoto::Request& request, CameraStartShootIntervalPhoto::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  PhotoIntervalData photoIntervalData;
+  photoIntervalData.photoNumConticap = request.photo_num_conticap;
+  photoIntervalData.timeInterval = request.time_interval;
+  response.result = ptr_wrapper_->startShootIntervalPhoto(static_cast<PayloadIndex>(request.payload_index), photoIntervalData);
+  return response.result;
+}
+
+bool VehicleNode::cameraStopShootPhotoCallback(CameraStopShootPhoto::Request& request, CameraStopShootPhoto::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  response.result = ptr_wrapper_->shootPhotoStop(static_cast<PayloadIndex>(request.payload_index));
+  return response.result;
+}
+
+bool VehicleNode::cameraRecordVideoActionCallback(CameraRecordVideoAction::Request& request, CameraRecordVideoAction::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    return true;
+  }
+  if(request.start_stop == 1)
+  {
+    response.result = ptr_wrapper_->startRecordVideo(static_cast<PayloadIndex>(request.payload_index));
+  }
+  if(request.start_stop == 0)
+  {
+    response.result = ptr_wrapper_->stopRecordVideo(static_cast<PayloadIndex>(request.payload_index));
+  }
+  return response.result;
 }
 
 bool VehicleNode::mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response)
@@ -400,59 +719,6 @@ bool VehicleNode::setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::R
     response.result = false;
   }
 
-  return true;
-}
-
-bool VehicleNode::initSubscribe()
-{
-  int responseTimeout = 1;
-  int pkgIndex;
-
-  /*
-   * Subscribe to gimbal data not supported in MAtrice 100
-   */
-
-  if (!ptr_wrapper_->getVehicle()->isM100() && !ptr_wrapper_->getVehicle()->isLegacyM600())
-  {
-    // Telemetry: Verify the subscription
-    ACK::ErrorCode subscribeStatus;
-    subscribeStatus = ptr_wrapper_->getVehicle()->subscribe->verify(responseTimeout);
-    if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
-    {
-      ACK::getErrorCodeMessage(subscribeStatus, __func__);
-      return false;
-    }
-
-    // Telemetry: Subscribe to gimbal status and gimbal angle at freq 10 Hz
-    pkgIndex                  = 0;
-    int       freq            = 10;
-    TopicName topicList10Hz[] = { TOPIC_GIMBAL_ANGLES, TOPIC_GIMBAL_STATUS };
-    int       numTopic = sizeof(topicList10Hz) / sizeof(topicList10Hz[0]);
-    bool      enableTimestamp = false;
-
-    bool pkgStatus = ptr_wrapper_->getVehicle()->subscribe->initPackageFromTopicList(
-      pkgIndex, numTopic, topicList10Hz, enableTimestamp, freq);
-    if (!(pkgStatus))
-    {
-      return pkgStatus;
-    }
-    subscribeStatus =
-      ptr_wrapper_->getVehicle()->subscribe->startPackage(pkgIndex, responseTimeout);
-    if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
-    {
-      ACK::getErrorCodeMessage(subscribeStatus, __func__);
-      // Cleanup before return
-      ptr_wrapper_->getVehicle()->subscribe->removePackage(pkgIndex, responseTimeout);
-      return false;
-    }
-  }
-
-  sleep(1);
-
-  std::cout
-    << "Please note that the gimbal yaw angle you see in the telemetry is "
-       "w.r.t absolute North"
-       ", and the accuracy depends on your magnetometer calibration.\n\n"; 
   return true;
 }
 

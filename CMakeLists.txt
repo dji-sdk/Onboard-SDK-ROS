@@ -93,6 +93,19 @@ add_service_files(
   FlightTaskControl.srv
   GimbalAction.srv
   CameraTaskControl.srv
+  CameraEV.srv
+  CameraShutterSpeed.srv
+  CameraAperture.srv
+  CameraISO.srv
+  CameraFocusPoint.srv
+  CameraTapZoomPoint.srv
+  CameraZoomCtrl.srv
+  CameraStartShootSinglePhoto.srv
+  CameraStartShootBurstPhoto.srv
+  CameraStartShootAEBPhoto.srv
+  CameraStartShootIntervalPhoto.srv
+  CameraStopShootPhoto.srv
+  CameraRecordVideoAction.srv
   MFIO.srv
   SetGoHomeAltitude.srv
   SetNewHomePoint.srv
