@@ -1,6 +1,7 @@
 #constant for tasks
 uint8 TASK_GOHOME = 1
 uint8 TASK_GO_LOCAL_POS = 2
+uint8 TASK_GOHOME_AND_CONFIRM_LANDING = 3
 uint8 TASK_TAKEOFF = 4
 uint8 TASK_LAND = 6
 

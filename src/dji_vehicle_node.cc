@@ -329,6 +329,12 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
         ptr_wrapper_->goHome(WAIT_TIMEOUT);
         break;
       }
+    case FlightTaskControl::Request::TASK_GOHOME_AND_CONFIRM_LANDING:
+    {
+      ROS_INFO_STREAM("call go home and confirm landing service");
+      ptr_wrapper_->goHomeAndConfirmLanding(WAIT_TIMEOUT);
+      break;
+    }
     case FlightTaskControl::Request::TASK_GO_LOCAL_POS:
       {
         ROS_INFO_STREAM("call move local position service");

@@ -1295,6 +1295,169 @@ static T_OsdkOsalHandler osalHandler = {
     }
   }
 
+  bool VehicleWrapper::setUpSubscription(int pkgIndex, int freq, TopicName topicList[],
+                                         uint8_t topicSize, int timeout)
+  {
+    if (vehicle) {
+      /*! Telemetry: Verify the subscription*/
+      ACK::ErrorCode subscribeStatus;
+      subscribeStatus = vehicle->subscribe->verify(timeout);
+      if (ACK::getError(subscribeStatus) != ACK::SUCCESS) {
+        ACK::getErrorCodeMessage(subscribeStatus, __func__);
+        return false;
+      }
+
+      bool enableTimestamp = false;
+      bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
+          pkgIndex, topicSize, topicList, enableTimestamp, freq);
+      if (!(pkgStatus)) {
+        return pkgStatus;
+      }
+
+      /*! Start listening to the telemetry data */
+      subscribeStatus = vehicle->subscribe->startPackage(pkgIndex, timeout);
+      if (ACK::getError(subscribeStatus) != ACK::SUCCESS) {
+        ACK::getErrorCodeMessage(subscribeStatus, __func__);
+        /*! Cleanup*/
+        ACK::ErrorCode ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
+        if (ACK::getError(ack)) {
+          DERROR(
+              "Error unsubscription; please restart the drone/FC to get "
+              "back to a clean state");
+        }
+        return false;
+      }
+      return true;
+    } else {
+      DERROR("vehicle haven't been initialized", __func__);
+      return false;
+    }
+  }
+
+  bool VehicleWrapper::teardownSubscription(const int pkgIndex, int timeout)
+  {
+    ACK::ErrorCode ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
+    if (ACK::getError(ack)) {
+      DERROR(
+          "Error unsubscription; please restart the drone/FC to get back "
+          "to a clean state.");
+      return false;
+    }
+    return true;
+  }
+
+  bool VehicleWrapper::checkActionStarted(uint8_t mode)
+  {
+    int actionNotStarted = 0;
+    int timeoutCycles = 20;
+    while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() != mode &&
+           actionNotStarted < timeoutCycles) {
+      actionNotStarted++;
+      Platform::instance().taskSleepMs(100);
+    }
+    if (actionNotStarted == timeoutCycles) {
+      DERROR("Start actions mode %d failed, current DISPLAYMODE is: %d ...", mode,
+             vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>());
+      return false;
+    } else {
+      DSTATUS("DISPLAYMODE: %d ...", mode);
+      return true;
+    }
+  }
+
+  bool VehicleWrapper::goHomeAndConfirmLanding(int timeout)
+  {
+    /*! Step 1: Verify and setup the subscription */
+    const int pkgIndex = static_cast<int>(SubscribePackgeIndex::FLIGHT_CONTROL_GO_HOME_AND_FORCE_LANDING_DATA);
+    int freq = 10;
+    TopicName topicList[] = {TOPIC_STATUS_FLIGHT, TOPIC_STATUS_DISPLAYMODE,
+                             TOPIC_AVOID_DATA, TOPIC_VELOCITY};
+    int topicSize = sizeof(topicList) / sizeof(topicList[0]);
+    setUpSubscription(pkgIndex, freq, topicList, topicSize, timeout);
+
+/*! Step 2: Start go home */
+    DSTATUS("Start go home action");
+    ErrorCode::ErrorCodeType goHomeAck =
+        vehicle->flightController->startGoHomeSync(timeout);
+    if (goHomeAck != ErrorCode::SysCommonErr::Success) {
+      DERROR("Fail to execute go home action!  Error code: %llx\n", goHomeAck);
+      return false;
+    }
+    if (!checkActionStarted(VehicleStatus::DisplayMode::MODE_NAVI_GO_HOME)) {
+      return false;
+    } else {
+      while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
+             VehicleStatus::DisplayMode::MODE_NAVI_GO_HOME &&
+             vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() ==
+             VehicleStatus::FlightStatus::IN_AIR) {
+        Platform::instance().taskSleepMs(
+            1000);  // waiting for this action finished
+      }
+    }
+    DSTATUS("Finished go home action");
+
+/*! Step 3: Start landing */
+    DSTATUS("Start landing action");
+    if (!checkActionStarted(VehicleStatus::DisplayMode::MODE_AUTO_LANDING)) {
+      DERROR("Fail to execute Landing action!");
+      return false;
+    } else {
+      while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
+             VehicleStatus::DisplayMode::MODE_AUTO_LANDING &&
+             vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() ==
+             VehicleStatus::FlightStatus::IN_AIR) {
+        Telemetry::TypeMap<TOPIC_AVOID_DATA>::type avoidData =
+            vehicle->subscribe->getValue<TOPIC_AVOID_DATA>();
+        Platform::instance().taskSleepMs(1000);
+        if ((0.65 < avoidData.down && avoidData.down < 0.75) &&
+            (avoidData.downHealth == 1)) {
+          break;
+        }
+      }
+    }
+    DSTATUS("Finished landing action");
+
+/*! Step 4: Confirm Landing */
+    DSTATUS("Start confirm Landing and avoid ground action");
+    ErrorCode::ErrorCodeType forceLandingAvoidGroundAck =
+        vehicle->flightController->startConfirmLandingSync(timeout);
+    if (forceLandingAvoidGroundAck != ErrorCode::SysCommonErr::Success) {
+      DERROR(
+          "Fail to execute confirm landing avoid ground action! Error code: "
+          "%llx\n ",
+          forceLandingAvoidGroundAck);
+      return false;
+    }
+    if (!checkActionStarted(VehicleStatus::DisplayMode::MODE_AUTO_LANDING)) {
+      return false;
+    } else {
+      while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
+             VehicleStatus::DisplayMode::MODE_AUTO_LANDING &&
+             vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() ==
+             VehicleStatus::FlightStatus::IN_AIR) {
+        Platform::instance().taskSleepMs(1000);
+      }
+    }
+    DSTATUS("Finished force Landing and avoid ground action");
+
+/*! Step 5: Landing finished check*/
+    if (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
+        VehicleStatus::DisplayMode::MODE_P_GPS ||
+        vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
+        VehicleStatus::DisplayMode::MODE_ATTITUDE) {
+      DSTATUS("Successful landing!");
+    } else {
+      DERROR(
+          "Landing finished, but the aircraft is in an unexpected mode. "
+          "Please connect DJI Assistant.");
+      teardownSubscription(pkgIndex, timeout);
+      return false;
+    }
+/*! Step 6: Cleanup */
+    teardownSubscription(pkgIndex, timeout);
+    return true;
+  }
+
   bool VehicleWrapper::setNewHomeLocation(int timeout)
   {
     HomeLocationSetStatus homeLocationSetStatus;
@@ -1310,7 +1473,7 @@ static T_OsdkOsalHandler osalHandler = {
         ACK::getErrorCodeMessage(subscribeStatus, __func__);
         return false;
       }
-      int pkgIndex = 0;
+      int pkgIndex = static_cast<int>(SubscribePackgeIndex::FLIGHT_CONTROL_SET_GO_HOME_DATA);
       int freq = 1;
       TopicName topicList[] = {TOPIC_HOME_POINT_SET_STATUS, TOPIC_HOME_POINT_INFO};
 

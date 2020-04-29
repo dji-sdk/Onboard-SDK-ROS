@@ -64,8 +64,10 @@ namespace dji_osdk_ros
 
   enum class SubscribePackgeIndex
   {
-      GIMBA_SUB_PACKAGE_INDEX = 0,
-      FLIGHT_CONTROL_DATA     = 1,
+      GIMBA_SUB_PACKAGE_INDEX     = 0,
+      FLIGHT_CONTROL_DATA         = 1,
+      FLIGHT_CONTROL_SET_GO_HOME_DATA = 2,
+      FLIGHT_CONTROL_GO_HOME_AND_FORCE_LANDING_DATA = 3,
   };
 
   /*! for gimbal */
