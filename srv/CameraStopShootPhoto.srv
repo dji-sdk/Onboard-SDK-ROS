@@ -1,0 +1,5 @@
+#request
+uint8 payload_index
+---
+#response
+bool result

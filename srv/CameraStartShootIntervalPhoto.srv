@@ -1,0 +1,7 @@
+#request
+uint8 payload_index
+uint8 photo_num_conticap
+int16 time_interval
+---
+#response
+bool result

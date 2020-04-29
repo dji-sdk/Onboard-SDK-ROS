@@ -1,0 +1,8 @@
+#request
+uint8 start_stop
+uint8 payload_index
+uint8 direction
+uint8 speed
+---
+#response
+bool result

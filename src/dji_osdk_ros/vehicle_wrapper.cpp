@@ -202,33 +202,647 @@ static T_OsdkOsalHandler osalHandler = {
       return true;
   }
 
-  bool VehicleWrapper::takePicture()
+  bool VehicleWrapper::setEV(const PayloadIndex& payloadIndex, const ExposureCompensation& exposureCompensation)
   {
-    // Take picture
-    std::cout << "Ensure SD card is present.\n";
-    std::cout << "Taking picture..\n";
-    vehicle->camera->shootPhoto();
-    std::cout << "Check DJI GO App or SD card for a new picture.\n";
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    CameraModule::ExposureCompensation evGet;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    CameraModule::ExposureCompensation dataTarget = static_cast<CameraModule::ExposureCompensation>(exposureCompensation);
+    retCode = pm->getExposureCompensationSync(index, evGet, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Get ev = %d", evGet);
+      if (dataTarget != evGet) {
+        DSTATUS("Set evTarget = %d", dataTarget);
+        retCode = pm->setExposureCompensationSync(index, dataTarget, 1);
+        if (retCode == ErrorCode::SysCommonErr::Success) {
+          DSTATUS("Set ev value successfully.");
+        } else {
+          DERROR("Set ev parameter error. Error code : 0x%lX", retCode);
+          ErrorCode::printErrorCodeMsg(retCode);
+          DERROR(
+              "In order to use this function, the camera exposure mode should be "
+              "set to be PROGRAM_AUTO, SHUTTER_PRIORITY or APERTURE_PRIORITY "
+              "first");
+          return false;
+        }
+      } else {
+        DSTATUS("The ev value is already %d.", dataTarget);
+      }
+    } else {
+      DERROR("Get ev error. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
 
-    std::cout << "Setting new Gimbal rotation angle to [0,-50, 0] using absolute "
-                 "control:\n";
     return true;
   }
 
-  bool VehicleWrapper::startCaptureVideo()
+  bool VehicleWrapper::setExposureMode(const PayloadIndex& payloadIndex, const ExposureMode& exposureMode)
   {
-    std::cout << "Ensure SD card is present.\n";
-    std::cout << "Starting video..\n";
-    vehicle->camera->videoStart();
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    CameraModule::ExposureMode exposureModeGet;
+
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    CameraModule::ExposureMode dataTarget = static_cast<CameraModule::ExposureMode>(exposureMode);
+    retCode = pm->getExposureModeSync(index, exposureModeGet, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Get exposure mode = %d", exposureModeGet);
+      if (dataTarget != exposureModeGet) {
+        DSTATUS("Set exposure mode = %d", dataTarget);
+        retCode = pm->setExposureModeSync(index, dataTarget, 1);
+        if (retCode == ErrorCode::SysCommonErr::Success) {
+          DSTATUS("Set exposure mode successfully.");
+        } else {
+          DERROR("Set exposure mode error. Error code : 0x%lX", retCode);
+          ErrorCode::printErrorCodeMsg(retCode);
+          return false;
+        }
+      } else {
+        DSTATUS("The exposure mode is already %d.", dataTarget);
+      }
+    } else {
+      DERROR("Get exposure mode error. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
     return true;
   }
 
-  bool VehicleWrapper::stopCaptureVideo()
+  bool VehicleWrapper::setISO(const PayloadIndex& payloadIndex, const ISO& ios)
   {
-    // Stop the video
-    std::cout << "Stopping video...\n";
-    vehicle->camera->videoStop();
-    std::cout << "Check DJI GO App or SD card for a new video.\n";
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    CameraModule::ISO isoGet;
+
+    PayloadIndexType index       = static_cast<PayloadIndexType>(payloadIndex);
+    CameraModule::ISO dataTarget = static_cast<CameraModule::ISO>(ios);
+
+    retCode = pm->getISOSync(index, isoGet, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Get iso = %d", isoGet);
+      if (dataTarget != isoGet) {
+        DSTATUS("Set iso = %d", dataTarget);
+        retCode = pm->setISOSync(index, dataTarget, 1);
+        if (retCode == ErrorCode::SysCommonErr::Success) {
+          DSTATUS("Set iso successfully");
+        } else {
+          DERROR("Set ISO parameter error. Error code : 0x%lX", retCode);
+          ErrorCode::printErrorCodeMsg(retCode);
+          DERROR(
+              "For the X5, X5R, X4S and X5S, the ISO value can be set for all "
+              "modes. For the other cameras, the ISO value can only be set when "
+              "the camera exposure mode is in Manual mode.");
+          return false;
+        }
+      } else {
+        DSTATUS("The iso parameter is already %d.", dataTarget);
+      }
+    } else {
+      DERROR("Get iso error. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::setShutterSpeed(const PayloadIndex& payloadIndex, const ShutterSpeed& shutterSpeed)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    CameraModule::ShutterSpeed shutterSpeedGet;
+
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    CameraModule::ShutterSpeed dataTarget = static_cast<CameraModule::ShutterSpeed>(shutterSpeed);
+
+    retCode = pm->getShutterSpeedSync(index, shutterSpeedGet, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Get shutterSpeed = %d", shutterSpeedGet);
+      if (dataTarget != shutterSpeedGet) {
+        DSTATUS("Set shutterSpeed = %d", dataTarget);
+        retCode = pm->setShutterSpeedSync(index, dataTarget, 1);
+        if (retCode == ErrorCode::SysCommonErr::Success) {
+          DSTATUS("Set iso successfully");
+        } else {
+          DERROR("Set shutterSpeed parameter error. Error code : 0x%lX", retCode);
+          ErrorCode::printErrorCodeMsg(retCode);
+          DERROR(
+              "The shutter speed can be set only when the camera exposure mode "
+              "is Shutter mode or Manual mode. The shutter speed should not be "
+              "set slower than the video frame rate when the camera's mode is "
+              "RECORD_VIDEO.");
+          return false;
+        }
+      } else {
+        DSTATUS("The shutterSpeed is already %d.", dataTarget);
+      }
+    } else {
+      DERROR("Get shutterSpeed error. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::setAperture(const PayloadIndex& payloadIndex, const Aperture& aperture)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    CameraModule::Aperture apertureGet;
+
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    CameraModule::Aperture dataTarget = static_cast<CameraModule::Aperture>(aperture);
+    retCode = pm->getApertureSync(index, apertureGet, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Get aperture = %d", apertureGet);
+      if (dataTarget != apertureGet) {
+        DSTATUS("Set aperture = %d", dataTarget);
+        retCode = pm->setApertureSync(index, dataTarget, 1);
+        if (retCode == ErrorCode::SysCommonErr::Success) {
+          DSTATUS("Set aperture successfully");
+        } else {
+          DERROR("Set aperture parameter error. Error code : 0x%lX", retCode);
+          ErrorCode::printErrorCodeMsg(retCode);
+          DERROR(
+              "In order to use this function, the exposure mode ExposureMode "
+              "must be in MANUAL or APERTURE_PRIORITY. Supported only by the X5, "
+              "X5R, X4S, X5S camera.");
+          return false;
+        }
+      } else {
+        DSTATUS("The aperture is already %d.", dataTarget);
+      }
+    } else {
+      DERROR("Get aperture error. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::setFocusPoint(const PayloadIndex& payloadIndex,const float& x,const float& y)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+
+    /*!< set camera focus mode to be CameraModule::FocusMode::AUTO */
+    DSTATUS("Set focus mode = %d", CameraModule::FocusMode::AUTO);
+    retCode = pm->setFocusModeSync(index, CameraModule::FocusMode::AUTO, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      /*!< set camera focus point */
+      DSTATUS("Set focus point = (%f,%f)", x, y);
+      retCode = pm->setFocusTargetSync(index, {x, y}, 1);
+      if (retCode == ErrorCode::SysCommonErr::Success) {
+        DSTATUS("Set focus point successfully");
+      } else {
+        DERROR("Set focus point error. Error code : 0x%lX", retCode);
+        ErrorCode::printErrorCodeMsg(retCode);
+        DERROR(
+            "When the focus mode is auto, the target point is the focal point. "
+            "When the focus mode is manual, the target point is the zoom out area "
+            "if the focus assistant is enabled for the manual mode. Supported only "
+            "by the X5, X5R, Z3 cameras, Mavic Pro camera, Phantom 4 Pro camera, "
+            "Mavic 2 Pro, Mavic 2 Zoom Camera, Mavic 2 Enterprise Camera, X5S. "
+            "It's should be attention that X4S will keep focus point as (0.5,0.5) "
+            "all the time, the setting of focus point to X4S will quickly replaced "
+            "by (0.5, 0.5).");
+      }
+    } else {
+      DERROR("Set focus mode parameter error. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      DERROR(
+          "When the focus mode is auto, the target point is the focal point. "
+          "When the focus mode is manual, the target point is the zoom out area "
+          "if the focus assistant is enabled for the manual mode. Supported only "
+          "by the X5, X5R, Z3 cameras, Mavic Pro camera, Phantom 4 Pro camera, "
+          "Mavic 2 Pro, Mavic 2 Zoom Camera, Mavic 2 Enterprise Camera, X5S. "
+          "It's should be attention that X4S will keep focus point as (0.5,0.5) "
+          "all the time, the setting of focus point to X4S will quickly replaced "
+          "by (0.5, 0.5).");
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::setTapZoomPoint(const PayloadIndex& payloadIndex,const uint8_t& multiplier,const float& x,const float& y)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+
+    /*!< set camera tap zoom enable parameter to be enable */
+    DSTATUS("Set tap zoom enable  = %d", true);
+    retCode = pm->setTapZoomEnabledSync(index, true, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set tap zoom enable fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      DERROR("It is only supported Z30 camera.");
+      return false;
+    }
+
+    /*!< set camera tap zoom multiplier parameter */
+    DSTATUS("Set tap zoom multiplier = %d", multiplier);
+    retCode = pm->setTapZoomMultiplierSync(index, multiplier, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set tap zoom multiplier fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      DERROR("It is only supported Z30 camera.");
+      return false;
+    }
+
+    /*!< set camera tap zoom multiplier target point */
+    DSTATUS("Set tap zoom target point : (%f,%f)", x, y);
+    retCode = pm->tapZoomAtTargetSync(index, {x, y}, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set tap zoom target fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      DERROR("It is only supported Z30 camera.");
+      return false;
+    } else {
+      DSTATUS(
+          "tap zoom at target (%0.2f, %0.2f) successfully, need several seconds "
+          "to zoom.",
+          x, y);
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::startZoom(const PayloadIndex& payloadIndex,const uint8_t& direction, const uint8_t& speed)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+
+    DSTATUS(
+        "Attention : It is only supported by X5, X5R and X5S camera on Osmo with"
+        "lens Olympus M.Zuiko ED 14-42mm f/3.5-5.6 EZ, Z3 camera, Z30 camera.");
+
+    DSTATUS("Start continuous optical zoom parameters : direction=%d, speed=%d",
+            direction, speed);
+    retCode = pm->startContinuousOpticalZoomSync(index, direction, speed, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Start continuous zoom fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+    return true;
+  }
+
+  bool VehicleWrapper::stopZoom(const PayloadIndex& payloadIndex)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+
+    DSTATUS("Stop continuous optical zoom.");
+    retCode = pm->stopContinuousOpticalZoomSync(index, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Stop continuous zoom fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+    return true;
+  }
+
+  bool VehicleWrapper::startShootSinglePhoto(const PayloadIndex& payloadIndex)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+
+    /*!< set camera work mode as shoot photo */
+    DSTATUS("set camera work mode as SHOOT_PHOTO");
+    retCode = pm->setModeSync(index, CameraModule::WorkMode::SHOOT_PHOTO, 3);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Camera take photo fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    /*! @TODO XT* and Z30 don't support set shoot-photo mode. To fix it in the
+     * future */
+    /*!< set shoot-photo mode
+    DSTATUS("set shoot-photo mode as SINGLE");
+    retCode =
+        pm->setShootPhotoModeSync(index, CameraModule::ShootPhotoMode::SINGLE, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set shoot-photo mode as SINGLE fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      DERROR("If the camera is XT, XT2, or XTS, set shoot-photo mode interface is"
+             "temporarily not supported.");
+      return retCode;
+    }
+    */
+
+    /*! wait the APP change the shoot-photo mode display */
+    Platform::instance().taskSleepMs(500);
+
+    /*!< start to shoot single photo */
+    DSTATUS("start to shoot SINGLE photo");
+    retCode =
+        pm->startShootPhotoSync(index, CameraModule::ShootPhotoMode::SINGLE, 2);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Take SINGLE photo fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::startShootBurstPhoto(const PayloadIndex& payloadIndex, const PhotoBurstCount& photoBurstCount)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    CameraModule::PhotoBurstCount count = static_cast<CameraModule::PhotoBurstCount>(photoBurstCount);
+
+    /*!< set camera work mode as SHOOT_PHOTO */
+    DSTATUS("set camera work mode as SHOOT_PHOTO");
+    retCode = pm->setModeSync(index, CameraModule::WorkMode::SHOOT_PHOTO, 3);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set camera as SHOOT_PHOTO fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    /*!< set shoot-photo mode */
+    DSTATUS("set shoot-photo mode as BURST");
+    retCode =
+        pm->setShootPhotoModeSync(index, CameraModule::ShootPhotoMode::BURST, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set shoot-photo mode as BURST fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    /*! wait the APP change the shoot-photo mode display */
+    Platform::instance().taskSleepMs(500);
+
+    /*!< set shoot-photo mode parameter */
+    DSTATUS("set count = %d", count);
+    retCode = pm->setPhotoBurstCountSync(index, count, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set the parameter of BURST mode fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    /*!< start to shoot BURST photo */
+    DSTATUS("start to shoot BURST photo");
+    retCode =
+        pm->startShootPhotoSync(index, CameraModule::ShootPhotoMode::BURST, 2);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Take BURST photo fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::startShootAEBPhoto(const PayloadIndex& payloadIndex, const PhotoAEBCount& photoAebCount)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    CameraModule::PhotoAEBCount photoNum = static_cast<CameraModule::PhotoAEBCount>(photoAebCount);
+
+    /*!< set camera work mode as SHOOT_PHOTO */
+    DSTATUS("set camera work mode as SHOOT_PHOTO");
+    retCode = pm->setModeSync(index, CameraModule::WorkMode::SHOOT_PHOTO, 3);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set camera as SHOOT_PHOTO fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    /*!< set shoot-photo mode */
+    DSTATUS("set shoot-photo mode as AEB");
+    retCode =
+        pm->setShootPhotoModeSync(index, CameraModule::ShootPhotoMode::AEB, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set shoot-photo mode as AEB fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    /*! wait the APP change the shoot-photo mode display */
+    Platform::instance().taskSleepMs(500);
+
+    /*!< set shoot-photo mode parameter */
+    DSTATUS("set AEB photo number = %d", photoNum);
+    retCode = pm->setPhotoAEBCountSync(index, photoNum, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set the parameter of AEB mode fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    /*!< start to shoot AEB photo */
+    DSTATUS("start to shoot AEB photo");
+    retCode =
+        pm->startShootPhotoSync(index, CameraModule::ShootPhotoMode::AEB, 2);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Take AEB photo fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::startShootIntervalPhoto(const PayloadIndex& payloadIndex, const PhotoIntervalData& photoIntervalData)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    CameraModule::PhotoIntervalData intervalData;
+    intervalData.photoNumConticap = photoIntervalData.photoNumConticap;
+    intervalData.timeInterval     = photoIntervalData.timeInterval;
+
+    /*!< set camera work mode as SHOOT_PHOTO */
+    DSTATUS("set camera work mode as SHOOT_PHOTO");
+    retCode = pm->setModeSync(index, CameraModule::WorkMode::SHOOT_PHOTO, 3);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set camera as SHOOT_PHOTO fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    /*!< set shoot-photo mode */
+    DSTATUS("set shoot-photo mode as INTERVAL");
+    retCode = pm->setShootPhotoModeSync(
+        index, CameraModule::ShootPhotoMode::INTERVAL, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set shoot-photo mode as INTERVAL fail. Error code : 0x%lX",
+             retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    /*! wait the APP change the shoot-photo mode display */
+    Platform::instance().taskSleepMs(500);
+
+    /*!< set shoot-photo mode parameter */
+    DSTATUS("set intervalData : photoNumConticap = %d ,timeInterval = %d",
+            intervalData.photoNumConticap, intervalData.timeInterval);
+    retCode = pm->setPhotoTimeIntervalSettingsSync(index, intervalData, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set the parameter of INTERVAL mode fail. Error code : 0x%lX",
+             retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    /*!< start to shoot INTERVAL photo */
+    DSTATUS("start to shoot INTERVAL photo");
+    retCode =
+        pm->startShootPhotoSync(index, CameraModule::ShootPhotoMode::INTERVAL, 2);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Take INTERVAL photo fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::shootPhotoStop(const PayloadIndex& payloadIndex)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+
+    /*!< stop camera shooting photo */
+    DSTATUS("Stop to shoot photo");
+    retCode = pm->stopShootPhotoSync(index, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("stop camera shooting photo fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::startRecordVideo(const PayloadIndex& payloadIndex)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+
+    /*!< set camera work mode as RECORD_VIDEO */
+    DSTATUS("Set camera mode to RECORD_VIDEO");
+    retCode = pm->setModeSync(index, CameraModule::WorkMode::RECORD_VIDEO, 3);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Set camera as RECORD_VIDEO mode fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    /*!< start to take video */
+    DSTATUS("Start to RECORD_VIDEO");
+    retCode = pm->startRecordVideoSync(index, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Start to record video fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::stopRecordVideo(const PayloadIndex& payloadIndex)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+      DERROR("vehicle or cameraManager is a null value.");
+      return false;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+
+    /*!< stop to take video */
+    retCode = pm->stopRecordVideoSync(index, 1);
+    DSTATUS("Stop RECORD_VIDEO");
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Stop to record video fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
     return true;
   }
 
@@ -775,32 +1389,6 @@ static T_OsdkOsalHandler osalHandler = {
     return false;
   }
 
-  bool VehicleWrapper::zoomCtrl(const CameraZoomDataType& zoom_data)
-  {
-    auto zoom_fun = [](Vehicle* vehiclePtr, RecvContainer recvFrame,UserData userData)
-    {
-      uint16_t ack_data_len = recvFrame.recvInfo.len - OpenProtocol::PackageMin;
-      std::cout << "ack data: " <<  __func__  << " ";
-      for (uint16_t i = 0; i < ack_data_len; i++)
-      {
-        std::cout << "0x" << std::hex << (unsigned int) recvFrame.recvData.raw_ack_array[i] << " ";
-      }
-      std::cout << std::endl;
-    };
-
-    void (*z30_zoom_cb)(Vehicle*, RecvContainer, UserData) = zoom_fun;
-
-    const uint8_t z30_zoom_cmd[] = {0x01, 0x30};
-    vehicle->legacyLinker->sendAsync(z30_zoom_cmd, (unsigned char *) (&zoom_data),
-                                     sizeof(CameraZoomDataType), 500, 2,
-                                     z30_zoom_cb, NULL);
-    std::cout << "z30_zoom_test running" << std::endl;
-    return true;
-  }
-
-
-
-
   bool VehicleWrapper::moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset)
   {
     // Set timeout: this timeout is the time you allow the drone to take to finish
@@ -841,7 +1429,7 @@ static T_OsdkOsalHandler osalHandler = {
 
       // Telemetry: Subscribe to quaternion, fused lat/lon and altitude at freq 50
       // Hz
-      pkgIndex                  = 1;
+      pkgIndex                  = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::FLIGHT_CONTROL_DATA);
       int       freq            = 50;
       TopicName topicList50Hz[] = { TOPIC_QUATERNION, TOPIC_GPS_FUSED };
       int       numTopic = sizeof(topicList50Hz) / sizeof(topicList50Hz[0]);
@@ -1201,50 +1789,106 @@ static T_OsdkOsalHandler osalHandler = {
     return ans;
   }
 
-  bool VehicleWrapper::getCurrentGimbal(RotationAngle& current_angle)
+  GimbalSingleData VehicleWrapper::getGimbalData(const PayloadIndex& payloadIndex)
   {
-    // Get Gimbal initial values
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
+    GimbalSingleData gimbalSingleData;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    if (vehicle->isM300() && index <= PAYLOAD_INDEX_2 && index >= PAYLOAD_INDEX_0)
     {
-      current_angle.roll  = vehicle->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().y;
-      current_angle.pitch = vehicle->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().x;
-      current_angle.yaw   = vehicle->subscribe->getValue<TOPIC_GIMBAL_ANGLES>().z;
+      gimbalSingleData.pitch  = vehicle->subscribe->getValue<TOPIC_THREE_GIMBAL_DATA>().gbData[index].pitch;
+      gimbalSingleData.roll   = vehicle->subscribe->getValue<TOPIC_THREE_GIMBAL_DATA>().gbData[index].roll;
+      gimbalSingleData.yaw    = vehicle->subscribe->getValue<TOPIC_THREE_GIMBAL_DATA>().gbData[index].yaw;
+      gimbalSingleData.status = vehicle->subscribe->getValue<TOPIC_THREE_GIMBAL_DATA>().gbData[index].status;
+      gimbalSingleData.mode   = vehicle->subscribe->getValue<TOPIC_THREE_GIMBAL_DATA>().gbData[index].mode;
+      return gimbalSingleData;
     }
-    else
+    else if (index <= PAYLOAD_INDEX_1 && index >= PAYLOAD_INDEX_0)
     {
-      current_angle.roll  = vehicle->broadcast->getGimbal().roll;
-      current_angle.pitch = vehicle->broadcast->getGimbal().pitch;
-      current_angle.yaw   = vehicle->broadcast->getGimbal().yaw;
+      gimbalSingleData.pitch  = vehicle->subscribe->getValue<TOPIC_DUAL_GIMBAL_DATA>().gbData[index].pitch;
+      gimbalSingleData.roll   = vehicle->subscribe->getValue<TOPIC_DUAL_GIMBAL_DATA>().gbData[index].roll;
+      gimbalSingleData.yaw    = vehicle->subscribe->getValue<TOPIC_DUAL_GIMBAL_DATA>().gbData[index].yaw;
+      gimbalSingleData.status = vehicle->subscribe->getValue<TOPIC_DUAL_GIMBAL_DATA>().gbData[index].status;
+      gimbalSingleData.mode   = vehicle->subscribe->getValue<TOPIC_DUAL_GIMBAL_DATA>().gbData[index].mode;
+      return gimbalSingleData;
+    }
+    else {
+      GimbalSingleData data = {0};
+      std::cout << "Invalid payload index : %d" << index << std ::endl;
+      return data;
+    }
+  }
+
+  bool VehicleWrapper::rotateGimbal(const PayloadIndex& payloadIndex, const GimbalRotationData& rotationData)
+  {
+    if (!vehicle || !vehicle->gimbalManager)
+    {
+      DERROR("vehicle or gimbalManager is a null value.");
+      return false;
     }
 
-    {
-      std::cout << "New Gimbal rotation angle is [";
-      std::cout << current_angle.roll << " ";
-      std::cout << current_angle.pitch << " ";
-      std::cout << current_angle.yaw;
-      std::cout << "]\n\n";
+    ErrorCode::ErrorCodeType retCode;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    GimbalModule::Rotation rotation;
+    rotation.rotationMode = rotationData.rotationMode;
+    rotation.pitch        = rotationData.pitch;
+    rotation.roll         = rotationData.roll;
+    rotation.yaw          = rotationData.yaw;
+    rotation.time         = rotationData.time;
+    GimbalManager *p = vehicle->gimbalManager;
+
+    DSTATUS("Start to rotate the gimbal %d, (p,r,y) = (%0.2f,%0.2f,%0.2f) mode:%d"
+            " time:%0.2fs", index, rotation.pitch, rotation.roll, rotation.yaw,
+            rotation.rotationMode, rotation.time);
+    retCode = p->rotateSync(index, rotation, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Rotation gimbal fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
     }
+
     return true;
   }
 
-  bool VehicleWrapper::setGimbalAngle(const GimbalContainer& gimbal)
+  bool VehicleWrapper::resetGimbal(const PayloadIndex& payloadIndex)
   {
-    DJI::OSDK::Gimbal::AngleData gimbalAngle = {};
-    gimbalAngle.roll     = gimbal.roll;
-    gimbalAngle.pitch    = gimbal.pitch;
-    gimbalAngle.yaw      = gimbal.yaw;
-    gimbalAngle.duration = gimbal.duration;
-    gimbalAngle.mode |= 0;
-    gimbalAngle.mode |= gimbal.isAbsolute;
-    gimbalAngle.mode |= gimbal.yaw_cmd_ignore << 1;
-    gimbalAngle.mode |= gimbal.roll_cmd_ignore << 2;
-    gimbalAngle.mode |= gimbal.pitch_cmd_ignore << 3;
+    if (!vehicle || !vehicle->gimbalManager) {
+      DERROR("vehicle or gimbalManager is a null value.");
+      return false;
+    }
 
-    vehicle->gimbal->setAngle(&gimbalAngle);
-    // Give time for gimbal to sync
-    sleep(4);
+    ErrorCode::ErrorCodeType retCode;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    GimbalManager *p = vehicle->gimbalManager;
+
+    DSTATUS("Start to rotate the gimbal %d", index);
+    retCode = p->resetSync(index, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      std::cout << "Reset gimbal fail. Error code : 0x" << hex << retCode << std::endl;
+      ErrorCode::printErrorCodeMsg(retCode);
+      return false;
+    }
+
     return true;
   }
+
+//  bool VehicleWrapper::setGimbalAngle(const GimbalContainer& gimbal)
+//  {
+//    DJI::OSDK::Gimbal::AngleData gimbalAngle = {};
+//    gimbalAngle.roll     = gimbal.roll;
+//    gimbalAngle.pitch    = gimbal.pitch;
+//    gimbalAngle.yaw      = gimbal.yaw;
+//    gimbalAngle.duration = gimbal.duration;
+//    gimbalAngle.mode |= 0;
+//    gimbalAngle.mode |= gimbal.isAbsolute;
+//    gimbalAngle.mode |= gimbal.yaw_cmd_ignore << 1;
+//    gimbalAngle.mode |= gimbal.roll_cmd_ignore << 2;
+//    gimbalAngle.mode |= gimbal.pitch_cmd_ignore << 3;
+//
+//    vehicle->gimbal->setAngle(&gimbalAngle);
+//    // Give time for gimbal to sync
+//    sleep(4);
+//    return true;
+//  }
 
   uint8_t VehicleWrapper::outputMFIO(uint8_t mode, uint8_t channel, uint32_t init_on_time_us, uint16_t freq, bool block, uint8_t gpio_set_value)
   {

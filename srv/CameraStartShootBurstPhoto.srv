@@ -1,0 +1,6 @@
+#request
+uint8 payload_index
+uint8 photo_burst_count
+---
+#response
+bool result
