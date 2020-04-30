@@ -70,9 +70,14 @@ namespace dji_osdk_ros
       bool resetGimbal(const PayloadIndex& payloadIndex);
 
     /* Parts of Flight Control*/
+      bool setUpSubscription(int pkgIndex, int freq,TopicName topicList[],
+                             uint8_t topicSize, int timeout);
+      bool teardownSubscription(const int pkgIndex, int timeout);
+      bool checkActionStarted(uint8_t mode);
       bool setNewHomeLocation(int timeout = 1);
       bool setHomeAltitude(uint16_t altitude, int timeout = 1);
       bool goHome(int timeout);
+      bool goHomeAndConfirmLanding(int timeout);
       bool setAvoid(bool enable);
 
       bool monitoredTakeoff(ACK::ErrorCode& ack, int timeout);

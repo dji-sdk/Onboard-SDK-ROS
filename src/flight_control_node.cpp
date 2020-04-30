@@ -34,7 +34,7 @@ int main(int argc, char** argv)
   task_control_client = nh.serviceClient<FlightTaskControl>("/flight_task_control");
   auto set_go_home_altitude_client = nh.serviceClient<SetGoHomeAltitude>("/set_go_home_altitude");
   auto set_current_point_as_home_client = nh.serviceClient<SetNewHomePoint>("/set_current_point_as_home");
-  auto enable_avoid_client = nh.serviceClient<SetNewHomePoint>("/enable_avoid");
+  auto enable_avoid_client = nh.serviceClient<AvoidEnable>("/enable_avoid");
 
   std::cout
       << "| Available commands:                                            |"
@@ -129,49 +129,66 @@ int main(int argc, char** argv)
           break;
         }
 
-        moveByPosOffset(control_task, MoveOffset(0.0, 0.0, 30.0, 0.0));
-        ros::Duration(2.0).sleep();
-        moveByPosOffset(control_task, MoveOffset(10.0, 0.0, 0.0, 0.0));
-
-        SetNewHomePoint home_set_req;
-        set_current_point_as_home_client.call(home_set_req);
-        if(home_set_req.response.result == false)
+        if (control_task.response.result == true)
         {
-          ROS_ERROR_STREAM("Set current position as Home, FAILED");
+          ROS_INFO_STREAM("Takeoff task successful");
+          ros::Duration(2.0).sleep();
+
+          ROS_INFO_STREAM("turn on Collision-Avoidance-Enabled");
+          AvoidEnable avoid_req;
+          avoid_req.request.enable = true;
+          enable_avoid_client.call(avoid_req);
+          if(avoid_req.response.result == false)
+          {
+            ROS_ERROR_STREAM("Enable Avoid FAILED");
+          }
+
+          ROS_INFO_STREAM("Move by position offset request sending ...");
+          ROS_INFO_STREAM("Move to higher altitude");
+          moveByPosOffset(control_task, MoveOffset(0.0, 0.0, 30.0, 0.0));
+          ROS_INFO_STREAM("Move a short distance");
+          moveByPosOffset(control_task, MoveOffset(10.0, 0.0, 0.0, 0.0));
+
+          ROS_INFO_STREAM("Set aircraft current position as new home location");
+          SetNewHomePoint home_set_req;
+          set_current_point_as_home_client.call(home_set_req);
+          if(home_set_req.response.result == false)
+          {
+            ROS_ERROR_STREAM("Set current position as Home, FAILED");
+            break;
+          }
+
+          ROS_INFO_STREAM("Set new go home altitude");
+          SetGoHomeAltitude altitude_go_home;
+          altitude_go_home.request.altitude = 50;
+          set_go_home_altitude_client.call(altitude_go_home);
+          if(altitude_go_home.response.result == false)
+          {
+            ROS_ERROR_STREAM("Set altitude for go home FAILED");
+            break;
+          }
+
+          ROS_INFO_STREAM("Move to another position");
+          moveByPosOffset(control_task, MoveOffset(50.0, 0.0, 0.0, 0.0));
+
+          ROS_INFO_STREAM("Shut down Collision-Avoidance-Enabled");
+          avoid_req.request.enable = false;
+          enable_avoid_client.call(avoid_req);
+          if(avoid_req.response.result == false)
+          {
+            ROS_ERROR_STREAM("Disable Avoid FAILED");
+          }
+
+          ROS_INFO_STREAM("Go home...");
+
+          control_task.request.task = FlightTaskControl::Request::TASK_GOHOME_AND_CONFIRM_LANDING;
+          task_control_client.call(control_task);
+          if(control_task.response.result == false)
+          {
+            ROS_ERROR_STREAM("GO HOME FAILED");
+          }
           break;
         }
-
-        SetGoHomeAltitude altitude_go_home;
-        altitude_go_home.request.altitude = 50;
-        set_go_home_altitude_client.call(altitude_go_home);
-        if(altitude_go_home.response.result == false)
-        {
-          ROS_ERROR_STREAM("Set altitude for go home FAILED");
-          break;
-        }
-
-        AvoidEnable avoid_req;
-        avoid_req.request.enable = false;
-        enable_avoid_client.call(avoid_req);
-        if(avoid_req.response.result == false)
-        {
-          ROS_ERROR_STREAM("Disable Avoid FAILED");
-        }
-
-        control_task.request.task = FlightTaskControl::Request::TASK_LAND;
-        task_control_client.call(control_task);
-        if(control_task.response.result == false)
-        {
-          ROS_ERROR_STREAM("Land FAILED");
-        }
-
-        avoid_req.request.enable = true;
-        enable_avoid_client.call(avoid_req);
-        if(avoid_req.response.result == false)
-        {
-          ROS_ERROR_STREAM("Enable Avoid FAILED");
-        }
-        break;
       }
     default:
       break;
