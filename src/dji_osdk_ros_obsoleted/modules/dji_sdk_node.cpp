@@ -63,7 +63,7 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private, int arg
       ROS_ERROR("initSubscriber failed");
     }
 
-      if (!initPublisher(nh))
+    if (!initPublisher(nh))
     {
       ROS_ERROR("initPublisher failed");
     }
@@ -96,6 +96,7 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private, int argc, char** argv)
   //! @note currently does not work without thread support
   this->linuxEnvironment = new LinuxSetup(argc, argv);
   this->vehicle = linuxEnvironment->getVehicle();
+//  vehicle = new Vehicle(serial_device.c_str(), baud_rate, threadSupport, enable_advanced_sensing);
 
   if (NULL != vehicle->subscribe && (!user_select_broadcast))
   {
@@ -103,7 +104,7 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private, int argc, char** argv)
   }
 
 #ifdef ADVANCED_SENSING
-    vehicle->advancedSensing->setAcmDevicePath(acm_device.c_str());
+  vehicle->advancedSensing->setAcmDevicePath(acm_device.c_str());
 #endif
 
   return true;
@@ -112,40 +113,40 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private, int argc, char** argv)
 // clang-format off
 bool DJISDKNode::initServices(ros::NodeHandle& nh) {
   // Common to A3/N3 and M100
-  drone_activation_server   = nh.advertiseService("dji_sdk/activation",                     &DJISDKNode::droneActivationCallback,        this);
-  drone_arm_server          = nh.advertiseService("dji_sdk/drone_arm_control",              &DJISDKNode::droneArmCallback,               this);
-  drone_task_server         = nh.advertiseService("dji_sdk/drone_task_control",             &DJISDKNode::droneTaskCallback,              this);
-  sdk_ctrlAuthority_server  = nh.advertiseService("dji_sdk/sdk_control_authority",          &DJISDKNode::sdkCtrlAuthorityCallback,       this);
-  camera_action_server      = nh.advertiseService("dji_sdk/camera_action",                  &DJISDKNode::cameraActionCallback,           this);
-  waypoint_upload_server    = nh.advertiseService("dji_sdk/mission_waypoint_upload",        &DJISDKNode::missionWpUploadCallback,        this);
-  waypoint_action_server    = nh.advertiseService("dji_sdk/mission_waypoint_action",        &DJISDKNode::missionWpActionCallback,        this);
-  waypoint_getInfo_server   = nh.advertiseService("dji_sdk/mission_waypoint_getInfo",       &DJISDKNode::missionWpGetInfoCallback,       this);
-  waypoint_getSpeed_server  = nh.advertiseService("dji_sdk/mission_waypoint_getSpeed",      &DJISDKNode::missionWpGetSpeedCallback,      this);
-  waypoint_setSpeed_server  = nh.advertiseService("dji_sdk/mission_waypoint_setSpeed",      &DJISDKNode::missionWpSetSpeedCallback,      this);
-  hotpoint_upload_server    = nh.advertiseService("dji_sdk/mission_hotpoint_upload",        &DJISDKNode::missionHpUploadCallback,        this);
-  hotpoint_action_server    = nh.advertiseService("dji_sdk/mission_hotpoint_action",        &DJISDKNode::missionHpActionCallback,        this);
-  hotpoint_getInfo_server   = nh.advertiseService("dji_sdk/mission_hotpoint_getInfo",       &DJISDKNode::missionHpGetInfoCallback,       this);
-  hotpoint_setSpeed_server  = nh.advertiseService("dji_sdk/mission_hotpoint_updateYawRate", &DJISDKNode::missionHpUpdateYawRateCallback, this);
-  hotpoint_resetYaw_server  = nh.advertiseService("dji_sdk/mission_hotpoint_resetYaw",      &DJISDKNode::missionHpResetYawCallback,      this);
-  hotpoint_setRadius_server = nh.advertiseService("dji_sdk/mission_hotpoint_updateRadius",  &DJISDKNode::missionHpUpdateRadiusCallback,  this);
-  mission_status_server     = nh.advertiseService("dji_sdk/mission_status",                 &DJISDKNode::missionStatusCallback,          this);
-  send_to_mobile_server     = nh.advertiseService("dji_sdk/send_data_to_mobile",            &DJISDKNode::sendToMobileCallback,           this);
-  send_to_payload_server    = nh.advertiseService("dji_sdk/send_data_to_payload",           &DJISDKNode::sendToPayloadCallback,          this);
-  query_version_server      = nh.advertiseService("dji_sdk/query_drone_version",            &DJISDKNode::queryVersionCallback,           this);
-  local_pos_ref_server      = nh.advertiseService("dji_sdk/set_local_pos_ref",              &DJISDKNode::setLocalPosRefCallback,         this);
+  drone_activation_server   = nh.advertiseService("dji_osdk_ros/activation",                     &DJISDKNode::droneActivationCallback,        this);
+  drone_arm_server          = nh.advertiseService("dji_osdk_ros/drone_arm_control",              &DJISDKNode::droneArmCallback,               this);
+  drone_task_server         = nh.advertiseService("dji_osdk_ros/drone_task_control",             &DJISDKNode::droneTaskCallback,              this);
+  sdk_ctrlAuthority_server  = nh.advertiseService("dji_osdk_ros/sdk_control_authority",          &DJISDKNode::sdkCtrlAuthorityCallback,       this);
+  camera_action_server      = nh.advertiseService("dji_osdk_ros/camera_action",                  &DJISDKNode::cameraActionCallback,           this);
+  waypoint_upload_server    = nh.advertiseService("dji_osdk_ros/mission_waypoint_upload",        &DJISDKNode::missionWpUploadCallback,        this);
+  waypoint_action_server    = nh.advertiseService("dji_osdk_ros/mission_waypoint_action",        &DJISDKNode::missionWpActionCallback,        this);
+  waypoint_getInfo_server   = nh.advertiseService("dji_osdk_ros/mission_waypoint_getInfo",       &DJISDKNode::missionWpGetInfoCallback,       this);
+  waypoint_getSpeed_server  = nh.advertiseService("dji_osdk_ros/mission_waypoint_getSpeed",      &DJISDKNode::missionWpGetSpeedCallback,      this);
+  waypoint_setSpeed_server  = nh.advertiseService("dji_osdk_ros/mission_waypoint_setSpeed",      &DJISDKNode::missionWpSetSpeedCallback,      this);
+  hotpoint_upload_server    = nh.advertiseService("dji_osdk_ros/mission_hotpoint_upload",        &DJISDKNode::missionHpUploadCallback,        this);
+  hotpoint_action_server    = nh.advertiseService("dji_osdk_ros/mission_hotpoint_action",        &DJISDKNode::missionHpActionCallback,        this);
+  hotpoint_getInfo_server   = nh.advertiseService("dji_osdk_ros/mission_hotpoint_getInfo",       &DJISDKNode::missionHpGetInfoCallback,       this);
+  hotpoint_setSpeed_server  = nh.advertiseService("dji_osdk_ros/mission_hotpoint_updateYawRate", &DJISDKNode::missionHpUpdateYawRateCallback, this);
+  hotpoint_resetYaw_server  = nh.advertiseService("dji_osdk_ros/mission_hotpoint_resetYaw",      &DJISDKNode::missionHpResetYawCallback,      this);
+  hotpoint_setRadius_server = nh.advertiseService("dji_osdk_ros/mission_hotpoint_updateRadius",  &DJISDKNode::missionHpUpdateRadiusCallback,  this);
+  mission_status_server     = nh.advertiseService("dji_osdk_ros/mission_status",                 &DJISDKNode::missionStatusCallback,          this);
+  send_to_mobile_server     = nh.advertiseService("dji_osdk_ros/send_data_to_mobile",            &DJISDKNode::sendToMobileCallback,           this);
+  send_to_payload_server    = nh.advertiseService("dji_osdk_ros/send_data_to_payload",           &DJISDKNode::sendToPayloadCallback,          this);
+  query_version_server      = nh.advertiseService("dji_osdk_ros/query_drone_version",            &DJISDKNode::queryVersionCallback,           this);
+  local_pos_ref_server      = nh.advertiseService("dji_osdk_ros/set_local_pos_ref",              &DJISDKNode::setLocalPosRefCallback,         this);
 #ifdef ADVANCED_SENSING
-  subscribe_stereo_240p_server  = nh.advertiseService("dji_sdk/stereo_240p_subscription",   &DJISDKNode::stereo240pSubscriptionCallback, this);
-  subscribe_stereo_depth_server = nh.advertiseService("dji_sdk/stereo_depth_subscription",  &DJISDKNode::stereoDepthSubscriptionCallback,this);
-  subscribe_stereo_vga_server   = nh.advertiseService("dji_sdk/stereo_vga_subscription",    &DJISDKNode::stereoVGASubscriptionCallback,  this);
-  camera_stream_server          = nh.advertiseService("dji_sdk/setup_camera_stream",        &DJISDKNode::setupCameraStreamCallback,      this);
+  subscribe_stereo_240p_server  = nh.advertiseService("dji_osdk_ros/stereo_240p_subscription",   &DJISDKNode::stereo240pSubscriptionCallback, this);
+  subscribe_stereo_depth_server = nh.advertiseService("dji_osdk_ros/stereo_depth_subscription",  &DJISDKNode::stereoDepthSubscriptionCallback,this);
+  subscribe_stereo_vga_server   = nh.advertiseService("dji_osdk_ros/stereo_vga_subscription",    &DJISDKNode::stereoVGASubscriptionCallback,  this);
+  camera_stream_server          = nh.advertiseService("dji_osdk_ros/setup_camera_stream",        &DJISDKNode::setupCameraStreamCallback,      this);
 #endif
 
   // A3/N3 only
   if(!isM100())
   {
-    set_hardsync_server   = nh.advertiseService("dji_sdk/set_hardsyc", &DJISDKNode::setHardsyncCallback, this);
-    mfio_config_server    = nh.advertiseService("dji_sdk/mfio_config", &DJISDKNode::MFIOConfigCallback, this);
-    mfio_set_value_server = nh.advertiseService("dji_sdk/mfio_set_value", &DJISDKNode::MFIOSetValueCallback, this);
+    set_hardsync_server   = nh.advertiseService("dji_osdk_ros/set_hardsyc", &DJISDKNode::setHardsyncCallback, this);
+    mfio_config_server    = nh.advertiseService("dji_osdk_ros/mfio_config", &DJISDKNode::MFIOConfigCallback, this);
+    mfio_set_value_server = nh.advertiseService("dji_osdk_ros/mfio_set_value", &DJISDKNode::MFIOSetValueCallback, this);
   }
   return true;
 }
@@ -155,22 +156,22 @@ bool
 DJISDKNode::initFlightControl(ros::NodeHandle& nh)
 {
   flight_control_sub = nh.subscribe<sensor_msgs::Joy>(
-    "dji_sdk/flight_control_setpoint_generic", 10, 
+    "dji_osdk_ros/flight_control_setpoint_generic", 10,
     &DJISDKNode::flightControlSetpointCallback,   this);
 
   flight_control_position_yaw_sub =
     nh.subscribe<sensor_msgs::Joy>(
-      "dji_sdk/flight_control_setpoint_ENUposition_yaw", 10,
+      "dji_osdk_ros/flight_control_setpoint_ENUposition_yaw", 10,
       &DJISDKNode::flightControlPxPyPzYawCallback, this);
 
   flight_control_velocity_yawrate_sub =
     nh.subscribe<sensor_msgs::Joy>(
-      "dji_sdk/flight_control_setpoint_ENUvelocity_yawrate", 10,
+      "dji_osdk_ros/flight_control_setpoint_ENUvelocity_yawrate", 10,
       &DJISDKNode::flightControlVxVyVzYawrateCallback, this);
 
   flight_control_rollpitch_yawrate_vertpos_sub =
     nh.subscribe<sensor_msgs::Joy>(
-      "dji_sdk/flight_control_setpoint_rollpitch_yawrate_zposition", 10,
+      "dji_osdk_ros/flight_control_setpoint_rollpitch_yawrate_zposition", 10,
       &DJISDKNode::flightControlRollPitchPzYawrateCallback, this);
 
   return true;
@@ -200,22 +201,22 @@ bool
 DJISDKNode::initSubscriber(ros::NodeHandle& nh)
 {
   gimbal_angle_cmd_subscriber = nh.subscribe<dji_osdk_ros::Gimbal>(
-    "dji_sdk/gimbal_angle_cmd", 10, &DJISDKNode::gimbalAngleCtrlCallback, this);
+    "dji_osdk_ros/gimbal_angle_cmd", 10, &DJISDKNode::gimbalAngleCtrlCallback, this);
   gimbal_speed_cmd_subscriber = nh.subscribe<geometry_msgs::Vector3Stamped>(
-    "dji_sdk/gimbal_speed_cmd", 10, &DJISDKNode::gimbalSpeedCtrlCallback, this);
+    "dji_osdk_ros/gimbal_speed_cmd", 10, &DJISDKNode::gimbalSpeedCtrlCallback, this);
   return true;
 }
 
 bool
 DJISDKNode::initPublisher(ros::NodeHandle& nh)
 {
-  rc_publisher = nh.advertise<sensor_msgs::Joy>("dji_sdk/rc", 10);
+  rc_publisher = nh.advertise<sensor_msgs::Joy>("dji_osdk_ros/rc", 10);
 
   attitude_publisher =
-    nh.advertise<geometry_msgs::QuaternionStamped>("dji_sdk/attitude", 10);
+    nh.advertise<geometry_msgs::QuaternionStamped>("dji_osdk_ros/attitude", 10);
 
   battery_state_publisher =
-    nh.advertise<sensor_msgs::BatteryState>("dji_sdk/battery_state",10);
+    nh.advertise<sensor_msgs::BatteryState>("dji_osdk_ros/battery_state",10);
 
   /*!
    * - Fused attitude (duplicated from attitude topic)
@@ -223,18 +224,18 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
    *       Z value is +9.8 when placed on level ground statically
    * - Raw angular velocity (body frame: FLU, rad/s^2)
    */
-  imu_publisher = nh.advertise<sensor_msgs::Imu>("dji_sdk/imu", 10);
+  imu_publisher = nh.advertise<sensor_msgs::Imu>("dji_osdk_ros/imu", 10);
 
   // Refer to dji_sdk.h for different enums for M100 and A3/N3
   flight_status_publisher =
-    nh.advertise<std_msgs::UInt8>("dji_sdk/flight_status", 10);
+    nh.advertise<std_msgs::UInt8>("dji_osdk_ros/flight_status", 10);
 
   /*!
    * gps_health needs to be greater than 3 for gps_position and velocity topics
    * to be trusted
    */
   gps_health_publisher =
-    nh.advertise<std_msgs::UInt8>("dji_sdk/gps_health", 10);
+    nh.advertise<std_msgs::UInt8>("dji_osdk_ros/gps_health", 10);
 
   /*!
    * NavSatFix specs:
@@ -244,7 +245,7 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
    *   Altitude [m]. Positive is above the WGS 84 ellipsoid
    */
   gps_position_publisher =
-    nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/gps_position", 10);
+    nh.advertise<sensor_msgs::NavSatFix>("dji_osdk_ros/gps_position", 10);
 
   /*!
    *   x [m]. Positive along navigation frame x axis
@@ -253,72 +254,72 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
    *   For details about navigation frame, please see telemetry documentation in API reference
   */
   vo_position_publisher =
-          nh.advertise<dji_osdk_ros::VOPosition>("dji_sdk/vo_position", 10);
+          nh.advertise<dji_osdk_ros::VOPosition>("dji_osdk_ros/vo_position", 10);
   /*!
    * Height above home altitude. It is valid only after drone
    * is armed.
    */
   height_publisher =
-    nh.advertise<std_msgs::Float32>("dji_sdk/height_above_takeoff", 10);
+    nh.advertise<std_msgs::Float32>("dji_osdk_ros/height_above_takeoff", 10);
 
   velocity_publisher =
-    nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/velocity", 10);
+    nh.advertise<geometry_msgs::Vector3Stamped>("dji_osdk_ros/velocity", 10);
 
   from_mobile_data_publisher =
-    nh.advertise<dji_osdk_ros::MobileData>("dji_sdk/from_mobile_data", 10);
+    nh.advertise<dji_osdk_ros::MobileData>("dji_osdk_ros/from_mobile_data", 10);
 
   from_payload_data_publisher =
-    nh.advertise<dji_osdk_ros::PayloadData>("dji_sdk/from_payload_data", 10);
+    nh.advertise<dji_osdk_ros::PayloadData>("dji_osdk_ros/from_payload_data", 10);
 
   // TODO: documentation and proper frame id
   gimbal_angle_publisher =
-    nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/gimbal_angle", 10);
+    nh.advertise<geometry_msgs::Vector3Stamped>("dji_osdk_ros/gimbal_angle", 10);
 
   local_position_publisher =
-      nh.advertise<geometry_msgs::PointStamped>("dji_sdk/local_position", 10);
+      nh.advertise<geometry_msgs::PointStamped>("dji_osdk_ros/local_position", 10);
 
   local_frame_ref_publisher =
-      nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/local_frame_ref", 10, true);
+      nh.advertise<sensor_msgs::NavSatFix>("dji_osdk_ros/local_frame_ref", 10, true);
 
   time_sync_nmea_publisher =
-      nh.advertise<nmea_msgs::Sentence>("dji_sdk/time_sync_nmea_msg", 10);
+      nh.advertise<nmea_msgs::Sentence>("dji_osdk_ros/time_sync_nmea_msg", 10);
 
   time_sync_gps_utc_publisher =
-      nh.advertise<dji_osdk_ros::GPSUTC>("dji_sdk/time_sync_gps_utc", 10);
+      nh.advertise<dji_osdk_ros::GPSUTC>("dji_osdk_ros/time_sync_gps_utc", 10);
 
   time_sync_fc_utc_publisher =
-      nh.advertise<dji_osdk_ros::FCTimeInUTC>("dji_sdk/time_sync_fc_time_utc", 10);
+      nh.advertise<dji_osdk_ros::FCTimeInUTC>("dji_osdk_ros/time_sync_fc_time_utc", 10);
 
   time_sync_pps_source_publisher =
-      nh.advertise<std_msgs::String>("dji_sdk/time_sync_pps_source", 10);
+      nh.advertise<std_msgs::String>("dji_osdk_ros/time_sync_pps_source", 10);
 
 #ifdef ADVANCED_SENSING
   stereo_240p_front_left_publisher =
-    nh.advertise<sensor_msgs::Image>("dji_sdk/stereo_240p_front_left_images", 10);
+    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_left_images", 10);
 
   stereo_240p_front_right_publisher =
-    nh.advertise<sensor_msgs::Image>("dji_sdk/stereo_240p_front_right_images", 10);
+    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_right_images", 10);
 
   stereo_240p_down_front_publisher =
-    nh.advertise<sensor_msgs::Image>("dji_sdk/stereo_240p_down_front_images", 10);
+    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_down_front_images", 10);
 
   stereo_240p_down_back_publisher =
-    nh.advertise<sensor_msgs::Image>("dji_sdk/stereo_240p_down_back_images", 10);
+    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_down_back_images", 10);
 
   stereo_240p_front_depth_publisher =
-    nh.advertise<sensor_msgs::Image>("dji_sdk/stereo_240p_front_depth_images", 10);
+    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_depth_images", 10);
 
   stereo_vga_front_left_publisher =
-    nh.advertise<sensor_msgs::Image>("dji_sdk/stereo_vga_front_left_images", 10);
+    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front_left_images", 10);
 
   stereo_vga_front_right_publisher =
-    nh.advertise<sensor_msgs::Image>("dji_sdk/stereo_vga_front_right_images", 10);
+    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front_right_images", 10);
 
   main_camera_stream_publisher =
-    nh.advertise<sensor_msgs::Image>("dji_sdk/main_camera_images", 10);
+    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/main_camera_images", 10);
 
   fpv_camera_stream_publisher =
-    nh.advertise<sensor_msgs::Image>("dji_sdk/fpv_camera_images", 10);
+    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/fpv_camera_images", 10);
 #endif
 
 
@@ -368,15 +369,15 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
 
     // Details can be found in DisplayMode enum in dji_sdk.h
     displaymode_publisher =
-      nh.advertise<std_msgs::UInt8>("dji_sdk/display_mode", 10);
+      nh.advertise<std_msgs::UInt8>("dji_osdk_ros/display_mode", 10);
 
     angularRate_publisher =
-      nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/angular_velocity_fused", 10);
+      nh.advertise<geometry_msgs::Vector3Stamped>("dji_osdk_ros/angular_velocity_fused", 10);
 
     acceleration_publisher =
-      nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/acceleration_ground_fused", 10);
+      nh.advertise<geometry_msgs::Vector3Stamped>("dji_osdk_ros/acceleration_ground_fused", 10);
 
-    trigger_publisher = nh.advertise<sensor_msgs::TimeReference>("dji_sdk/trigger_time", 10);
+    trigger_publisher = nh.advertise<sensor_msgs::TimeReference>("dji_osdk_ros/trigger_time", 10);
 
     if (!initDataSubscribeFromFC(nh))
     {
@@ -404,10 +405,9 @@ bool
 DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
 {
   ACK::ErrorCode ack = vehicle->subscribe->verify(WAIT_TIMEOUT);
-    ROS_INFO("getError of subscribe: %d\n",ACK::getError(ack) );
   if (ACK::getError(ack))
   {
-      return false;
+    return false;
   }
 
   std::vector<Telemetry::TopicName> topicList100Hz;
@@ -461,10 +461,10 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
 
     // Advertise rc connection status only if this topic is supported by FW
     rc_connection_status_publisher =
-            nh.advertise<std_msgs::UInt8>("dji_sdk/rc_connection_status", 10);
+            nh.advertise<std_msgs::UInt8>("dji_osdk_ros/rc_connection_status", 10);
 
     flight_anomaly_publisher =
-            nh.advertise<dji_osdk_ros::FlightAnomaly>("dji_sdk/flight_anomaly", 10);
+            nh.advertise<dji_osdk_ros::FlightAnomaly>("dji_osdk_ros/flight_anomaly", 10);
   }
 
   int nTopic50Hz    = topicList50Hz.size();
@@ -526,19 +526,19 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
 
     // Advertise rtk data only when rtk is supported
     rtk_position_publisher =
-            nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/rtk_position", 10);
+            nh.advertise<sensor_msgs::NavSatFix>("dji_osdk_ros/rtk_position", 10);
 
     rtk_velocity_publisher =
-            nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/rtk_velocity", 10);
+            nh.advertise<geometry_msgs::Vector3Stamped>("dji_osdk_ros/rtk_velocity", 10);
 
     rtk_yaw_publisher =
-            nh.advertise<std_msgs::Int16>("dji_sdk/rtk_yaw", 10);
+            nh.advertise<std_msgs::Int16>("dji_osdk_ros/rtk_yaw", 10);
 
     rtk_position_info_publisher =
-            nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_info_position", 10);
+            nh.advertise<std_msgs::UInt8>("dji_osdk_ros/rtk_info_position", 10);
 
     rtk_yaw_info_publisher =
-            nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_info_yaw", 10);
+            nh.advertise<std_msgs::UInt8>("dji_osdk_ros/rtk_info_yaw", 10);
 
     if(vehicle->getFwVersion() > versionBase33)
     {
@@ -546,7 +546,7 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
 
       // Advertise rtk connection only when rtk is supported
       rtk_connection_status_publisher =
-              nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_connection_status", 10);
+              nh.advertise<std_msgs::UInt8>("dji_osdk_ros/rtk_connection_status", 10);
     }
   }
 
@@ -680,453 +680,3 @@ void DJISDKNode::gpsConvertENU(double &ENU_x, double &ENU_y,
   ENU_y = DEG2RAD(d_lat) * C_EARTH;
   ENU_x = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
 };
-
-bool DJISDKNode::monitoredTakeoff(Vehicle* vehicle, int timeout, ACK::ErrorCode& ret_ec)
-{
-  using namespace DJI::OSDK;
-  using namespace DJI::OSDK::Telemetry;
-  //@todo: remove this once the getErrorCode function signature changes
-  char func[50];
-  int  pkgIndex;
-
-  if (!vehicle->isM100() && !vehicle->isLegacyM600())
-  {
-    // Telemetry: Verify the subscription
-    ACK::ErrorCode subscribeStatus;
-    subscribeStatus = vehicle->subscribe->verify(timeout);
-    if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
-    {
-      ACK::getErrorCodeMessage(subscribeStatus, func);
-      return false;
-    }
-
-    // Telemetry: Subscribe to flight status and mode at freq 10 Hz
-    pkgIndex                  = 0;
-    int       freq            = 10;
-    TopicName topicList10Hz[] = { TOPIC_STATUS_FLIGHT,
-                                  TOPIC_STATUS_DISPLAYMODE };
-    int  numTopic        = sizeof(topicList10Hz) / sizeof(topicList10Hz[0]);
-    bool enableTimestamp = false;
-
-    bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
-      pkgIndex, numTopic, topicList10Hz, enableTimestamp, freq);
-    if (!(pkgStatus))
-    {
-      return pkgStatus;
-    }
-    subscribeStatus = vehicle->subscribe->startPackage(pkgIndex, timeout);
-    if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
-    {
-      ACK::getErrorCodeMessage(subscribeStatus, func);
-      // Cleanup before return
-      vehicle->subscribe->removePackage(pkgIndex, timeout);
-      return false;
-    }
-  }
-
-  // Start takeoff
-  ACK::ErrorCode takeoffStatus = vehicle->control->takeoff(timeout);
-  if (ACK::getError(takeoffStatus) != ACK::SUCCESS)
-  {
-    ACK::getErrorCodeMessage(takeoffStatus, func);
-    return false;
-  }
-
-  // First check: Motors started
-  int motorsNotStarted = 0;
-  int timeoutCycles    = 20;
-
-  if (!vehicle->isM100() && !vehicle->isLegacyM600())
-  {
-    while (vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() !=
-           VehicleStatus::FlightStatus::ON_GROUND &&
-           vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-           VehicleStatus::DisplayMode::MODE_ENGINE_START &&
-           motorsNotStarted < timeoutCycles)
-    {
-      motorsNotStarted++;
-      usleep(100000);
-    }
-
-    if (motorsNotStarted == timeoutCycles)
-    {
-      std::cout << "Takeoff failed. Motors are not spinning." << std::endl;
-      // Cleanup
-      if (!vehicle->isM100() && !vehicle->isLegacyM600())
-      {
-        vehicle->subscribe->removePackage(0, timeout);
-      }
-      return false;
-    }
-    else
-    {
-      std::cout << "Motors spinning...\n";
-    }
-  }
-  else if (vehicle->isLegacyM600())
-  {
-    while ((vehicle->broadcast->getStatus().flight <
-            DJI::OSDK::VehicleStatus::FlightStatus::ON_GROUND) &&
-           motorsNotStarted < timeoutCycles)
-    {
-      motorsNotStarted++;
-      usleep(100000);
-    }
-
-    if (motorsNotStarted < timeoutCycles)
-    {
-      std::cout << "Successful TakeOff!" << std::endl;
-    }
-  }
-  else // M100
-  {
-    while ((vehicle->broadcast->getStatus().flight <
-            DJI::OSDK::VehicleStatus::M100FlightStatus::TAKEOFF) &&
-           motorsNotStarted < timeoutCycles)
-    {
-      motorsNotStarted++;
-      usleep(100000);
-    }
-
-    if (motorsNotStarted < timeoutCycles)
-    {
-      std::cout << "Successful TakeOff!" << std::endl;
-    }
-  }
-
-  // Second check: In air
-  int stillOnGround = 0;
-  timeoutCycles     = 110;
-
-  if (!vehicle->isM100() && !vehicle->isLegacyM600())
-  {
-    while (vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() !=
-           VehicleStatus::FlightStatus::IN_AIR &&
-           (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-            VehicleStatus::DisplayMode::MODE_ASSISTED_TAKEOFF ||
-            vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-            VehicleStatus::DisplayMode::MODE_AUTO_TAKEOFF) &&
-           stillOnGround < timeoutCycles)
-    {
-      stillOnGround++;
-      usleep(100000);
-    }
-
-    if (stillOnGround == timeoutCycles)
-    {
-      std::cout << "Takeoff failed. Aircraft is still on the ground, but the "
-                   "motors are spinning."
-                << std::endl;
-      // Cleanup
-      if (!vehicle->isM100() && !vehicle->isLegacyM600())
-      {
-        vehicle->subscribe->removePackage(0, timeout);
-      }
-      return false;
-    }
-    else
-    {
-      std::cout << "Ascending...\n";
-    }
-  }
-  else if (vehicle->isLegacyM600())
-  {
-    while ((vehicle->broadcast->getStatus().flight <
-            DJI::OSDK::VehicleStatus::FlightStatus::IN_AIR) &&
-           stillOnGround < timeoutCycles)
-    {
-      stillOnGround++;
-      usleep(100000);
-    }
-
-    if (stillOnGround < timeoutCycles)
-    {
-      std::cout << "Aircraft in air!" << std::endl;
-    }
-  }
-  else // M100
-  {
-    while ((vehicle->broadcast->getStatus().flight !=
-            DJI::OSDK::VehicleStatus::M100FlightStatus::IN_AIR_STANDBY) &&
-           stillOnGround < timeoutCycles)
-    {
-      stillOnGround++;
-      usleep(100000);
-    }
-
-    if (stillOnGround < timeoutCycles)
-    {
-      std::cout << "Aircraft in air!" << std::endl;
-    }
-  }
-
-  // Final check: Finished takeoff
-  if (!vehicle->isM100() && !vehicle->isLegacyM600())
-  {
-    while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
-           VehicleStatus::DisplayMode::MODE_ASSISTED_TAKEOFF ||
-           vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
-           VehicleStatus::DisplayMode::MODE_AUTO_TAKEOFF)
-    {
-      sleep(1);
-    }
-
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
-    {
-      if (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-          VehicleStatus::DisplayMode::MODE_P_GPS ||
-          vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-          VehicleStatus::DisplayMode::MODE_ATTITUDE)
-      {
-        std::cout << "Successful takeoff!\n";
-      }
-      else
-      {
-        std::cout
-          << "Takeoff finished, but the aircraft is in an unexpected mode. "
-             "Please connect DJI GO.\n";
-        vehicle->subscribe->removePackage(0, timeout);
-        return false;
-      }
-    }
-  }
-  else
-  {
-    float32_t                 delta;
-    Telemetry::GlobalPosition currentHeight;
-    Telemetry::GlobalPosition deltaHeight =
-      vehicle->broadcast->getGlobalPosition();
-
-    do
-    {
-      sleep(4);
-      currentHeight = vehicle->broadcast->getGlobalPosition();
-      delta         = fabs(currentHeight.altitude - deltaHeight.altitude);
-      deltaHeight.altitude = currentHeight.altitude;
-    } while (delta >= 0.009);
-
-    std::cout << "Aircraft hovering at " << currentHeight.altitude << "m!\n";
-  }
-
-  // Cleanup
-  if (!vehicle->isM100() && !vehicle->isLegacyM600())
-  {
-    ACK::ErrorCode ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
-    if (ACK::getError(ack))
-    {
-      std::cout
-        << "Error unsubscribing; please restart the drone/FC to get back "
-           "to a clean state.\n";
-    }
-  }
-
-  return true;
-}
-
-bool DJISDKNode::monitoredLanding(Vehicle* vehicle, int timeout, ACK::ErrorCode& ret_ec)
-{
-  using namespace DJI::OSDK;
-  using namespace DJI::OSDK::Telemetry;
-  //@todo: remove this once the getErrorCode function signature changes
-  char func[50];
-  int  pkgIndex;
-
-  if (!vehicle->isM100() && !vehicle->isLegacyM600())
-  {
-    // Telemetry: Verify the subscription
-    ACK::ErrorCode subscribeStatus;
-    subscribeStatus = vehicle->subscribe->verify(timeout);
-    ret_ec = subscribeStatus;
-    if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
-    {
-      ACK::getErrorCodeMessage(subscribeStatus, func);
-      return false;
-    }
-
-    // Telemetry: Subscribe to flight status and mode at freq 10 Hz
-    pkgIndex                  = 0;
-    int       freq            = 10;
-    TopicName topicList10Hz[] = { TOPIC_STATUS_FLIGHT,
-                                  TOPIC_STATUS_DISPLAYMODE };
-    int  numTopic        = sizeof(topicList10Hz) / sizeof(topicList10Hz[0]);
-    bool enableTimestamp = false;
-
-    bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
-      pkgIndex, numTopic, topicList10Hz, enableTimestamp, freq);
-    if (!(pkgStatus))
-    {
-      return pkgStatus;
-    }
-    subscribeStatus = vehicle->subscribe->startPackage(pkgIndex, timeout);
-    ret_ec = subscribeStatus;
-
-    if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
-    {
-      ACK::getErrorCodeMessage(subscribeStatus, func);
-      // Cleanup before return
-      vehicle->subscribe->removePackage(pkgIndex, timeout);
-      return false;
-    }
-  }
-
-  // Start landing
-  ACK::ErrorCode landingStatus = vehicle->control->land(timeout);
-  ret_ec = landingStatus;
-
-  if (ACK::getError(landingStatus) != ACK::SUCCESS)
-  {
-    ACK::getErrorCodeMessage(landingStatus, func);
-    return false;
-  }
-
-  // First check: Landing started
-  int landingNotStarted = 0;
-  int timeoutCycles     = 20;
-
-  if (!vehicle->isM100() && !vehicle->isLegacyM600())
-  {
-    while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-           VehicleStatus::DisplayMode::MODE_AUTO_LANDING &&
-           landingNotStarted < timeoutCycles)
-    {
-      landingNotStarted++;
-      usleep(100000);
-    }
-  }
-  else if (vehicle->isM100())
-  {
-    while (vehicle->broadcast->getStatus().flight !=
-           DJI::OSDK::VehicleStatus::M100FlightStatus::LANDING &&
-           landingNotStarted < timeoutCycles)
-    {
-      landingNotStarted++;
-      usleep(100000);
-    }
-  }
-
-  if (landingNotStarted == timeoutCycles)
-  {
-    std::cout << "Landing failed. Aircraft is still in the air." << std::endl;
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
-    {
-      // Cleanup before return
-      ACK::ErrorCode ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
-      ret_ec = ack;
-
-      if (ACK::getError(ack)) {
-        std::cout << "Error unsubscribing; please restart the drone/FC to get "
-                     "back to a clean state.\n";
-      }
-    }
-    return false;
-  }
-  else
-  {
-    std::cout << "Landing...\n";
-  }
-
-  // Second check: Finished landing
-  if (!vehicle->isM100() && !vehicle->isLegacyM600())
-  {
-    while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
-           VehicleStatus::DisplayMode::MODE_AUTO_LANDING &&
-           vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() ==
-           VehicleStatus::FlightStatus::IN_AIR)
-    {
-      sleep(1);
-    }
-
-    if (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-        VehicleStatus::DisplayMode::MODE_P_GPS ||
-        vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-        VehicleStatus::DisplayMode::MODE_ATTITUDE)
-    {
-      std::cout << "Successful landing!\n";
-    }
-    else
-    {
-      std::cout
-        << "Landing finished, but the aircraft is in an unexpected mode. "
-           "Please connect DJI GO.\n";
-      ACK::ErrorCode ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
-      ret_ec = ack;
-
-      if (ACK::getError(ack))
-      {
-        std::cout << "Error unsubscribing; please restart the drone/FC to get "
-                     "back to a clean state.\n";
-      }
-      return false;
-    }
-  }
-  else if (vehicle->isLegacyM600())
-  {
-    while (vehicle->broadcast->getStatus().flight >
-           DJI::OSDK::VehicleStatus::FlightStatus::STOPED)
-    {
-      sleep(1);
-    }
-
-    Telemetry::GlobalPosition gp;
-    do
-    {
-      sleep(2);
-      gp = vehicle->broadcast->getGlobalPosition();
-    } while (gp.altitude != 0);
-
-    if (gp.altitude != 0)
-    {
-      std::cout
-        << "Landing finished, but the aircraft is in an unexpected mode. "
-           "Please connect DJI GO.\n";
-      return false;
-    }
-    else
-    {
-      std::cout << "Successful landing!\n";
-    }
-  }
-  else // M100
-  {
-    while (vehicle->broadcast->getStatus().flight ==
-           DJI::OSDK::VehicleStatus::M100FlightStatus::FINISHING_LANDING)
-    {
-      sleep(1);
-    }
-
-    Telemetry::GlobalPosition gp;
-    do
-    {
-      sleep(2);
-      gp = vehicle->broadcast->getGlobalPosition();
-    } while (gp.altitude != 0);
-
-    if (gp.altitude != 0)
-    {
-      std::cout
-        << "Landing finished, but the aircraft is in an unexpected mode. "
-           "Please connect DJI GO.\n";
-      return false;
-    }
-    else
-    {
-      std::cout << "Successful landing!\n";
-    }
-  }
-
-  // Cleanup
-  if (!vehicle->isM100() && !vehicle->isLegacyM600())
-  {
-    ACK::ErrorCode ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
-    ret_ec = ack;
-
-    if (ACK::getError(ack))
-    {
-      std::cout
-        << "Error unsubscribing; please restart the drone/FC to get back "
-           "to a clean state.\n";
-    }
-  }
-
-  return true;
-}

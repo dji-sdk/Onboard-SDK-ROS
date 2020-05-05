@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(dji_sdk)
+#add_subdirectory(demo)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
