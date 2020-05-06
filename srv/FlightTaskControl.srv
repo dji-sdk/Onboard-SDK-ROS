@@ -7,8 +7,8 @@ uint8 TASK_LAND = 6
 
 #request
 uint8 task    # see constants above for possible tasks
-float64[] pos_offset
-float64[] yaw_params
+float64[] pos_offset #A vector contains that position_x_offset, position_y_offset, position_z_offset in order
+float64[] yaw_params #A vector contains that yaw_desired, position_threshold(Meter), yaw_threshold(Degree)
 ---
 bool result
 # for debugging usage

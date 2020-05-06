@@ -55,7 +55,7 @@ The system environment we have tested is in the table below.
 you need to install ros first.Install instruction can be found at: http://wiki.ros.org/ROS/Installation. We just tested ROS kinetic version.  
 #### C++11 Compiler
 We compile with C + + 11 Standard.
-#### djiosdk-core
+#### onboard-sdk
 you need to download newest onboard-sdk,and install it.
 >$mkdir build  
 >$cd build  

@@ -61,7 +61,7 @@ namespace dji_osdk_ros
     public:
       VehicleNode();
       VehicleNode(int test);
-      //~VehicleNode() = default;
+
       ~VehicleNode();
 
       bool subscribeGimbalData();
