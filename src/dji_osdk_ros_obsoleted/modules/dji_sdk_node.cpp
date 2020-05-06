@@ -96,7 +96,6 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private, int argc, char** argv)
   //! @note currently does not work without thread support
   this->linuxEnvironment = new LinuxSetup(argc, argv);
   this->vehicle = linuxEnvironment->getVehicle();
-//  vehicle = new Vehicle(serial_device.c_str(), baud_rate, threadSupport, enable_advanced_sensing);
 
   if (NULL != vehicle->subscribe && (!user_select_broadcast))
   {
