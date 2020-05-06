@@ -103,6 +103,7 @@ add_dependencies(dji_sdk_node
 target_link_libraries(dji_sdk_node
   ${catkin_LIBRARIES}
     djiosdk-core.a
+    dji-linker.a
     advanced-sensing.a
     ${LIBUSB_1_LIBRARIES}
     ${FFMPEG_LIBRARIES}
