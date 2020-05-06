@@ -713,7 +713,7 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
   {
     base_time = now_time - _TICK2ROSTIME(tick);
     curr_align_state = ALIGNING;
-    ROS_INFO("[dji_sdk] Start time alignment ...");
+    ROS_INFO("[dji_osdk_ros] Start time alignment ...");
     return;
   }
 
@@ -721,7 +721,7 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
   {
     static int aligned_count = 0;
     static int retry_count = 0;
-    ROS_INFO_THROTTLE(1.0, "[dji_sdk] Aliging time...");
+    ROS_INFO_THROTTLE(1.0, "[dji_osdk_ros] Aliging time...");
 
     double dt = std::fabs((now_time - (base_time + _TICK2ROSTIME(tick))).toSec());
 
@@ -732,7 +732,7 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
     else if(aligned_count > 0)
     {
       base_time = now_time - _TICK2ROSTIME(tick);
-      ROS_INFO("[dji_sdk] ***** Time difference out of bound after %d samples, retried %d times, dt=%.3f... *****",
+      ROS_INFO("[dji_osdk_ros] ***** Time difference out of bound after %d samples, retried %d times, dt=%.3f... *****",
                aligned_count, retry_count, dt);
       aligned_count = 0;
       retry_count++;
@@ -740,7 +740,7 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
 
     if(aligned_count > STABLE_ALIGNMENT_COUNT)
     {
-      ROS_INFO("[dji_sdk] ***** Time alignment successful! *****");
+      ROS_INFO("[dji_osdk_ros] ***** Time alignment successful! *****");
       curr_align_state = ALIGNED;
     }
 
