@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(dji_sdk)
-#add_subdirectory(demo)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -103,6 +102,7 @@ add_dependencies(dji_sdk_node
 target_link_libraries(dji_sdk_node
   ${catkin_LIBRARIES}
     djiosdk-core.a
+    dji-linker.a
     advanced-sensing.a
     ${LIBUSB_1_LIBRARIES}
     ${FFMPEG_LIBRARIES}

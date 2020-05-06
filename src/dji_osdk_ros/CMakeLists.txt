@@ -11,6 +11,7 @@ MESSAGE(STATUS "DJIOSDK_LIB: ${DJIOSDK_LIBRARIES}")
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}
                       ${catkin_LIBRARIES}
                       #${DJIOSDK_LIBRARIES}
+		      dji-linker.a
 		      djiosdk-core.a
                       )
 SET(ADVANCED_SENSING)
