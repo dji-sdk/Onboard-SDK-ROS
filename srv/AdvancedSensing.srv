@@ -9,7 +9,7 @@ uint8 TOP_CAMERA  = 2
 
 bool is_h264
 bool is_open
-uint8 request_view
+uint8 request_view #see constant
 ---
 #reponse
 

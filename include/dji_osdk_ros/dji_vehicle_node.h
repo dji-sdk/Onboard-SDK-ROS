@@ -1,16 +1,33 @@
+/** @file dji_vehicle_node.hpp
+ *  @version 4.0
+ *  @date May 2020
+ *
+ *  @brief main node of osdk ros 4.0.All services and topics are inited here.
+ *
+ *  @Copyright (c) 2020 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+
 #ifndef __DJI_VEHICLE_NODE_HH__
 #define __DJI_VEHICLE_NODE_HH__
-/**-----------------------------------------------
-  * @Copyright (C) 2020 All rights reserved.
-  * @date: 2020
-  * @file: dji_vehicle_node.hh
-  * @version: v0.0.1
-  * @author: kevin.hoo@dji.com
-  * @create_date: 2020-03-08 16:08:55
-  * @last_modified_date: 2020-03-10 13:30:22
-  * @brief: TODO
-  * @details: TODO
-  *-----------------------------------------------*/
 
 // Header include
 #include <ros/ros.h>
@@ -24,7 +41,6 @@
 
 #include <dji_osdk_ros/FlightTaskControl.h>
 #include <dji_osdk_ros/GimbalAction.h>
-#include <dji_osdk_ros/CameraTaskControl.h>
 #include <dji_osdk_ros/CameraEV.h>
 #include <dji_osdk_ros/CameraShutterSpeed.h>
 #include <dji_osdk_ros/CameraAperture.h>
@@ -61,7 +77,7 @@ namespace dji_osdk_ros
     public:
       VehicleNode();
       VehicleNode(int test);
-      //~VehicleNode() = default;
+
       ~VehicleNode();
 
       bool subscribeGimbalData();
@@ -91,7 +107,6 @@ namespace dji_osdk_ros
       ros::ServiceServer camera_control_stop_shoot_photo_server_;
       ros::ServiceServer camera_control_record_video_action_server_;
 
-//      ros::ServiceServer camera_action_control_server_;
       ros::ServiceServer mfio_control_server_;
 
       ros::ServiceServer set_home_altitude_server_;
