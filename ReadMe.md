@@ -2,12 +2,11 @@
 
 ## Latest Update
 
-OSDK-ROS 4.0.0 was released on 8 May 2020.You need to read newest update below the readme to get update information. 
+OSDK-ROS 4.0.0 was released on 8 May 2020.You need to read newest update below to get update information. Please see the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html) and [ROS sample setup](https://developer.dji.com/onboard-sdk/documentation/development-workflow/sample-setup.html#ros-onboard-computer) for more information.And We will update [ROS Wiki](http://wiki.ros.org/dji_sdk/) later.
 
-## newest update  
 ### 1. feature  
-This 4.0 version releases a feature package: dji_osdk_ros. The package contains two different framework's interface. OSDK-ROS-obsoleted kept ros3.8.1's interface.
-(__note:We will cancel support for the OSDK-ROS-obsoleted interface in the next version.__)
+This 4.0 version releases a feature package: dji_osdk_ros. The package contains two different framework's interface. OSDK-ROS-obsoleted kept ros3.8.1's interface.  
+(__note:We will cancel support for the OSDK-ROS-obsoleted's interface in the next version.__)
 
 | **OSDK-ROS4.0 interface**            | **OSDK-ROS-obsoleted interface**            |
 |--------------------------------------|---------------------------------------------|
@@ -15,7 +14,8 @@ This 4.0 version releases a feature package: dji_osdk_ros. The package contains 
 
 This update mainly includes:  
 1. Redesigned the 4.0 version of the framework and interface (ROS side interacts with the OSDK side through the wrapper layer, business-related interfaces are fully encapsulated into the wrapper layer, and the ROS side provides all services and topics);  
-2. Version 4.0 provides a main node (dji_vehicle_node), which completes the activation of the drone, the acquisition of control rights, and the initialization of all services and topics;  
+2. OSDK-ROS4.0's interfaces are completely matched with onboard-sdk4.0.0.
+3. Version 4.0 provides a main node (dji_vehicle_node), which completes the activation of the drone, the acquisition of control rights, and the initialization of all services and topics;  
 
 | **nodes**                            |  **services's name**                             | **topics's name**                     |
 |--------------------------------------|--------------------------------------------------|---------------------------------------|
@@ -40,8 +40,8 @@ This update mainly includes:
 |                                      |camera_record_video_action                        |                                       |
 |wapoint(will be supported in next version) |waypoint(will be supported in next version)       |waypoint(will be supported in next version) | 
  
-3. At the same time, we kept all services and topics of osdk-ros 3.8.1. If you want to use these interfaces,you need to run dji_sdk_node and use it's services and topics. 
-(__note: they will not be supported in next osdk-ros version.__)
+3. At the same time, we kept all services and topics of osdk-ros 3.8.1. If you want to use these interfaces,you need to run dji_sdk_node and use it's services and topics.   
+(__note: These interfaces are not fully compatible with onboard-sdk4.0.0.And they will not be supported in next osdk-ros version.__)
 ### 2. Prerequisites
 The system environment we have tested is in the table below.
 
@@ -49,13 +49,14 @@ The system environment we have tested is in the table below.
 |----------------------------|-------------------------------------------- |  
 | **system version**         | ubuntu 16.04                                |
 | **processor architecture** | x86(mainfold2-c),armv8(mainfold2-c)           |
-
+#### Firmware Compatibility
+OSDK-ROS4.0's firmware compatibility depends on onboard-sdk4.0.0's. you can get more information [here](https://github.com/dji-sdk/Onboard-SDK);
 #### Ros  
 you need to install ros first.Install instruction can be found at: http://wiki.ros.org/ROS/Installation. We just tested ROS kinetic version.  
 #### C++11 Compiler
 We compile with C + + 11 Standard.
 #### onboard-sdk
-you need to download newest onboard-sdk,and install it.
+you need to download onboard-sdk4.0.0,and install it.
 >$mkdir build  
 >$cd build  
 >$cmake..  
@@ -129,3 +130,8 @@ if you want to adapt to OSDK ROS 3.8.1's services and topics:
 >
 __note:if you want to rosrun dji_sdk_node,you need to put UserConfig.txt into current work directory.__  
 3.Follow the prompt on screen to choose an action for the drone to do.
+
+## Support
+You can get support from DJI and the community with the following methods:
+* Email to dev@dji.com
+* Report issue on github
