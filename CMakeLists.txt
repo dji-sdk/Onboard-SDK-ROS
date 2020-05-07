@@ -29,7 +29,6 @@ if(ENABLE_ADVANCED_SENSING)
 ENDIF()
 
 
-#find_package(DJIOSDK REQUIRED)
 find_package(LibUSB REQUIRED)
 find_package(FFMPEG REQUIRED)
 
@@ -92,7 +91,6 @@ add_service_files(
   FILES
   FlightTaskControl.srv
   GimbalAction.srv
-  CameraTaskControl.srv
   CameraEV.srv
   CameraShutterSpeed.srv
   CameraAperture.srv

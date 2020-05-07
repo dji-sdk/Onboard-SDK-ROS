@@ -1,14 +1,30 @@
-/**
-  * @Copyright (C) 2020 All rights reserved.
-  * @date: 2020
-  * @file: gimbal_camera_control_node.cc
-  * @version: v0.0.2
-  * @author: charles.huang@dji.com
-  * @create_date: 2020-03-04 23:56:34
-  * @last_modified_date: 2020-04-27 21:04:00
-  * @brief: TODO
-  * @details: TODO
-  */
+/** @file gimbal_camera_control_node.cpp
+ *  @version 4.0
+ *  @date May 2020
+ *
+ *  @brief sample node of gimbal & camera control .
+ *
+ *  @Copyright (c) 2020 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
 
 //INCLUDE
 #include <ros/ros.h>
@@ -52,7 +68,6 @@ int main(int argc, char** argv) {
       "camera_start_shoot_interval_photo");
   auto camera_stop_shoot_photo_client = nh.serviceClient<CameraStopShootPhoto>("camera_stop_shoot_photo");
   auto camera_record_video_action_client = nh.serviceClient<CameraRecordVideoAction>("camera_record_video_action");
-//  auto camera_control_client = nh.serviceClient<CameraTaskControl>("camera_task_control");
 
   /*! sample loop start */
   char inputChar = 0;
