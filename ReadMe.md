@@ -38,7 +38,6 @@ This update mainly includes:
 |                                      |camera_start_shoot_interval_photo                 |                                       |
 |                                      |camera_stop_shoot_photo                           |                                       |
 |                                      |camera_record_video_action                        |                                       |
-|mfio_conrol_node(not test)            |mfio_control                                      |                                       |
 |wapoint(will be supported in next version) |waypoint(will be supported in next version)       |waypoint(will be supported in next version) | 
  
 3. At the same time, we kept all services and topics of osdk-ros 3.8.1. If you want to use these interfaces,you need to run dji_sdk_node and use it's services and topics. 
