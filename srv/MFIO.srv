@@ -1,0 +1,29 @@
+#constant for mode
+uint8 MODE_PWM_OUT  = 0
+#uint8 MODE_PWM_IN  = 1 #PWM_IN is not functioning correctly
+uint8 MODE_GPIO_OUT = 2
+uint8 MODE_GPIO_IN  = 3
+uint8 MODE_ADC      = 4
+
+uint8 CHANNEL_0 = 0
+uint8 CHANNEL_1 = 1
+uint8 CHANNEL_2 = 2
+uint8 CHANNEL_3 = 3
+uint8 CHANNEL_4 = 4
+uint8 CHANNEL_5 = 5
+uint8 CHANNEL_6 = 6
+uint8 CHANNEL_7 = 7
+
+uint8 TURN_ON   = 0     # Control PWM on/off
+uint8 TURN_OFF  = 1
+
+#request
+uint8 action            # Turn On/Off, 0: ON    1: OFF
+uint8 mode              # see constants above for possible modes
+bool block              # Block/Non-block Ouput
+uint8 channel           # 0-7
+uint32 init_on_time_us  # on time for pwm duty cycle in micro-seconds, 0-20000(0%-100%)
+uint8 gpio_value        # 0: Low, 1:High just for GPIO_OUT
+uint16 pwm_freq         # set pwm frequency in Hz
+---
+uint32 read_value

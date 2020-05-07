@@ -1,0 +1,6 @@
+#request
+uint8 payload_index #see enum class PayloadIndex in common_type.h
+uint8 photo_burst_count #see enum class PhotoBurstCount in common_type.h
+---
+#response
+bool result
