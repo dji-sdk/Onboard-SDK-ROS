@@ -76,6 +76,7 @@
 #include <dji_osdk_ros/MFIO.h>
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetNewHomePoint.h>
+#include <dji_osdk_ros/SetLocalPosRef.h>
 #include <dji_osdk_ros/AvoidEnable.h>
 #ifdef ADVANCED_SENSING
 #include <dji_osdk_ros/AdvancedSensing.h>
@@ -145,6 +146,7 @@ namespace dji_osdk_ros
       /*! for flight control*/
       ros::ServiceServer set_home_altitude_server_;
       ros::ServiceServer set_current_point_as_home_server_;
+      ros::ServiceServer set_local_pos_reference_server_;
       ros::ServiceServer avoid_enable_server_;
     /*! for advanced sensing*/
 #ifdef ADVANCED_SENSING
@@ -210,6 +212,8 @@ namespace dji_osdk_ros
 
       bool setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request, SetGoHomeAltitude::Response& response);
       bool setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response);
+      bool setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
+                                             dji_osdk_ros::SetLocalPosRef::Response &response);
       bool setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
 
 #ifdef ADVANCED_SENSING
@@ -243,8 +247,8 @@ namespace dji_osdk_ros
       double      current_gps_latitude_, current_gps_longitude_, current_gps_altitude_;
       bool        local_pos_ref_set_;
       int         current_gps_health_;
-      const       tf::Matrix3x3 R_FLU2FRD;
-      const       tf::Matrix3x3 R_ENU2NED;
+      const       tf::Matrix3x3 R_FLU2FRD_;
+      const       tf::Matrix3x3 R_ENU2NED_;
       bool        rtk_support_;
 
 #ifdef ADVANCED_SENSING

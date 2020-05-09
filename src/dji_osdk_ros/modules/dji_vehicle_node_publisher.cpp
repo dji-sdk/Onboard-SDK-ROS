@@ -55,7 +55,7 @@ void VehicleNode::dataBroadcastCallback()
                                          ptr_wrapper_->getQuaternion().q2,
                                          ptr_wrapper_->getQuaternion().q3,
                                          ptr_wrapper_->getQuaternion().q0));
-    tf::Matrix3x3 R_FLU2ENU = R_ENU2NED.transpose() * R_FRD2NED * R_FLU2FRD;
+    tf::Matrix3x3 R_FLU2ENU = R_ENU2NED_.transpose() * R_FRD2NED * R_FLU2FRD_;
     R_FLU2ENU.getRotation(q_FLU2ENU);
 
     geometry_msgs::QuaternionStamped q;
@@ -568,7 +568,7 @@ void VehicleNode::publish100HzData(Vehicle *vehicle, RecvContainer recvFrame,
   q.header.stamp    = msg_time;
 
   tf::Matrix3x3 R_FRD2NED(tf::Quaternion(quat.q1, quat.q2, quat.q3, quat.q0));
-  tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED.transpose() * R_FRD2NED * p->R_FLU2FRD;
+  tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED_.transpose() * R_FRD2NED * p->R_FLU2FRD_;
   tf::Quaternion q_FLU2ENU;
   R_FLU2ENU.getRotation(q_FLU2ENU);
   // @note this mapping is tested
@@ -667,7 +667,7 @@ void VehicleNode::publish400HzData(Vehicle *vehicle, RecvContainer recvFrame,
    */
   tf::Matrix3x3 R_FRD2NED(tf::Quaternion(hardSync_FC.q.q1, hardSync_FC.q.q2,
                                          hardSync_FC.q.q3, hardSync_FC.q.q0));
-  tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED.transpose() * R_FRD2NED * p->R_FLU2FRD;
+  tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED_.transpose() * R_FRD2NED * p->R_FLU2FRD_;
   tf::Quaternion q_FLU2ENU;
   R_FLU2ENU.getRotation(q_FLU2ENU);
 

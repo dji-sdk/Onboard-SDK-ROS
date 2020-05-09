@@ -40,7 +40,10 @@ VehicleNode::VehicleNode(int test)
   initService();
 }
 
-VehicleNode::VehicleNode()
+VehicleNode::VehicleNode():telemetry_from_fc_(TelemetryType::USE_ROS_BROADCAST),
+                           R_FLU2FRD_(tf::Matrix3x3(1,  0,  0, 0, -1,  0, 0,  0, -1)),
+                           R_ENU2NED_(tf::Matrix3x3(0,  1,  0, 1,  0,  0, 0,  0, -1)),
+                           curr_align_state_(AlignStatus::UNALIGNED)
 {
   nh_.param("/vehicle_node/app_id",        app_id_, 10086);
   nh_.param("/vehicle_node/enc_key",       enc_key_, std::string("abcde123"));
@@ -245,6 +248,7 @@ void VehicleNode::initService()
 
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
   set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
+  set_local_pos_reference_server_ = nh_.advertiseService("set_local_pos_reference", &VehicleNode::setLocalPosRefCallback,this);
   avoid_enable_server_ = nh_.advertiseService("enable_avoid", &VehicleNode::setAvoidCallback,this);
 #ifdef ADVANCED_SENSING
   advanced_sensing_server_ = nh_.advertiseService("advanced_sensing", &VehicleNode::advancedSensingCallback,this);
@@ -1063,6 +1067,38 @@ bool VehicleNode::setHomeCallback(SetNewHomePoint::Request& request, SetNewHomeP
     response.result = false;
   }
 
+  return true;
+}
+
+bool VehicleNode::setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
+                                         dji_osdk_ros::SetLocalPosRef::Response &response)
+{
+  printf("Currrent GPS health is %d \n",current_gps_health_ );
+  if (current_gps_health_ > 3)
+  {
+    local_pos_ref_latitude_ = current_gps_latitude_;
+    local_pos_ref_longitude_ = current_gps_longitude_;
+    local_pos_ref_altitude_ = current_gps_altitude_;
+    ROS_INFO("Local Position reference has been set.");
+    ROS_INFO("MONITOR GPS HEALTH WHEN USING THIS TOPIC");
+    local_pos_ref_set_ = true;
+
+    // Create message to publish to a topic
+    sensor_msgs::NavSatFix localFrameLLA;
+    localFrameLLA.latitude = local_pos_ref_latitude_;
+    localFrameLLA.longitude = local_pos_ref_longitude_;
+    localFrameLLA.altitude = local_pos_ref_altitude_;
+    local_frame_ref_publisher_.publish(localFrameLLA);
+
+    response.result = true;
+  }
+  else
+  {
+    ROS_INFO("Not enough GPS Satellites. ");
+    ROS_INFO("Cannot set Local Position reference");
+    local_pos_ref_set_ = false;
+    response.result = false;
+  }
   return true;
 }
 
