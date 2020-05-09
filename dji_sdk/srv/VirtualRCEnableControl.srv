@@ -1,6 +1,0 @@
-uint8 enable
-uint8 if_back_to_real 
-#switch back to real RC when 1
-#behave like RC signal lost when 0
----
-bool result 

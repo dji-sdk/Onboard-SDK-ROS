@@ -1,0 +1,16 @@
+#constant for vga image frequency
+uint8 VGA_20_HZ = 0
+uint8 VGA_10_HZ = 1
+
+# use above constants to config freq.
+uint8 vga_freq
+
+# assign value to 1 to subscribe
+uint8 front_vga
+
+# if unsubscribe_vga is 1,
+# service will unsubscribe no matter what
+uint8 unsubscribe_vga
+
+---
+bool result

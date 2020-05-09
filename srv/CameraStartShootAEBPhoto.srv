@@ -1,0 +1,6 @@
+#request
+uint8 payload_index #see enum class PayloadIndex in common_type.h
+uint8 photo_aeb_count #see enum class PhotoAEBCount in common_type.h
+---
+#response
+bool result

@@ -1,0 +1,8 @@
+#request
+uint8 payload_index #see enum class PayloadIndex in common_type.h
+uint8 exposure_mode #see enum class ExposureMode in common_type.h
+uint8 exposure_compensation #see enum class ExposureCompensation in common_type.h
+---
+#reponse
+bool result
+

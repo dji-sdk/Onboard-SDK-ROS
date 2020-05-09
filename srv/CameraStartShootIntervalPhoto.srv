@@ -1,0 +1,7 @@
+#request
+uint8 payload_index #see enum class PayloadIndex in common_type.h
+uint8 photo_num_conticap # 0:reserve 1~254:number 255:keep capturing till stop
+int16 time_interval #/ time interval (second)
+---
+#response
+bool result

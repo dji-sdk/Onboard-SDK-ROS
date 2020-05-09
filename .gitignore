@@ -3,4 +3,6 @@
 *.swn
 *.swo
 *.swp
+*sdk.launch
 build.sh
+.idea/
