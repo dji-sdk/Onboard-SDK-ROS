@@ -864,12 +864,11 @@ static T_OsdkOsalHandler osalHandler = {
 
   bool VehicleWrapper::monitoredTakeoff(ACK::ErrorCode& ack, int timeout)
   {
-    using namespace Telemetry;
     //@todo: remove this once the getErrorCode function signature changes
     char func[50];
     int  pkgIndex;
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       // Telemetry: Verify the subscription
       ack = vehicle->subscribe->verify(timeout);
@@ -880,7 +879,7 @@ static T_OsdkOsalHandler osalHandler = {
       }
 
       // Telemetry: Subscribe to flight status and mode at freq 10 Hz
-      pkgIndex                  = 0;
+      pkgIndex                  = static_cast<int>(SubscribePackgeIndex::TEMP_SUB_PACKAGE_INDEX);;
       int       freq            = 10;
       TopicName topicList10Hz[] = { TOPIC_STATUS_FLIGHT,
                                     TOPIC_STATUS_DISPLAYMODE };
@@ -888,7 +887,7 @@ static T_OsdkOsalHandler osalHandler = {
       bool enableTimestamp = false;
 
       bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
-        pkgIndex, numTopic, topicList10Hz, enableTimestamp, freq);
+          pkgIndex, numTopic, topicList10Hz, enableTimestamp, freq);
       if (!(pkgStatus))
       {
         return pkgStatus;
@@ -915,7 +914,7 @@ static T_OsdkOsalHandler osalHandler = {
     int motorsNotStarted = 0;
     int timeoutCycles    = 20;
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       while (vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() !=
              VehicleStatus::FlightStatus::ON_GROUND &&
@@ -931,7 +930,7 @@ static T_OsdkOsalHandler osalHandler = {
       {
         std::cout << "Takeoff failed. Motors are not spinning." << std::endl;
         // Cleanup
-        if (vehicle->isM100() && vehicle->isLegacyM600())
+        if (!vehicle->isM100() && !vehicle->isLegacyM600())
         {
           vehicle->subscribe->removePackage(0, timeout);
         }
@@ -977,7 +976,7 @@ static T_OsdkOsalHandler osalHandler = {
     int stillOnGround = 0;
     timeoutCycles     = 110;
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       while (vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() !=
              VehicleStatus::FlightStatus::IN_AIR &&
@@ -997,7 +996,7 @@ static T_OsdkOsalHandler osalHandler = {
                      "motors are spinning."
                   << std::endl;
         // Cleanup
-        if (vehicle->isM100() && vehicle->isLegacyM600())
+        if (!vehicle->isM100() && !vehicle->isLegacyM600())
         {
           vehicle->subscribe->removePackage(0, timeout);
         }
@@ -1040,7 +1039,7 @@ static T_OsdkOsalHandler osalHandler = {
     }
 
     // Final check: Finished takeoff
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
              VehicleStatus::DisplayMode::MODE_ASSISTED_TAKEOFF ||
@@ -1050,7 +1049,7 @@ static T_OsdkOsalHandler osalHandler = {
         sleep(1);
       }
 
-      if (vehicle->isM100() && vehicle->isLegacyM600())
+      if (!vehicle->isM100() && !vehicle->isLegacyM600())
       {
         if (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
             VehicleStatus::DisplayMode::MODE_P_GPS ||
@@ -1062,8 +1061,8 @@ static T_OsdkOsalHandler osalHandler = {
         else
         {
           std::cout
-            << "Takeoff finished, but the aircraft is in an unexpected mode. "
-               "Please connect DJI GO.\n";
+              << "Takeoff finished, but the aircraft is in an unexpected mode. "
+                 "Please connect DJI GO.\n";
           vehicle->subscribe->removePackage(0, timeout);
           return false;
         }
@@ -1074,13 +1073,13 @@ static T_OsdkOsalHandler osalHandler = {
       float32_t                 delta;
       Telemetry::GlobalPosition currentHeight;
       Telemetry::GlobalPosition deltaHeight =
-        vehicle->broadcast->getGlobalPosition();
+          vehicle->broadcast->getGlobalPosition();
 
       do
       {
         sleep(4);
         currentHeight = vehicle->broadcast->getGlobalPosition();
-        delta         = std::fabs(currentHeight.altitude - deltaHeight.altitude);
+        delta         = fabs(currentHeight.altitude - deltaHeight.altitude);
         deltaHeight.altitude = currentHeight.altitude;
       } while (delta >= 0.009);
 
@@ -1088,14 +1087,14 @@ static T_OsdkOsalHandler osalHandler = {
     }
 
     // Cleanup
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
       if (ACK::getError(ack))
       {
         std::cout
-          << "Error unsubscribing; please restart the drone/FC to get back "
-             "to a clean state.\n";
+            << "Error unsubscribing; please restart the drone/FC to get back "
+               "to a clean state.\n";
       }
     }
 
@@ -1104,12 +1103,11 @@ static T_OsdkOsalHandler osalHandler = {
 
   bool VehicleWrapper::monitoredLanding(ACK::ErrorCode& ack, int timeout)
   {
-    using namespace Telemetry;
     //@todo: remove this once the getErrorCode function signature changes
     char func[50];
     int  pkgIndex;
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       // Telemetry: Verify the subscription
       ack = vehicle->subscribe->verify(timeout);
@@ -1120,7 +1118,7 @@ static T_OsdkOsalHandler osalHandler = {
       }
 
       // Telemetry: Subscribe to flight status and mode at freq 10 Hz
-      pkgIndex                  = 0;
+      pkgIndex                  = static_cast<int>(SubscribePackgeIndex::TEMP_SUB_PACKAGE_INDEX);;
       int       freq            = 10;
       TopicName topicList10Hz[] = { TOPIC_STATUS_FLIGHT,
                                     TOPIC_STATUS_DISPLAYMODE };
@@ -1128,7 +1126,7 @@ static T_OsdkOsalHandler osalHandler = {
       bool enableTimestamp = false;
 
       bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
-        pkgIndex, numTopic, topicList10Hz, enableTimestamp, freq);
+          pkgIndex, numTopic, topicList10Hz, enableTimestamp, freq);
       if (!(pkgStatus))
       {
         return pkgStatus;
@@ -1155,7 +1153,7 @@ static T_OsdkOsalHandler osalHandler = {
     int landingNotStarted = 0;
     int timeoutCycles     = 20;
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
              VehicleStatus::DisplayMode::MODE_AUTO_LANDING &&
@@ -1179,7 +1177,7 @@ static T_OsdkOsalHandler osalHandler = {
     if (landingNotStarted == timeoutCycles)
     {
       std::cout << "Landing failed. Aircraft is still in the air." << std::endl;
-      if (vehicle->isM100() && vehicle->isLegacyM600())
+      if (!vehicle->isM100() && !vehicle->isLegacyM600())
       {
         // Cleanup before return
         ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
@@ -1196,7 +1194,7 @@ static T_OsdkOsalHandler osalHandler = {
     }
 
     // Second check: Finished landing
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
              VehicleStatus::DisplayMode::MODE_AUTO_LANDING &&
@@ -1216,8 +1214,8 @@ static T_OsdkOsalHandler osalHandler = {
       else
       {
         std::cout
-          << "Landing finished, but the aircraft is in an unexpected mode. "
-             "Please connect DJI GO.\n";
+            << "Landing finished, but the aircraft is in an unexpected mode. "
+               "Please connect DJI GO.\n";
         ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
         if (ACK::getError(ack))
         {
@@ -1245,8 +1243,8 @@ static T_OsdkOsalHandler osalHandler = {
       if (gp.altitude != 0)
       {
         std::cout
-          << "Landing finished, but the aircraft is in an unexpected mode. "
-             "Please connect DJI GO.\n";
+            << "Landing finished, but the aircraft is in an unexpected mode. "
+               "Please connect DJI GO.\n";
         return false;
       }
       else
@@ -1272,8 +1270,8 @@ static T_OsdkOsalHandler osalHandler = {
       if (gp.altitude != 0)
       {
         std::cout
-          << "Landing finished, but the aircraft is in an unexpected mode. "
-             "Please connect DJI GO.\n";
+            << "Landing finished, but the aircraft is in an unexpected mode. "
+               "Please connect DJI GO.\n";
         return false;
       }
       else
@@ -1283,14 +1281,14 @@ static T_OsdkOsalHandler osalHandler = {
     }
 
     // Cleanup
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
       if (ACK::getError(ack))
       {
         std::cout
-          << "Error unsubscribing; please restart the drone/FC to get back "
-             "to a clean state.\n";
+            << "Error unsubscribing; please restart the drone/FC to get back "
+               "to a clean state.\n";
       }
     }
 
@@ -1384,7 +1382,7 @@ static T_OsdkOsalHandler osalHandler = {
   bool VehicleWrapper::goHomeAndConfirmLanding(int timeout)
   {
     /*! Step 1: Verify and setup the subscription */
-    const int pkgIndex = static_cast<int>(SubscribePackgeIndex::FLIGHT_CONTROL_GO_HOME_AND_FORCE_LANDING_DATA);
+    const int pkgIndex = static_cast<int>(SubscribePackgeIndex::TEMP_SUB_PACKAGE_INDEX);
     int freq = 10;
     TopicName topicList[] = {TOPIC_STATUS_FLIGHT, TOPIC_STATUS_DISPLAYMODE,
                              TOPIC_AVOID_DATA, TOPIC_VELOCITY};
@@ -1489,7 +1487,7 @@ static T_OsdkOsalHandler osalHandler = {
         ACK::getErrorCodeMessage(subscribeStatus, __func__);
         return false;
       }
-      int pkgIndex = static_cast<int>(SubscribePackgeIndex::FLIGHT_CONTROL_SET_GO_HOME_DATA);
+      int pkgIndex = static_cast<int>(SubscribePackgeIndex::TEMP_SUB_PACKAGE_INDEX);
       int freq = 1;
       TopicName topicList[] = {TOPIC_HOME_POINT_SET_STATUS, TOPIC_HOME_POINT_INFO};
 
@@ -1598,17 +1596,16 @@ static T_OsdkOsalHandler osalHandler = {
     if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       // Telemetry: Verify the subscription
-      ACK::ErrorCode subscribeStatus;
-      subscribeStatus = vehicle->subscribe->verify(responseTimeout);
-      if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
+      ack = vehicle->subscribe->verify(responseTimeout);
+      if (ACK::getError(ack) != ACK::SUCCESS)
       {
-        ACK::getErrorCodeMessage(subscribeStatus, func);
+        ACK::getErrorCodeMessage(ack, func);
         return false;
       }
 
       // Telemetry: Subscribe to quaternion, fused lat/lon and altitude at freq 50
       // Hz
-      pkgIndex                  = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::FLIGHT_CONTROL_DATA);
+      pkgIndex                  = static_cast<int>(SubscribePackgeIndex::TEMP_SUB_PACKAGE_INDEX);;
       int       freq            = 50;
       TopicName topicList50Hz[] = { TOPIC_QUATERNION, TOPIC_GPS_FUSED };
       int       numTopic = sizeof(topicList50Hz) / sizeof(topicList50Hz[0]);
@@ -1620,11 +1617,10 @@ static T_OsdkOsalHandler osalHandler = {
       {
         return pkgStatus;
       }
-      subscribeStatus =
-          vehicle->subscribe->startPackage(pkgIndex, responseTimeout);
-      if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
+      ack =  vehicle->subscribe->startPackage(pkgIndex, responseTimeout);
+      if (ACK::getError(ack) != ACK::SUCCESS)
       {
-        ACK::getErrorCodeMessage(subscribeStatus, func);
+        ACK::getErrorCodeMessage(ack, func);
         // Cleanup before return
         vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
         return false;
@@ -1767,7 +1763,7 @@ static T_OsdkOsalHandler osalHandler = {
         broadcastQ         = vehicle->broadcast->getQuaternion();
         yawInRad           = toEulerAngle((static_cast<void*>(&broadcastQ))).z;
         currentBroadcastGP = vehicle->broadcast->getGlobalPosition();
-        localOffsetFromGpsOffset( localOffset,
+        localOffsetFromGpsOffset(localOffset,
                                  static_cast<void*>(&currentBroadcastGP),
                                  static_cast<void*>(&originBroadcastGP));
       }
@@ -1840,8 +1836,7 @@ static T_OsdkOsalHandler osalHandler = {
       std::cout << "Task timeout!\n";
       if (!vehicle->isM100() && !vehicle->isLegacyM600())
       {
-        ACK::ErrorCode ack =
-            vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
+        ack = vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
         if (ACK::getError(ack))
         {
           std::cout << "Error unsubscribing; please restart the drone/FC to get "
@@ -1853,8 +1848,7 @@ static T_OsdkOsalHandler osalHandler = {
 
     if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
-      ACK::ErrorCode ack =
-          vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
+      ack = vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
       if (ACK::getError(ack))
       {
         std::cout

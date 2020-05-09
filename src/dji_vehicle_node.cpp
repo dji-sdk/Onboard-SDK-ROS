@@ -33,6 +33,7 @@
 //CODE
 using namespace dji_osdk_ros;
 const int WAIT_TIMEOUT = 10;
+const int FLIGHT_CONTROL_WAIT_TIMEOUT = 1;
 
 VehicleNode::VehicleNode(int test)
 {
@@ -342,13 +343,13 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
     case FlightTaskControl::Request::TASK_GOHOME:
       {
         ROS_INFO_STREAM("call go home service");
-        ptr_wrapper_->goHome(WAIT_TIMEOUT);
+        ptr_wrapper_->goHome(FLIGHT_CONTROL_WAIT_TIMEOUT);
         break;
       }
     case FlightTaskControl::Request::TASK_GOHOME_AND_CONFIRM_LANDING:
     {
       ROS_INFO_STREAM("call go home and confirm landing service");
-      ptr_wrapper_->goHomeAndConfirmLanding(WAIT_TIMEOUT);
+      ptr_wrapper_->goHomeAndConfirmLanding(FLIGHT_CONTROL_WAIT_TIMEOUT);
       break;
     }
     case FlightTaskControl::Request::TASK_GO_LOCAL_POS:
@@ -366,19 +367,19 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
                              request.yaw_params[1],
                              request.yaw_params[2]
                             };
-        ptr_wrapper_->moveByPositionOffset(ack, WAIT_TIMEOUT, tmp_offset);
+        ptr_wrapper_->moveByPositionOffset(ack, FLIGHT_CONTROL_WAIT_TIMEOUT, tmp_offset);
         break;
       }
     case FlightTaskControl::Request::TASK_TAKEOFF:
       {
         ROS_INFO_STREAM("call takeoff service");
-        ptr_wrapper_->monitoredTakeoff(ack, WAIT_TIMEOUT);
+        ptr_wrapper_->monitoredTakeoff(ack, FLIGHT_CONTROL_WAIT_TIMEOUT);
         break;
       }
     case FlightTaskControl::Request::TASK_LAND:
       {
         ROS_INFO_STREAM("call land service");
-        ptr_wrapper_->monitoredLanding(ack, WAIT_TIMEOUT);
+        ptr_wrapper_->monitoredLanding(ack, FLIGHT_CONTROL_WAIT_TIMEOUT);
         response.result = true;
         break;
       }
