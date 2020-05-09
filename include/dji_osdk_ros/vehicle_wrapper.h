@@ -2,7 +2,7 @@
  *  @version 4.0
  *  @date May 2020
  *
- *  @brief layer of wrapper of osdk ros 4.0.Encapsulate the interface of osdk.
+ *  @brief layer of modules of osdk ros 4.0.Encapsulate the interface of osdk.
  *
  *  @Copyright (c) 2020 DJI
  *
@@ -62,6 +62,8 @@ namespace dji_osdk_ros
     public:
       void setupEnvironment(bool enable_advanced_sensing);
       bool initVehicle();
+      ErrorCode::ErrorCodeType initCameraModule(PayloadIndexType index,
+                                                const char* name);
 
     public:
       /*! Parts of Camera */
@@ -115,7 +117,42 @@ namespace dji_osdk_ros
       void setCameraImage(const CameraRGBImage& img);
       void setAcmDevicePath(const std::string& acm_path);
 #endif
+      bool isM100();
+      void setUpM100DefaultFreq(uint8_t freq[16]);
+      void setUpA3N3DefaultFreq(uint8_t freq[16]);
+      ACK::ErrorCode setBroadcastFreq(uint8_t* dataLenIs16, int timeout);
+      uint16_t getPassFlag();
+      Telemetry::RC getRC();
+      Telemetry::Quaternion getQuaternion();
+      Telemetry::Vector3f getAcceleration();
+      Telemetry::Vector3f getAngularRate();
+      Telemetry::GlobalPosition getGlobalPosition();
+      Telemetry::Vector3f getVelocity();
+      Telemetry::Battery getBatteryInfo();
+      Telemetry::Status getStatus();
+      Telemetry::Gimbal getGimbal();
+      void setUserBroadcastCallback(VehicleCallBack callback, UserData userData);
+      void setFromMSDKCallback(VehicleCallBack callback, UserData userData);
+      void setFromPSDKCallback(VehicleCallBack callback, UserData userData);
+      void subscribeNMEAMsgs(VehicleCallBack cb, void *userData);
+      void subscribeUTCTime(VehicleCallBack cb, void *userData);
+      void subscribeFCTimeInUTCRef(VehicleCallBack cb, void *userData);
+      void subscribePPSSource(VehicleCallBack cb, void *userData);
+      void unsubscribeNMEAMsgs();
+      void unsubscribeUTCTime();
+      void unsubscribeFCTimeInUTCRef();
+      void unsubscribePPSSource();
 
+
+      ACK::ErrorCode verify(int timeout);
+      bool initPackageFromTopicList(int packageID, int numberOfTopics,TopicName* topicList,
+                                    bool sendTimeStamp, uint16_t freq);
+      ACK::ErrorCode startPackage(int packageID, int timeout);
+      ACK::ErrorCode removePackage(int packageID, int timeout);
+      void registerUserPackageUnpackCallback(int packageID, VehicleCallBack userFunctionAfterPackageExtraction,
+                                             UserData userData);
+      Version::FirmWare getFwVersion() const;
+      char* getHwVersion() const;
   protected:
       bool startGlobalPositionBroadcast();
       Telemetry::Vector3f toEulerAngle(void* quaternionData);
@@ -147,6 +184,7 @@ namespace dji_osdk_ros
       unsigned int baudrate_;
       std::string  sample_case_;
       const static unsigned int default_acm_baudrate = 230400;
+
 
 #ifdef ADVANCED_SENSING
       CameraRGBImage image_from_camera_;

@@ -41,7 +41,7 @@ VehicleNode::VehicleNode(int test)
 
 VehicleNode::VehicleNode()
 {
-  nh_.param("/vehicle_node/app_id",        app_id_, 123456);
+  nh_.param("/vehicle_node/app_id",        app_id_, 10086);
   nh_.param("/vehicle_node/enc_key",       enc_key_, std::string("abcde123"));
   nh_.param("/vehicle_node/acm_name",      device_acm_, std::string("/dev/ttyACM0"));
   nh_.param("/vehicle_node/serial_name",   device_, std::string("/dev/ttyUSB0"));
@@ -49,6 +49,8 @@ VehicleNode::VehicleNode()
   nh_.param("/vehicle_node/app_version",   app_version_, 1);
   nh_.param("/vehicle_node/drone_version", drone_version_, std::string("M100")); // choose M100 as default
   nh_.param("/vehicle_node/gravity_const", gravity_const_, 9.801);
+  nh_.param("/vehicle_node/align_time",    align_time_with_FC_, false);
+  nh_.param("/vehicle_node/use_broadcast", user_select_broadcast_, false);
   bool enable_ad = false;
 #ifdef ADVANCED_SENSING
   enable_ad = true;
@@ -59,10 +61,15 @@ VehicleNode::VehicleNode()
 
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper inited failed");
+    ROS_ERROR_STREAM("Vehicle modules inited failed");
     ros::shutdown();
   }
   ROS_INFO_STREAM("VehicleNode Start");
+
+  if (NULL != ptr_wrapper_->getVehicle()->subscribe && (!user_select_broadcast_))
+  {
+    telemetry_from_fc_ = TelemetryType::USE_ROS_SUBSCRIBE;
+  }
 
   subscribeGimbalData();
   initCameraModule();
@@ -73,13 +80,18 @@ VehicleNode::VehicleNode()
 VehicleNode::~VehicleNode()
 {
   unSubScribeGimbalData();
+
+  if(!ptr_wrapper_->isM100())
+  {
+    cleanUpSubscribeFromFC();
+  }
 }
 
 bool VehicleNode::subscribeGimbalData()
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   Vehicle* vehicle = ptr_wrapper_->getVehicle();
@@ -121,7 +133,7 @@ bool VehicleNode::subscribeGimbalData()
                                                  "main_gimbal");
   if (ret != ErrorCode::SysCommonErr::Success)
   {
-    std::cout << "Init Camera module main_gimbal failed."<< std::endl;
+    std::cout << "Init Camera modules main_gimbal failed."<< std::endl;
     ErrorCode::printErrorCodeMsg(ret);
     return false;
   }
@@ -130,7 +142,7 @@ bool VehicleNode::subscribeGimbalData()
                                                  "vice_gimbal");
   if (ret != ErrorCode::SysCommonErr::Success)
   {
-    std::cout << "Init Camera module vice_gimbal failed." << std::endl;
+    std::cout << "Init Camera modules vice_gimbal failed." << std::endl;
     ErrorCode::printErrorCodeMsg(ret);
     return false;
   }
@@ -140,7 +152,7 @@ bool VehicleNode::subscribeGimbalData()
     ret = vehicle->gimbalManager->initGimbalModule(PAYLOAD_INDEX_2,
                                                    "top_gimbal");
     if (ret != ErrorCode::SysCommonErr::Success) {
-      std::cout << "Init Camera module top_gimbal failed." << std::endl;
+      std::cout << "Init Camera modules top_gimbal failed." << std::endl;
       ErrorCode::printErrorCodeMsg(ret);
       return false;
     }
@@ -153,14 +165,12 @@ bool VehicleNode::unSubScribeGimbalData()
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
-  Vehicle* vehicle = ptr_wrapper_->getVehicle();
 
   int pkgIndex = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::GIMBA_SUB_PACKAGE_INDEX);
-  ACK::ErrorCode subscribeStatus =
-      vehicle->subscribe->removePackage(pkgIndex, 1);
+  ACK::ErrorCode subscribeStatus = ptr_wrapper_->removePackage(pkgIndex, 1);
   if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
   {
     ACK::getErrorCodeMessage(subscribeStatus, __func__);
@@ -174,17 +184,17 @@ bool VehicleNode::initCameraModule()
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   Vehicle* vehicle = ptr_wrapper_->getVehicle();
 
   /*! init camera modules for cameraManager */
   /*! main camera init */
-  ErrorCode::ErrorCodeType ret = vehicle->cameraManager->initCameraModule(
+  ErrorCode::ErrorCodeType ret = ptr_wrapper_->initCameraModule(
       PAYLOAD_INDEX_0, "main_camera");
   if (ret != ErrorCode::SysCommonErr::Success) {
-    DERROR("Init Camera module main_camera failed.");
+    DERROR("Init Camera modules main_camera failed.");
     ErrorCode::printErrorCodeMsg(ret);
     return false;
   }
@@ -192,7 +202,7 @@ bool VehicleNode::initCameraModule()
   ret = vehicle->cameraManager->initCameraModule(PAYLOAD_INDEX_1,
                                                  "vice_camera");
   if (ret != ErrorCode::SysCommonErr::Success) {
-    DERROR("Init Camera module vice_camera failed.");
+    DERROR("Init Camera modules vice_camera failed.");
     ErrorCode::printErrorCodeMsg(ret);
     return false;
   }
@@ -202,7 +212,7 @@ bool VehicleNode::initCameraModule()
                                                    "top_camera");
     if (ret != ErrorCode::SysCommonErr::Success)
     {
-      DERROR("Init Camera module top_camera failed.");
+      DERROR("Init Camera modules top_camera failed.");
       ErrorCode::printErrorCodeMsg(ret);
       return false;
     }
@@ -213,6 +223,7 @@ bool VehicleNode::initCameraModule()
 
 void VehicleNode::initService()
 {
+  ROS_INFO_STREAM("Topic startup!");
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
   gimbal_control_server_ = nh_.advertiseService("gimbal_task_control", &VehicleNode::gimbalCtrlCallback, this);
   camera_control_set_EV_server_ = nh_.advertiseService("camera_task_set_EV", &VehicleNode::cameraSetEVCallback, this);
@@ -240,13 +251,344 @@ void VehicleNode::initService()
   ROS_INFO_STREAM("Services startup!");
 }
 
-void VehicleNode::initTopic()
+bool VehicleNode::initTopic()
 {
-#ifdef ADVANCED_SENSING
+  attitude_publisher_ = nh_.advertise<geometry_msgs::QuaternionStamped>("dji_osdk_ros/attitude", 10);
+  battery_state_publisher_ = nh_.advertise<sensor_msgs::BatteryState>("dji_osdk_ros/battery_state",10);
+  /*!
+   * - Fused attitude (duplicated from attitude topic)
+   * - Raw linear acceleration (body frame: FLU, m/s^2)
+   *       Z value is +9.8 when placed on level ground statically
+   * - Raw angular velocity (body frame: FLU, rad/s^2)
+   */
+  imu_publisher_ = nh_.advertise<sensor_msgs::Imu>("dji_osdk_ros/imu", 10);
+  // Refer to dji_sdk.h for different enums for M100 and A3/N3
+  flight_status_publisher_ = nh_.advertise<std_msgs::UInt8>("dji_osdk_ros/flight_status", 10);
+  /*!
+   * gps_health needs to be greater than 3 for gps_position and velocity topics
+   * to be trusted
+   */
+  gps_health_publisher_ = nh_.advertise<std_msgs::UInt8>("dji_osdk_ros/gps_health", 10);
+
+  /*!
+   * NavSatFix specs:
+   *   Latitude [degrees]. Positive is north of equator; negative is south.
+   *   Longitude [degrees]. Positive is east of prime meridian; negative is
+   * west.
+   *   Altitude [m]. Positive is above the WGS 84 ellipsoid
+   */
+  gps_position_publisher_ = nh_.advertise<sensor_msgs::NavSatFix>("dji_osdk_ros/gps_position", 10);
+
+  /*!
+   *   x [m]. Positive along navigation frame x axis
+   *   y [m]. Positive along navigation frame y axis
+   *   z [m]. Positive is down
+   *   For details about navigation frame, please see telemetry documentation in API reference
+  */
+  vo_position_publisher_ = nh_.advertise<dji_osdk_ros::VOPosition>("dji_osdk_ros/vo_position", 10);
+  /*!
+   * Height above home altitude. It is valid only after drone
+   * is armed.
+   */
+  height_publisher_ = nh_.advertise<std_msgs::Float32>("dji_osdk_ros/height_above_takeoff", 10);
+  velocity_publisher_ = nh_.advertise<geometry_msgs::Vector3Stamped>("dji_osdk_ros/velocity", 10);
+  from_mobile_data_publisher_ = nh_.advertise<dji_osdk_ros::MobileData>("dji_osdk_ros/from_mobile_data", 10);
+  from_payload_data_publisher_ = nh_.advertise<dji_osdk_ros::PayloadData>("dji_osdk_ros/from_payload_data", 10);
+  // TODO: documentation and proper frame id
+  gimbal_angle_publisher_ = nh_.advertise<geometry_msgs::Vector3Stamped>("dji_osdk_ros/gimbal_angle", 10);
+  rc_publisher_ = nh_.advertise<sensor_msgs::Joy>("dji_osdk_ros/rc", 10);
+
+  local_position_publisher_ = nh_.advertise<geometry_msgs::PointStamped>("dji_osdk_ros/local_position", 10);
+  local_frame_ref_publisher_ = nh_.advertise<sensor_msgs::NavSatFix>("dji_osdk_ros/local_frame_ref", 10, true);
+  time_sync_nmea_publisher_ = nh_.advertise<nmea_msgs::Sentence>("dji_osdk_ros/time_sync_nmea_msg", 10);
+  time_sync_gps_utc_publisher_ = nh_.advertise<dji_osdk_ros::GPSUTC>("dji_osdk_ros/time_sync_gps_utc", 10);
+  time_sync_fc_utc_publisher_ = nh_.advertise<dji_osdk_ros::FCTimeInUTC>("dji_osdk_ros/time_sync_fc_time_utc", 10);
+  time_sync_pps_source_publisher_ = nh_.advertise<std_msgs::String>("dji_osdk_ros/time_sync_pps_source", 10);
+  // Extra topics that is only available from subscription
+  // Details can be found in DisplayMode enum in dji_sdk.h
+  #ifdef ADVANCED_SENSING
     advanced_sensing_pub_ = nh_.advertise<dji_osdk_ros::CameraData>("cameradata", 1000);
-#endif
-    ROS_INFO_STREAM("Topic startup!");
+  #endif
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return true;
+  }
+
+  Vehicle* vehicle = ptr_wrapper_->getVehicle();
+  if (telemetry_from_fc_ == TelemetryType::USE_ROS_BROADCAST)
+  {
+    ACK::ErrorCode broadcast_set_freq_ack;
+    ROS_INFO("Use legacy data broadcast to get telemetry data!");
+
+    uint8_t defaultFreq[16];
+
+    if (ptr_wrapper_->isM100()) {
+      ptr_wrapper_->setUpM100DefaultFreq(defaultFreq);
+    } else {
+      ptr_wrapper_->setUpA3N3DefaultFreq(defaultFreq);
+    }
+    broadcast_set_freq_ack = ptr_wrapper_->setBroadcastFreq(defaultFreq, WAIT_TIMEOUT);
+
+    if (ACK::getError(broadcast_set_freq_ack)) {
+      ACK::getErrorCodeMessage(broadcast_set_freq_ack, __func__);
+      return false;
+    }
+    // register a callback function whenever a broadcast data is in
+    ptr_wrapper_->setUserBroadcastCallback(&VehicleNode::SDKBroadcastCallback, this);
+  }
+  else if (telemetry_from_fc_ == TelemetryType::USE_ROS_SUBSCRIBE)
+  {
+    ROS_INFO("Use data subscription to get telemetry data!");
+    if(!align_time_with_FC_)
+    {
+      ROS_INFO("align_time_with_FC set to false. We will use ros time to time stamp messages!");
+    }
+    else
+    {
+      ROS_INFO("align_time_with_FC set to true. We will time stamp messages based on flight controller time!");
+    }
+
+    // Extra topics that is only available from subscription
+
+    // Details can be found in DisplayMode enum in common_type.h
+    angularRate_publisher_ = nh_.advertise<geometry_msgs::Vector3Stamped>("dji_osdk_ros/angular_velocity_fused", 10);
+    acceleration_publisher_ = nh_.advertise<geometry_msgs::Vector3Stamped>("dji_osdk_ros/acceleration_ground_fused", 10);
+    displaymode_publisher_ = nh_.advertise<std_msgs::UInt8>("dji_osdk_ros/display_mode", 10);
+    trigger_publisher_ = nh_.advertise<sensor_msgs::TimeReference>("dji_osdk_ros/trigger_time", 10);
+
+    if (!initDataSubscribeFromFC())
+    {
+      return false;
+    }
+  }
+  ptr_wrapper_->setFromMSDKCallback(&VehicleNode::SDKfromMobileDataCallback, this);
+  if (vehicle->payloadDevice)
+  {
+    ptr_wrapper_->setFromPSDKCallback(&VehicleNode::SDKfromPayloadDataCallback, this);
+  }
+
+  if (vehicle->hardSync)
+  {
+    ptr_wrapper_->subscribeNMEAMsgs(&VehicleNode::NMEACallback, this);
+    ptr_wrapper_->subscribeUTCTime(&VehicleNode::GPSUTCTimeCallback, this);
+    ptr_wrapper_->subscribeFCTimeInUTCRef(&VehicleNode::FCTimeInUTCCallback, this);
+    ptr_wrapper_->subscribePPSSource(&VehicleNode::PPSSourceCallback, this);
+  }
+  return true;
 }
+
+bool VehicleNode::initDataSubscribeFromFC()
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return true;
+  }
+
+  ACK::ErrorCode ack = ptr_wrapper_->verify(WAIT_TIMEOUT);
+  if (ACK::getError(ack))
+  {
+    return false;
+  }
+
+  std::vector<Telemetry::TopicName> topicList100Hz;
+  topicList100Hz.push_back(Telemetry::TOPIC_QUATERNION);
+  topicList100Hz.push_back(Telemetry::TOPIC_ACCELERATION_GROUND);
+  topicList100Hz.push_back(Telemetry::TOPIC_ANGULAR_RATE_FUSIONED);
+
+  int nTopic100Hz    = topicList100Hz.size();
+  if (ptr_wrapper_->initPackageFromTopicList(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_100HZ), nTopic100Hz,
+                                             topicList100Hz.data(), 1, 100))
+  {
+    ack = ptr_wrapper_->startPackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_100HZ), WAIT_TIMEOUT);
+    if (ACK::getError(ack))
+    {
+      ptr_wrapper_->removePackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_100HZ), WAIT_TIMEOUT);
+      ROS_ERROR("Failed to start 100Hz package");
+      return false;
+    }
+    else
+    {
+      ptr_wrapper_->registerUserPackageUnpackCallback(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_100HZ), VehicleNode::publish100HzData, this);
+    }
+  }
+
+  std::vector<Telemetry::TopicName> topicList50Hz;
+  // 50 Hz package from FC
+  topicList50Hz.push_back(Telemetry::TOPIC_GPS_FUSED);
+  topicList50Hz.push_back(Telemetry::TOPIC_ALTITUDE_FUSIONED);
+  topicList50Hz.push_back(Telemetry::TOPIC_HEIGHT_FUSION);
+  topicList50Hz.push_back(Telemetry::TOPIC_STATUS_FLIGHT);
+  topicList50Hz.push_back(Telemetry::TOPIC_STATUS_DISPLAYMODE);
+  topicList50Hz.push_back(Telemetry::TOPIC_GIMBAL_ANGLES);
+  topicList50Hz.push_back(Telemetry::TOPIC_GIMBAL_STATUS);
+  topicList50Hz.push_back(Telemetry::TOPIC_RC);
+  topicList50Hz.push_back(Telemetry::TOPIC_VELOCITY);
+  topicList50Hz.push_back(Telemetry::TOPIC_GPS_CONTROL_LEVEL);
+
+  if(ptr_wrapper_->getFwVersion() > versionBase33)
+  {
+    topicList50Hz.push_back(Telemetry::TOPIC_POSITION_VO);
+    topicList50Hz.push_back(Telemetry::TOPIC_RC_WITH_FLAG_DATA);
+    topicList50Hz.push_back(Telemetry::TOPIC_FLIGHT_ANOMALY);
+
+    // A3 and N3 has access to more buttons on RC
+    std::string hardwareVersion(ptr_wrapper_->getHwVersion());
+    if( (hardwareVersion == std::string(Version::N3)) || hardwareVersion == std::string(Version::A3))
+    {
+      topicList50Hz.push_back(Telemetry::TOPIC_RC_FULL_RAW_DATA);
+    }
+
+    // Advertise rc connection status only if this topic is supported by FW
+    rc_connection_status_publisher_ = nh_.advertise<std_msgs::UInt8>("dji_osdk_ros/rc_connection_status", 10);
+    flight_anomaly_publisher_ = nh_.advertise<dji_osdk_ros::FlightAnomaly>("dji_osdk_ros/flight_anomaly", 10);
+  }
+
+  int nTopic50Hz    = topicList50Hz.size();
+  if (ptr_wrapper_->initPackageFromTopicList(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_50HZ), nTopic50Hz,
+                                                   topicList50Hz.data(), 1, 50))
+  {
+    ack = ptr_wrapper_->startPackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_50HZ), WAIT_TIMEOUT);
+    if (ACK::getError(ack))
+    {
+      ptr_wrapper_->removePackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_50HZ), WAIT_TIMEOUT);
+      ROS_ERROR("Failed to start 50Hz package");
+      return false;
+    }
+    else
+    {
+      ptr_wrapper_->registerUserPackageUnpackCallback(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_50HZ), VehicleNode::publish50HzData, (UserData) this);
+    }
+  }
+
+  //! Check if RTK is supported in the FC
+  Telemetry::TopicName topicRTKSupport[] = { Telemetry::TOPIC_RTK_POSITION  };
+
+  int nTopicRTKSupport    = sizeof(topicRTKSupport)/sizeof(topicRTKSupport[0]);
+  if (ptr_wrapper_->initPackageFromTopicList(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_5HZ), nTopicRTKSupport,
+                                             topicRTKSupport, 1, 5))
+  {
+    ack = ptr_wrapper_->startPackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_5HZ), WAIT_TIMEOUT);
+    if (ack.data == ErrorCode::SubscribeACK::SOURCE_DEVICE_OFFLINE)
+    {
+      rtk_support_ = false;
+      ROS_INFO("Flight Controller does not support RTK");
+    }
+    else
+    {
+      rtk_support_ = true;
+      ptr_wrapper_->removePackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_5HZ), WAIT_TIMEOUT);
+    }
+  }
+
+  std::vector<Telemetry::TopicName> topicList5hz;
+  topicList5hz.push_back(Telemetry::TOPIC_GPS_DATE);
+  topicList5hz.push_back(Telemetry::TOPIC_GPS_TIME);
+  topicList5hz.push_back(Telemetry::TOPIC_GPS_POSITION);
+  topicList5hz.push_back(Telemetry::TOPIC_GPS_VELOCITY);
+  topicList5hz.push_back(Telemetry::TOPIC_GPS_DETAILS);
+  topicList5hz.push_back(Telemetry::TOPIC_BATTERY_INFO);
+
+  if(rtk_support_)
+  {
+    topicList5hz.push_back(Telemetry::TOPIC_RTK_POSITION);
+    topicList5hz.push_back(Telemetry::TOPIC_RTK_VELOCITY);
+    topicList5hz.push_back(Telemetry::TOPIC_RTK_YAW);
+    topicList5hz.push_back(Telemetry::TOPIC_RTK_YAW_INFO);
+    topicList5hz.push_back(Telemetry::TOPIC_RTK_POSITION_INFO);
+
+    // Advertise rtk data only when rtk is supported
+    rtk_position_publisher_ = nh_.advertise<sensor_msgs::NavSatFix>("dji_osdk_ros/rtk_position", 10);
+    rtk_velocity_publisher_ = nh_.advertise<geometry_msgs::Vector3Stamped>("dji_osdk_ros/rtk_velocity", 10);
+    rtk_yaw_publisher_ = nh_.advertise<std_msgs::Int16>("dji_osdk_ros/rtk_yaw", 10);
+    rtk_position_info_publisher_ = nh_.advertise<std_msgs::UInt8>("dji_osdk_ros/rtk_info_position", 10);
+    rtk_yaw_info_publisher_ = nh_.advertise<std_msgs::UInt8>("dji_osdk_ros/rtk_info_yaw", 10);
+
+    if(ptr_wrapper_->getFwVersion() > versionBase33)
+    {
+      topicList5hz.push_back(Telemetry::TOPIC_RTK_CONNECT_STATUS);
+
+      // Advertise rtk connection only when rtk is supported
+      rtk_connection_status_publisher_ = nh_.advertise<std_msgs::UInt8>("dji_osdk_ros/rtk_connection_status", 10);
+    }
+  }
+
+  int nTopic5hz    = topicList5hz.size();
+  if (ptr_wrapper_->initPackageFromTopicList(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_5HZ), nTopic5hz,
+                                             topicList5hz.data(), 1, 5))
+  {
+    ack = ptr_wrapper_->startPackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_5HZ), WAIT_TIMEOUT);
+    if (ACK::getError(ack))
+    {
+      ptr_wrapper_->removePackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_5HZ), WAIT_TIMEOUT);
+      ROS_ERROR("Failed to start 5hz package");
+      return false;
+    }
+    else
+    {
+      ptr_wrapper_->registerUserPackageUnpackCallback(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_5HZ), VehicleNode::publish5HzData, (UserData) this);
+    }
+  }
+
+  // 400 Hz data from FC
+  std::vector<Telemetry::TopicName> topicList400Hz;
+  topicList400Hz.push_back(Telemetry::TOPIC_HARD_SYNC);
+
+  int nTopic400Hz = topicList400Hz.size();
+  if (ptr_wrapper_->initPackageFromTopicList(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_400HZ), nTopic400Hz,
+                                             topicList400Hz.data(), 1, 400))
+  {
+    ack = ptr_wrapper_->startPackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_400HZ), WAIT_TIMEOUT);
+    if(ACK::getError(ack))
+    {
+      ptr_wrapper_->removePackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_400HZ), WAIT_TIMEOUT);
+      ROS_ERROR("Failed to start 400Hz package");
+      return false;
+    }
+    else
+    {
+      ptr_wrapper_->registerUserPackageUnpackCallback(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_400HZ), VehicleNode::publish400HzData, this);
+    }
+  }
+
+  ros::Duration(1).sleep();
+  return true;
+}
+
+bool VehicleNode::cleanUpSubscribeFromFC()
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+  Vehicle* vehicle = ptr_wrapper_->getVehicle();
+
+  ptr_wrapper_->removePackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_5HZ), WAIT_TIMEOUT);
+  ptr_wrapper_->removePackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_50HZ), WAIT_TIMEOUT);
+  ptr_wrapper_->removePackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_100HZ), WAIT_TIMEOUT);
+  ptr_wrapper_->removePackage(static_cast<int>(SubscribePackgeIndex::PACKAGE_ID_400HZ), WAIT_TIMEOUT);
+  if (vehicle->hardSync)
+  {
+    ptr_wrapper_->unsubscribeNMEAMsgs();
+    ptr_wrapper_->unsubscribeUTCTime();
+    ptr_wrapper_->unsubscribeFCTimeInUTCRef();
+    ptr_wrapper_->unsubscribePPSSource();
+  }
+  return true;
+}
+
+void VehicleNode::gpsConvertENU(double &ENU_x, double &ENU_y,
+                                   double gps_t_lon, double gps_t_lat,
+                                   double gps_r_lon, double gps_r_lat)
+{
+  double d_lon = gps_t_lon - gps_r_lon;
+  double d_lat = gps_t_lat - gps_r_lat;
+  ENU_y = DEG2RAD(d_lat) * C_EARTH;
+  ENU_x = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
+};
 
 void VehicleNode::publishTopic()
 {
@@ -288,7 +630,7 @@ bool VehicleNode::advancedSensingCallback(AdvancedSensing::Request& request, Adv
     response.result = false;
     if(ptr_wrapper_ == nullptr)
     {
-        ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+        ROS_ERROR_STREAM("Vehicle modules is nullptr");
         return true;
     }
 
@@ -333,7 +675,7 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
   ACK::ErrorCode ack;
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
 
@@ -413,7 +755,7 @@ bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalActio
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   response.result = false;
@@ -450,7 +792,7 @@ bool VehicleNode::cameraSetEVCallback(CameraEV::Request& request, CameraEV::Resp
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   response.result = false;
@@ -471,7 +813,7 @@ bool VehicleNode::cameraSetShutterSpeedCallback(CameraShutterSpeed::Request& req
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   response.result = false;
@@ -491,7 +833,7 @@ bool VehicleNode::cameraSetApertureCallback(CameraAperture::Request& request, Ca
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   response.result = false;
@@ -511,7 +853,7 @@ bool VehicleNode::cameraSetISOCallback(CameraISO::Request& request, CameraISO::R
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   response.result = false;
@@ -531,7 +873,7 @@ bool VehicleNode::cameraSetFocusPointCallback(CameraFocusPoint::Request& request
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   response.result = ptr_wrapper_->setFocusPoint(static_cast<PayloadIndex>(request.payload_index), request.x, request.y);
@@ -542,7 +884,7 @@ bool VehicleNode::cameraSetTapZoomPointCallback(CameraTapZoomPoint::Request& req
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   response.result = ptr_wrapper_->setTapZoomPoint(static_cast<PayloadIndex>(request.payload_index),request.multiplier, request.x, request.y);
@@ -553,7 +895,7 @@ bool VehicleNode::cameraZoomCtrlCallback(CameraZoomCtrl::Request& request, Camer
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   if (request.start_stop == 1)
@@ -571,7 +913,7 @@ bool VehicleNode::cameraStartShootSinglePhotoCallback(CameraStartShootSinglePhot
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   response.result = ptr_wrapper_->startShootSinglePhoto(static_cast<PayloadIndex>(request.payload_index));
@@ -582,7 +924,7 @@ bool VehicleNode::cameraStartShootAEBPhotoCallback(CameraStartShootAEBPhoto::Req
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   response.result = ptr_wrapper_->startShootAEBPhoto(static_cast<PayloadIndex>(request.payload_index), static_cast<PhotoAEBCount>(request.photo_aeb_count));
@@ -593,7 +935,7 @@ bool VehicleNode::cameraStartShootBurstPhotoCallback(CameraStartShootBurstPhoto:
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   response.result = ptr_wrapper_->startShootBurstPhoto(static_cast<PayloadIndex>(request.payload_index),static_cast<PhotoBurstCount>(request.photo_burst_count));
@@ -604,7 +946,7 @@ bool VehicleNode::cameraStartShootIntervalPhotoCallback(CameraStartShootInterval
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   PhotoIntervalData photoIntervalData;
@@ -618,7 +960,7 @@ bool VehicleNode::cameraStopShootPhotoCallback(CameraStopShootPhoto::Request& re
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   response.result = ptr_wrapper_->shootPhotoStop(static_cast<PayloadIndex>(request.payload_index));
@@ -629,7 +971,7 @@ bool VehicleNode::cameraRecordVideoActionCallback(CameraRecordVideoAction::Reque
 {
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   if(request.start_stop == 1)
@@ -648,7 +990,7 @@ bool VehicleNode::mfioCtrlCallback(MFIO::Request& request, MFIO::Response& respo
   ROS_INFO_STREAM("MFIO Control callback");
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
 
@@ -682,7 +1024,7 @@ bool VehicleNode::setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request,
   ROS_INFO_STREAM("Set go home altitude callback");
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
   if(request.altitude < 5)
@@ -707,7 +1049,7 @@ bool VehicleNode::setHomeCallback(SetNewHomePoint::Request& request, SetNewHomeP
   ROS_INFO_STREAM("Set new home point callback");
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
 
@@ -728,7 +1070,7 @@ bool VehicleNode::setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::R
   ROS_INFO_STREAM("Set avoid function callback");
   if(ptr_wrapper_ == nullptr)
   {
-    ROS_ERROR_STREAM("Vehicle Wrapper is nullptr");
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
 

@@ -3,7 +3,7 @@
  *  @date July, 2018
  *
  *  @brief
- *  Definitions and Enums for client code to use dji_sdk ros wrapper
+ *  Definitions and Enums for client code to use dji_sdk ros modules
  *
  *  @copyright 2018 DJI. All rights reserved.
  *
