@@ -2,7 +2,7 @@
  *  @version 4.0
  *  @date May 2020
  *
- *  @brief layer of wrapper of osdk ros 4.0.Encapsulate the interface of osdk.
+ *  @brief layer of modules of osdk ros 4.0.Encapsulate the interface of osdk.
  *
  *  @Copyright (c) 2020 DJI
  *
@@ -2044,25 +2044,6 @@ static T_OsdkOsalHandler osalHandler = {
     return true;
   }
 
-//  bool VehicleWrapper::setGimbalAngle(const GimbalContainer& gimbal)
-//  {
-//    DJI::OSDK::Gimbal::AngleData gimbalAngle = {};
-//    gimbalAngle.roll     = gimbal.roll;
-//    gimbalAngle.pitch    = gimbal.pitch;
-//    gimbalAngle.yaw      = gimbal.yaw;
-//    gimbalAngle.duration = gimbal.duration;
-//    gimbalAngle.mode |= 0;
-//    gimbalAngle.mode |= gimbal.isAbsolute;
-//    gimbalAngle.mode |= gimbal.yaw_cmd_ignore << 1;
-//    gimbalAngle.mode |= gimbal.roll_cmd_ignore << 2;
-//    gimbalAngle.mode |= gimbal.pitch_cmd_ignore << 3;
-//
-//    vehicle->gimbal->setAngle(&gimbalAngle);
-//    // Give time for gimbal to sync
-//    sleep(4);
-//    return true;
-//  }
-
   uint8_t VehicleWrapper::outputMFIO(uint8_t mode, uint8_t channel, uint32_t init_on_time_us, uint16_t freq, bool block, uint8_t gpio_set_value)
   {
     int responseTimeout = 1;
@@ -2228,4 +2209,214 @@ static T_OsdkOsalHandler osalHandler = {
       vehicle->advancedSensing->setAcmDevicePath(acm_path.c_str());
   }
 #endif
+
+  bool VehicleWrapper::isM100()
+  {
+    return(vehicle->isM100());
+  }
+
+  void VehicleWrapper::setUpM100DefaultFreq(uint8_t freq[16])
+  {
+    freq[0]  = DataBroadcast::FREQ_100HZ;
+    freq[1]  = DataBroadcast::FREQ_100HZ;
+    freq[2]  = DataBroadcast::FREQ_100HZ;
+    freq[3]  = DataBroadcast::FREQ_50HZ;
+    freq[4]  = DataBroadcast::FREQ_100HZ;
+    freq[5]  = DataBroadcast::FREQ_50HZ;
+    freq[6]  = DataBroadcast::FREQ_10HZ;
+    freq[7]  = DataBroadcast::FREQ_50HZ;
+    freq[8]  = DataBroadcast::FREQ_50HZ;
+    freq[9]  = DataBroadcast::FREQ_50HZ;
+    freq[10] = DataBroadcast::FREQ_10HZ;
+    freq[11] = DataBroadcast::FREQ_10HZ;
+  }
+
+  void VehicleWrapper::setUpA3N3DefaultFreq(uint8_t freq[16])
+  {
+    freq[0]  = DataBroadcast::FREQ_100HZ;
+    freq[1]  = DataBroadcast::FREQ_100HZ;
+    freq[2]  = DataBroadcast::FREQ_100HZ;
+    freq[3]  = DataBroadcast::FREQ_50HZ;
+    freq[4]  = DataBroadcast::FREQ_100HZ;
+    freq[5]  = DataBroadcast::FREQ_50HZ;
+    freq[6]  = DataBroadcast::FREQ_50HZ;
+    freq[7]  = DataBroadcast::FREQ_50HZ;
+    freq[8]  = DataBroadcast::FREQ_10HZ;
+    freq[9]  = DataBroadcast::FREQ_50HZ;
+    freq[10] = DataBroadcast::FREQ_50HZ;
+    freq[11] = DataBroadcast::FREQ_50HZ;
+    freq[12] = DataBroadcast::FREQ_10HZ;
+    freq[13] = DataBroadcast::FREQ_10HZ;
+  }
+
+  ACK::ErrorCode VehicleWrapper::setBroadcastFreq(uint8_t* dataLenIs16, int timeout)
+  {
+      return vehicle->broadcast->setBroadcastFreq(dataLenIs16, timeout);
+  }
+
+  void VehicleWrapper::setUserBroadcastCallback(VehicleCallBack callback,
+                                                UserData        userData)
+  {
+      vehicle->broadcast->setUserBroadcastCallback(callback, userData);
+  }
+
+  uint16_t VehicleWrapper::getPassFlag()
+  {
+      return vehicle->broadcast->getPassFlag();
+  }
+
+  Telemetry::RC VehicleWrapper::getRC()
+  {
+      return vehicle->broadcast->getRC();
+  }
+
+  Telemetry::Quaternion VehicleWrapper::getQuaternion()
+  {
+      return vehicle->broadcast->getQuaternion();
+  }
+
+  Telemetry::Vector3f VehicleWrapper::getAcceleration()
+  {
+      return vehicle->broadcast->getAcceleration();
+  }
+
+  Telemetry::Vector3f VehicleWrapper::getAngularRate()
+  {
+      return vehicle->broadcast->getAngularRate();
+  }
+
+  Telemetry::GlobalPosition VehicleWrapper::getGlobalPosition()
+  {
+     return vehicle->broadcast->getGlobalPosition();
+  }
+
+  Telemetry::Vector3f VehicleWrapper::getVelocity()
+  {
+     return vehicle->broadcast->getVelocity();
+  }
+
+  Telemetry::Battery VehicleWrapper::getBatteryInfo()
+  {
+     return vehicle->broadcast->getBatteryInfo();
+  }
+
+  Telemetry::Status VehicleWrapper::getStatus()
+  {
+      return vehicle->broadcast->getStatus();
+  }
+
+  Telemetry::Gimbal VehicleWrapper::getGimbal()
+  {
+     return vehicle->broadcast->getGimbal();
+  }
+
+  void VehicleWrapper::setFromMSDKCallback(VehicleCallBack callback, UserData userData)
+  {
+     vehicle->mobileDevice->setFromMSDKCallback(callback, userData);
+  }
+
+  void VehicleWrapper::setFromPSDKCallback(VehicleCallBack callback, UserData userData)
+  {
+     vehicle->payloadDevice->setFromPSDKCallback(callback, userData);
+  }
+
+  void VehicleWrapper::subscribeNMEAMsgs(VehicleCallBack cb, void *userData)
+  {
+     vehicle->hardSync->subscribeNMEAMsgs(cb, userData);
+  }
+
+  void VehicleWrapper::subscribeUTCTime(VehicleCallBack cb, void *userData)
+  {
+     vehicle->hardSync->subscribeUTCTime(cb, userData);
+  }
+
+  void VehicleWrapper::subscribeFCTimeInUTCRef(VehicleCallBack cb, void *userData)
+  {
+      vehicle->hardSync->subscribeFCTimeInUTCRef(cb, userData);
+  }
+
+  void VehicleWrapper::subscribePPSSource(VehicleCallBack cb, void *userData)
+  {
+      vehicle->hardSync->subscribePPSSource(cb, userData);
+  }
+
+  void VehicleWrapper::unsubscribeNMEAMsgs()
+  {
+      vehicle->hardSync->unsubscribeNMEAMsgs();
+  }
+
+  void VehicleWrapper::unsubscribeUTCTime()
+  {
+      vehicle->hardSync->unsubscribeUTCTime();
+  }
+
+  void VehicleWrapper::unsubscribeFCTimeInUTCRef()
+  {
+      vehicle->hardSync->unsubscribeFCTimeInUTCRef();
+  }
+
+  void VehicleWrapper::unsubscribePPSSource()
+  {
+      vehicle->hardSync->unsubscribePPSSource();
+  }
+
+  ACK::ErrorCode VehicleWrapper::verify(int timeout)
+  {
+      return vehicle->subscribe->verify(timeout);
+  }
+
+  /*!
+   * @details Setup members of package[packageID]
+   *          Do basic gate keeping. No api->send call involved
+   */
+  bool VehicleWrapper::initPackageFromTopicList(int packageID, int numberOfTopics,
+                                                TopicName* topicList,
+                                                bool sendTimeStamp, uint16_t freq)
+  {
+      return vehicle->subscribe->initPackageFromTopicList(packageID, numberOfTopics,
+                                                 topicList, sendTimeStamp, freq);
+  }
+
+  ACK::ErrorCode VehicleWrapper::startPackage(int packageID, int timeout)
+  {
+      return vehicle->subscribe->startPackage(packageID, timeout);
+  }
+
+  /*!
+   * @brief Non-blocking call for start package
+   * @param packageID
+   * @param timeout
+   * @return
+   */
+  ACK::ErrorCode VehicleWrapper::removePackage(int packageID, int timeout)
+  {
+      return vehicle->subscribe->removePackage(packageID, timeout);
+  }
+
+  /*!
+   * @brief Register a callback function after package[packageID] is received
+   * @param packageID
+   * @param userFunctionAfterPackageExtraction
+   */
+  void VehicleWrapper::registerUserPackageUnpackCallback(int packageID, VehicleCallBack userFunctionAfterPackageExtraction,
+                                                         UserData userData)
+  {
+      vehicle->subscribe->registerUserPackageUnpackCallback(packageID, userFunctionAfterPackageExtraction, userData);
+  }
+
+  Version::FirmWare VehicleWrapper::getFwVersion() const
+  {
+      return vehicle->getFwVersion();
+  }
+
+  char* VehicleWrapper::getHwVersion() const
+  {
+      return vehicle->getHwVersion();
+  }
+
+  ErrorCode::ErrorCodeType VehicleWrapper::initCameraModule(PayloadIndexType index,
+                                                           const char* name)
+  {
+      return vehicle->cameraManager->initCameraModule(index, name);
+  }
 }
