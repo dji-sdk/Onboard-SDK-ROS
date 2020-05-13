@@ -736,3 +736,13 @@ void VehicleNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t 
     return;
   }
 }
+
+void VehicleNode::gpsConvertENU(double &ENU_x, double &ENU_y,
+                                double gps_t_lon, double gps_t_lat,
+                                double gps_r_lon, double gps_r_lat)
+{
+  double d_lon = gps_t_lon - gps_r_lon;
+  double d_lat = gps_t_lat - gps_r_lat;
+  ENU_y = DEG2RAD(d_lat) * C_EARTH;
+  ENU_x = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
+}

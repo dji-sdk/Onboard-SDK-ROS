@@ -93,10 +93,8 @@ namespace dji_osdk_ros
   enum class SubscribePackgeIndex
   {
       TEMP_SUB_PACKAGE_INDEX                        = 0,
-      GIMBA_SUB_PACKAGE_INDEX                       = 1,
-//      FLIGHT_CONTROL_DATA                           = 1,
-//      FLIGHT_CONTROL_SET_GO_HOME_DATA               = 2,
-//      FLIGHT_CONTROL_GO_HOME_AND_FORCE_LANDING_DATA = 3,
+      GIMBAL_SUB_PACKAGE_INDEX                      = 1,
+      BROADCAST_BUT_NEED_SUBSCRIBE                  = 2,
       PACKAGE_ID_5HZ   = 2,
       PACKAGE_ID_50HZ  = 3,
       PACKAGE_ID_100HZ = 4,

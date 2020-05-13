@@ -1448,9 +1448,6 @@ static T_OsdkOsalHandler osalHandler = {
 
   bool VehicleWrapper::moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset)
   {
-    // Set timeout: this timeout is the time you allow the drone to take to finish
-    // the
-    // mission
     using namespace Telemetry;
     auto xOffsetDesired = p_offset.x;
     auto yOffsetDesired = p_offset.y;
@@ -1462,13 +1459,11 @@ static T_OsdkOsalHandler osalHandler = {
     // Set timeout: this timeout is the time you allow the drone to take to finish
     // the
     // mission
-    int responseTimeout              = 1;
     int timeoutInMilSec              = 40000;
     int controlFreqInHz              = 50; // Hz
     int cycleTimeInMs                = 1000 / controlFreqInHz;
     int outOfControlBoundsTimeLimit  = 10 * cycleTimeInMs; // 10 cycles
     int withinControlBoundsTimeReqmt = 50 * cycleTimeInMs; // 50 cycles
-    int pkgIndex;
 
     //@todo: remove this once the getErrorCode function signature changes
     char func[50];
@@ -2034,36 +2029,68 @@ static T_OsdkOsalHandler osalHandler = {
 
   void VehicleWrapper::setUpM100DefaultFreq(uint8_t freq[16])
   {
-    freq[0]  = DataBroadcast::FREQ_100HZ;
-    freq[1]  = DataBroadcast::FREQ_100HZ;
-    freq[2]  = DataBroadcast::FREQ_100HZ;
-    freq[3]  = DataBroadcast::FREQ_50HZ;
-    freq[4]  = DataBroadcast::FREQ_100HZ;
-    freq[5]  = DataBroadcast::FREQ_50HZ;
-    freq[6]  = DataBroadcast::FREQ_10HZ;
-    freq[7]  = DataBroadcast::FREQ_50HZ;
+    /* Channels definition for M100
+     * 0 - Timestamp
+     * 1 - Attitude Quaterniouns
+     * 2 - Acceleration
+     * 3 - Velocity (Ground Frame)
+     * 4 - Angular Velocity (Body Frame)
+     * 5 - Position
+     * 6 - Magnetometer
+     * 7 - RC Channels Data
+     * 8 - Gimbal Data
+     * 9 - Flight Status
+     * 10 - Battery Level
+     * 11 - Control Information
+     */
+    freq[0]  = DataBroadcast::FREQ_1HZ;
+    freq[1]  = DataBroadcast::FREQ_10HZ;
+    freq[2]  = DataBroadcast::FREQ_50HZ;
+    freq[3]  = DataBroadcast::FREQ_100HZ;
+    freq[4]  = DataBroadcast::FREQ_50HZ;
+    freq[5]  = DataBroadcast::FREQ_10HZ;
+    freq[6]  = DataBroadcast::FREQ_1HZ;
+    freq[7]  = DataBroadcast::FREQ_10HZ;
     freq[8]  = DataBroadcast::FREQ_50HZ;
-    freq[9]  = DataBroadcast::FREQ_50HZ;
-    freq[10] = DataBroadcast::FREQ_10HZ;
+    freq[9]  = DataBroadcast::FREQ_100HZ;
+    freq[10] = DataBroadcast::FREQ_50HZ;
     freq[11] = DataBroadcast::FREQ_10HZ;
   }
 
   void VehicleWrapper::setUpA3N3DefaultFreq(uint8_t freq[16])
   {
-    freq[0]  = DataBroadcast::FREQ_100HZ;
-    freq[1]  = DataBroadcast::FREQ_100HZ;
-    freq[2]  = DataBroadcast::FREQ_100HZ;
+    /* Channels definition for A3/N3/M600
+     * 0 - Timestamp
+     * 1 - Attitude Quaterniouns
+     * 2 - Acceleration
+     * 3 - Velocity (Ground Frame)
+     * 4 - Angular Velocity (Body Frame)
+     * 5 - Position
+     * 6 - GPS Detailed Information
+     * 7 - RTK Detailed Information
+     * 8 - Magnetometer
+     * 9 - RC Channels Data
+     * 10 - Gimbal Data
+     * 11 - Flight Statusack
+     * 12 - Battery Level
+     * 13 - Control Information
+     * 14 - Compass Data
+     */
+    freq[0]  = DataBroadcast::FREQ_50HZ;
+    freq[1]  = DataBroadcast::FREQ_50HZ;
+    freq[2]  = DataBroadcast::FREQ_50HZ;
     freq[3]  = DataBroadcast::FREQ_50HZ;
-    freq[4]  = DataBroadcast::FREQ_100HZ;
+    freq[4]  = DataBroadcast::FREQ_50HZ;
     freq[5]  = DataBroadcast::FREQ_50HZ;
-    freq[6]  = DataBroadcast::FREQ_50HZ;
-    freq[7]  = DataBroadcast::FREQ_50HZ;
-    freq[8]  = DataBroadcast::FREQ_10HZ;
+    freq[6]  = DataBroadcast::FREQ_0HZ; // Don't send GPS details
+    freq[7]  = DataBroadcast::FREQ_0HZ; // Don't send RTK
+    freq[8]  = DataBroadcast::FREQ_0HZ; // Don't send Mag
     freq[9]  = DataBroadcast::FREQ_50HZ;
     freq[10] = DataBroadcast::FREQ_50HZ;
-    freq[11] = DataBroadcast::FREQ_50HZ;
-    freq[12] = DataBroadcast::FREQ_10HZ;
-    freq[13] = DataBroadcast::FREQ_10HZ;
+    freq[11] = DataBroadcast::FREQ_10HZ;
+    freq[12] = DataBroadcast::FREQ_1HZ;
+    freq[13] = DataBroadcast::FREQ_1HZ;
+    freq[14] = DataBroadcast::FREQ_1HZ;
   }
 
   ACK::ErrorCode VehicleWrapper::setBroadcastFreq(uint8_t* dataLenIs16, int timeout)

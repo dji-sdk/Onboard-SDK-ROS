@@ -85,9 +85,15 @@ VehicleNode::~VehicleNode()
 {
   unSubScribeGimbalData();
 
-  if(!ptr_wrapper_->isM100())
+  if(!ptr_wrapper_->isM100() && telemetry_from_fc_ == TelemetryType::USE_ROS_SUBSCRIBE)
   {
     cleanUpSubscribeFromFC();
+  }
+  else if(telemetry_from_fc_ == TelemetryType::USE_ROS_BROADCAST)
+  {
+    int pkgIndex = static_cast<int>(SubscribePackgeIndex::BROADCAST_BUT_NEED_SUBSCRIBE);
+    int timeout = 1;
+    ptr_wrapper_->teardownSubscription(pkgIndex, timeout);
   }
 }
 
@@ -108,7 +114,7 @@ bool VehicleNode::subscribeGimbalData()
 
   /*! Package 0: Subscribe to gimbal data at freq 50 Hz */
   ACK::ErrorCode subscribeStatus;
-  int       pkgIndex        = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::GIMBA_SUB_PACKAGE_INDEX);
+  int       pkgIndex        = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::GIMBAL_SUB_PACKAGE_INDEX);
   int       freq            = 50;
   TopicName topicList50Hz[]  = { vehicle->isM300() ? TOPIC_THREE_GIMBAL_DATA : TOPIC_DUAL_GIMBAL_DATA };
   int       numTopic        = sizeof(topicList50Hz) / sizeof(topicList50Hz[0]);
@@ -173,7 +179,7 @@ bool VehicleNode::unSubScribeGimbalData()
     return true;
   }
 
-  int pkgIndex = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::GIMBA_SUB_PACKAGE_INDEX);
+  int pkgIndex = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::GIMBAL_SUB_PACKAGE_INDEX);
   ACK::ErrorCode subscribeStatus = ptr_wrapper_->removePackage(pkgIndex, 1);
   if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
   {
@@ -342,6 +348,15 @@ bool VehicleNode::initTopic()
     }
     // register a callback function whenever a broadcast data is in
     ptr_wrapper_->setUserBroadcastCallback(&VehicleNode::SDKBroadcastCallback, this);
+
+    /*! some data still need to be subscribed*/
+    int pkgIndex = static_cast<int>(SubscribePackgeIndex::BROADCAST_BUT_NEED_SUBSCRIBE);
+    int freq = 10;
+    int timeout = 1;
+    TopicName topicList10Hz[] = { TOPIC_STATUS_FLIGHT, TOPIC_STATUS_DISPLAYMODE,TOPIC_VELOCITY,
+                                 TOPIC_GPS_FUSED ,TOPIC_QUATERNION };
+    int topicSize = sizeof(topicList10Hz) / sizeof(topicList10Hz[0]);
+    ptr_wrapper_->setUpSubscription(pkgIndex, freq, topicList10Hz, topicSize, timeout);
   }
   else if (telemetry_from_fc_ == TelemetryType::USE_ROS_SUBSCRIBE)
   {
@@ -584,16 +599,6 @@ bool VehicleNode::cleanUpSubscribeFromFC()
   }
   return true;
 }
-
-void VehicleNode::gpsConvertENU(double &ENU_x, double &ENU_y,
-                                   double gps_t_lon, double gps_t_lat,
-                                   double gps_r_lon, double gps_r_lat)
-{
-  double d_lon = gps_t_lon - gps_r_lon;
-  double d_lat = gps_t_lat - gps_r_lat;
-  ENU_y = DEG2RAD(d_lat) * C_EARTH;
-  ENU_x = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
-};
 
 void VehicleNode::publishTopic()
 {
