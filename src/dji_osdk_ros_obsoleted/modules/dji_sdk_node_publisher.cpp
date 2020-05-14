@@ -52,6 +52,14 @@ DJISDKNode::dataBroadcastCallback()
     rc_publisher.publish(rc_joy);
   }
 
+  //update device control info
+  if (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_DEVICE)
+  {
+    std_msgs::UInt8 status_device;
+    status_device.data = vehicle->broadcast->getSDKInfo().deviceStatus;
+    device_status_publisher.publish(status_device);
+  }
+
   tf::Matrix3x3 R_FRD2NED;
   tf::Quaternion q_FLU2ENU;
 
@@ -538,7 +546,18 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     rc_joy.axes.push_back(static_cast<float>(rc.gear*1.0));
     p->rc_publisher.publish(rc_joy);
   }
+
+  uint16_t data_enable_flag = vehicle->broadcast->getPassFlag();
+  
+  //update device control info
+  if (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_DEVICE)
+  {
+    std_msgs::UInt8 status_device;
+    status_device.data = vehicle->broadcast->getSDKInfo().deviceStatus;
+    p->device_status_publisher.publish(status_device);
+  }
 }
+
 
 void
 DJISDKNode::publish100HzData(Vehicle *vehicle, RecvContainer recvFrame,

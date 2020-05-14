@@ -372,6 +372,7 @@ private:
   ros::Publisher gimbal_angle_publisher;
   ros::Publisher displaymode_publisher;
   ros::Publisher rc_publisher;
+  ros::Publisher device_status_publisher;
   ros::Publisher rc_connection_status_publisher;
   ros::Publisher rtk_position_publisher;
   ros::Publisher rtk_velocity_publisher;
