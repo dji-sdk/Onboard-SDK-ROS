@@ -29,6 +29,7 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private, int arg
   nh_private.param("gravity_const", gravity_const, 9.801);
   nh_private.param("align_time",    align_time_with_FC, false);
   nh_private.param("use_broadcast", user_select_broadcast, false);
+  nh_private.param("enable_advanced_sensing", enable_advanced_sensing, true);
 
   //! Default values for local Position
   local_pos_ref_latitude  = 0;
@@ -86,11 +87,11 @@ bool
 DJISDKNode::initVehicle(ros::NodeHandle& nh_private, int argc, char** argv)
 {
   bool threadSupport = true;
-  bool enable_advanced_sensing = false;
+  bool advanced_sensing = false;
 
 #ifdef ADVANCED_SENSING
-  enable_advanced_sensing = true;
-  ROS_INFO("Advanced Sensing is Enabled on M210.");
+  advanced_sensing = enable_advanced_sensing;
+  ROS_INFO("Advanced Sensing is %s on M210.", advanced_sensing ? "Enabled" : "Disabled");
 #endif
 
   //! @note currently does not work without thread support
@@ -103,7 +104,10 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private, int argc, char** argv)
   }
 
 #ifdef ADVANCED_SENSING
-  vehicle->advancedSensing->setAcmDevicePath(acm_device.c_str());
+  if (advanced_sensing)
+  {
+    vehicle->advancedSensing->setAcmDevicePath(acm_device.c_str());
+  }
 #endif
 
   return true;
