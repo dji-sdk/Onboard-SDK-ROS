@@ -34,194 +34,326 @@
 //CODE
 using namespace dji_osdk_ros;
 
-sensor_msgs::BatteryState batteryState_;
-geometry_msgs::QuaternionStamped attitudeData_;
-sensor_msgs::Imu imuData_;
-std_msgs::UInt8 flightData_;
-std_msgs::UInt8 gpsHealth_;
-sensor_msgs::NavSatFix gpsPosition_;
-dji_osdk_ros::VOPosition voPosition_;
-std_msgs::Float32 heightAboveTakeoff_;
+sensor_msgs::BatteryState battery_state_;
+geometry_msgs::QuaternionStamped attitude_data_;
+sensor_msgs::Imu imu_data_;
+std_msgs::UInt8 flight_data_;
+std_msgs::UInt8 gps_health_;
+sensor_msgs::NavSatFix gps_position_;
+dji_osdk_ros::VOPosition vo_position_;
+std_msgs::Float32 height_above_takeoff_;
 geometry_msgs::Vector3Stamped velocity_;
-dji_osdk_ros::MobileData fromMobileData_;
-dji_osdk_ros::PayloadData fromPayloadData_;
-geometry_msgs::Vector3Stamped gimbalAngleData_;
-sensor_msgs::Joy rcData_;
-geometry_msgs::PointStamped localPosition_;
-sensor_msgs::NavSatFix localFrameRef_;
-nmea_msgs::Sentence timeSyncNmeaMsg_;
-dji_osdk_ros::GPSUTC timeSyncGpsUtc_;
-dji_osdk_ros::FCTimeInUTC timeSyncFcUtc_;
-std_msgs::String timeSyncPpsSource_;
-geometry_msgs::Vector3Stamped angularRate_;
+dji_osdk_ros::MobileData from_mobile_data_;
+dji_osdk_ros::PayloadData from_payload_data_;
+geometry_msgs::Vector3Stamped gimbal_angle_data_;
+sensor_msgs::Joy rc_data_;
+geometry_msgs::PointStamped local_position_;
+sensor_msgs::NavSatFix local_Frame_ref_;
+nmea_msgs::Sentence time_sync_nmea_msg_;
+dji_osdk_ros::GPSUTC time_sync_gps_utc_;
+dji_osdk_ros::FCTimeInUTC time_sync_fc_utc_;
+std_msgs::String time_sync_pps_source_;
+geometry_msgs::Vector3Stamped angular_rate_;
 geometry_msgs::Vector3Stamped acceleration_;
-std_msgs::UInt8 displayMode_;
+std_msgs::UInt8 display_mode_;
 sensor_msgs::TimeReference trigger_;
-std_msgs::UInt8 rcConnectionStatus_;
-sensor_msgs::NavSatFix rtkPosition_;
-geometry_msgs::Vector3Stamped rtkVelocity_;
-std_msgs::Int16 rtkYaw_;
-std_msgs::UInt8 rtkPositionInfo_;
-std_msgs::UInt8 rtkYawInfo_;
-std_msgs::UInt8 rtkConnectionStatus_;
-dji_osdk_ros::FlightAnomaly flightAnomaly_;
+std_msgs::UInt8 rc_connection_status_;
+sensor_msgs::NavSatFix rtk_position_;
+geometry_msgs::Vector3Stamped rtk_velocity_;
+std_msgs::Int16 rtk_yaw_;
+std_msgs::UInt8 rtk_position_info_;
+std_msgs::UInt8 rtk_yaw_info_;
+std_msgs::UInt8 rtk_connection_status_;
+dji_osdk_ros::FlightAnomaly flight_anomaly_;
 
-void attitudeSubCallback(const geometry_msgs::QuaternionStamped attitudeData)
+void attitudeSubCallback(const geometry_msgs::QuaternionStampedConstPtr& attitudeData)
 {
-  attitudeData_ = attitudeData;
+  ROS_INFO("attitude Info :");
+  attitude_data_ = *attitudeData;
+  ROS_INFO("attitude w: %f",attitude_data_.quaternion.w);
+  ROS_INFO("attitude x: %f",attitude_data_.quaternion.x);
+  ROS_INFO("attitude y: %f",attitude_data_.quaternion.y);
+  ROS_INFO("attitude z: %f\n",attitude_data_.quaternion.z);
+  ros::Duration(1.0).sleep();
 }
 
-void batteryStateSubCallback(const sensor_msgs::BatteryState& batteryState)
+void batteryStateSubCallback(const sensor_msgs::BatteryState::ConstPtr& batteryState)
 {
-  batteryState_ = batteryState;
-  ROS_INFO("%f", batteryState_.voltage);
-  ROS_INFO("%f", batteryState_.percentage);
+  ROS_INFO("battery Info :");
+  battery_state_ = *batteryState;
+  ROS_INFO("battery's capacity: %f", battery_state_.capacity);
+  ROS_INFO("battery's voltage: %f", battery_state_.voltage);
+  ROS_INFO("battery's current: %f", battery_state_.current);
+  ROS_INFO("battery's percentage : %f\n", battery_state_.percentage);
+  ros::Duration(1.0).sleep();
 }
 
-void imuSubCallback(const sensor_msgs::Imu imuData)
+void imuSubCallback(const sensor_msgs::Imu::ConstPtr& imuData)
 {
-  imuData_ = imuData;
+  ROS_INFO("imu Info :");
+  imu_data_ = *imuData;
+  ROS_INFO("imu w: %f",imu_data_.orientation.w);
+  ROS_INFO("imu x: %f",imu_data_.orientation.x);
+  ROS_INFO("imu y: %f",imu_data_.orientation.y);
+  ROS_INFO("imu z: %f\n",imu_data_.orientation.z);
+  ros::Duration(1.0).sleep();
 }
 
-void flightStatusSubCallback(const std_msgs::UInt8 flightData)
+void flightStatusSubCallback(const std_msgs::UInt8::ConstPtr& flightData)
 {
-  flightData_ = flightData;
+  ROS_INFO("flight Info :");
+  flight_data_ = *flightData;
+  ROS_INFO("flight_data_: %d\n",flight_data_.data);
+  ros::Duration(1.0).sleep();
 }
 
-void gpsHealthSubCallback(const std_msgs::UInt8 gpsHealth)
+void gpsHealthSubCallback(const std_msgs::UInt8::ConstPtr& gpsHealth)
 {
-  gpsHealth_ = gpsHealth;
+  ROS_INFO("gps Health:");
+  gps_health_ = *gpsHealth;
+  ROS_INFO("gps_health_ :%d \n", gps_health_.data);
+  ros::Duration(1.0).sleep();
 }
 
-void gpsPositionSubCallback(sensor_msgs::NavSatFix gpsPosition)
+void gpsPositionSubCallback(const sensor_msgs::NavSatFix::ConstPtr& gpsPosition)
 {
-  gpsPosition_ = gpsPosition;
+  ROS_INFO("gps Position:");
+  gps_position_ = *gpsPosition;
+  ROS_INFO("gps_position_(latitude, longitude, altitude) :%f, %f, %f \n",
+            gps_position_.latitude, gps_position_.longitude, gps_position_.altitude);
+  ros::Duration(1.0).sleep();
 }
 
-void voPositionSubCallback(const dji_osdk_ros::VOPosition voPosition)
+void voPositionSubCallback(const dji_osdk_ros::VOPosition::ConstPtr& voPosition)
 {
-  voPosition_ = voPosition;
+  ROS_INFO("vo Position:");
+  vo_position_ = *voPosition;
+  ROS_INFO("vo_position_(x, y, z ,xHealth, yHealth, zHealth:%f, %f, %f, %d, %d, %d\n ",
+           vo_position_.x, vo_position_.y, vo_position_.z,
+           vo_position_.xHealth, vo_position_.yHealth, vo_position_.zHealth);
+  ros::Duration(1.0).sleep();
 }
 
-void heightSubCallback(const std_msgs::Float32 heightAboveTakeoff)
+void heightSubCallback(const std_msgs::Float32::ConstPtr& heightAboveTakeoff)
 {
-  heightAboveTakeoff_ = heightAboveTakeoff;
+  ROS_INFO("height above takeoff:");
+  height_above_takeoff_ = *heightAboveTakeoff;
+  ROS_INFO("height_above_takeoff_ :%f\n", height_above_takeoff_.data);
+  ros::Duration(1.0).sleep();
 }
 
-void velocitySubCallback(const geometry_msgs::Vector3Stamped velocity)
+void velocitySubCallback(const geometry_msgs::Vector3Stamped::ConstPtr& velocity)
 {
-  velocity_ = velocity;
+  ROS_INFO("velocity:");
+  velocity_ = *velocity;
+  ROS_INFO("velocity(x,y,z) :%f, %f, %f\n", velocity_.vector.x, velocity_.vector.y,
+            velocity_.vector.z);
+  ros::Duration(1.0).sleep();
 }
 
-void fromMobileDataSubCallback(const dji_osdk_ros::MobileData fromMobileData)
+void fromMobileDataSubCallback(const dji_osdk_ros::MobileData::ConstPtr& fromMobileData)
 {
-  fromMobileData_ = fromMobileData;
+  ROS_INFO("fromMobileData:");
+  from_mobile_data_ = *fromMobileData;
+  if (from_mobile_data_.data.size() > 1)
+  {
+    ROS_INFO("from_mobile_data_(0,1....) :%d, %d\n", from_mobile_data_.data[0], from_mobile_data_.data[1]);
+  }
+  ros::Duration(1.0).sleep();
 }
 
-void fromPayloadDataSubCallback(const dji_osdk_ros::PayloadData fromPayloadData)
+void fromPayloadDataSubCallback(const dji_osdk_ros::PayloadData::ConstPtr& fromPayloadData)
 {
-  fromPayloadData_ = fromPayloadData;
+  ROS_INFO("fromPayloadData:");
+  from_payload_data_ = *fromPayloadData;
+  if (from_payload_data_.data.size() > 1)
+  {
+    ROS_INFO("from_payload_data_(0,1....) :%d, %d\n", from_payload_data_.data[0], from_payload_data_.data[1]);
+  }
+  ros::Duration(1.0).sleep();
 }
 
-void gimbalAngleSubCallback(const geometry_msgs::Vector3Stamped gimbalAngleData)
+void gimbalAngleSubCallback(const geometry_msgs::Vector3Stamped::ConstPtr& gimbalAngleData)
 {
-  gimbalAngleData_ = gimbalAngleData;
+  ROS_INFO("gimbalAngleData:");
+  gimbal_angle_data_ = *gimbalAngleData;
+  ROS_INFO("gimbal_angle_data_(x,y,z) :%f, %f, %f\n", gimbal_angle_data_.vector.x, gimbal_angle_data_.vector.y,
+           gimbal_angle_data_.vector.z);
+  ros::Duration(1.0).sleep();
 }
 
-void rcDataCallback(const sensor_msgs::Joy rcData)
+void rcDataCallback(const sensor_msgs::Joy::ConstPtr& rcData)
 {
-  rcData_ = rcData;
+  ROS_INFO("rcData(here only print basic data):");
+  rc_data_ = *rcData;
+  if (rc_data_.axes.size() >= 4)
+  {
+    ROS_INFO("rc_data_(roll,pitch,yaw, throttle) :%f, %f, %f, %f\n", rc_data_.axes[0], rc_data_.axes[1],
+             rc_data_.axes[2], rc_data_.axes[3]);
+  }
+  ros::Duration(1.0).sleep();
 }
 
-void localPositionSubCallback(const geometry_msgs::PointStamped localPosition)
+void localPositionSubCallback(const geometry_msgs::PointStamped::ConstPtr& localPosition)
 {
-  localPosition_ = localPosition;
+  ROS_INFO("localPosition:");
+  local_position_ = *localPosition;
+  ROS_INFO("local_position_(x,y,z) :%f, %f, %f\n", local_position_.point.x, local_position_.point.y,
+           local_position_.point.z);
+  ros::Duration(1.0).sleep();
 }
 
-void localFrameRefSubCallback(const sensor_msgs::NavSatFix localFrameRef)
+void localFrameRefSubCallback(const sensor_msgs::NavSatFix::ConstPtr& localFrameRef)
 {
-  localFrameRef_ = localFrameRef;
+  ROS_INFO("localFrameRef:");
+  local_Frame_ref_ = *localFrameRef;
+  ROS_INFO("local_Frame_ref_(latitude, longitude, altitude) :%f, %f, %f\n ",
+           local_Frame_ref_.latitude, local_Frame_ref_.longitude, local_Frame_ref_.altitude);
+  ros::Duration(1.0).sleep();
 }
 
-void timeSyncNmeaSubSCallback(const nmea_msgs::Sentence timeSyncNmeaMsg)
+void timeSyncNmeaSubSCallback(const nmea_msgs::Sentence::ConstPtr& timeSyncNmeaMsg)
 {
-  timeSyncNmeaMsg_ = timeSyncNmeaMsg;
+  ROS_INFO("timeSyncNmeaMsg:");
+  time_sync_nmea_msg_ = *timeSyncNmeaMsg;
+  ROS_INFO("time_sync_nmea_msg_ :%s \n",
+           time_sync_nmea_msg_.sentence.data());
+  ros::Duration(1.0).sleep();
 }
 
-void timeSyncGpsUtcSubCallback(const dji_osdk_ros::GPSUTC timeSyncGpsUtc)
+void timeSyncGpsUtcSubCallback(const dji_osdk_ros::GPSUTC::ConstPtr& timeSyncGpsUtc)
 {
-  timeSyncGpsUtc_ = timeSyncGpsUtc;
+  ROS_INFO("timeSyncGpsUtc:");
+  time_sync_gps_utc_ = *timeSyncGpsUtc;
+  ROS_INFO("time_sync_gps_utc_(timestamp,UTCTimeData):%d, %s \n",
+           time_sync_gps_utc_.stamp.sec, time_sync_gps_utc_.UTCTimeData.data());
+  ros::Duration(1.0).sleep();
 }
 
-void timeSyncFcUtcSubCallback(const dji_osdk_ros::FCTimeInUTC timeSyncFcUtc)
+void timeSyncFcUtcSubCallback(const dji_osdk_ros::FCTimeInUTC::ConstPtr& timeSyncFcUtc)
 {
-  timeSyncFcUtc_ = timeSyncFcUtc;
+  time_sync_fc_utc_ = *timeSyncFcUtc;
+  ROS_INFO("time_sync_gps_utc_(fc_timestamp_us,fc_utc_yymmdd,fc_utc_hhmmss):%d, %d, %d\n",
+           time_sync_fc_utc_.fc_timestamp_us, time_sync_fc_utc_.fc_utc_yymmdd,time_sync_fc_utc_.fc_utc_hhmmss);
+  ros::Duration(1.0).sleep();
 }
 
-void timeSyncPpsSourceSubCallback(const std_msgs::String timeSyncPpsSource)
+void timeSyncPpsSourceSubCallback(const std_msgs::String::ConstPtr& timeSyncPpsSource)
 {
-  timeSyncPpsSource_ = timeSyncPpsSource;
+  ROS_INFO("timeSyncPpsSource:");
+  time_sync_pps_source_ = *timeSyncPpsSource;
+  ROS_INFO("time_sync_pps_source_ :%s\n", time_sync_pps_source_.data.data());
+  ros::Duration(1.0).sleep();
 }
 
-void angularRateSubSCallback(const geometry_msgs::Vector3Stamped angularRate)
+void angularRateSubSCallback(const geometry_msgs::Vector3Stamped::ConstPtr& angularRate)
 {
-  angularRate_ = angularRate;
+  ROS_INFO("angularRate:");
+  angular_rate_ = *angularRate;
+  ROS_INFO("angular_rate_(x,y,z) :%f, %f, %f\n", angular_rate_.vector.x,
+           angular_rate_.vector.y, angular_rate_.vector.z);
+  ros::Duration(1.0).sleep();
 }
 
-void accelerationSubCallback(const geometry_msgs::Vector3Stamped acceleration)
+void accelerationSubCallback(const geometry_msgs::Vector3Stamped::ConstPtr& acceleration)
 {
-  acceleration_ = acceleration;
+  ROS_INFO("acceleration:");
+  acceleration_ = *acceleration;
+  ROS_INFO("acceleration_(x,y,z) :%f, %f, %f\n", acceleration_.vector.x,
+           acceleration_.vector.y, acceleration_.vector.z);
+  ros::Duration(1.0).sleep();
 }
 
-void displayModeSubCallback(const std_msgs::UInt8 displayMode)
+void displayModeSubCallback(const std_msgs::UInt8::ConstPtr& displayMode)
 {
-  displayMode_ = displayMode;
+  ROS_INFO("displayMode:");
+  display_mode_ = *displayMode;
+  ROS_INFO("display_mode_: %d\n", display_mode_.data);
+  ros::Duration(1.0).sleep();
 }
 
-void triggerSubCallback(const sensor_msgs::TimeReference trigger)
+void triggerSubCallback(const sensor_msgs::TimeReference::ConstPtr& trigger)
 {
-  trigger_ = trigger;
+  ROS_INFO("trigger:");
+  trigger_ = *trigger;
+  ROS_INFO("trigger_: %s\n", trigger_.source.data());
+  ros::Duration(1.0).sleep();
 }
 
-void rcConnectionStatusSubCallback(const std_msgs::UInt8 rcConnectionStatus)
+void rcConnectionStatusSubCallback(const std_msgs::UInt8::ConstPtr& rcConnectionStatus)
 {
-  rcConnectionStatus_ = rcConnectionStatus;
+  ROS_INFO("rcConnectionStatus:");
+  rc_connection_status_ = *rcConnectionStatus;
+  ROS_INFO("rc_connection_status_: %d\n", rc_connection_status_.data);
+  ros::Duration(1.0).sleep();
 }
 
-void rtkPositionSubCallback(const sensor_msgs::NavSatFix rtkPosition)
+void rtkPositionSubCallback(const sensor_msgs::NavSatFix::ConstPtr& rtkPosition)
 {
-  rtkPosition_ = rtkPosition;
+  ROS_INFO("rtkPosition:");
+  rtk_position_ = *rtkPosition;
+  ROS_INFO("rtk_position_(latitude, longitude, altitude) :%f, %f, %f \n",
+           rtk_position_.latitude, rtk_position_.longitude, rtk_position_.altitude);
+  ros::Duration(1.0).sleep();
 }
 
-void rtkVelocitySubCallback(const geometry_msgs::Vector3Stamped rtkVelocity)
+void rtkVelocitySubCallback(const geometry_msgs::Vector3Stamped::ConstPtr& rtkVelocity)
 {
-  rtkVelocity_ = rtkVelocity;
+  ROS_INFO("rtkVelocity:");
+  rtk_velocity_ = *rtkVelocity;
+  ROS_INFO("rtk_velocity_(x,y,z) :%f, %f, %f\n", rtk_velocity_.vector.x,
+            rtk_velocity_.vector.y, rtk_velocity_.vector.z);
+  ros::Duration(1.0).sleep();
 }
 
-void rtkYawSubCallback(const std_msgs::Int16 rtkYaw)
+void rtkYawSubCallback(const std_msgs::Int16::ConstPtr& rtkYaw)
 {
-  rtkYaw_ = rtkYaw;
+  ROS_INFO("rtkYaw:");
+  rtk_yaw_ = *rtkYaw;
+  ROS_INFO("rtk_yaw_: %d\n", rtk_yaw_.data);
+  ros::Duration(1.0).sleep();
 }
 
-void rtkPositionInfoSubCallback(const std_msgs::UInt8 rtkPositionInfo)
+void rtkPositionInfoSubCallback(const std_msgs::UInt8::ConstPtr& rtkPositionInfo)
 {
-  rtkPositionInfo_ = rtkPositionInfo;
-}
-
-void rtkYawInfoSubCallback(const std_msgs::UInt8 rtkYawInfo)
-{
-  rtkYawInfo_ = rtkYawInfo;
-}
-
-void rtkConnectionStatusSubCallback(const std_msgs::UInt8 rtkConnectionStatus)
-{
-  rtkConnectionStatus_ = rtkConnectionStatus;
+  ROS_INFO("rtkPositionInfo:");
+  rtk_position_info_ = *rtkPositionInfo;
+  ROS_INFO("rtk_position_info_: %d\n", rtk_position_info_.data);
+  ros::Duration(1.0).sleep();
 
 }
 
-void flightAnomalySubCallback(const dji_osdk_ros::FlightAnomaly flightAnomaly)
+void rtkYawInfoSubCallback(const std_msgs::UInt8::ConstPtr& rtkYawInfo)
 {
-  flightAnomaly_ = flightAnomaly;
+  ROS_INFO("rtkYawInfo:");
+  rtk_yaw_info_ = *rtkYawInfo;
+  ROS_INFO("rtk_yaw_info_: %d\n", rtk_yaw_info_.data);
+  ros::Duration(1.0).sleep();
+}
+
+void rtkConnectionStatusSubCallback(const std_msgs::UInt8::ConstPtr& rtkConnectionStatus)
+{
+  ROS_INFO("rtkConnectionStatus:");
+  rtk_connection_status_ = *rtkConnectionStatus;
+  ROS_INFO("rtk_connection_status_: %d\n", rtk_connection_status_.data);
+  ros::Duration(1.0).sleep();
+}
+
+void flightAnomalySubCallback(const dji_osdk_ros::FlightAnomaly::ConstPtr& flightAnomaly)
+{
+  ROS_INFO("flightAnomaly:");
+  flight_anomaly_ = *flightAnomaly;
+  if (flight_anomaly_.data && dji_osdk_ros::FlightAnomaly::COMPASS_INSTALLATION_ERROR)
+  {
+    ROS_INFO("COMPASS_INSTALLATION_ERROR\n");
+  }
+  if (flight_anomaly_.data && dji_osdk_ros::FlightAnomaly::IMU_INSTALLATION_ERROR)
+  {
+    ROS_INFO("IMU_INSTALLATION_ERROR\n");
+  }
+
+  // etc...
+  ros::Duration(1.0).sleep();
 }
 
 int main(int argc ,char** argv)
@@ -267,8 +399,8 @@ int main(int argc ,char** argv)
   ros::Subscriber rtkPositionInfoSub = nh.subscribe("dji_osdk_ros/rtk_info_position", 10, &rtkPositionInfoSubCallback);
   ros::Subscriber rtkYawInfoSub = nh.subscribe("dji_osdk_ros/rtk_info_yaw", 10, &rtkYawInfoSubCallback);
   ros::Subscriber rtkConnectionStatusSub = nh.subscribe("dji_osdk_ros/rtk_connection_status", 10, &rtkConnectionStatusSubCallback);
-  ROS_INFO_STREAM("Finished. Press CTRL-C to terminate the node");
 
+  ROS_INFO_STREAM("Finished. Press CTRL-C to terminate the node");
   ros::spin();
   return 0;
 }

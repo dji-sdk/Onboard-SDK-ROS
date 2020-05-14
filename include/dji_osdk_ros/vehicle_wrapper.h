@@ -88,10 +88,7 @@ namespace dji_osdk_ros
       bool rotateGimbal(const PayloadIndex& PayloadIndex, const GimbalRotationData& rotationData);
       bool resetGimbal(const PayloadIndex& payloadIndex);
 
-    /* Parts of Flight Control*/
-      bool setUpSubscription(int pkgIndex, int freq,TopicName topicList[],
-                             uint8_t topicSize, int timeout);
-      bool teardownSubscription(const int pkgIndex, int timeout);
+      /*! Parts of Flight Control*/
       bool checkActionStarted(uint8_t mode);
       bool setNewHomeLocation(int timeout = 1);
       bool setHomeAltitude(uint16_t altitude, int timeout = 1);
@@ -143,7 +140,10 @@ namespace dji_osdk_ros
       void unsubscribeFCTimeInUTCRef();
       void unsubscribePPSSource();
 
-
+      /*! Parts of data subscription*/
+      bool setUpSubscription(int pkgIndex, int freq,TopicName topicList[],
+                           uint8_t topicSize, int timeout);
+      bool teardownSubscription(const int pkgIndex, int timeout);
       ACK::ErrorCode verify(int timeout);
       bool initPackageFromTopicList(int packageID, int numberOfTopics,TopicName* topicList,
                                     bool sendTimeStamp, uint16_t freq);

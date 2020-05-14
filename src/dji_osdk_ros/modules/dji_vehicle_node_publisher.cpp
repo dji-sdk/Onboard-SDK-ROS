@@ -431,8 +431,8 @@ void VehicleNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     vo_pos.header.frame_id = "/ground_nav";
     vo_pos.header.stamp = msg_time;
     vo_pos.x  = vo_position.x;
-    vo_pos.y       = vo_position.y;
-    vo_pos.z        = vo_position.z;
+    vo_pos.y  = vo_position.y;
+    vo_pos.z  = vo_position.z;
     vo_pos.xHealth = vo_position.xHealth;
     vo_pos.yHealth = vo_position.yHealth;
     vo_pos.zHealth = vo_position.zHealth;
