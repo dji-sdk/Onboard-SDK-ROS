@@ -84,6 +84,7 @@ add_message_files(
   MissionHotpointTask.msg
   FlightAnomaly.msg
   VOPosition.msg
+  RelPosition.msg
 )
 
 ## Generate services in the 'srv' folder

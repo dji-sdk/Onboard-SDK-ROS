@@ -37,6 +37,7 @@
 #include <dji_osdk_ros/PayloadData.h>
 #include <dji_osdk_ros/FlightAnomaly.h>
 #include <dji_osdk_ros/VOPosition.h>
+#include <dji_osdk_ros/RelPosition.h>
 #include <dji_osdk_ros/FCTimeInUTC.h>
 #include <dji_osdk_ros/GPSUTC.h>
 
