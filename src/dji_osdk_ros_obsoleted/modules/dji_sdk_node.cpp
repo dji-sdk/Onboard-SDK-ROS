@@ -215,6 +215,8 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
 {
   rc_publisher = nh.advertise<sensor_msgs::Joy>("dji_osdk_ros/rc", 10);
 
+  relative_position_publisher = nh.advertise<dji_osdk_ros::RelPosition>("dji_sdk/relative_position", 10);
+
   // device control status, 0=RC, 1=MSDK, 2=OSDK
   device_status_publisher = nh.advertise<std_msgs::UInt8>("dji_sdk/control_status", 10);
 
@@ -455,6 +457,7 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
   if(vehicle->getFwVersion() > versionBase33)
   {
     topicList50Hz.push_back(Telemetry::TOPIC_POSITION_VO);
+    topicList50Hz.push_back(Telemetry::TOPIC_AVOID_DATA);
     topicList50Hz.push_back(Telemetry::TOPIC_RC_WITH_FLAG_DATA);
     topicList50Hz.push_back(Telemetry::TOPIC_FLIGHT_ANOMALY);
 

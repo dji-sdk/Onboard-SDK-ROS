@@ -1,0 +1,13 @@
+Header header
+float32 down
+float32 front
+float32 right
+float32 back
+float32 left
+float32 up
+uint8   downHealth
+uint8   frontHealth
+uint8   rightHealth
+uint8   backHealth
+uint8   leftHealth
+uint8   upHealth
