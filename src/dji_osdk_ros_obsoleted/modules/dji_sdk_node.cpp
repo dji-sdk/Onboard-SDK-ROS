@@ -457,6 +457,7 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
   if(vehicle->getFwVersion() > versionBase33)
   {
     topicList50Hz.push_back(Telemetry::TOPIC_POSITION_VO);
+    topicList50Hz.push_back(Telemetry::TOPIC_AVOID_DATA);
     topicList50Hz.push_back(Telemetry::TOPIC_RC_WITH_FLAG_DATA);
     topicList50Hz.push_back(Telemetry::TOPIC_FLIGHT_ANOMALY);
 
