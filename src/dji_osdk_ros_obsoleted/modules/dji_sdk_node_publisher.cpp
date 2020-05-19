@@ -377,6 +377,28 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     p->local_position_publisher.publish(local_pos);
   }
 
+  // Telemetry::RelativePosition relative_position;
+  // relative_position = vehicle->broadcast->getRelativePosition();
+  Telemetry::TypeMap<Telemetry::TOPIC_AVOID_DATA>::type relative_position =
+    vehicle->subscribe->getValue<Telemetry::TOPIC_AVOID_DATA>();
+
+  dji_osdk_ros::RelPosition rel_pos_msg;
+  rel_pos_msg.header.frame_id = "/rel_pos";
+  rel_pos_msg.header.stamp = msg_time;
+  rel_pos_msg.down  = relative_position.down;
+  rel_pos_msg.front = relative_position.front;
+  rel_pos_msg.right = relative_position.right;
+  rel_pos_msg.back  = relative_position.back;
+  rel_pos_msg.left  = relative_position.left;
+  rel_pos_msg.up    = relative_position.up;
+  rel_pos_msg.downHealth  = relative_position.downHealth;
+  rel_pos_msg.frontHealth = relative_position.frontHealth;
+  rel_pos_msg.rightHealth = relative_position.rightHealth;
+  rel_pos_msg.backHealth  = relative_position.backHealth;
+  rel_pos_msg.leftHealth  = relative_position.leftHealth;
+  rel_pos_msg.upHealth    = relative_position.upHealth;
+  p->relative_position_publisher.publish(rel_pos_msg);
+
   Telemetry::TypeMap<Telemetry::TOPIC_HEIGHT_FUSION>::type fused_height =
     vehicle->subscribe->getValue<Telemetry::TOPIC_HEIGHT_FUSION>();
   std_msgs::Float32 height;

@@ -383,6 +383,7 @@ private:
   ros::Publisher flight_anomaly_publisher;
   //! Local Position Publisher (Publishes local position in ENU frame)
   ros::Publisher local_position_publisher;
+  ros::Publisher relative_position_publisher;
   ros::Publisher local_frame_ref_publisher;
   ros::Publisher time_sync_nmea_publisher;
   ros::Publisher time_sync_gps_utc_publisher;
