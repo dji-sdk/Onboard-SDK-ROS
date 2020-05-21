@@ -32,7 +32,7 @@
 // Header include
 #include <dji_setup_helpers.hpp>
 #include <dji_vehicle.hpp>
-#include <dji_osdk_ros/common_type.h>
+#include <dji_sdk/common_type.h>
 #include <string>
 #include <cmath>
 #include <vector>
@@ -44,7 +44,7 @@
 const double C_EARTH = 6378137.0;
 const double DEG2RAD = 0.01745329252;
 // Declaration
-namespace dji_osdk_ros
+namespace dji_sdk
 {
   using namespace DJI::OSDK;
   using namespace Telemetry;

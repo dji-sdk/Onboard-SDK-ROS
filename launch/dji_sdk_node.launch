@@ -1,5 +1,5 @@
 <launch>
-    <node pkg="dji_osdk_ros" type="dji_sdk_node" name="dji_sdk" output="screen">
+    <node pkg="dji_sdk" type="dji_sdk_node" name="dji_sdk" output="screen">
     <!-- node parameters -->
     <param name="acm_name" type="string" value="/dev/ttyACM0"/>
     <param name="serial_name" type="string" value="/dev/ttyUSB0"/>
