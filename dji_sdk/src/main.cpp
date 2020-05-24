@@ -17,6 +17,10 @@ int main(int argc, char **argv) {
   ros::NodeHandle nh_private("~");
 
   DJISDKNode* dji_sdk_node = new DJISDKNode(nh, nh_private);
+  if(dji_sdk_node->InitSucess == false){
+		  delete dji_sdk_node;
+		  return -1;
+  }
 
   ros::AsyncSpinner spinner(4); // Use 4 threads
   spinner.start();

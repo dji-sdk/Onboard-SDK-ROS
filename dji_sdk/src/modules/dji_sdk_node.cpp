@@ -37,6 +37,7 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
 
   //! RTK support check
   rtkSupport = false;
+  InitSucess = false;
 
   // @todo need some error handling for init functions
   //! @note parsing launch file to get environment parameters
@@ -67,6 +68,9 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
       ROS_ERROR("initPublisher failed");
     }
   }
+
+
+  InitSucess = true;
 }
 
 DJISDKNode::~DJISDKNode()
