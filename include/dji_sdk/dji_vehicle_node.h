@@ -33,41 +33,41 @@
 #include <ros/ros.h>
 #include <dji_vehicle.hpp>
 
-#include <dji_osdk_ros/vehicle_wrapper.h>
-#include <dji_osdk_ros/common_type.h>
+#include <dji_sdk/vehicle_wrapper.h>
+#include <dji_sdk/common_type.h>
 
 #include <memory>
 #include <string>
 
-#include <dji_osdk_ros/FlightTaskControl.h>
-#include <dji_osdk_ros/GimbalAction.h>
-#include <dji_osdk_ros/CameraEV.h>
-#include <dji_osdk_ros/CameraShutterSpeed.h>
-#include <dji_osdk_ros/CameraAperture.h>
-#include <dji_osdk_ros/CameraISO.h>
-#include <dji_osdk_ros/CameraFocusPoint.h>
-#include <dji_osdk_ros/CameraTapZoomPoint.h>
-#include <dji_osdk_ros/CameraZoomCtrl.h>
-#include <dji_osdk_ros/CameraStartShootBurstPhoto.h>
-#include <dji_osdk_ros/CameraStartShootAEBPhoto.h>
-#include <dji_osdk_ros/CameraStartShootSinglePhoto.h>
-#include <dji_osdk_ros/CameraStartShootIntervalPhoto.h>
-#include <dji_osdk_ros/CameraStopShootPhoto.h>
-#include <dji_osdk_ros/CameraRecordVideoAction.h>
-#include <dji_osdk_ros/MFIO.h>
-#include <dji_osdk_ros/SetGoHomeAltitude.h>
-#include <dji_osdk_ros/SetNewHomePoint.h>
-#include <dji_osdk_ros/AvoidEnable.h>
+#include <dji_sdk/FlightTaskControl.h>
+#include <dji_sdk/GimbalAction.h>
+#include <dji_sdk/CameraEV.h>
+#include <dji_sdk/CameraShutterSpeed.h>
+#include <dji_sdk/CameraAperture.h>
+#include <dji_sdk/CameraISO.h>
+#include <dji_sdk/CameraFocusPoint.h>
+#include <dji_sdk/CameraTapZoomPoint.h>
+#include <dji_sdk/CameraZoomCtrl.h>
+#include <dji_sdk/CameraStartShootBurstPhoto.h>
+#include <dji_sdk/CameraStartShootAEBPhoto.h>
+#include <dji_sdk/CameraStartShootSinglePhoto.h>
+#include <dji_sdk/CameraStartShootIntervalPhoto.h>
+#include <dji_sdk/CameraStopShootPhoto.h>
+#include <dji_sdk/CameraRecordVideoAction.h>
+#include <dji_sdk/MFIO.h>
+#include <dji_sdk/SetGoHomeAltitude.h>
+#include <dji_sdk/SetNewHomePoint.h>
+#include <dji_sdk/AvoidEnable.h>
 #ifdef ADVANCED_SENSING
-#include <dji_osdk_ros/AdvancedSensing.h>
-#include <dji_osdk_ros/CameraData.h>
+#include <dji_sdk/AdvancedSensing.h>
+#include <dji_sdk/CameraData.h>
 #endif
 
 
 
 
 // Declaration
-namespace dji_osdk_ros
+namespace dji_sdk
 {
   using namespace DJI::OSDK;
   using namespace Telemetry;
@@ -87,7 +87,7 @@ namespace dji_osdk_ros
       void initTopic();
       void publishTopic();
 #ifdef ADVANCED_SENSING
-      dji_osdk_ros::CameraData getCameraData();
+      dji_sdk::CameraData getCameraData();
 #endif
     protected:
       ros::ServiceServer task_control_server_;

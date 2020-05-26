@@ -12,8 +12,8 @@
 #include <dji_sdk/dji_sdk_node.h>
 
 bool
-DJISDKNode::missionStatusCallback(dji_osdk_ros::MissionStatus::Request&  request,
-                                  dji_osdk_ros::MissionStatus::Response& response)
+DJISDKNode::missionStatusCallback(dji_sdk::MissionStatus::Request&  request,
+                                  dji_sdk::MissionStatus::Response& response)
 {
   ROS_DEBUG("called missionStatusCallback");
 
@@ -24,8 +24,8 @@ DJISDKNode::missionStatusCallback(dji_osdk_ros::MissionStatus::Request&  request
 
 bool
 DJISDKNode::missionWpUploadCallback(
-  dji_osdk_ros::MissionWpUpload::Request&  request,
-  dji_osdk_ros::MissionWpUpload::Response& response)
+  dji_sdk::MissionWpUpload::Request&  request,
+  dji_sdk::MissionWpUpload::Response& response)
 {
   ROS_DEBUG("called missionWpUpload");
 
@@ -123,8 +123,8 @@ DJISDKNode::missionWpUploadCallback(
 
 bool
 DJISDKNode::missionWpActionCallback(
-  dji_osdk_ros::MissionWpAction::Request&  request,
-  dji_osdk_ros::MissionWpAction::Response& response)
+  dji_sdk::MissionWpAction::Request&  request,
+  dji_sdk::MissionWpAction::Response& response)
 {
   ROS_DEBUG("called missionWpActionCallback");
 
@@ -180,8 +180,8 @@ DJISDKNode::missionWpActionCallback(
 
 bool
 DJISDKNode::missionWpGetSpeedCallback(
-  dji_osdk_ros::MissionWpGetSpeed::Request&  request,
-  dji_osdk_ros::MissionWpGetSpeed::Response& response)
+  dji_sdk::MissionWpGetSpeed::Request&  request,
+  dji_sdk::MissionWpGetSpeed::Response& response)
 {
   ROS_DEBUG("called wpGetSpeedCallback");
 
@@ -205,8 +205,8 @@ DJISDKNode::missionWpGetSpeedCallback(
 
 bool
 DJISDKNode::missionWpSetSpeedCallback(
-  dji_osdk_ros::MissionWpSetSpeed::Request&  request,
-  dji_osdk_ros::MissionWpSetSpeed::Response& response)
+  dji_sdk::MissionWpSetSpeed::Request&  request,
+  dji_sdk::MissionWpSetSpeed::Response& response)
 {
   ROS_DEBUG("called wpSetSpeedCallback");
 
@@ -238,8 +238,8 @@ DJISDKNode::missionWpSetSpeedCallback(
 
 bool
 DJISDKNode::missionWpGetInfoCallback(
-  dji_osdk_ros::MissionWpGetInfo::Request&  request,
-  dji_osdk_ros::MissionWpGetInfo::Response& response)
+  dji_sdk::MissionWpGetInfo::Request&  request,
+  dji_sdk::MissionWpGetInfo::Response& response)
 {
   ROS_DEBUG("called missionWpGetInfoCallback");
 
@@ -293,8 +293,8 @@ DJISDKNode::missionWpGetInfoCallback(
 
 bool
 DJISDKNode::missionHpUploadCallback(
-  dji_osdk_ros::MissionHpUpload::Request&  request,
-  dji_osdk_ros::MissionHpUpload::Response& response)
+  dji_sdk::MissionHpUpload::Request&  request,
+  dji_sdk::MissionHpUpload::Response& response)
 {
   ROS_DEBUG("called missionHpUploadCallback");
 
@@ -317,8 +317,8 @@ DJISDKNode::missionHpUploadCallback(
 
 bool
 DJISDKNode::missionHpActionCallback(
-  dji_osdk_ros::MissionHpAction::Request&  request,
-  dji_osdk_ros::MissionHpAction::Response& response)
+  dji_sdk::MissionHpAction::Request&  request,
+  dji_sdk::MissionHpAction::Response& response)
 {
   ROS_DEBUG("called missionHpActionCallback");
 
@@ -374,8 +374,8 @@ DJISDKNode::missionHpActionCallback(
 
 bool
 DJISDKNode::missionHpGetInfoCallback(
-  dji_osdk_ros::MissionHpGetInfo::Request&  request,
-  dji_osdk_ros::MissionHpGetInfo::Response& response)
+  dji_sdk::MissionHpGetInfo::Request&  request,
+  dji_sdk::MissionHpGetInfo::Response& response)
 {
   ROS_DEBUG("called missionHpGetInfoCallback");
 
@@ -403,8 +403,8 @@ DJISDKNode::missionHpGetInfoCallback(
 
 bool
 DJISDKNode::missionHpUpdateYawRateCallback(
-  dji_osdk_ros::MissionHpUpdateYawRate::Request&  request,
-  dji_osdk_ros::MissionHpUpdateYawRate::Response& response)
+  dji_sdk::MissionHpUpdateYawRate::Request&  request,
+  dji_sdk::MissionHpUpdateYawRate::Response& response)
 {
   ROS_DEBUG("called missionHpUpdateYawRateCallback");
 
@@ -444,8 +444,8 @@ DJISDKNode::missionHpUpdateYawRateCallback(
 
 bool
 DJISDKNode::missionHpResetYawCallback(
-  dji_osdk_ros::MissionHpResetYaw::Request&  request,
-  dji_osdk_ros::MissionHpResetYaw::Response& response)
+  dji_sdk::MissionHpResetYaw::Request&  request,
+  dji_sdk::MissionHpResetYaw::Response& response)
 {
   ROS_DEBUG("called missionHpResetYawCallback");
 
@@ -481,8 +481,8 @@ DJISDKNode::missionHpResetYawCallback(
 
 bool
 DJISDKNode::missionHpUpdateRadiusCallback(
-  dji_osdk_ros::MissionHpUpdateRadius::Request&  request,
-  dji_osdk_ros::MissionHpUpdateRadius::Response& response)
+  dji_sdk::MissionHpUpdateRadius::Request&  request,
+  dji_sdk::MissionHpUpdateRadius::Response& response)
 {
   ROS_DEBUG("called missionHpUpdateRadiusCallback");
 
