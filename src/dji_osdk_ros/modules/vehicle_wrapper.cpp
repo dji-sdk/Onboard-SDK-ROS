@@ -1921,6 +1921,16 @@ static T_OsdkOsalHandler osalHandler = {
     return ack.value;
   }
 
+  void VehicleWrapper::sendDataToMSDK(uint8_t* data, uint8_t len)
+  {
+      if (!vehicle)
+      {
+        std::cout << "vehicle is a null value!" << std::endl;
+      }
+
+      vehicle->mobileDevice->sendDataToMSDK(data, len);
+  }
+
 #ifdef ADVANCED_SENSING
   bool VehicleWrapper::startStream(bool is_h264, uint8_t request_view)
   {

@@ -45,13 +45,13 @@ VehicleNode::VehicleNode():telemetry_from_fc_(TelemetryType::USE_ROS_BROADCAST),
                            R_ENU2NED_(tf::Matrix3x3(0,  1,  0, 1,  0,  0, 0,  0, -1)),
                            curr_align_state_(AlignStatus::UNALIGNED)
 {
-  nh_.param("/vehicle_node/app_id",        app_id_, 10086);
+  nh_.param("/vehicle_node/app_id",        app_id_, 12345);
   nh_.param("/vehicle_node/enc_key",       enc_key_, std::string("abcde123"));
   nh_.param("/vehicle_node/acm_name",      device_acm_, std::string("/dev/ttyACM0"));
   nh_.param("/vehicle_node/serial_name",   device_, std::string("/dev/ttyUSB0"));
-  nh_.param("/vehicle_node/baud_rate",     baud_rate_, 230400);
+  nh_.param("/vehicle_node/baud_rate",     baud_rate_, 921600);
   nh_.param("/vehicle_node/app_version",   app_version_, 1);
-  nh_.param("/vehicle_node/drone_version", drone_version_, std::string("M100")); // choose M100 as default
+  nh_.param("/vehicle_node/drone_version", drone_version_, std::string("M300")); // choose M300 as default
   nh_.param("/vehicle_node/gravity_const", gravity_const_, 9.801);
   nh_.param("/vehicle_node/align_time",    align_time_with_FC_, false);
   nh_.param("/vehicle_node/use_broadcast", user_select_broadcast_, false);
@@ -234,8 +234,17 @@ bool VehicleNode::initCameraModule()
 void VehicleNode::initService()
 {
   ROS_INFO_STREAM("Topic startup!");
+  /*! flight control server */
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
+  set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
+  set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
+  set_local_pos_reference_server_ = nh_.advertiseService("set_local_pos_reference", &VehicleNode::setLocalPosRefCallback,this);
+  avoid_enable_server_ = nh_.advertiseService("enable_avoid", &VehicleNode::setAvoidCallback,this);
+
+  /*! gimbal control server */
   gimbal_control_server_ = nh_.advertiseService("gimbal_task_control", &VehicleNode::gimbalCtrlCallback, this);
+
+  /*! camera control server */
   camera_control_set_EV_server_ = nh_.advertiseService("camera_task_set_EV", &VehicleNode::cameraSetEVCallback, this);
   camera_control_set_shutter_speed_server_ = nh_.advertiseService("camera_task_set_shutter_speed", &VehicleNode::cameraSetShutterSpeedCallback, this);
   camera_control_set_aperture_server_ = nh_.advertiseService("camera_task_set_aperture", &VehicleNode::cameraSetApertureCallback, this);
@@ -250,12 +259,13 @@ void VehicleNode::initService()
   camera_control_stop_shoot_photo_server_ = nh_.advertiseService("camera_stop_shoot_photo", &VehicleNode::cameraStopShootPhotoCallback, this);
   camera_control_record_video_action_server_ = nh_.advertiseService("camera_record_video_action", &VehicleNode::cameraRecordVideoActionCallback, this);
 
+  /*! mfio control server */
   mfio_control_server_ = nh_.advertiseService("mfio_control", &VehicleNode::mfioCtrlCallback, this);
 
-  set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
-  set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
-  set_local_pos_reference_server_ = nh_.advertiseService("set_local_pos_reference", &VehicleNode::setLocalPosRefCallback,this);
-  avoid_enable_server_ = nh_.advertiseService("enable_avoid", &VehicleNode::setAvoidCallback,this);
+  /*! mobile device server */
+  send_data_to_mobile_device_server_ = nh_.advertiseService("send_data_to_mobile_device", &VehicleNode::sendToMobileCallback, this);
+  /*! payload device server*/
+  /*! advanced sensing server */
 #ifdef ADVANCED_SENSING
   advanced_sensing_server_ = nh_.advertiseService("advanced_sensing", &VehicleNode::advancedSensingCallback,this);
 #endif
