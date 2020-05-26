@@ -60,6 +60,11 @@ namespace dji_osdk_ros
     DJI::OSDK::float32_t yaw;
   };
 
+  enum class TelemetryType
+  {
+      USE_ROS_BROADCAST = 0,
+      USE_ROS_SUBSCRIBE = 1,
+  };
 
   enum class PayloadIndex {
       PAYLOAD_INDEX_0 = 0x00,
@@ -67,6 +72,13 @@ namespace dji_osdk_ros
       PAYLOAD_INDEX_2 = 0x02,
       PAYLOAD_INDEX_CNT = 0x03,
       PAYLOAD_INDEX_INVALID = 0x03,
+  };
+
+  enum class AlignStatus
+  {
+      UNALIGNED,
+      ALIGNING,
+      ALIGNED
   };
 
   typedef struct GimbalSingleData
@@ -80,10 +92,13 @@ namespace dji_osdk_ros
 
   enum class SubscribePackgeIndex
   {
-      GIMBA_SUB_PACKAGE_INDEX                       = 0,
-      FLIGHT_CONTROL_DATA                           = 1,
-      FLIGHT_CONTROL_SET_GO_HOME_DATA               = 2,
-      FLIGHT_CONTROL_GO_HOME_AND_FORCE_LANDING_DATA = 3,
+      TEMP_SUB_PACKAGE_INDEX                        = 0,
+      GIMBAL_SUB_PACKAGE_INDEX                      = 1,
+      BROADCAST_BUT_NEED_SUBSCRIBE                  = 2,
+      PACKAGE_ID_5HZ   = 2,
+      PACKAGE_ID_50HZ  = 3,
+      PACKAGE_ID_100HZ = 4,
+      PACKAGE_ID_400HZ = 5,
   };
 
   /*! for gimbal */

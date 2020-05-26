@@ -1,44 +1,27 @@
-FILE(GLOB_RECURSE HEADERS
-     ../../include/*/*.h*
-     ../../include/*.h*
-     )
-FILE(GLOB_RECURSE SOURCES *.cc *.cpp *.c *.cxx)
+add_subdirectory(modules)
 
-
-ADD_LIBRARY(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
-MESSAGE(STATUS "PROJECT_NAME: ${PROJECT_NAME}")
-MESSAGE(STATUS "DJIOSDK_LIB: ${DJIOSDK_LIBRARIES}")
-TARGET_LINK_LIBRARIES(${PROJECT_NAME}
-                      ${catkin_LIBRARIES}
-                      #${DJIOSDK_LIBRARIES}
-		      dji-linker.a
-		      djiosdk-core.a
-                      )
-SET(ADVANCED_SENSING)
-SET(WAYPT2_CORE)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME}
-                      ${catkin_LIBRARIES}
-		      advanced-sensing.a
-		      ${LIBUSB_1_LIBRARIES}
-		      ${FFMPEG_LIBRARIES}
-                      )
-
-# Try to see if user has OpenCV installed
-# if yes, default callback will display the image
+FILE(GLOB EXAMPLES *.cc *.c *.cpp)
 find_package( OpenCV QUIET )
 if (OpenCV_FOUND)
-	message( "\n${PROJECT_NAME}...")
-	message( STATUS "Found OpenCV installed in the system, will use it to display image in AdvancedSensing APIs")
-	message( STATUS " - Includes: ${OpenCV_INCLUDE_DIRS}")
-	message( STATUS " - Libraries: ${OpenCV_LIBRARIES}")
-	add_definitions(-DOPEN_CV_INSTALLED)
-else()
-	message( STATUS "Did not find OpenCV in the system, image data is inside RecvContainer as raw data")
+  add_definitions(-DOPEN_CV_INSTALLED)
 endif ()
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
+FOREACH(EXAMPLE ${EXAMPLES})
+  GET_FILENAME_COMPONENT(MY_TARGET "${EXAMPLE}" NAME_WE)
+  ADD_EXECUTABLE(${MY_TARGET} ${EXAMPLE})
 
-if (OpenCV_FOUND)
-	target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
-endif ()
+  ## Add cmake target dependencies of the executable/library
+  ## as an example, message headers may need to be generated before nodes
+  add_dependencies(${MY_TARGET}
+          dji_osdk_ros_generate_messages_cpp)
 
+  TARGET_LINK_LIBRARIES(${MY_TARGET}
+                        ${PROJECT_NAME}
+                        )
+
+  INSTALL(TARGETS ${MY_TARGET}
+          ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+          RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+          )
+ENDFOREACH()
