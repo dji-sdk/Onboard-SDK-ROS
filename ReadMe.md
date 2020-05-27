@@ -2,7 +2,7 @@
 
 ## Latest Update
 
-OSDK-ROS 4.0.0 was released on 8 May 2020.You need to read newest update below to get update information. Please see the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html) and [ROS sample setup](https://developer.dji.com/onboard-sdk/documentation/development-workflow/sample-setup.html#ros-onboard-computer) for more information.And We will update [ROS Wiki](http://wiki.ros.org/dji_sdk/) later.
+OSDK-ROS 4.0.0 was released on 8 May 2020.You need to read newest update below to get update information. Please see the [release notes](https://developer.dji.com/onboard-sdk/downloads/) and [ROS sample setup](https://developer.dji.com/onboard-sdk/documentation/quickstart/development-environment.html) for more information.And We will update [ROS Wiki](http://wiki.ros.org/dji_sdk/) later.
 
 ### 1. feature  
 This 4.0 version releases a feature package: dji_osdk_ros. The package contains two different framework's interface. OSDK-ROS-obsoleted kept ros3.8.1's interface.  
@@ -50,7 +50,7 @@ The system environment we have tested is in the table below.
 | **system version**         | ubuntu 16.04                                |
 | **processor architecture** | x86(mainfold2-c),armv8(mainfold2-c)           |
 #### Firmware Compatibility
-OSDK-ROS4.0's firmware compatibility depends on onboard-sdk4.0.0's. you can get more information [here](https://github.com/dji-sdk/Onboard-SDK);
+OSDK-ROS 4.0's firmware compatibility depends on onboard-sdk 4.0.0's. you can get more information [here](https://github.com/dji-sdk/Onboard-SDK);
 #### Ros  
 you need to install ros first.Install instruction can be found at: http://wiki.ros.org/ROS/Installation. We just tested ROS kinetic version.  
 #### C++11 Compiler
