@@ -11,17 +11,17 @@ MESSAGE(STATUS "DJIOSDK_LIB: ${DJIOSDK_LIBRARIES}")
 TARGET_LINK_LIBRARIES(${PROJECT_NAME}
                       ${catkin_LIBRARIES}
                       #${DJIOSDK_LIBRARIES}
-		      dji-linker.a
-		      djiosdk-core.a
+                      dji-linker.a
+                      djiosdk-core.a
                       )
-SET(ADVANCED_SENSING)
-SET(WAYPT2_CORE)
-	TARGET_LINK_LIBRARIES(${PROJECT_NAME}
+if(ENABLE_ADVANCED_SENSING)
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME}
                       ${catkin_LIBRARIES}
 		      advanced-sensing.a
 		      ${LIBUSB_1_LIBRARIES}
 		      ${FFMPEG_LIBRARIES}
                       )
+endif()
 
 # Try to see if user has OpenCV installed
 # if yes, default callback will display the image

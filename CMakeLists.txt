@@ -22,15 +22,15 @@ set(CMAKE_CXX_FLAGS "-std=c++11 -fPIC ${CMAKE_CXX_FLAGS}")
 set(CMAKE_C_FLAGS "-fPIC ${CMAKE_C_FLAGS}")
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake-modules")
 
-set(ENABLE_ADVANCED_SENSING 1)
+option(ENABLE_ADVANCED_SENSING "" ON)
 if(ENABLE_ADVANCED_SENSING)
 	MESSAGE(STATUS "Support Advanced Sensing")
 	ADD_DEFINITIONS(-DADVANCED_SENSING)
+
+    find_package(LibUSB REQUIRED)
+    find_package(FFMPEG REQUIRED)
 ENDIF()
 
-
-find_package(LibUSB REQUIRED)
-find_package(FFMPEG REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -206,10 +206,15 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
  include
- #${DJIOSDK_INCLUDE_DIRS}
- ${LIBUSB_1_INCLUDE_DIR}
  ${catkin_INCLUDE_DIRS}
 )
+if(ENABLE_ADVANCED_SENSING)
+    include_directories(
+     include
+     ${DJIOSDK_INCLUDE_DIRS}
+     ${LIBUSB_1_INCLUDE_DIR}
+    )
+ENDIF()
 
 add_subdirectory(src)
 

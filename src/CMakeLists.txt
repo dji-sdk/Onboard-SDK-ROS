@@ -1,11 +1,21 @@
 add_subdirectory(dji_osdk_ros)
-add_subdirectory(dji_osdk_ros_obsoleted)
+option(BUILD_OBSOLETED "" OFF)
+if(BUILD_OBSOLETED)
+    add_subdirectory(dji_osdk_ros_obsoleted)
+endif()
 
 FILE(GLOB EXAMPLES *.cc *.c *.cpp)
 find_package( OpenCV QUIET )
 if (OpenCV_FOUND)
   add_definitions(-DOPEN_CV_INSTALLED)
 endif ()
+
+message("Before:" "${EXAMPLES}")
+if(NOT ENABLE_ADVANCED_SENSING)
+    list(REMOVE_ITEM EXAMPLES "${CMAKE_CURRENT_SOURCE_DIR}/advanced_sensing_node.cpp")
+    list(REMOVE_ITEM EXAMPLES "${CMAKE_CURRENT_SOURCE_DIR}/dji_vehicle_node.cpp")
+endif()
+message("After: " "${EXAMPLES}")
 
 FOREACH(EXAMPLE ${EXAMPLES})
   GET_FILENAME_COMPONENT(MY_TARGET "${EXAMPLE}" NAME_WE)
