@@ -107,6 +107,10 @@ namespace dji_osdk_ros
 
       /*! Parts of mobile device */
       void sendDataToMSDK(uint8_t* data, uint8_t len);
+
+      /*! Parts of payload device */
+      void sendDataToPSDK(uint8_t* data, uint8_t len);
+
       /*! Parts of advanced_sendsing */
 #ifdef ADVANCED_SENSING
       bool startStream(bool is_h264, uint8_t request_view);

@@ -265,6 +265,7 @@ void VehicleNode::initService()
   /*! mobile device server */
   send_data_to_mobile_device_server_ = nh_.advertiseService("send_data_to_mobile_device", &VehicleNode::sendToMobileCallback, this);
   /*! payload device server*/
+  send_data_to_payload_device_server_ = nh_.advertiseService("send_data_to_payload_device_server", &VehicleNode::sendToPayloadCallback, this);
   /*! advanced sensing server */
 #ifdef ADVANCED_SENSING
   advanced_sensing_server_ = nh_.advertiseService("advanced_sensing", &VehicleNode::advancedSensingCallback,this);
