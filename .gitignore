@@ -6,3 +6,6 @@
 *sdk.launch
 build.sh
 .idea/
+.history
+ros-*-am-osdk-ros-build-deps_*_all.deb
+debian/ros-melodic-am-osdk-ros*

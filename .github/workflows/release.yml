@@ -1,0 +1,33 @@
+name: Release
+on: 
+  push:
+    branches:
+      - master
+jobs:
+  release-package:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, [arm64,self-hosted,linux, build]]
+      fail-fast: false
+    name: Package
+    steps:
+      - uses: AutoModality/action-clean@v1.1.0
+      - uses: actions/checkout@v2
+      - name: Package
+        id: package
+        uses: AutoModality/action-package-debian-ros@v3
+        with:
+          version: 4.0.0-AM${{ github.run_number }}
+      - name: Deploy
+        id: deploy
+        uses: AutoModality/action-cloudsmith@0.2.0
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: 'push'
+          format: 'deb'
+          owner: 'automodality'
+          repo: 'release'
+          distro: 'ubuntu'
+          release: 'bionic'
+          file: '${{ steps.package.outputs.artifact-path }}'
