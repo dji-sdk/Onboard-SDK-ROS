@@ -1,5 +1,5 @@
 #!/bin/bash
-PACKAGE=dji_sdk
+PACKAGE=Onboard-SDK-ROS
 source /opt/ros/melodic/setup.bash
 echo "We are $(pwd)"
 CURDIR=$(readlink -f $(pwd))
@@ -9,6 +9,7 @@ cp -r src catkin_ws/src/${PACKAGE}
 cp -r include catkin_ws/src/${PACKAGE}
 cp -r test catkin_ws/src/${PACKAGE}
 cp -r msg catkin_ws/src/${PACKAGE}
+cp -r srv catkin_ws/src/${PACKAGE}
 cp package.xml  catkin_ws/src/${PACKAGE}
 cp CMakeLists.txt  catkin_ws/src/${PACKAGE}
 cd catkin_ws
