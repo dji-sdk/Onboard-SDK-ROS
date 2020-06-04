@@ -1,5 +1,5 @@
 #!/bin/bash
-PACKAGE=am-utils
+PACKAGE=dji_sdk
 source /opt/ros/melodic/setup.bash
 echo "We are $(pwd)"
 CURDIR=$(readlink -f $(pwd))
