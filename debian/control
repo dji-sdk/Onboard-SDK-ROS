@@ -5,8 +5,6 @@ Maintainer: AutoModality <dev@automodality.com>
 Build-Depends: debhelper (>=9) , 
     dji-onboard-sdk, 
     ros-melodic-nmea-msgs,
-    libusb-1.0-0-dev,
-    ffmpeg,
 Standards-Version: 3.9.6
 Homepage: https://github.com/AutoModality/OSDK-ROS
 
@@ -16,7 +14,5 @@ Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends} , 
     dji-onboard-sdk, 
     ros-melodic-nmea-msgs,
-    libusb-1.0-0-dev,
-    ffmpeg,
 Description: OSDK-ROS node for interfacing with DJI's OSDK
 
