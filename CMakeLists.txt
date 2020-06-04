@@ -29,8 +29,8 @@ if(ENABLE_ADVANCED_SENSING)
 ENDIF()
 
 
-#find_package(LibUSB REQUIRED)
-#find_package(FFMPEG REQUIRED)
+find_package(LibUSB REQUIRED)
+find_package(FFMPEG REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed

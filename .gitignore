@@ -10,3 +10,4 @@ build.sh
 debian/ros-melodic-am-osdk-ros*
 debian/ros-melodic-dji-onboard-sdk.debhelper.log
 ros-melodic-dji-onboard-sdk-build-deps_*_all.deb
+build

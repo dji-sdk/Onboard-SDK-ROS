@@ -10,6 +10,8 @@ cp -r include catkin_ws/src/${PACKAGE}
 cp -r test catkin_ws/src/${PACKAGE}
 cp -r msg catkin_ws/src/${PACKAGE}
 cp -r srv catkin_ws/src/${PACKAGE}
+# Required for LibUSBConfig.cmake
+cp -r cmake-modules catkin_ws/src/${PACKAGE}
 cp package.xml  catkin_ws/src/${PACKAGE}
 cp CMakeLists.txt  catkin_ws/src/${PACKAGE}
 cd catkin_ws
