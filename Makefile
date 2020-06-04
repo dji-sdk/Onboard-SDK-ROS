@@ -1,25 +1,18 @@
-SHELL:= /bin/bash
-.PHONY:	configure
+SHELL := /bin/bash
 
-
-build: configure
-	ROS_LANG_DISABLE=genlisp:gennodejs:geneus source /opt/ros/melodic/setup.bash && cd catkin_ws && catkin build --no-status
+default:
+	source /opt/ros/melodic/setup.bash && cd catkin_ws && catkin clean -f -i -y && catkin build -j3
+	rm -f catkin_ws/install/lib/pkgconfig/catkin_tools_prebuild.pc
+	@echo "Built!!!!"
 
 install:
-	$(RM) -rf catkin_ws/install/share/{catkin_tools_prebuild,roseus}
+	rm -rf catkin_ws/install/share/catkin_tools_prebuild
 	install -d $(DESTDIR)/opt/ros/melodic/
-	cp -p -r catkin_ws/install/lib $(DESTDIR)/opt/ros/melodic
-	cp -p -r catkin_ws/install/share $(DESTDIR)/opt/ros/melodic
-	cp -p -r catkin_ws/install/include $(DESTDIR)/opt/ros/melodic
-	rm -f $(DESTDIR)/opt/ros/melodic/lib/pkgconfig/catkin_tools_prebuild.pc
+	cp -f -p -r catkin_ws/install/lib $(DESTDIR)/opt/ros/melodic
+	cp -f -p -r catkin_ws/install/share $(DESTDIR)/opt/ros/melodic
+	cp -f -p -r catkin_ws/install/include $(DESTDIR)/opt/ros/melodic
 
-configure:
-	mkdir -p catkin_ws/src
-	cd catkin_ws && catkin init --workspace . >/dev/null
-	cd catkin_ws && catkin config --install
-	cp -r dji_sdk dji_sdk_demo catkin_ws/src
-	
+
 clean:
-	$(RM) -rf catkin_ws 
-
-
+	@echo "Cleaning"
+	rm -rf catkin_ws
