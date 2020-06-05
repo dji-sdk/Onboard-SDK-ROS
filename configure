@@ -1,0 +1,21 @@
+#!/bin/bash
+PACKAGE=Onboard-SDK-ROS
+source /opt/ros/melodic/setup.bash
+echo "We are $(pwd)"
+CURDIR=$(readlink -f $(pwd))
+mkdir -p catkin_ws/src/${PACKAGE}
+WORKSPACE=$(readlink -f ./catkin_ws)
+cp -r src catkin_ws/src/${PACKAGE}
+cp -r include catkin_ws/src/${PACKAGE}
+cp -r test catkin_ws/src/${PACKAGE}
+cp -r msg catkin_ws/src/${PACKAGE}
+cp -r srv catkin_ws/src/${PACKAGE}
+# Required for LibUSBConfig.cmake
+cp -r cmake-modules catkin_ws/src/${PACKAGE}
+cp package.xml  catkin_ws/src/${PACKAGE}
+cp CMakeLists.txt  catkin_ws/src/${PACKAGE}
+cd catkin_ws
+catkin init --workspace .
+echo "PWD: $(pwd)"
+catkin config --install
+
