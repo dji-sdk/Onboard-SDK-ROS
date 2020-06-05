@@ -1,4 +1,4 @@
-Source: ros-melodic-dji-onboard-sdk
+Source: ros-melodic-dji-onboard-sdk-ros
 Section: unknown
 Priority: extra
 Maintainer: AutoModality <dev@automodality.com>
@@ -10,7 +10,7 @@ Build-Depends: debhelper (>=9) ,
 Standards-Version: 3.9.6
 Homepage: https://github.com/AutoModality/OSDK-ROS
 
-Package: ros-melodic-dji-onboard-sdk
+Package: ros-melodic-dji-onboard-sdk-ros
 Architecture: any
 Multi-Arch: foreign
 Depends: ${misc:Depends}, ${shlibs:Depends} , 
