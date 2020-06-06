@@ -59,8 +59,9 @@ We compile with C + + 11 Standard.
 you need to download onboard-sdk4.0.0,and install it.
 >$mkdir build  
 >$cd build  
->$cmake..  
->$sudo make -j7 install
+>$cmake ..  
+>$make -j7  
+>$sudo make install
 #### nema-comms
 > $sudo apt install ros-{release}-nmea-comms  
 
