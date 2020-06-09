@@ -59,6 +59,10 @@
 
 /*! services */
 #include <dji_osdk_ros/FlightTaskControl.h>
+#include <dji_osdk_ros/SetGoHomeAltitude.h>
+#include <dji_osdk_ros/SetNewHomePoint.h>
+#include <dji_osdk_ros/SetLocalPosRef.h>
+#include <dji_osdk_ros/AvoidEnable.h>
 #include <dji_osdk_ros/GimbalAction.h>
 #include <dji_osdk_ros/CameraEV.h>
 #include <dji_osdk_ros/CameraShutterSpeed.h>
@@ -74,10 +78,7 @@
 #include <dji_osdk_ros/CameraStopShootPhoto.h>
 #include <dji_osdk_ros/CameraRecordVideoAction.h>
 #include <dji_osdk_ros/MFIO.h>
-#include <dji_osdk_ros/SetGoHomeAltitude.h>
-#include <dji_osdk_ros/SetNewHomePoint.h>
-#include <dji_osdk_ros/SetLocalPosRef.h>
-#include <dji_osdk_ros/AvoidEnable.h>
+#include <dji_osdk_ros/SendMobileData.h>
 #ifdef ADVANCED_SENSING
 #include <dji_osdk_ros/AdvancedSensing.h>
 #include <dji_osdk_ros/CameraData.h>
@@ -125,9 +126,15 @@ namespace dji_osdk_ros
 #endif
     protected:
       /*! services */
+      /*! for flight control */
       ros::ServiceServer task_control_server_;
+      ros::ServiceServer set_home_altitude_server_;
+      ros::ServiceServer set_current_point_as_home_server_;
+      ros::ServiceServer set_local_pos_reference_server_;
+      ros::ServiceServer avoid_enable_server_;
+      /*! for gimbal */
       ros::ServiceServer gimbal_control_server_;
-      /*! for camera*/
+      /*! for camera */
       ros::ServiceServer camera_control_set_EV_server_;
       ros::ServiceServer camera_control_set_shutter_speed_server_;
       ros::ServiceServer camera_control_set_aperture_server_;
@@ -141,14 +148,12 @@ namespace dji_osdk_ros
       ros::ServiceServer camera_control_start_shoot_interval_photo_server_;
       ros::ServiceServer camera_control_stop_shoot_photo_server_;
       ros::ServiceServer camera_control_record_video_action_server_;
-      /*! for mfio*/
+      /*! for mfio */
       ros::ServiceServer mfio_control_server_;
-      /*! for flight control*/
-      ros::ServiceServer set_home_altitude_server_;
-      ros::ServiceServer set_current_point_as_home_server_;
-      ros::ServiceServer set_local_pos_reference_server_;
-      ros::ServiceServer avoid_enable_server_;
-    /*! for advanced sensing*/
+      /*! for mobile device */
+      ros::ServiceServer send_data_to_mobile_device_server_;
+      /*! for payload device */
+      /*! for advanced sensing */
 #ifdef ADVANCED_SENSING
       ros::ServiceServer advanced_sensing_server_;
       ros::Publisher advanced_sensing_pub_;
@@ -190,10 +195,16 @@ namespace dji_osdk_ros
       ros::Publisher time_sync_pps_source_publisher_;
 
     protected:
+      /*! for flight control */
       bool taskCtrlCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
-      /*! for gimbal */
+      bool setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request, SetGoHomeAltitude::Response& response);
+      bool setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response);
+      bool setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
+                                  dji_osdk_ros::SetLocalPosRef::Response &response);
+      bool setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
+      /*! for gimbal control */
       bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);
-      /*! for camera*/
+      /*! for camera conrol */
       bool cameraSetEVCallback(CameraEV::Request& request, CameraEV::Response& response);
       bool cameraSetShutterSpeedCallback(CameraShutterSpeed::Request& request, CameraShutterSpeed::Response& response);
       bool cameraSetApertureCallback(CameraAperture::Request& request, CameraAperture::Response& response);
@@ -207,15 +218,12 @@ namespace dji_osdk_ros
       bool cameraStartShootIntervalPhotoCallback(CameraStartShootIntervalPhoto::Request& request, CameraStartShootIntervalPhoto::Response& response);
       bool cameraStopShootPhotoCallback(CameraStopShootPhoto::Request& request, CameraStopShootPhoto::Response& response);
       bool cameraRecordVideoActionCallback(CameraRecordVideoAction::Request& request, CameraRecordVideoAction::Response& response);
-
+      /*! for mfio conrol */
       bool mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response);
-
-      bool setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request, SetGoHomeAltitude::Response& response);
-      bool setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response);
-      bool setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
-                                             dji_osdk_ros::SetLocalPosRef::Response &response);
-      bool setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
-
+      /*! for mobile device */
+      bool sendToMobileCallback(dji_osdk_ros::SendMobileData::Request& request,dji_osdk_ros::SendMobileData::Response& response);
+      /*! for payload device */
+      /*! for advanced sensing conrol */
 #ifdef ADVANCED_SENSING
       bool advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response);
       void publishAdvancedSeningData();

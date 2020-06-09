@@ -100,10 +100,14 @@ namespace dji_osdk_ros
       bool monitoredLanding(ACK::ErrorCode& ack, int timeout);
       bool moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset);
 
+      /*! Parts of mfio */
       uint8_t outputMFIO(uint8_t mode, uint8_t channel, uint32_t init_on_time_us, uint16_t freq, bool block, uint8_t gpio_value);
       uint32_t inputMFIO(uint8_t mode, uint8_t channel, bool block);
       uint8_t stopMFIO(uint8_t mode, uint8_t channel);
 
+      /*! Parts of mobile device */
+      void sendDataToMSDK(uint8_t* data, uint8_t len);
+      /*! Parts of advanced_sendsing */
 #ifdef ADVANCED_SENSING
       bool startStream(bool is_h264, uint8_t request_view);
       bool stopStream(bool is_h264, uint8_t request_view);
