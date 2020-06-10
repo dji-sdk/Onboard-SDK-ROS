@@ -79,6 +79,7 @@
 #include <dji_osdk_ros/CameraRecordVideoAction.h>
 #include <dji_osdk_ros/MFIO.h>
 #include <dji_osdk_ros/SendMobileData.h>
+#include <dji_osdk_ros/SendPayloadData.h>
 #ifdef ADVANCED_SENSING
 #include <dji_osdk_ros/AdvancedSensing.h>
 #include <dji_osdk_ros/CameraData.h>
@@ -153,6 +154,7 @@ namespace dji_osdk_ros
       /*! for mobile device */
       ros::ServiceServer send_data_to_mobile_device_server_;
       /*! for payload device */
+      ros::ServiceServer send_data_to_payload_device_server_;
       /*! for advanced sensing */
 #ifdef ADVANCED_SENSING
       ros::ServiceServer advanced_sensing_server_;
@@ -223,6 +225,7 @@ namespace dji_osdk_ros
       /*! for mobile device */
       bool sendToMobileCallback(dji_osdk_ros::SendMobileData::Request& request,dji_osdk_ros::SendMobileData::Response& response);
       /*! for payload device */
+      bool sendToPayloadCallback(dji_osdk_ros::SendPayloadData::Request& request,dji_osdk_ros::SendPayloadData::Response& response);
       /*! for advanced sensing conrol */
 #ifdef ADVANCED_SENSING
       bool advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response);
