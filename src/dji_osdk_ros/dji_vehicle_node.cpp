@@ -240,6 +240,7 @@ void VehicleNode::initService()
   set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
   set_local_pos_reference_server_ = nh_.advertiseService("set_local_pos_reference", &VehicleNode::setLocalPosRefCallback,this);
   avoid_enable_server_ = nh_.advertiseService("enable_avoid", &VehicleNode::setAvoidCallback,this);
+  upwards_avoid_enable_server_ = nh_.advertiseService("enable_upwards_avoid", &VehicleNode::setUpwardsAvoidCallback, this);
 
   /*! gimbal control server */
   gimbal_control_server_ = nh_.advertiseService("gimbal_task_control", &VehicleNode::gimbalCtrlCallback, this);
@@ -1128,6 +1129,27 @@ bool VehicleNode::setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::R
   }
 
   if(ptr_wrapper_->setAvoid(request.enable) == true)
+  {
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+  }
+
+  return true;
+}
+
+bool VehicleNode::setUpwardsAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response)
+{
+  ROS_INFO_STREAM("Set upwards avoid function callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return true;
+  }
+
+  if(ptr_wrapper_->setUpwardsAvoidance(request.enable) == true)
   {
     response.result = true;
   }

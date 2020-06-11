@@ -1446,6 +1446,17 @@ static T_OsdkOsalHandler osalHandler = {
     return false;
   }
 
+  bool VehicleWrapper::setUpwardsAvoidance(bool enable)
+  {
+    auto enum_enable = enable ? FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_DISABLE : FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_ENABLE;
+    ErrorCode::ErrorCodeType ack = vehicle->flightController->setUpwardsAvoidanceEnabledSync(enum_enable, 1);
+    if (ack == ErrorCode::SysCommonErr::Success)
+    {
+      return true;
+    }
+    return false;
+  }
+
   bool VehicleWrapper::moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset)
   {
     using namespace Telemetry;

@@ -133,6 +133,7 @@ namespace dji_osdk_ros
       ros::ServiceServer set_current_point_as_home_server_;
       ros::ServiceServer set_local_pos_reference_server_;
       ros::ServiceServer avoid_enable_server_;
+      ros::ServiceServer upwards_avoid_enable_server_;
       /*! for gimbal */
       ros::ServiceServer gimbal_control_server_;
       /*! for camera */
@@ -204,6 +205,7 @@ namespace dji_osdk_ros
       bool setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
                                   dji_osdk_ros::SetLocalPosRef::Response &response);
       bool setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
+      bool setUpwardsAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
       /*! for gimbal control */
       bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);
       /*! for camera conrol */
