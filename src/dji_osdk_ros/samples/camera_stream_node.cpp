@@ -107,7 +107,7 @@ int main(int argc, char** argv)
     ros::init(argc, argv, "advanced_sensing_node");
     ros::NodeHandle nh;
     auto advanced_sensing_client = nh.serviceClient<AdvancedSensing>("/advanced_sensing");
-    auto sub = nh.subscribe("cameradata", 1000, cameraDataCallBack);
+    auto sub = nh.subscribe("dji_osdk_ros/cameradata", 1000, cameraDataCallBack);
     std::cout
             << "| Available commands:                                            |"
             << std::endl;

@@ -1,6 +1,3 @@
-add_subdirectory(modules)
-add_subdirectory(samples)
-
 FILE(GLOB EXAMPLES *.cc *.c *.cpp)
 find_package( OpenCV QUIET )
 if (OpenCV_FOUND)

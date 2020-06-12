@@ -746,3 +746,75 @@ void VehicleNode::gpsConvertENU(double &ENU_x, double &ENU_y,
   ENU_y = DEG2RAD(d_lat) * C_EARTH;
   ENU_x = DEG2RAD(d_lon) * C_EARTH * cos(DEG2RAD(gps_t_lat));
 }
+
+#ifdef ADVANCED_SENSING
+void VehicleNode::publish240pStereoImage(Vehicle*            vehicle,
+                                         RecvContainer       recvFrame,
+                                         DJI::OSDK::UserData userData)
+{
+  VehicleNode *node_ptr = (VehicleNode *)userData;
+
+  node_ptr->stereo_subscription_success = true;
+
+  sensor_msgs::Image img;
+  img.height = 240;
+  img.width = 320;
+  img.data.resize(img.height*img.width);
+  img.encoding = "mono8";
+  img.step = 320;
+  uint8_t img_idx = 0;
+
+  for (int pair_idx = 0; pair_idx < DJI::OSDK::CAMERA_PAIR_NUM; ++pair_idx) {
+    for (int dir_idx = 0; dir_idx < DJI::OSDK::IMAGE_TYPE_NUM; ++dir_idx) {
+
+      uint8_t bit_location = pair_idx * IMAGE_TYPE_NUM + dir_idx;
+      uint8_t bit_val = (recvFrame.recvData.stereoImgData->img_desc >> bit_location) & 1;
+
+      if (bit_val) {
+        img.header.seq = recvFrame.recvData.stereoImgData->frame_index;
+        img.header.stamp = ros::Time::now(); // @todo
+        img.header.frame_id = recvFrame.recvData.stereoImgData->img_vec[img_idx].name;
+        memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoImgData->img_vec[img_idx++].image, 240*320);
+
+        if (bit_location == static_cast<uint8_t>(dji_osdk_ros::ReceivedImgDesc::RECV_FRONT_LEFT))
+          node_ptr->stereo_240p_front_left_publisher_.publish(img);
+        if (bit_location == static_cast<uint8_t>(dji_osdk_ros::ReceivedImgDesc::RECV_FRONT_RIGHT))
+          node_ptr->stereo_240p_front_right_publisher_.publish(img);
+        if (bit_location == static_cast<uint8_t>(dji_osdk_ros::ReceivedImgDesc::RECV_DOWN_BACK))
+          node_ptr->stereo_240p_down_back_publisher_.publish(img);
+        if (bit_location == static_cast<uint8_t>(dji_osdk_ros::ReceivedImgDesc::RECV_DOWN_FRONT))
+          node_ptr->stereo_240p_down_front_publisher_.publish(img);
+        if (bit_location == static_cast<uint8_t>(dji_osdk_ros::ReceivedImgDesc::RECV_FRONT_DEPTH))
+          node_ptr->stereo_240p_front_depth_publisher_.publish(img);
+      }
+    }
+  }
+}
+
+void VehicleNode::publishVGAStereoImage(Vehicle*            vehicle,
+                                       RecvContainer       recvFrame,
+                                       DJI::OSDK::UserData userData)
+{
+  VehicleNode *node_ptr = (VehicleNode *)userData;
+
+  node_ptr->stereo_vga_subscription_success = true;
+
+  sensor_msgs::Image img;
+  img.height = 480;
+  img.width = 640;
+  img.step = 640;
+  img.encoding = "mono8";
+  img.data.resize(img.height*img.width);
+
+  img.header.seq = recvFrame.recvData.stereoVGAImgData->frame_index;
+  img.header.stamp = ros::Time::now(); // @todo
+  img.header.frame_id = "vga_left";
+  memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[0], 480*640);
+  node_ptr->stereo_vga_front_left_publisher_.publish(img);
+
+  img.header.frame_id = "vga_right";
+  memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[1], 480*640);
+  node_ptr->stereo_vga_front_right_publisher_.publish(img);
+}
+
+#endif

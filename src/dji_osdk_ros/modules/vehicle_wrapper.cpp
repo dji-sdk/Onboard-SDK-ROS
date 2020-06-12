@@ -2023,6 +2023,33 @@ static T_OsdkOsalHandler osalHandler = {
       return result;
   }
 
+  void VehicleWrapper::subscribeStereoImages(const dji_osdk_ros::ImageSelection *select, VehicleCallBack callback, UserData userData)
+  {
+      DJI::OSDK::AdvancedSensing::ImageSelection select_;
+      memcpy(&select_, select, sizeof(DJI::OSDK::AdvancedSensing::ImageSelection));
+      vehicle->advancedSensing->subscribeStereoImages(&select_, callback, userData);
+  }
+
+  void VehicleWrapper::subscribeFrontStereoVGA(const uint8_t freq, VehicleCallBack callback, UserData userData)
+  {
+      vehicle->advancedSensing->subscribeFrontStereoVGA(freq, callback, userData);
+  }
+
+  void VehicleWrapper::subscribeFrontStereoDisparity(VehicleCallBack callback, UserData userData)
+  {
+      vehicle->advancedSensing->subscribeFrontStereoDisparity(callback, userData);
+  }
+
+  void VehicleWrapper::unsubscribeStereoImages()
+  {
+      vehicle->advancedSensing->unsubscribeStereoImages();
+  }
+  
+  void VehicleWrapper::unsubscribeVGAImages()
+  {
+      vehicle->advancedSensing->unsubscribeVGAImages();
+  }
+
   CameraRGBImage& VehicleWrapper::getCameraImage()
   {
     std::lock_guard<std::mutex> lock(camera_data_mutex_);

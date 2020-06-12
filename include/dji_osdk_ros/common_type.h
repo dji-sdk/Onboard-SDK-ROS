@@ -498,6 +498,36 @@ enum class PhotoBurstCount {
     zoom_param digital_zoom_param;
   } CameraZoomDataType;
 #pragma pack()
+
+  //for advanced sensing
+  #pragma pack(1)
+  /*!
+   * @brief This struct provides an interface for user to determine
+   * what images to subscribe to
+   */
+  typedef struct ImageSelection {
+    uint16_t front_left       : 1;
+    uint16_t front_right      : 1;
+    uint16_t down_front       : 1;
+    uint16_t down_back        : 1;
+    uint16_t back_left        : 1;
+    uint16_t back_right       : 1;
+    uint16_t reserved         : 10;
+  } ImageSelection;
+  #pragma pack()
+
+  /*!
+   * @brief This struct is used to pair img data with camera
+   */
+  enum class ReceivedImgDesc
+  {
+    RECV_FRONT_LEFT   = 10,
+    RECV_FRONT_RIGHT  = 11,
+    RECV_DOWN_BACK    = 0,
+    RECV_DOWN_FRONT   = 1,
+    RECV_FRONT_DEPTH  = 15,
+  };
+
 }
 
 #endif // __COMMON_TYPE_HH__

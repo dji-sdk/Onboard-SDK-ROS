@@ -122,6 +122,39 @@ namespace dji_osdk_ros
       void setCameraRawData(uint8_t* rawData, int bufLen);
       void setCameraImage(const CameraRGBImage& img);
       void setAcmDevicePath(const std::string& acm_path);
+
+      /*! @brief subscribe to QVGA (240x320) stereo images at 20 fps
+       *
+       *  @param images to subscribe
+       *  @param callback callback function
+       *  @param userData user data (void ptr)
+      */
+      void subscribeStereoImages(const dji_osdk_ros::ImageSelection *select, VehicleCallBack callback = 0, UserData userData = 0);
+ 
+       /*! @brief subscribe to VGA (480x640) front stereo images at 10 or 20 fps
+        *
+        *  @param frequency of images using enum from AdvancedSensingProtocol::FREQ
+        *  @param callback callback function
+        *  @param userData user data (void ptr)
+        */
+      void subscribeFrontStereoVGA(const uint8_t freq, VehicleCallBack callback = 0, UserData userData = 0);
+  
+       /*! @brief subscribe to QVGA (240x320) stereo depth map at 10 fps
+        *
+        *  @param callback callback function
+        *  @param userData user data (void ptr)
+        */
+      void subscribeFrontStereoDisparity(VehicleCallBack callback = 0, UserData userData = 0);
+
+       /*! 
+        * @brief unsubscribe to QVGA (240x320) stereo depth map or images
+        */
+      void unsubscribeStereoImages();
+
+       /*!
+        * @brief unsubscribe to VGA (480x640) stereo images
+        */
+      void unsubscribeVGAImages();
 #endif
       bool isM100();
       void setUpM100DefaultFreq(uint8_t freq[16]);

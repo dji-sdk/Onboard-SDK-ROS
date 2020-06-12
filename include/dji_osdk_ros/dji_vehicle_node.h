@@ -80,9 +80,14 @@
 #include <dji_osdk_ros/MFIO.h>
 #include <dji_osdk_ros/SendMobileData.h>
 #include <dji_osdk_ros/SendPayloadData.h>
+
 #ifdef ADVANCED_SENSING
 #include <dji_osdk_ros/AdvancedSensing.h>
 #include <dji_osdk_ros/CameraData.h>
+#include <dji_osdk_ros/Stereo240pSubscription.h>
+#include <dji_osdk_ros/StereoDepthSubscription.h>
+#include <dji_osdk_ros/StereoVGASubscription.h>
+#endif
 
 /*! msgs */
 #include <dji_osdk_ros/Gimbal.h>
@@ -92,7 +97,6 @@
 #include <dji_osdk_ros/VOPosition.h>
 #include <dji_osdk_ros/FCTimeInUTC.h>
 #include <dji_osdk_ros/GPSUTC.h>
-#endif
 
 
 #define C_EARTH (double)6378137.0
@@ -159,7 +163,9 @@ namespace dji_osdk_ros
       /*! for advanced sensing */
 #ifdef ADVANCED_SENSING
       ros::ServiceServer advanced_sensing_server_;
-      ros::Publisher advanced_sensing_pub_;
+      ros::ServiceServer subscribe_stereo_240p_server_;
+      ros::ServiceServer subscribe_stereo_depth_server_;
+      ros::ServiceServer subscribe_stereo_vga_server_;
 #endif
 
       /*! publishers */
@@ -197,6 +203,18 @@ namespace dji_osdk_ros
       ros::Publisher time_sync_fc_utc_publisher_;
       ros::Publisher time_sync_pps_source_publisher_;
 
+      //advanced sensing
+      #ifdef ADVANCED_SENSING
+      ros::Publisher advanced_sensing_pub_;
+      ros::Publisher stereo_240p_front_left_publisher_;
+      ros::Publisher stereo_240p_front_right_publisher_;
+      ros::Publisher stereo_240p_down_front_publisher_;
+      ros::Publisher stereo_240p_down_back_publisher_;
+      ros::Publisher stereo_240p_front_depth_publisher_;
+      ros::Publisher stereo_vga_front_left_publisher_;
+      ros::Publisher stereo_vga_front_right_publisher_;
+      #endif
+
     protected:
       /*! for flight control */
       bool taskCtrlCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
@@ -231,6 +249,13 @@ namespace dji_osdk_ros
       /*! for advanced sensing conrol */
 #ifdef ADVANCED_SENSING
       bool advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response);
+      //! stereo image service callback
+      bool stereo240pSubscriptionCallback(dji_osdk_ros::Stereo240pSubscription::Request&  request,
+                                          dji_osdk_ros::Stereo240pSubscription::Response& response);
+      bool stereoDepthSubscriptionCallback(dji_osdk_ros::StereoDepthSubscription::Request&  request,
+                                          dji_osdk_ros::StereoDepthSubscription::Response& response);
+      bool stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscription::Request&  request,
+                                          dji_osdk_ros::StereoVGASubscription::Response& response);
       void publishAdvancedSeningData();
 #endif
 
@@ -263,6 +288,9 @@ namespace dji_osdk_ros
       const       tf::Matrix3x3 R_FLU2FRD_;
       const       tf::Matrix3x3 R_ENU2NED_;
       bool        rtk_support_;
+
+      bool stereo_subscription_success;
+      bool stereo_vga_subscription_success;
 
 #ifdef ADVANCED_SENSING
       bool is_h264_;
@@ -316,6 +344,16 @@ namespace dji_osdk_ros
     static void publish400HzData(Vehicle*            vehicle,
                                  RecvContainer       recvFrame,
                                  DJI::OSDK::UserData userData);
+
+#ifdef ADVANCED_SENSING
+    static void publish240pStereoImage(Vehicle*            vehicle,
+                                       RecvContainer       recvFrame,
+                                       DJI::OSDK::UserData userData);
+
+    static void publishVGAStereoImage(Vehicle*            vehicle,
+                                      RecvContainer       recvFrame,
+                                      DJI::OSDK::UserData userData);
+#endif
 
 public:
     void gpsConvertENU(double &ENU_x, double &ENU_y,
