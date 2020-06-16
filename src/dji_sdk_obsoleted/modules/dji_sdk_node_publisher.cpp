@@ -52,14 +52,6 @@ DJISDKNode::dataBroadcastCallback()
     rc_publisher.publish(rc_joy);
   }
 
-  // //update device control info
-  // if (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_DEVICE)
-  // {
-  //   std_msgs::UInt8 status_device;
-  //   status_device.data = vehicle->broadcast->getSDKInfo().deviceStatus;
-  //   device_status_publisher.publish(status_device);
-  // }
-
   tf::Matrix3x3 R_FRD2NED;
   tf::Quaternion q_FLU2ENU;
 
@@ -581,6 +573,8 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     // status_device.data = vehicle->broadcast->getSDKInfo().deviceStatus;
     status_device.data = sdk_info.deviceStatus;
     // TODO The underlying status changed, but we look for a value of 2. Fix this.
+    //https://github.com/dji-sdk/Onboard-SDK/issues/528
+    //Jeff's farewell Mary Poppins
     if (status_device.data == 4){
       status_device.data = 2;
       ROS_INFO_THROTTLE(1,"**UNDER AM CONTROL**");
