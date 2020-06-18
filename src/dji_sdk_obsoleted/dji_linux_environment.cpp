@@ -48,7 +48,7 @@ DJI_Environment::findFile(std::string file)
   std::string configFile = findFileInCwd(file);
   if(configFile.empty()){
     //FIXME: find a better place to declare this
-    std::string installationDir = "/opt/ros/melodic/share/dji_sdk";
+    std::string installationDir = "/opt/ros/melodic/share/dji_sdk/launch";
     configFile = findFileInDir(file,installationDir);
   }
   return configFile;
