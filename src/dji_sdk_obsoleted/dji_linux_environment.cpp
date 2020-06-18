@@ -45,13 +45,14 @@ DJI_Environment::~DJI_Environment()
 std::string
 DJI_Environment::findFile(std::string file)
 {
-  std::string configFile = findFileInCwd(file);
-  if(configFile.empty()){
-    //FIXME: find a better place to declare this
-    std::string installationDir = "/opt/ros/melodic/share/dji_sdk/launch";
-    configFile = findFileInDir(file,installationDir);
-  }
-  return configFile;
+  char        cwd[1024];
+  std::string configFile;
+
+  if (getcwd(cwd, sizeof(cwd)) == NULL)
+    throw std::runtime_error("Error getting current directory");
+
+  std::string strCWD(cwd);
+  return findFileInDir(file,strCWD);
 }
 
 
@@ -69,22 +70,6 @@ DJI_Environment::findFileInDir(std::string file, std::string dir)
     configFile.clear();
 
   return configFile;
-}
-
-/**
- * @return a string of the path to a file in the working dir, if found.  Empty otherwise.
- */
-std::string
-DJI_Environment::findFileInCwd(std::string file)
-{ 
-  char        cwd[1024];
-  std::string configFile;
-
-  if (getcwd(cwd, sizeof(cwd)) == NULL)
-    throw std::runtime_error("Error getting current directory");
-
-  std::string strCWD(cwd);
-  return findFileInDir(file,strCWD);
 }
 
 int
