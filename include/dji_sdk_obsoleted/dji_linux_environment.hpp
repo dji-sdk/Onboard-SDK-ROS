@@ -43,6 +43,11 @@ public:
   ~DJI_Environment();
 
   static std::string findFile(std::string file);
+  /**
+   * @return a string of the path to a file, if found.  Empty otherwise.
+   */
+  static std::string findFileInDir(std::string file, std::string dir);
+
   int                getApp_id() const;
   const std::string& getEnc_key() const;
   const std::string& getDevice() const;

@@ -11,3 +11,6 @@ debian/ros-melodic-am-osdk-ros*
 debian/ros-melodic-dji-onboard-sdk-ros.debhelper.log
 ros-melodic-dji-onboard-sdk-build-deps_*_all.deb
 build
+catkin_ws
+.vscode
+
