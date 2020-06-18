@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
     rospy
     std_msgs
     sensor_msgs
+    message_filters # for message_filter
   )
 
 ## System dependencies are found with CMake's conventions
@@ -207,7 +208,6 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
  include
- src/dji_osdk_ros/samples
  #${DJIOSDK_INCLUDE_DIRS}
  ${LIBUSB_1_INCLUDE_DIR}
  ${catkin_INCLUDE_DIRS}

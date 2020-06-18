@@ -2,10 +2,6 @@ add_subdirectory(modules)
 add_subdirectory(samples)
 
 FILE(GLOB EXAMPLES *.cc *.c *.cpp)
-find_package( OpenCV QUIET )
-if (OpenCV_FOUND)
-  add_definitions(-DOPEN_CV_INSTALLED)
-endif ()
 
 FOREACH(EXAMPLE ${EXAMPLES})
   GET_FILENAME_COMPONENT(MY_TARGET "${EXAMPLE}" NAME_WE)

@@ -18,6 +18,11 @@
   #include <opencv2/ximgproc/disparity_filter.hpp>
 #endif
 
+#include "sensor_msgs/Image.h"
+#include "sensor_msgs/point_cloud2_iterator.h"
+#include "visualization_msgs/MarkerArray.h"
+#include "ros/ros.h"
+
 namespace M210_STEREO
 {
 
@@ -43,6 +48,8 @@ public:
   void filterDisparityMap();
 
   void unprojectPtCloud();
+
+  void unprojectROSPtCloud();
 
   inline cv::Mat getRectLeftImg() { return this->rectified_img_left_; }
 
@@ -116,6 +123,17 @@ protected:
   cv::Mat filtered_disparity_map_8u_;
 #endif
 
+  //! ROS related
+  sensor_msgs::PointCloud2 ros_pt_cloud_;
+  sensor_msgs::PointCloud2Modifier *cloud_modifier_;
+  sensor_msgs::PointCloud2Iterator<float>   *x_it_;
+  sensor_msgs::PointCloud2Iterator<float>   *y_it_;
+  sensor_msgs::PointCloud2Iterator<float>   *z_it_;
+  sensor_msgs::PointCloud2Iterator<uint8_t> *r_it_;
+  sensor_msgs::PointCloud2Iterator<uint8_t> *g_it_;
+  sensor_msgs::PointCloud2Iterator<uint8_t> *b_it_;
+
+  visualization_msgs::Marker marker_template_;
 };
 
 } // namespace M210_STEREO

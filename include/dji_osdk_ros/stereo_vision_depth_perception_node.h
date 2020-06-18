@@ -16,7 +16,7 @@
 #include <message_filters/time_synchronizer.h>
 
 // Utility includes
-#include "stereo_utility/stereo_frame.hpp"
+#include "stereo_frame.hpp"
 
 typedef std::chrono::time_point<std::chrono::high_resolution_clock> timer;
 typedef std::chrono::duration<float> duration;

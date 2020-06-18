@@ -236,3 +236,43 @@ StereoFrame::unprojectPtCloud()
   // TODO maybe opencv projectPoints() is a good alternative
   pt_cloud_ = viz::WCloud(mat_vec3_pt_, color_mat_);
 }
+
+void
+StereoFrame::unprojectROSPtCloud()
+{
+  int pt_cloud_count = 0;
+    // due to rectification, the image boarder are blank
+  // we cut them out
+  const int border_size = num_disp_;
+  const int trunc_img_width_end = VGA_WIDTH - border_size;
+  const int trunc_img_height_end = VGA_HEIGHT - border_size;
+
+  for(int v = border_size; v < trunc_img_height_end; ++v)
+  {
+    for(int u = border_size; u < trunc_img_width_end; ++u)
+    {
+#ifdef USE_OPEN_CV_CONTRIB
+      float disparity = (float)(filtered_disparity_map_.at<short int>(v, u)*0.0625);
+#else
+      float disparity = (float)(raw_disparity_map_.at<short int>(v, u)*0.0625);
+#endif
+
+      **z_it_ = baseline_x_fx_/disparity;
+      **x_it_ = (u-principal_x_)*(**z_it_)/fx_;
+      **y_it_ = (v-principal_y_)*(**z_it_)/fy_;
+      **r_it_ = **g_it_ = **b_it_ = rectified_img_left_.at<uint8_t>(v, u);
+
+      ++(*x_it_); ++(*y_it_); ++(*z_it_);
+      ++(*r_it_); ++(*g_it_); ++(*b_it_);
+
+      ++pt_cloud_count;
+    }
+  }
+
+  *x_it_ += -pt_cloud_count;
+  *y_it_ += -pt_cloud_count;
+  *z_it_ += -pt_cloud_count;
+  *r_it_ += -pt_cloud_count;
+  *g_it_ += -pt_cloud_count;
+  *b_it_ += -pt_cloud_count;
+}

@@ -254,7 +254,12 @@ void displayStereoFilteredDisparityCallback(const sensor_msgs::ImageConstPtr &im
 #ifdef USE_OPEN_CV_CONTRIB
 
   //! Read raw images
-  stereo_frame_ptr->readStereoImgs(img_left, img_right);
+  DJI::OSDK::ACK::StereoVGAImgData img_VGA_img;
+  memcpy(&img_VGA_img.img_vec[0], &img_left, sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
+  memcpy(&img_VGA_img.img_vec[1], &img_right, sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
+  img_VGA_img.frame_index = img_left->header.seq;
+  img_VGA_img.time_stamp = img_left->header.stamp.nsec;
+  stereo_frame_ptr->readStereoImgs(img_VGA_img);
 
   //! Rectify images
   timer rectify_start = std::chrono::high_resolution_clock::now();
