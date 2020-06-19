@@ -60,6 +60,15 @@ namespace dji_osdk_ros
     DJI::OSDK::float32_t yaw;
   };
 
+  enum class Dronetype
+  {
+      PM410 = 0,
+      PM420 = 1,
+      PM430 = 2,
+      PM820 = 3,
+      INVALID_TYPE = 0xFF,
+  };
+
   enum class TelemetryType
   {
       USE_ROS_BROADCAST = 0,

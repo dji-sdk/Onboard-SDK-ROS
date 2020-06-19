@@ -157,6 +157,9 @@ namespace dji_osdk_ros
       void unsubscribeVGAImages();
 #endif
       bool isM100();
+      bool isM200();
+      bool isM300();
+      bool isM600();
       void setUpM100DefaultFreq(uint8_t freq[16]);
       void setUpA3N3DefaultFreq(uint8_t freq[16]);
       ACK::ErrorCode setBroadcastFreq(uint8_t* dataLenIs16, int timeout);

@@ -80,6 +80,7 @@
 #include <dji_osdk_ros/MFIO.h>
 #include <dji_osdk_ros/SendMobileData.h>
 #include <dji_osdk_ros/SendPayloadData.h>
+#include <dji_osdk_ros/GetDroneType.h>
 
 #ifdef ADVANCED_SENSING
 #include <dji_osdk_ros/AdvancedSensing.h>
@@ -131,6 +132,8 @@ namespace dji_osdk_ros
 #endif
     protected:
       /*! services */
+      /*! for general */
+      ros::ServiceServer get_drone_type_server_;
       /*! for flight control */
       ros::ServiceServer task_control_server_;
       ros::ServiceServer set_home_altitude_server_;
@@ -216,6 +219,9 @@ namespace dji_osdk_ros
       #endif
 
     protected:
+      /*! for general */
+      bool getDroneTypeCallback(dji_osdk_ros::GetDroneType::Request &request,
+                                dji_osdk_ros::GetDroneType::Response &response);
       /*! for flight control */
       bool taskCtrlCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
       bool setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request, SetGoHomeAltitude::Response& response);

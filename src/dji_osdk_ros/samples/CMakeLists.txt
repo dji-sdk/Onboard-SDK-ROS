@@ -122,10 +122,21 @@ if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ)
     add_executable(stereo_vision_depth_perception_node
                    stereo_vision_depth_perception_node.cpp
             ${STEREO_UTILITY_SRC_FILE} )
+    target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
+
+    if (OpenCV_FOUND)
+        target_link_libraries(stereo_vision_depth_perception_node
+                ${catkin_LIBRARIES}  
+                ${PROJECT_NAME}
+                ${OpenCV_LIBRARIES}
+                )
+    else()
     target_link_libraries(stereo_vision_depth_perception_node
             ${catkin_LIBRARIES}        
             ${PROJECT_NAME}
-            ${OpenCV_LIBS}
             )
+    endif()
     add_dependencies(stereo_vision_depth_perception_node dji_osdk_ros_generate_messages_cpp)
-endif()
+else()
+   message(STATUS "Did not find required libraries, stereo vision depth perception sample will not be compiled.")
+endif ()

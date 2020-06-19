@@ -6,7 +6,9 @@
 #include <signal.h>
 
 // DJI SDK includes
+#include <dji_osdk_ros/common_type.h>
 #include <dji_osdk_ros/StereoVGASubscription.h>
+#include <dji_osdk_ros/GetDroneType.h>
 
 // ROS includes
 #include <ros/ros.h>

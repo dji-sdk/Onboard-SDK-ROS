@@ -234,6 +234,9 @@ bool VehicleNode::initCameraModule()
 void VehicleNode::initService()
 {
   ROS_INFO_STREAM("Topic startup!");
+  /*! general server */
+  get_drone_type_server_ = nh_.advertiseService("get_drone_type", &VehicleNode::getDroneTypeCallback, this);
+
   /*! flight control server */
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
@@ -781,7 +784,7 @@ VehicleNode::stereoDepthSubscriptionCallback(dji_osdk_ros::StereoDepthSubscripti
 bool VehicleNode::stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscription::Request&  request,
                                                 dji_osdk_ros::StereoVGASubscription::Response& response)
 {
-  ROS_DEBUG("called stereoVGASubscriptionCallback");
+  ROS_INFO("called stereoVGASubscriptionCallback");
 
   if(ptr_wrapper_ == nullptr)
   {
@@ -842,9 +845,46 @@ dji_osdk_ros::CameraData VehicleNode::getCameraData()
 
     return cameraData;
 }
-
-
 #endif
+
+bool VehicleNode::getDroneTypeCallback(dji_osdk_ros::GetDroneType::Request &request,
+                                       dji_osdk_ros::GetDroneType::Response &response)
+{
+  ROS_DEBUG("called getDroneTypeCallback");
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return true;
+  }
+
+  if (ptr_wrapper_->isM100())
+  {
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM410);
+    return true;
+  }
+  else if (ptr_wrapper_->isM200())
+  {
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM420);
+    return true;
+  }
+  else if (ptr_wrapper_->isM300())
+  {
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM430);
+    return true;
+  }
+  else if (ptr_wrapper_->isM600())
+  {
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM820);
+    return true;
+  }
+  else
+  {
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::INVALID_TYPE);
+    return false;
+  }
+
+}
 
 bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightTaskControl::Response& response)
 {

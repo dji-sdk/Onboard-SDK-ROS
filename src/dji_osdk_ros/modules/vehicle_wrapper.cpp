@@ -2085,6 +2085,21 @@ static T_OsdkOsalHandler osalHandler = {
     return(vehicle->isM100());
   }
 
+  bool VehicleWrapper::isM200()
+  {
+    return(vehicle->isM210V2());
+  }
+
+  bool VehicleWrapper::isM300()
+  {
+    return(vehicle->isM300());
+  }
+
+  bool VehicleWrapper::isM600()
+  {
+    return(vehicle->isLegacyM600());
+  }
+
   void VehicleWrapper::setUpM100DefaultFreq(uint8_t freq[16])
   {
     /* Channels definition for M100

@@ -7,11 +7,13 @@ bool is_disp_filterd;
 bool vga_imgs_subscribed = false;
 
 dji_osdk_ros::StereoVGASubscription subscription;
+dji_osdk_ros::GetDroneType drone_type;
 ros::Publisher rect_img_left_publisher;
 ros::Publisher rect_img_right_publisher;
 ros::Publisher left_disparity_publisher;
 ros::Publisher point_cloud_publisher;
 ros::ServiceClient stereo_vga_subscription_client;
+ros::ServiceClient get_drone_type_client;
 
 int
 main(int argc, char** argv)
@@ -19,31 +21,44 @@ main(int argc, char** argv)
   ros::init(argc, argv, "stereo_vision_depth_perception");
   ros::NodeHandle nh;
 
-  stereo_vga_subscription_client = nh.serviceClient<dji_osdk_ros::StereoVGASubscription>("dji_osdk_ros/stereo_vga_subscription");
+  stereo_vga_subscription_client = nh.serviceClient<dji_osdk_ros::StereoVGASubscription>("stereo_vga_subscription");
+  get_drone_type_client          = nh.serviceClient<dji_osdk_ros::GetDroneType>("get_drone_type");
 
-//   if (vehicle->isM210V2()) {
-//     if (argc >= 3) {
-//       DSTATUS("Input yaml file: %s\n", argv[2]);
-//     } else {
-//       DERROR("Please specify a yaml file with camera parameters\n");
-//       DERROR("Example: ./stereo-vision-depth-perception-sample UserConfig.txt m210_stereo_param.yaml\n");
-//       return -1;
-//     }
-//   } else if (vehicle->isM300()) {
-//     DSTATUS("M300 stereo parameters can be got from the drone. So yaml file is"
-//             "not need here for M300 stereo camera.");
-//   }
+  get_drone_type_client.call(drone_type);
 
-  if(argc >= 3){
-    ROS_INFO("Input yaml file: %s", argv[2]);
-  } else{
-    ROS_ERROR("Please specify a yaml file with camera parameters");
-    ROS_ERROR("rosrun dji_osdk_ros stereo_vision_depth_perception_node m210_stereo_param.yaml");
-    return -1;
+  if (drone_type.response.drone_type == static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM420))
+  {
+      if (argc >= 2)
+      {
+        ROS_INFO("Input yaml file: %s\n", argv[1]);
+         /*! get stereo camera parameters */
+        std::string yaml_file_path = argv[1];
+        M210_STEREO::Config::setParamFile(yaml_file_path);
+      } 
+      else
+      {
+        ROS_INFO("Please specify a yaml file with camera parameters\n");
+        ROS_INFO("Example: ./stereo-vision-depth-perception-sample UserConfig.txt m210_stereo_param.yaml\n");
+       return -1;
+      }
+  }
+  else if (drone_type.response.drone_type == static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM430))
+  {
+    /* code */
+    DSTATUS("M300 stereo parameters can be got from the drone. So yaml file is"
+            "not need here for M300 stereo camera.");
   }
 
-  std::string yaml_file_path = argv[2];
-  Config::setParamFile(yaml_file_path);
+  // else if (drone_type.response.drone_type == static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM430))
+  // {
+  //   M300StereoParamTool *tool = new M300StereoParamTool(vehicle);
+  //   Perception::CamParamType stereoParam =
+  //       tool->getM300stereoParams(Perception::DirectionType::RECTIFY_FRONT);
+  //   if (tool->createStereoParamsYamlFile(M300_FRONT_STEREO_PARAM_YAML_NAME, stereoParam))
+  //     tool->setParamFileForM300(M300_FRONT_STEREO_PARAM_YAML_NAME);
+  //   else
+  //     return -1;
+  // }
 
   //! Instantiate some relevant objects
   CameraParam::Ptr camera_left_ptr;
@@ -112,30 +127,34 @@ main(int argc, char** argv)
   if(!imgSubscriptionHelper(subscription)){
     return -1;
   }
-  sleep(1);
+  ros::Duration(1).sleep();;
 
   switch (inputChar)
   {
-    case 'a': {
+    case 'a': 
+    {
       topic_synchronizer->registerCallback(boost::bind(&displayStereoRectImgCallback,
                                                        _1, _2, stereo_frame_ptr));
-    }
       break;
-    case 'b': {
+    }
+    case 'b':
+    {
       topic_synchronizer->registerCallback(boost::bind(&displayStereoDisparityCallback,
                                                        _1, _2, stereo_frame_ptr));
-    }
       break;
-    case 'c': {
+    }
+    case 'c':
+    {
       topic_synchronizer->registerCallback(boost::bind(&displayStereoFilteredDisparityCallback,
                                                        _1, _2, stereo_frame_ptr));
-    }
       break;
-    case 'd': {
+    }
+    case 'd':
+    {
       topic_synchronizer->registerCallback(boost::bind(&displayStereoPtCloudCallback,
                                                        _1, _2, stereo_frame_ptr));
-    }
       break;
+    }
     case 'e': {
       subscription.request.unsubscribe_vga = 1;
       if(!imgSubscriptionHelper(subscription)){
@@ -144,14 +163,14 @@ main(int argc, char** argv)
       return 0;
     }
       break;
-    default: {
+    default:
+    {
       ROS_ERROR("Unknown input");
       subscription.request.unsubscribe_vga = 1;
       imgSubscriptionHelper(subscription);
       return 0;
     }
   }
-
   ros::spin();
 }
 
@@ -161,9 +180,10 @@ void displayStereoRectImgCallback(const sensor_msgs::ImageConstPtr &img_left,
                                   StereoFrame::Ptr stereo_frame_ptr)
 {
   //! Read raw images
+  ROS_INFO("Read raw images from displayStereoRectImgCallback");
   DJI::OSDK::ACK::StereoVGAImgData img_VGA_img;
-  memcpy(&img_VGA_img.img_vec[0], &img_left, sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
-  memcpy(&img_VGA_img.img_vec[1], &img_right, sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
+  memcpy(&img_VGA_img.img_vec[0], &img_left->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
+  memcpy(&img_VGA_img.img_vec[1], &img_right->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
   img_VGA_img.frame_index = img_left->header.seq;
   img_VGA_img.time_stamp = img_left->header.stamp.nsec;
   stereo_frame_ptr->readStereoImgs(img_VGA_img);
@@ -200,8 +220,8 @@ void displayStereoDisparityCallback(const sensor_msgs::ImageConstPtr &img_left,
 {
   //! Read raw images
   DJI::OSDK::ACK::StereoVGAImgData img_VGA_img;
-  memcpy(&img_VGA_img.img_vec[0], &img_left, sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
-  memcpy(&img_VGA_img.img_vec[1], &img_right, sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
+  memcpy(&img_VGA_img.img_vec[0], &img_left->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
+  memcpy(&img_VGA_img.img_vec[1], &img_right->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
   img_VGA_img.frame_index = img_left->header.seq;
   img_VGA_img.time_stamp = img_left->header.stamp.nsec;
   stereo_frame_ptr->readStereoImgs(img_VGA_img);
@@ -255,8 +275,8 @@ void displayStereoFilteredDisparityCallback(const sensor_msgs::ImageConstPtr &im
 
   //! Read raw images
   DJI::OSDK::ACK::StereoVGAImgData img_VGA_img;
-  memcpy(&img_VGA_img.img_vec[0], &img_left, sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
-  memcpy(&img_VGA_img.img_vec[1], &img_right, sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
+  memcpy(&img_VGA_img.img_vec[0], &img_left->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
+  memcpy(&img_VGA_img.img_vec[1], &img_right->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
   img_VGA_img.frame_index = img_left->header.seq;
   img_VGA_img.time_stamp = img_left->header.stamp.nsec;
   stereo_frame_ptr->readStereoImgs(img_VGA_img);
@@ -321,8 +341,8 @@ void displayStereoPtCloudCallback(const sensor_msgs::ImageConstPtr &img_left,
 {
   //! Read raw images
   DJI::OSDK::ACK::StereoVGAImgData img_VGA_img;
-  memcpy(&img_VGA_img.img_vec[0], &img_left, sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
-  memcpy(&img_VGA_img.img_vec[1], &img_right, sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
+  memcpy(&img_VGA_img.img_vec[0], &img_left->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
+  memcpy(&img_VGA_img.img_vec[1], &img_right->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
   img_VGA_img.frame_index = img_left->header.seq;
   img_VGA_img.time_stamp = img_left->header.stamp.nsec;
   stereo_frame_ptr->readStereoImgs(img_VGA_img);
@@ -461,15 +481,6 @@ imgSubscriptionHelper(dji_osdk_ros::StereoVGASubscription &service)
       vga_imgs_subscribed = true;
     }
   }
-  // if (ros::service::call("/dji_osdk_ros/stereo_vga_subscription", service))
-  // {
-  //   ROS_INFO("Successfully %s to VGA images", action.c_str());
-  //   if(service.request.unsubscribe_vga){
-  //     vga_imgs_subscribed = false;
-  //   }else{
-  //     vga_imgs_subscribed = true;
-  //   }
-  // }
   else
   {
     ROS_ERROR("Failed to %s to VGA images", action.c_str());
