@@ -62,7 +62,9 @@ namespace dji_osdk_ros
     public:
       void setupEnvironment(bool enable_advanced_sensing);
       bool initVehicle();
-      ErrorCode::ErrorCodeType initCameraModule(PayloadIndexType index,
+      ErrorCode::ErrorCodeType initGimbalModule(dji_osdk_ros::PayloadIndex index,
+                                                const char* name);
+      ErrorCode::ErrorCodeType initCameraModule(dji_osdk_ros::PayloadIndex index,
                                                 const char* name);
 
     public:
@@ -124,6 +126,7 @@ namespace dji_osdk_ros
       void setAcmDevicePath(const std::string& acm_path);
 #endif
       bool isM100();
+      bool isM300();
       void setUpM100DefaultFreq(uint8_t freq[16]);
       void setUpA3N3DefaultFreq(uint8_t freq[16]);
       ACK::ErrorCode setBroadcastFreq(uint8_t* dataLenIs16, int timeout);
@@ -150,7 +153,7 @@ namespace dji_osdk_ros
       void unsubscribePPSSource();
 
       /*! Parts of data subscription*/
-      bool setUpSubscription(int pkgIndex, int freq,TopicName topicList[],
+      bool setUpSubscription(int pkgIndex, int freq,TopicName* topicList,
                            uint8_t topicSize, int timeout);
       bool teardownSubscription(const int pkgIndex, int timeout);
       ACK::ErrorCode verify(int timeout);

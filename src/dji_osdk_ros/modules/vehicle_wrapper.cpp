@@ -1188,7 +1188,7 @@ static T_OsdkOsalHandler osalHandler = {
     }
   }
 
-  bool VehicleWrapper::setUpSubscription(int pkgIndex, int freq, TopicName topicList[],
+  bool VehicleWrapper::setUpSubscription(int pkgIndex, int freq, TopicName* topicList,
                                          uint8_t topicSize, int timeout)
   {
     if (vehicle) {
@@ -2058,6 +2058,11 @@ static T_OsdkOsalHandler osalHandler = {
     return(vehicle->isM100());
   }
 
+    bool VehicleWrapper::isM300()
+  {
+    return(vehicle->isM300());
+  }
+
   void VehicleWrapper::setUpM100DefaultFreq(uint8_t freq[16])
   {
     /* Channels definition for M100
@@ -2289,9 +2294,15 @@ static T_OsdkOsalHandler osalHandler = {
       return vehicle->getHwVersion();
   }
 
-  ErrorCode::ErrorCodeType VehicleWrapper::initCameraModule(PayloadIndexType index,
-                                                           const char* name)
+  ErrorCode::ErrorCodeType VehicleWrapper::initGimbalModule(dji_osdk_ros::PayloadIndex index,
+                                                            const char* name)
   {
-      return vehicle->cameraManager->initCameraModule(index, name);
+      return vehicle->gimbalManager->initGimbalModule(static_cast<DJI::OSDK::PayloadIndexType>(index), name);
+  }
+
+  ErrorCode::ErrorCodeType VehicleWrapper::initCameraModule(dji_osdk_ros::PayloadIndex index,
+                                                            const char* name)
+  {
+      return vehicle->cameraManager->initCameraModule(static_cast<DJI::OSDK::PayloadIndexType>(index), name);
   }
 }

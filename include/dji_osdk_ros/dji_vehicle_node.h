@@ -114,8 +114,7 @@ namespace dji_osdk_ros
 
       ~VehicleNode();
 
-      bool subscribeGimbalData();
-      bool unSubScribeGimbalData();
+      bool initGimbalModule();
       bool initCameraModule();
       void initService();
       bool initTopic();
