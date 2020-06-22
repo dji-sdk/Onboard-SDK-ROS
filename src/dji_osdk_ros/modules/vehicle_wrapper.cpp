@@ -1174,9 +1174,9 @@ static T_OsdkOsalHandler osalHandler = {
     return true;
   }
 
-  bool VehicleWrapper::goHome(int timeout)
+  bool VehicleWrapper::goHome(ACK::ErrorCode& ack, int timeout)
   {
-    auto ack = vehicle->control->goHome(timeout);
+    ack = vehicle->control->goHome(timeout);
     if (ACK::getError(ack))
     {
       ACK::getErrorCodeMessage(ack, __func__);
