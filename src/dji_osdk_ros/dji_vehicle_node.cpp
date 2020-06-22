@@ -658,7 +658,7 @@ dji_osdk_ros::CameraData VehicleNode::getCameraData()
 
 bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightTaskControl::Response& response)
 {
-  ROS_DEBUG("called droneTaskCallback");
+  ROS_DEBUG("called taskCtrlCallback");
   response.result = false;
   ACK::ErrorCode ack;
   if(ptr_wrapper_ == nullptr)
@@ -670,17 +670,23 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
   switch (request.task)
   {
     case FlightTaskControl::Request::TASK_GOHOME:
-      {
+     {
         ROS_INFO_STREAM("call go home service");
-        ptr_wrapper_->goHome(FLIGHT_CONTROL_WAIT_TIMEOUT);
+        if (ptr_wrapper_->goHome(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
         break;
       }
     case FlightTaskControl::Request::TASK_GOHOME_AND_CONFIRM_LANDING:
-    {
-      ROS_INFO_STREAM("call go home and confirm landing service");
-      ptr_wrapper_->goHomeAndConfirmLanding(FLIGHT_CONTROL_WAIT_TIMEOUT);
-      break;
-    }
+      {
+        ROS_INFO_STREAM("call go home and confirm landing service");
+        if (ptr_wrapper_->goHomeAndConfirmLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+            response.result = true;
+        }
+        break;
+      }
     case FlightTaskControl::Request::TASK_GO_LOCAL_POS:
       {
         ROS_INFO_STREAM("call move local position service");
@@ -696,20 +702,28 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
                              request.yaw_params[1],
                              request.yaw_params[2]
                             };
-        ptr_wrapper_->moveByPositionOffset(ack, FLIGHT_CONTROL_WAIT_TIMEOUT, tmp_offset);
+        if (ptr_wrapper_->moveByPositionOffset(ack, FLIGHT_CONTROL_WAIT_TIMEOUT, tmp_offset))
+        {
+          response.result = true;
+        }
         break;
       }
     case FlightTaskControl::Request::TASK_TAKEOFF:
       {
         ROS_INFO_STREAM("call takeoff service");
-        ptr_wrapper_->monitoredTakeoff(ack, FLIGHT_CONTROL_WAIT_TIMEOUT);
+        if (ptr_wrapper_->monitoredTakeoff(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
         break;
       }
     case FlightTaskControl::Request::TASK_LAND:
       {
         ROS_INFO_STREAM("call land service");
-        ptr_wrapper_->monitoredLanding(ack, FLIGHT_CONTROL_WAIT_TIMEOUT);
-        response.result = true;
+        if (ptr_wrapper_->monitoredLanding(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
         break;
       }
     default:
@@ -726,17 +740,14 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
   response.cmd_id   = (int)ack.info.cmd_id;
   response.ack_data = (unsigned int)ack.data;
 
-  if (ACK::getError(ack))
+  if (response.result)
   {
-    ACK::getErrorCodeMessage(ack, __func__);
-    response.result = false;
+    return true;
   }
   else
   {
-    response.result = true;
+    return false;
   }
-
-  return true;
 }
 
 bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response)
