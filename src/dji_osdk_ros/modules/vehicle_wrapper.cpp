@@ -1174,9 +1174,9 @@ static T_OsdkOsalHandler osalHandler = {
     return true;
   }
 
-  bool VehicleWrapper::goHome(int timeout)
+  bool VehicleWrapper::goHome(ACK::ErrorCode& ack, int timeout)
   {
-    auto ack = vehicle->control->goHome(timeout);
+    ack = vehicle->control->goHome(timeout);
     if (ACK::getError(ack))
     {
       ACK::getErrorCodeMessage(ack, __func__);
@@ -1188,7 +1188,7 @@ static T_OsdkOsalHandler osalHandler = {
     }
   }
 
-  bool VehicleWrapper::setUpSubscription(int pkgIndex, int freq, TopicName topicList[],
+  bool VehicleWrapper::setUpSubscription(int pkgIndex, int freq, TopicName* topicList,
                                          uint8_t topicSize, int timeout)
   {
     if (vehicle) {
@@ -2331,9 +2331,15 @@ static T_OsdkOsalHandler osalHandler = {
       return vehicle->getHwVersion();
   }
 
-  ErrorCode::ErrorCodeType VehicleWrapper::initCameraModule(PayloadIndexType index,
-                                                           const char* name)
+  ErrorCode::ErrorCodeType VehicleWrapper::initGimbalModule(dji_osdk_ros::PayloadIndex index,
+                                                            const char* name)
   {
-      return vehicle->cameraManager->initCameraModule(index, name);
+      return vehicle->gimbalManager->initGimbalModule(static_cast<DJI::OSDK::PayloadIndexType>(index), name);
+  }
+
+  ErrorCode::ErrorCodeType VehicleWrapper::initCameraModule(dji_osdk_ros::PayloadIndex index,
+                                                            const char* name)
+  {
+      return vehicle->cameraManager->initCameraModule(static_cast<DJI::OSDK::PayloadIndexType>(index), name);
   }
 }

@@ -42,10 +42,10 @@ bool sendToMobile(AckReturnToMobile returnAckMobile)
 
 void fromMobileDataSubCallback(const dji_osdk_ros::MobileData::ConstPtr& fromMobileData)
 {
-  ROS_INFO("fromMobileData:");
   dji_osdk_ros::MobileData fromMobileInfo = *fromMobileData;
   AckReturnToMobile ackReturnToMobile;
   memcpy(&ackReturnToMobile, &fromMobileInfo.data[0], sizeof(AckReturnToMobile));
+  ROS_INFO("fromMobileData:%d",ackReturnToMobile.cmdID);
 
   int cmd = ackReturnToMobile.cmdID;
   switch (cmd)
@@ -97,6 +97,7 @@ void fromMobileDataSubCallback(const dji_osdk_ros::MobileData::ConstPtr& fromMob
     {
       ackReturnToMobile.ackResult = takePicture();
       sendToMobile(ackReturnToMobile);
+      break;
     }
 
     case 9:

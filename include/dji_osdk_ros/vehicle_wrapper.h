@@ -62,7 +62,9 @@ namespace dji_osdk_ros
     public:
       void setupEnvironment(bool enable_advanced_sensing);
       bool initVehicle();
-      ErrorCode::ErrorCodeType initCameraModule(PayloadIndexType index,
+      ErrorCode::ErrorCodeType initGimbalModule(dji_osdk_ros::PayloadIndex index,
+                                                const char* name);
+      ErrorCode::ErrorCodeType initCameraModule(dji_osdk_ros::PayloadIndex index,
                                                 const char* name);
 
     public:
@@ -92,7 +94,7 @@ namespace dji_osdk_ros
       bool checkActionStarted(uint8_t mode);
       bool setNewHomeLocation(int timeout = 1);
       bool setHomeAltitude(uint16_t altitude, int timeout = 1);
-      bool goHome(int timeout);
+      bool goHome(ACK::ErrorCode& ack, int timeout);
       bool goHomeAndConfirmLanding(int timeout);
       bool setAvoid(bool enable);
       bool setUpwardsAvoidance(bool enable);
@@ -186,7 +188,7 @@ namespace dji_osdk_ros
       void unsubscribePPSSource();
 
       /*! Parts of data subscription*/
-      bool setUpSubscription(int pkgIndex, int freq,TopicName topicList[],
+      bool setUpSubscription(int pkgIndex, int freq,TopicName* topicList,
                            uint8_t topicSize, int timeout);
       bool teardownSubscription(const int pkgIndex, int timeout);
       ACK::ErrorCode verify(int timeout);

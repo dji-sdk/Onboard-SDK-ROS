@@ -75,7 +75,7 @@ VehicleNode::VehicleNode():telemetry_from_fc_(TelemetryType::USE_ROS_BROADCAST),
     telemetry_from_fc_ = TelemetryType::USE_ROS_SUBSCRIBE;
   }
 
-  subscribeGimbalData();
+  initGimbalModule();
   initCameraModule();
   initService();
   initTopic();
@@ -83,8 +83,6 @@ VehicleNode::VehicleNode():telemetry_from_fc_(TelemetryType::USE_ROS_BROADCAST),
 
 VehicleNode::~VehicleNode()
 {
-  unSubScribeGimbalData();
-
   if(!ptr_wrapper_->isM100() && telemetry_from_fc_ == TelemetryType::USE_ROS_SUBSCRIBE)
   {
     cleanUpSubscribeFromFC();
@@ -97,50 +95,18 @@ VehicleNode::~VehicleNode()
   }
 }
 
-bool VehicleNode::subscribeGimbalData()
+bool VehicleNode::initGimbalModule()
 {
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
-  Vehicle* vehicle = ptr_wrapper_->getVehicle();
-  /*! verify the subscribe function */
-  ACK::ErrorCode ack = vehicle->subscribe->verify(1);
-  if (ACK::getError(ack) != ACK::SUCCESS) {
-    ACK::getErrorCodeMessage(ack, __func__);
-    return false;
-  }
-
-  /*! Package 0: Subscribe to gimbal data at freq 50 Hz */
-  ACK::ErrorCode subscribeStatus;
-  int       pkgIndex        = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::GIMBAL_SUB_PACKAGE_INDEX);
-  int       freq            = 50;
-  TopicName topicList50Hz[]  = { vehicle->isM300() ? TOPIC_THREE_GIMBAL_DATA : TOPIC_DUAL_GIMBAL_DATA };
-  int       numTopic        = sizeof(topicList50Hz) / sizeof(topicList50Hz[0]);
-  bool      enableTimestamp = false;
-
-  bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
-      pkgIndex, numTopic, topicList50Hz, enableTimestamp, freq);
-  if (!(pkgStatus))
-  {
-    std::cout << "init package for gimbal data failed." << std::endl;
-    return false;
-  }
-  subscribeStatus = vehicle->subscribe->startPackage(pkgIndex, 1);
-  if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
-  {
-    ACK::getErrorCodeMessage(subscribeStatus, __func__);
-    vehicle->subscribe->removePackage(pkgIndex, 1);
-    std::cout << "subscribe gimbal data failed."<< std::endl;
-    return false;
-  }
 
   /*! init gimbal modules for gimbalManager */
   ErrorCode::ErrorCodeType ret;
   /*! main gimbal init */
-  ret = vehicle->gimbalManager->initGimbalModule(PAYLOAD_INDEX_0,
-                                                 "main_gimbal");
+  ret = ptr_wrapper_->initGimbalModule(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0, "main_gimbal");
   if (ret != ErrorCode::SysCommonErr::Success)
   {
     std::cout << "Init Camera modules main_gimbal failed."<< std::endl;
@@ -148,8 +114,7 @@ bool VehicleNode::subscribeGimbalData()
     return false;
   }
   /*! vice gimbal init */
-  ret = vehicle->gimbalManager->initGimbalModule(PAYLOAD_INDEX_1,
-                                                 "vice_gimbal");
+  ret = ptr_wrapper_->initGimbalModule(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_1, "vice_gimbal");
   if (ret != ErrorCode::SysCommonErr::Success)
   {
     std::cout << "Init Camera modules vice_gimbal failed." << std::endl;
@@ -157,10 +122,9 @@ bool VehicleNode::subscribeGimbalData()
     return false;
   }
   /*! top gimbal init */
-  if (vehicle->isM300())
+  if (ptr_wrapper_->isM300())
   {
-    ret = vehicle->gimbalManager->initGimbalModule(PAYLOAD_INDEX_2,
-                                                   "top_gimbal");
+    ret = ptr_wrapper_->initGimbalModule(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_2, "top_gimbal");
     if (ret != ErrorCode::SysCommonErr::Success) {
       std::cout << "Init Camera modules top_gimbal failed." << std::endl;
       ErrorCode::printErrorCodeMsg(ret);
@@ -171,25 +135,6 @@ bool VehicleNode::subscribeGimbalData()
   return true;
 }
 
-bool VehicleNode::unSubScribeGimbalData()
-{
-  if(ptr_wrapper_ == nullptr)
-  {
-    ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
-  }
-
-  int pkgIndex = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::GIMBAL_SUB_PACKAGE_INDEX);
-  ACK::ErrorCode subscribeStatus = ptr_wrapper_->removePackage(pkgIndex, 1);
-  if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
-  {
-    ACK::getErrorCodeMessage(subscribeStatus, __func__);
-    std::cout << "remove subscribe package gimbal data failed." << std::endl;
-    return false;
-  }
-  return true;
-}
-
 bool VehicleNode::initCameraModule()
 {
   if(ptr_wrapper_ == nullptr)
@@ -197,29 +142,26 @@ bool VehicleNode::initCameraModule()
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return true;
   }
-  Vehicle* vehicle = ptr_wrapper_->getVehicle();
 
   /*! init camera modules for cameraManager */
   /*! main camera init */
   ErrorCode::ErrorCodeType ret = ptr_wrapper_->initCameraModule(
-      PAYLOAD_INDEX_0, "main_camera");
+      dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0, "main_camera");
   if (ret != ErrorCode::SysCommonErr::Success) {
     DERROR("Init Camera modules main_camera failed.");
     ErrorCode::printErrorCodeMsg(ret);
     return false;
   }
   /*! vice camera init */
-  ret = vehicle->cameraManager->initCameraModule(PAYLOAD_INDEX_1,
-                                                 "vice_camera");
+  ret = ptr_wrapper_->initCameraModule(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_1, "vice_camera");
   if (ret != ErrorCode::SysCommonErr::Success) {
     DERROR("Init Camera modules vice_camera failed.");
     ErrorCode::printErrorCodeMsg(ret);
     return false;
   }
   /*! top camera init for M300 */
-  if (vehicle->isM300()) {
-    ret = vehicle->cameraManager->initCameraModule(PAYLOAD_INDEX_2,
-                                                   "top_camera");
+  if (ptr_wrapper_->isM300()) {
+    ret = ptr_wrapper_->initCameraModule(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_2, "top_camera");
     if (ret != ErrorCode::SysCommonErr::Success)
     {
       DERROR("Init Camera modules top_camera failed.");
@@ -375,12 +317,26 @@ bool VehicleNode::initTopic()
 
     /*! some data still need to be subscribed*/
     int pkgIndex = static_cast<int>(SubscribePackgeIndex::BROADCAST_BUT_NEED_SUBSCRIBE);
-    int freq = 10;
+    int freq = 50;
     int timeout = 1;
-    TopicName topicList10Hz[] = { TOPIC_STATUS_FLIGHT, TOPIC_STATUS_DISPLAYMODE,TOPIC_VELOCITY,
-                                 TOPIC_GPS_FUSED ,TOPIC_QUATERNION };
-    int topicSize = sizeof(topicList10Hz) / sizeof(topicList10Hz[0]);
-    ptr_wrapper_->setUpSubscription(pkgIndex, freq, topicList10Hz, topicSize, timeout);
+    std::vector<Telemetry::TopicName> topicList50Hz;
+
+    topicList50Hz.push_back(Telemetry::TOPIC_STATUS_FLIGHT);
+    topicList50Hz.push_back(Telemetry::TOPIC_STATUS_DISPLAYMODE);
+    topicList50Hz.push_back(Telemetry::TOPIC_VELOCITY);
+    topicList50Hz.push_back(Telemetry::TOPIC_GPS_FUSED);
+    topicList50Hz.push_back(Telemetry::TOPIC_QUATERNION);
+    if (ptr_wrapper_->isM300())
+    {
+      topicList50Hz.push_back(Telemetry::TOPIC_THREE_GIMBAL_DATA);
+    }
+    else
+    {
+      topicList50Hz.push_back(Telemetry::TOPIC_DUAL_GIMBAL_DATA);
+
+    }
+    int topicSize = topicList50Hz.size();;
+    ptr_wrapper_->setUpSubscription(pkgIndex, freq, topicList50Hz.data(), topicSize, timeout);
   }
   else if (telemetry_from_fc_ == TelemetryType::USE_ROS_SUBSCRIBE)
   {
@@ -468,6 +424,16 @@ bool VehicleNode::initDataSubscribeFromFC()
   topicList50Hz.push_back(Telemetry::TOPIC_STATUS_DISPLAYMODE);
   topicList50Hz.push_back(Telemetry::TOPIC_GIMBAL_ANGLES);
   topicList50Hz.push_back(Telemetry::TOPIC_GIMBAL_STATUS);
+
+  // acturally gimbal data is from Gimbal directly
+  if (ptr_wrapper_->isM300())
+  {
+    topicList50Hz.push_back(Telemetry::TOPIC_THREE_GIMBAL_DATA);
+  }
+  else
+  {
+    topicList50Hz.push_back(Telemetry::TOPIC_DUAL_GIMBAL_DATA);
+  }
   topicList50Hz.push_back(Telemetry::TOPIC_RC);
   topicList50Hz.push_back(Telemetry::TOPIC_VELOCITY);
   topicList50Hz.push_back(Telemetry::TOPIC_GPS_CONTROL_LEVEL);
@@ -888,7 +854,7 @@ bool VehicleNode::getDroneTypeCallback(dji_osdk_ros::GetDroneType::Request &requ
 
 bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightTaskControl::Response& response)
 {
-  ROS_DEBUG("called droneTaskCallback");
+  ROS_DEBUG("called taskCtrlCallback");
   response.result = false;
   ACK::ErrorCode ack;
   if(ptr_wrapper_ == nullptr)
@@ -900,17 +866,23 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
   switch (request.task)
   {
     case FlightTaskControl::Request::TASK_GOHOME:
-      {
+     {
         ROS_INFO_STREAM("call go home service");
-        ptr_wrapper_->goHome(FLIGHT_CONTROL_WAIT_TIMEOUT);
+        if (ptr_wrapper_->goHome(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
         break;
       }
     case FlightTaskControl::Request::TASK_GOHOME_AND_CONFIRM_LANDING:
-    {
-      ROS_INFO_STREAM("call go home and confirm landing service");
-      ptr_wrapper_->goHomeAndConfirmLanding(FLIGHT_CONTROL_WAIT_TIMEOUT);
-      break;
-    }
+      {
+        ROS_INFO_STREAM("call go home and confirm landing service");
+        if (ptr_wrapper_->goHomeAndConfirmLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+            response.result = true;
+        }
+        break;
+      }
     case FlightTaskControl::Request::TASK_GO_LOCAL_POS:
       {
         ROS_INFO_STREAM("call move local position service");
@@ -926,20 +898,28 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
                              request.yaw_params[1],
                              request.yaw_params[2]
                             };
-        ptr_wrapper_->moveByPositionOffset(ack, FLIGHT_CONTROL_WAIT_TIMEOUT, tmp_offset);
+        if (ptr_wrapper_->moveByPositionOffset(ack, FLIGHT_CONTROL_WAIT_TIMEOUT, tmp_offset))
+        {
+          response.result = true;
+        }
         break;
       }
     case FlightTaskControl::Request::TASK_TAKEOFF:
       {
         ROS_INFO_STREAM("call takeoff service");
-        ptr_wrapper_->monitoredTakeoff(ack, FLIGHT_CONTROL_WAIT_TIMEOUT);
+        if (ptr_wrapper_->monitoredTakeoff(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
         break;
       }
     case FlightTaskControl::Request::TASK_LAND:
       {
         ROS_INFO_STREAM("call land service");
-        ptr_wrapper_->monitoredLanding(ack, FLIGHT_CONTROL_WAIT_TIMEOUT);
-        response.result = true;
+        if (ptr_wrapper_->monitoredLanding(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
         break;
       }
     default:
@@ -956,17 +936,14 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
   response.cmd_id   = (int)ack.info.cmd_id;
   response.ack_data = (unsigned int)ack.data;
 
-  if (ACK::getError(ack))
+  if (response.result)
   {
-    ACK::getErrorCodeMessage(ack, __func__);
-    response.result = false;
+    return true;
   }
   else
   {
-    response.result = true;
+    return false;
   }
-
-  return true;
 }
 
 bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response)
