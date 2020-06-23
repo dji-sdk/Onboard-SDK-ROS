@@ -19,6 +19,7 @@
  *
  */
 
+#include <sensor_msgs/PointCloud2.h>
 #include "stereo_frame.hpp"
 
 using namespace M210_STEREO;
@@ -36,6 +37,9 @@ StereoFrame::StereoFrame(CameraParam::Ptr left_cam,
   , color_mat_(VGA_HEIGHT, VGA_WIDTH, CV_8UC1, &color_buffer_[0])
   , pt_cloud_(mat_vec3_pt_, color_mat_)
   , raw_disparity_map_(Mat(VGA_HEIGHT, VGA_WIDTH, CV_16SC1))
+  , border_size_(num_disp)
+  , trunc_img_height_end_(VGA_HEIGHT - border_size_)
+  , trunc_img_width_end_(VGA_WIDTH - border_size_)
 {
   if(!this->initStereoParam())
   {
@@ -100,6 +104,47 @@ StereoFrame::initStereoParam()
 
   right_matcher_ = ximgproc::createRightMatcher(block_matcher_);
 #endif
+
+  ros_pt_cloud_.header.frame_id = "map"; // Please change this accordingly
+  ros_pt_cloud_.height = VGA_HEIGHT;
+  ros_pt_cloud_.width = VGA_WIDTH;
+  ros_pt_cloud_.point_step = sizeof(float)*3;
+  ros_pt_cloud_.row_step = sizeof(float)*3*VGA_WIDTH;
+  ros_pt_cloud_.is_bigendian = 0;
+  ros_pt_cloud_.is_dense = 0;
+  size_t num_pt_cloud = (trunc_img_height_end_-border_size_)*(trunc_img_width_end_-border_size_);
+  // modifier resize this container
+  ros_pt_cloud_.data.resize(num_pt_cloud);
+
+  cloud_modifier_ = new sensor_msgs::PointCloud2Modifier(ros_pt_cloud_);
+  cloud_modifier_->setPointCloud2FieldsByString(2, "xyz", "rgb");
+  cloud_modifier_->resize(num_pt_cloud);
+
+  x_it_ = new sensor_msgs::PointCloud2Iterator<float>(ros_pt_cloud_, "x");
+  y_it_ = new sensor_msgs::PointCloud2Iterator<float>(ros_pt_cloud_, "y");
+  z_it_ = new sensor_msgs::PointCloud2Iterator<float>(ros_pt_cloud_, "z");
+  r_it_ = new sensor_msgs::PointCloud2Iterator<uint8_t>(ros_pt_cloud_, "r");
+  g_it_ = new sensor_msgs::PointCloud2Iterator<uint8_t>(ros_pt_cloud_, "g");
+  b_it_ = new sensor_msgs::PointCloud2Iterator<uint8_t>(ros_pt_cloud_, "b");
+
+  //! Setup visualization info
+  marker_template_.header.frame_id = "map"; // Please change this accordingly
+  marker_template_.header.stamp = ros::Time();
+  marker_template_.ns = "object";
+  marker_template_.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+  marker_template_.action = visualization_msgs::Marker::ADD;
+  marker_template_.lifetime = ros::Duration(0.1);
+  marker_template_.pose.orientation.x = 0.0;
+  marker_template_.pose.orientation.y = 0.0;
+  marker_template_.pose.orientation.z = 0.0;
+  marker_template_.pose.orientation.w = 1.0;
+  marker_template_.scale.x = 5;
+  marker_template_.scale.y = 0.1;
+  marker_template_.scale.z = 0.2;
+  marker_template_.color.a = 1.0; // Don't forget to set the alpha!
+  marker_template_.color.r = 0.0;
+  marker_template_.color.g = 1.0;
+  marker_template_.color.b = 0.0;
 
   return true;
 }
@@ -276,3 +321,62 @@ StereoFrame::unprojectROSPtCloud()
   *g_it_ += -pt_cloud_count;
   *b_it_ += -pt_cloud_count;
 }
+
+#ifdef USE_DARKNET_ROS
+void
+StereoFrame::calcObjectInfo(const darknet_ros_msgs::BoundingBoxesConstPtr &b_box,
+                            visualization_msgs::MarkerArray &marker_array)
+{
+  ROS_INFO("Got %d detections", (int)b_box->boundingBoxes.size());
+
+  marker_array.markers.clear();
+  marker_array.markers.resize(b_box->boundingBoxes.size());
+
+  for (int i = 0; i < b_box->boundingBoxes.size(); ++i) {
+    visualization_msgs::Marker marker = marker_template_;
+
+
+    /**
+     * Note that the bounding boxes were detected on original image
+     * The point cloud and disparity map are rectified.
+     * Here we use the center of the box to calculate
+     * the "approximate" depth information.
+     * For different applications and different objects, calculation varies.
+     * Please make according changes to fit the need of your application.
+     */
+
+    cv::Rect roi;
+    roi.x = b_box->boundingBoxes[i].xmin;
+    roi.y = b_box->boundingBoxes[i].ymin;
+    roi.width = b_box->boundingBoxes[i].xmax - b_box->boundingBoxes[i].xmin;
+    roi.height = b_box->boundingBoxes[i].ymax - b_box->boundingBoxes[i].ymin;
+
+    float v = roi.y + roi.height*0.5;
+    float u = roi.x + roi.width*0.5;
+    float disparity = (float)(filtered_disparity_map_.at<short int>(v, u)*0.0625);
+    float dist_x, dist_y, dist_z;
+    dist_z = baseline_x_fx_/disparity;
+    dist_x = (u-principal_x_)*(dist_z)/fx_;
+    dist_y = (v-principal_y_)*(dist_z)/fy_;
+    float distance = sqrt(dist_z*dist_z + dist_y*dist_y + dist_x*dist_x);
+
+    std::stringstream stream_x, stream_y, stream_z, stream_dist;
+    stream_x << std::fixed << std::setprecision(2) << dist_x;
+    std::string dist_x_str = stream_x.str();
+    stream_y << std::fixed << std::setprecision(2) << dist_y;
+    std::string dist_y_str = stream_y.str();
+    stream_z << std::fixed << std::setprecision(2) << dist_z;
+    std::string dist_z_str = stream_z.str();
+    stream_dist << std::fixed << std::setprecision(2) << distance;
+    std::string distance_str = stream_dist.str();
+
+    marker.text = b_box->boundingBoxes[i].Class + "  " + distance_str + "m\n\tx:" + dist_x_str + "\n\ty:" + dist_y_str + "\n\tz:" + dist_z_str;
+    marker.pose.position.x = dist_x;
+    marker.pose.position.y = dist_y;
+    marker.pose.position.z = dist_z-1; // -1 to avoid point cloud and text occlusion
+    marker.header.stamp = ros::Time();
+    marker.id = i;
+    marker_array.markers[i] = std::move(marker);
+  }
+}
+#endif

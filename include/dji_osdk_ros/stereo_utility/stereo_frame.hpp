@@ -23,6 +23,10 @@
 #include "visualization_msgs/MarkerArray.h"
 #include "ros/ros.h"
 
+#ifdef USE_DARKNET_ROS
+#include "darknet_ros_msgs/BoundingBoxes.h"
+#endif
+
 namespace M210_STEREO
 {
 
@@ -51,6 +55,10 @@ public:
 
   void unprojectROSPtCloud();
 
+#ifdef USE_DARKNET_ROS
+  void calcObjectInfo(const darknet_ros_msgs::BoundingBoxesConstPtr &b_box, visualization_msgs::MarkerArray &marker_array);
+#endif
+
   inline cv::Mat getRectLeftImg() { return this->rectified_img_left_; }
 
   inline cv::Mat getRectRightImg() { return this->rectified_img_right_; }
@@ -58,6 +66,8 @@ public:
   inline cv::Mat getDisparityMap() { return this->disparity_map_8u_; }
 
   inline cv::viz::WCloud getPtCloud() { return this->pt_cloud_; }
+
+  inline sensor_msgs::PointCloud2 getROSPtCloud() { return this->ros_pt_cloud_; }
 
 #ifdef USE_OPEN_CV_CONTRIB
   inline cv::Mat getFilteredDispMap() { return this->filtered_disparity_map_8u_; }
@@ -100,6 +110,12 @@ protected:
   double fx_;
   double fy_;
   double baseline_x_fx_;
+
+  // due to rectification, the image boarder are blank
+  // we cut them out
+  const int     border_size_;
+  const int     trunc_img_width_end_;
+  const int     trunc_img_height_end_;
   std::vector<uint8_t>  color_buffer_;
   cv::Mat               color_mat_;
   cv::Mat_<cv::Vec3f>   mat_vec3_pt_;

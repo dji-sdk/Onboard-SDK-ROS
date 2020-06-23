@@ -389,7 +389,7 @@ void displayStereoPtCloudCallback(const sensor_msgs::ImageConstPtr &img_left,
   //! Unproject image to 3D point cloud
   timer pt_cloud_start= std::chrono::high_resolution_clock::now();
   stereo_frame_ptr->unprojectPtCloud();
-  // stereo_frame_ptr->unprojectROSPtCloud();
+  stereo_frame_ptr->unprojectROSPtCloud();
   timer pt_cloud_end  = std::chrono::high_resolution_clock::now();
 
   cv::viz::WCloud pt_cloud = stereo_frame_ptr->getPtCloud();
@@ -424,7 +424,7 @@ void displayStereoPtCloudCallback(const sensor_msgs::ImageConstPtr &img_left,
   rect_img_left_publisher.publish(rect_left_img);
   rect_img_right_publisher.publish(rect_right_img);
   left_disparity_publisher.publish(disparity_map);
-  //point_cloud_publisher.publish(stereo_frame_ptr->getROSPtCloud());
+  point_cloud_publisher.publish(stereo_frame_ptr->getROSPtCloud());
 
   duration rectify_time_diff = rectify_end - rectify_start;
   duration disp_time_diff = disp_end - disp_start;
