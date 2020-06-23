@@ -1,8 +1,8 @@
-/** @file stereo_vision_depth_perception.cpp
+/** @file stereo_vision_object_depth_perception_node.cpp
  *  @version 4.0
- *  @date May 2020
+ *  @date June 2020
  *
- *  @brief sample node of stereo vision depth perception.
+ *  @brief node of stereo_vision_object_depth_perception.
  *
  *  @Copyright (c) 2020 DJI
  *
@@ -25,7 +25,8 @@
  * SOFTWARE.
  *
  */
-#include "dji_osdk_ros/stereo_vision_depth_perception_node.h"
+
+#include "dji_osdk_ros/stereo_vision_object_depth_perception_node.h"
 
 using namespace M210_STEREO;
 
@@ -34,23 +35,20 @@ bool is_disp_filterd;
 bool vga_imgs_subscribed = false;
 
 dji_osdk_ros::StereoVGASubscription subscription;
-dji_osdk_ros::GetDroneType drone_type;
-dji_osdk_ros::GetM300StereoParams m300_stereo_params;
 ros::Publisher rect_img_left_publisher;
 ros::Publisher rect_img_right_publisher;
 ros::Publisher left_disparity_publisher;
 ros::Publisher point_cloud_publisher;
-ros::ServiceClient stereo_vga_subscription_client;
-ros::ServiceClient get_drone_type_client;
-ros::ServiceClient get_m300_stereo_params_client;
+ros::Publisher object_info_pub;
+ros::Subscriber bounding_box_subscriber;
+visualization_msgs::MarkerArray marker_array;
 
 int
 main(int argc, char** argv)
 {
-  ros::init(argc, argv, "stereo_vision_depth_perception");
+  ros::init(argc, argv, "stereo_vision_object_depth_perception");
   ros::NodeHandle nh;
 
-  stereo_vga_subscription_client = nh.serviceClient<dji_osdk_ros::StereoVGASubscription>("stereo_vga_subscription");
   get_drone_type_client          = nh.serviceClient<dji_osdk_ros::GetDroneType>("get_drone_type");
   get_m300_stereo_params_client  = nh.serviceClient<dji_osdk_ros::GetM300StereoParams>("get_m300_stereo_params");
 
@@ -90,13 +88,13 @@ main(int argc, char** argv)
 
   message_filters::Subscriber<sensor_msgs::Image> img_left_sub;
   message_filters::Subscriber<sensor_msgs::Image> img_right_sub;
-  message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image> *topic_synchronizer;
-
+  message_filters::Subscriber<darknet_ros_msgs::BoundingBoxes> bbox_sub;
+  message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image,
+    darknet_ros_msgs::BoundingBoxes> *topic_synchronizer;
 
   //! Setup stereo frame
   camera_left_ptr   = CameraParam::createCameraParam(CameraParam::FRONT_LEFT);
   camera_right_ptr  = CameraParam::createCameraParam(CameraParam::FRONT_RIGHT);
-
   stereo_frame_ptr = StereoFrame::createStereoFrame(camera_left_ptr, camera_right_ptr);
 
 
@@ -109,13 +107,15 @@ main(int argc, char** argv)
     nh.advertise<sensor_msgs::Image>("/stereo_depth_perception/disparity_front_left_image", 10);
   point_cloud_publisher =
     nh.advertise<sensor_msgs::PointCloud2>("/stereo_depth_perception/unprojected_pt_cloud", 10);
+  object_info_pub =
+    nh.advertise<visualization_msgs::MarkerArray>("/stereo_depth_perception/object_info", 1);
 
-  img_left_sub. subscribe(nh, "dji_osdk_ros/stereo_vga_front_left_images", 1);
-  img_right_sub.subscribe(nh, "dji_osdk_ros/stereo_vga_front_right_images", 1);
+  img_left_sub. subscribe(nh, "/dji_osdk_ros/stereo_vga_front_left_images", 1);
+  img_right_sub.subscribe(nh, "/dji_osdk_ros/stereo_vga_front_right_images", 1);
+  bbox_sub.subscribe(nh, "/darknet_ros/bounding_boxes", 1);
 
   topic_synchronizer = new message_filters::TimeSynchronizer
-    <sensor_msgs::Image, sensor_msgs::Image>(img_left_sub, img_right_sub, 10);
-
+    <sensor_msgs::Image, sensor_msgs::Image, darknet_ros_msgs::BoundingBoxes>(img_left_sub, img_right_sub, bbox_sub, 20);
 
   //! For signal handling, e.g. if user terminate the program with Ctrl+C
   //! this program will unsubscribe the image stream if it's subscribed
@@ -125,6 +125,8 @@ main(int argc, char** argv)
   sigIntHandler.sa_flags = 0;
   sigaction(SIGINT, &sigIntHandler, NULL);
 
+
+  //! Display interactive prompt
   std::cout
     << std::endl
     << " AdvancedSensing API works in subscription mechanism              \n"
@@ -132,11 +134,7 @@ main(int argc, char** argv)
     << " If any error messages occur, please reboot the aircraft          \n"
     << std::endl
     << "| Available commands:                                            |\n"
-    << "| [a] Display rectified stereo images                            |\n"
-    << "| [b] Display disparity map                                      |\n"
-    << "| [c] Display filtered disparity map                             |\n"
-    << "| [d] Display point cloud                                        |\n"
-    << "| [e] Unsubscribe to VGA front stereo images                     |\n"
+    << "| [a] Detect Object and show 3d information                      |\n"
     << std::endl;
   char inputChar = ' ';
   std::cin >> inputChar;
@@ -154,212 +152,25 @@ main(int argc, char** argv)
 
   switch (inputChar)
   {
-    case 'a': 
-    {
-      topic_synchronizer->registerCallback(boost::bind(&displayStereoRectImgCallback,
-                                                       _1, _2, stereo_frame_ptr));
-      break;
-    }
-    case 'b':
-    {
-      topic_synchronizer->registerCallback(boost::bind(&displayStereoDisparityCallback,
-                                                       _1, _2, stereo_frame_ptr));
-      break;
-    }
-    case 'c':
-    {
-      topic_synchronizer->registerCallback(boost::bind(&displayStereoFilteredDisparityCallback,
-                                                       _1, _2, stereo_frame_ptr));
-      break;
-    }
-    case 'd':
-    {
-      topic_synchronizer->registerCallback(boost::bind(&displayStereoPtCloudCallback,
-                                                       _1, _2, stereo_frame_ptr));
-      break;
-    }
-    case 'e': {
-      subscription.request.unsubscribe_vga = 1;
-      if(!imgSubscriptionHelper(subscription)){
-        return -1;
-      }
-      return 0;
+    case 'a': {
+      topic_synchronizer->registerCallback(boost::bind(&displayObjectPtCloudCallback,
+                                                       _1, _2, _3, stereo_frame_ptr));
     }
       break;
-    default:
-    {
+    default: {
       ROS_ERROR("Unknown input");
       subscription.request.unsubscribe_vga = 1;
       imgSubscriptionHelper(subscription);
       return 0;
     }
   }
+
   ros::spin();
 }
 
-
-void displayStereoRectImgCallback(const sensor_msgs::ImageConstPtr &img_left,
+void displayObjectPtCloudCallback(const sensor_msgs::ImageConstPtr &img_left,
                                   const sensor_msgs::ImageConstPtr &img_right,
-                                  StereoFrame::Ptr stereo_frame_ptr)
-{
-  //! Read raw images
-  ROS_INFO("Read raw images from displayStereoRectImgCallback");
-  DJI::OSDK::ACK::StereoVGAImgData img_VGA_img;
-  memcpy(&img_VGA_img.img_vec[0], &img_left->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
-  memcpy(&img_VGA_img.img_vec[1], &img_right->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
-  img_VGA_img.frame_index = img_left->header.seq;
-  img_VGA_img.time_stamp = img_left->header.stamp.nsec;
-  stereo_frame_ptr->readStereoImgs(img_VGA_img);
-
-  //! Rectify images
-  timer rectify_start = std::chrono::high_resolution_clock::now();
-  stereo_frame_ptr->rectifyImgs();
-  timer rectify_end   = std::chrono::high_resolution_clock::now();
-
-  visualizeRectImgHelper(stereo_frame_ptr);
-
-  cv::waitKey(1);
-
-  sensor_msgs::Image rect_left_img  = *img_left;
-  sensor_msgs::Image rect_right_img = *img_right;
-  memcpy((char*)(&rect_left_img.data[0]),
-         stereo_frame_ptr->getRectLeftImg().data,
-         img_left->height*img_left->width);
-  memcpy((char*)(&rect_right_img.data[0]),
-         stereo_frame_ptr->getRectRightImg().data,
-         img_right->height*img_right->width);
-
-  rect_img_left_publisher.publish(rect_left_img);
-  rect_img_right_publisher.publish(rect_right_img);
-
-
-  duration rectify_time_diff = rectify_end - rectify_start;
-  ROS_INFO("This stereo frame takes %.2f ms to rectify", rectify_time_diff.count()*1000.0);
-}
-
-void displayStereoDisparityCallback(const sensor_msgs::ImageConstPtr &img_left,
-                                    const sensor_msgs::ImageConstPtr &img_right,
-                                    StereoFrame::Ptr stereo_frame_ptr)
-{
-  //! Read raw images
-  DJI::OSDK::ACK::StereoVGAImgData img_VGA_img;
-  memcpy(&img_VGA_img.img_vec[0], &img_left->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
-  memcpy(&img_VGA_img.img_vec[1], &img_right->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
-  img_VGA_img.frame_index = img_left->header.seq;
-  img_VGA_img.time_stamp = img_left->header.stamp.nsec;
-  stereo_frame_ptr->readStereoImgs(img_VGA_img);
-
-  //! Rectify images
-  timer rectify_start = std::chrono::high_resolution_clock::now();
-  stereo_frame_ptr->rectifyImgs();
-  timer rectify_end   = std::chrono::high_resolution_clock::now();
-
-  //! Compute disparity
-  timer disp_start    = std::chrono::high_resolution_clock::now();
-  stereo_frame_ptr->computeDisparityMap();
-  timer disp_end      = std::chrono::high_resolution_clock::now();
-
-  visualizeRectImgHelper(stereo_frame_ptr);
-
-  visualizeDisparityMapHelper(stereo_frame_ptr);
-
-  cv::waitKey(1);
-
-  sensor_msgs::Image rect_left_img  = *img_left;
-  sensor_msgs::Image rect_right_img = *img_right;
-  sensor_msgs::Image disparity_map  = *img_left;
-  memcpy((char*)(&rect_left_img.data[0]),
-         stereo_frame_ptr->getRectLeftImg().data,
-         img_left->height*img_left->width);
-  memcpy((char*)(&rect_right_img.data[0]),
-         stereo_frame_ptr->getRectRightImg().data,
-         img_right->height*img_right->width);
-  memcpy((char*)(&disparity_map.data[0]),
-         stereo_frame_ptr->getDisparityMap().data,
-         img_left->height*img_left->width);
-
-  rect_img_left_publisher.publish(rect_left_img);
-  rect_img_right_publisher.publish(rect_right_img);
-  left_disparity_publisher.publish(disparity_map);
-
-
-  duration rectify_time_diff = rectify_end - rectify_start;
-  duration disp_time_diff = disp_end - disp_start;
-  ROS_INFO("This stereo frame takes %.2f ms to rectify, %.2f ms to compute disparity",
-          rectify_time_diff.count()*1000.0,
-          disp_time_diff.count()*1000.0);
-}
-
-void displayStereoFilteredDisparityCallback(const sensor_msgs::ImageConstPtr &img_left,
-                                            const sensor_msgs::ImageConstPtr &img_right,
-                                            StereoFrame::Ptr stereo_frame_ptr)
-{
-#ifdef USE_OPEN_CV_CONTRIB
-
-  //! Read raw images
-  DJI::OSDK::ACK::StereoVGAImgData img_VGA_img;
-  memcpy(&img_VGA_img.img_vec[0], &img_left->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
-  memcpy(&img_VGA_img.img_vec[1], &img_right->data[0], sizeof(char)*VGA_HEIGHT*VGA_WIDTH);
-  img_VGA_img.frame_index = img_left->header.seq;
-  img_VGA_img.time_stamp = img_left->header.stamp.nsec;
-  stereo_frame_ptr->readStereoImgs(img_VGA_img);
-
-  //! Rectify images
-  timer rectify_start = std::chrono::high_resolution_clock::now();
-  stereo_frame_ptr->rectifyImgs();
-  timer rectify_end   = std::chrono::high_resolution_clock::now();
-
-  //! Compute disparity
-  timer disp_start    = std::chrono::high_resolution_clock::now();
-  stereo_frame_ptr->computeDisparityMap();
-  timer disp_end      = std::chrono::high_resolution_clock::now();
-
-  //! Filter disparity map
-  timer filter_start = std::chrono::high_resolution_clock::now();
-  stereo_frame_ptr->filterDisparityMap();
-  is_disp_filterd = true;
-  timer filter_end  = std::chrono::high_resolution_clock::now();
-
-  visualizeRectImgHelper(stereo_frame_ptr);
-
-  visualizeDisparityMapHelper(stereo_frame_ptr);
-
-  sensor_msgs::Image rect_left_img  = *img_left;
-  sensor_msgs::Image rect_right_img = *img_right;
-  sensor_msgs::Image disparity_map  = *img_left;
-  memcpy((char*)(&rect_left_img.data[0]),
-         stereo_frame_ptr->getRectLeftImg().data,
-         img_left->height*img_left->width);
-  memcpy((char*)(&rect_right_img.data[0]),
-         stereo_frame_ptr->getRectRightImg().data,
-         img_right->height*img_right->width);
-  memcpy((char*)(&disparity_map.data[0]),
-         stereo_frame_ptr->getFilteredDispMap().data,
-         img_left->height*img_left->width);
-
-  rect_img_left_publisher.publish(rect_left_img);
-  rect_img_right_publisher.publish(rect_right_img);
-  left_disparity_publisher.publish(disparity_map);
-
-
-  cv::waitKey(1);
-
-  duration rectify_time_diff = rectify_end - rectify_start;
-  duration disp_time_diff = disp_end - disp_start;
-  duration filter_diff = filter_end - filter_start;
-  ROS_INFO("This stereo frame takes %.2f ms to rectify, %.2f ms to compute disparity, "
-            "%.2f ms to filter",
-          rectify_time_diff.count()*1000.0,
-          disp_time_diff.count()*1000.0,
-          filter_diff.count()*1000.0);
-#else
-  ROS_INFO("openCV contrib is not enabled in CMakeLists. It's required for disparity map filtering");
-#endif
-
-}
-
-void displayStereoPtCloudCallback(const sensor_msgs::ImageConstPtr &img_left,
-                                  const sensor_msgs::ImageConstPtr &img_right,
+                                  const darknet_ros_msgs::BoundingBoxesConstPtr &b_box,
                                   StereoFrame::Ptr stereo_frame_ptr)
 {
   //! Read raw images
@@ -388,13 +199,11 @@ void displayStereoPtCloudCallback(const sensor_msgs::ImageConstPtr &img_left,
 
   //! Unproject image to 3D point cloud
   timer pt_cloud_start= std::chrono::high_resolution_clock::now();
-  stereo_frame_ptr->unprojectPtCloud();
   stereo_frame_ptr->unprojectROSPtCloud();
   timer pt_cloud_end  = std::chrono::high_resolution_clock::now();
 
-  cv::viz::WCloud pt_cloud = stereo_frame_ptr->getPtCloud();
-  PointCloudViewer::showPointCloud(pt_cloud);
-  PointCloudViewer::spinOnce();
+  //! Calculate object depth info
+  stereo_frame_ptr->calcObjectInfo(b_box, marker_array);
 
   visualizeRectImgHelper(stereo_frame_ptr);
 
@@ -425,17 +234,18 @@ void displayStereoPtCloudCallback(const sensor_msgs::ImageConstPtr &img_left,
   rect_img_right_publisher.publish(rect_right_img);
   left_disparity_publisher.publish(disparity_map);
   point_cloud_publisher.publish(stereo_frame_ptr->getROSPtCloud());
+  object_info_pub.publish(marker_array);
 
   duration rectify_time_diff = rectify_end - rectify_start;
   duration disp_time_diff = disp_end - disp_start;
   duration filter_diff = filter_end - filter_start;
   duration pt_cloud_diff = pt_cloud_end - pt_cloud_start;
   ROS_INFO("This stereo frame takes %.2f ms to rectify, %.2f ms to compute disparity, "
-            "%.2f ms to filter, %.2f ms to unproject point cloud",
-          rectify_time_diff.count()*1000.0,
-          disp_time_diff.count()*1000.0,
-          filter_diff.count()*1000.0,
-          pt_cloud_diff.count()*1000.0);
+             "%.2f ms to filter, %.2f ms to unproject point cloud",
+           rectify_time_diff.count()*1000.0,
+           disp_time_diff.count()*1000.0,
+           filter_diff.count()*1000.0,
+           pt_cloud_diff.count()*1000.0);
 }
 
 void
@@ -479,13 +289,13 @@ visualizeDisparityMapHelper(StereoFrame::Ptr stereo_frame_ptr)
   cv::minMaxLoc(raw_disp_map, &min_val, &max_val, NULL, NULL);
 
   cv::Mat scaled_disp_map;
-  raw_disp_map.convertTo(scaled_disp_map, CV_8U, 255/(max_val-min_val), -min_val/(max_val-min_val));
+  raw_disp_map.convertTo(scaled_disp_map, CV_8U, 255/(max_val-min_val), -min_val/(max_val - min_val));
 
   cv::imshow("Scaled disparity map", scaled_disp_map);
 }
 
 bool
-imgSubscriptionHelper(dji_osdk_ros::StereoVGASubscription &service)
+imgSubscriptionHelper(dji_sdk::StereoVGASubscription &service)
 {
   std::string action;
   if(service.request.unsubscribe_vga){
@@ -520,8 +330,6 @@ shutDownHandler(int s)
 
   if(vga_imgs_subscribed)
   {
-    cv::destroyAllWindows();
-    sleep(2);
     subscription.request.unsubscribe_vga = 1;
     imgSubscriptionHelper(subscription);
   }
