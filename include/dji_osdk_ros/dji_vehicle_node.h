@@ -88,6 +88,7 @@
 #include <dji_osdk_ros/Stereo240pSubscription.h>
 #include <dji_osdk_ros/StereoDepthSubscription.h>
 #include <dji_osdk_ros/StereoVGASubscription.h>
+#include <dji_osdk_ros/GetM300StereoParams.h>
 #endif
 
 /*! msgs */
@@ -168,6 +169,7 @@ namespace dji_osdk_ros
       ros::ServiceServer subscribe_stereo_240p_server_;
       ros::ServiceServer subscribe_stereo_depth_server_;
       ros::ServiceServer subscribe_stereo_vga_server_;
+      ros::ServiceServer get_m300_stereo_params_server_;
 #endif
 
       /*! publishers */
@@ -261,9 +263,10 @@ namespace dji_osdk_ros
                                           dji_osdk_ros::StereoDepthSubscription::Response& response);
       bool stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscription::Request&  request,
                                           dji_osdk_ros::StereoVGASubscription::Response& response);
+      bool getM300StereoParamsCallback(dji_osdk_ros::GetM300StereoParams::Request& request,
+                                       dji_osdk_ros::GetM300StereoParams::Response& response);
       void publishAdvancedSeningData();
 #endif
-
       bool initSubscribe();
 
     private:

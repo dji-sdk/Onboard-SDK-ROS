@@ -1,3 +1,30 @@
+/** @file stereo_vision_depth_perception.cpp
+ *  @version 4.0
+ *  @date May 2020
+ *
+ *  @brief sample node of stereo vision depth perception.
+ *
+ *  @Copyright (c) 2020 DJI
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
 #include "dji_osdk_ros/stereo_vision_depth_perception_node.h"
 
 using namespace M210_STEREO;
@@ -8,12 +35,14 @@ bool vga_imgs_subscribed = false;
 
 dji_osdk_ros::StereoVGASubscription subscription;
 dji_osdk_ros::GetDroneType drone_type;
+dji_osdk_ros::GetM300StereoParams m300_stereo_params;
 ros::Publisher rect_img_left_publisher;
 ros::Publisher rect_img_right_publisher;
 ros::Publisher left_disparity_publisher;
 ros::Publisher point_cloud_publisher;
 ros::ServiceClient stereo_vga_subscription_client;
 ros::ServiceClient get_drone_type_client;
+ros::ServiceClient get_m300_stereo_params_client;
 
 int
 main(int argc, char** argv)
@@ -23,6 +52,7 @@ main(int argc, char** argv)
 
   stereo_vga_subscription_client = nh.serviceClient<dji_osdk_ros::StereoVGASubscription>("stereo_vga_subscription");
   get_drone_type_client          = nh.serviceClient<dji_osdk_ros::GetDroneType>("get_drone_type");
+  get_m300_stereo_params_client  = nh.serviceClient<dji_osdk_ros::GetM300StereoParams>("get_m300_stereo_params");
 
   get_drone_type_client.call(drone_type);
 
@@ -45,20 +75,13 @@ main(int argc, char** argv)
   else if (drone_type.response.drone_type == static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM430))
   {
     /* code */
-    DSTATUS("M300 stereo parameters can be got from the drone. So yaml file is"
-            "not need here for M300 stereo camera.");
-  }
+    ROS_INFO("M300 stereo parameters can be got from the drone. So yaml file is not need here for M300 stereo camera.");
 
-  // else if (drone_type.response.drone_type == static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM430))
-  // {
-  //   M300StereoParamTool *tool = new M300StereoParamTool(vehicle);
-  //   Perception::CamParamType stereoParam =
-  //       tool->getM300stereoParams(Perception::DirectionType::RECTIFY_FRONT);
-  //   if (tool->createStereoParamsYamlFile(M300_FRONT_STEREO_PARAM_YAML_NAME, stereoParam))
-  //     tool->setParamFileForM300(M300_FRONT_STEREO_PARAM_YAML_NAME);
-  //   else
-  //     return -1;
-  // }
+    if (!get_m300_stereo_params_client.call(m300_stereo_params))
+    {
+      return -1;
+    }
+  }
 
   //! Instantiate some relevant objects
   CameraParam::Ptr camera_left_ptr;

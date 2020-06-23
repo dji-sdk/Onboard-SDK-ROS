@@ -29,9 +29,11 @@
 //INCLUDE
 #include <dji_osdk_ros/dji_vehicle_node.h>
 #include <dji_osdk_ros/vehicle_wrapper.h>
+#include <dji_osdk_ros/stereo_utility/m300_stereo_param_tool.hpp>
 #include <vector>
 //CODE
 using namespace dji_osdk_ros;
+#define M300_FRONT_STEREO_PARAM_YAML_NAME "m300_front_stereo_param.yaml"
 const int WAIT_TIMEOUT = 10;
 const int FLIGHT_CONTROL_WAIT_TIMEOUT = 1;
 
@@ -218,6 +220,7 @@ void VehicleNode::initService()
   subscribe_stereo_240p_server_  = nh_.advertiseService("stereo_240p_subscription",   &VehicleNode::stereo240pSubscriptionCallback, this);
   subscribe_stereo_depth_server_ = nh_.advertiseService("stereo_depth_subscription",  &VehicleNode::stereoDepthSubscriptionCallback,this);
   subscribe_stereo_vga_server_   = nh_.advertiseService("stereo_vga_subscription",    &VehicleNode::stereoVGASubscriptionCallback,  this);
+  get_m300_stereo_params_server_ = nh_.advertiseService("get_m300_stereo_params", &VehicleNode::getM300StereoParamsCallback, this);
 #endif
   ROS_INFO_STREAM("Services startup!");
 }
@@ -792,6 +795,34 @@ bool VehicleNode::stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscript
   }
 
   return true;
+}
+
+bool VehicleNode::getM300StereoParamsCallback(dji_osdk_ros::GetM300StereoParams::Request& request, 
+                                              dji_osdk_ros::GetM300StereoParams::Response& response)
+{
+  ROS_INFO("called getM300StereoParamsCallback");
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    response.result = false;
+  }
+
+  Vehicle* vehicle = ptr_wrapper_->getVehicle();
+  M300StereoParamTool *tool = new M300StereoParamTool(vehicle);
+  Perception::CamParamType stereoParam =
+      tool->getM300stereoParams(Perception::DirectionType::RECTIFY_FRONT);
+  if (tool->createStereoParamsYamlFile(M300_FRONT_STEREO_PARAM_YAML_NAME, stereoParam))
+  {
+    tool->setParamFileForM300(M300_FRONT_STEREO_PARAM_YAML_NAME);
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+  }
+
+  return response.result;
 }
 
 dji_osdk_ros::CameraData VehicleNode::getCameraData()

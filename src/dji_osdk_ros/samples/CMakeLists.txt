@@ -1,6 +1,6 @@
 FILE(GLOB EXAMPLES *.cc *.c *.cpp)
 
-include_directories(stereo_utility)
+# include_directories(stereo_utility)
 
 # Try to see if user has OpenCV installed
 # If there's version 3.3.0+, depth perception samples will be compiled
@@ -47,26 +47,6 @@ elseif()
     message(STATUS "Did not find CUDA in the system")
 endif()
 
-# FOREACH(EXAMPLE ${EXAMPLES})
-#   GET_FILENAME_COMPONENT(MY_TARGET "${EXAMPLE}" NAME_WE)
-#   ADD_EXECUTABLE(${MY_TARGET} ${EXAMPLE})
-
-#   ## Add cmake target dependencies of the executable/library
-#   ## as an example, message headers may need to be generated before nodes
-#   add_dependencies(${MY_TARGET}
-#           dji_osdk_ros_generate_messages_cpp)
-
-#   TARGET_LINK_LIBRARIES(${MY_TARGET}
-#                         ${PROJECT_NAME}
-#                         )
-
-#   INSTALL(TARGETS ${MY_TARGET}
-#           ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#           LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#           RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-#           )
-# ENDFOREACH()
-
 add_executable(flight_control_node
                flight_control_node.cpp)
 target_link_libraries(flight_control_node
@@ -110,18 +90,17 @@ target_link_libraries(time_sync_node
         )
 add_dependencies(time_sync_node dji_osdk_ros_generate_messages_cpp)
 
+add_executable(camera_stream_node camera_stream_node.cpp)
+target_link_libraries(camera_stream_node
+        ${PROJECT_NAME}
+        )
+add_dependencies(camera_stream_node dji_osdk_ros_generate_messages_cpp)
+
 if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ)
     message(STATUS "Found OpenCV ${OpenCV_VERSION}, Viz3d, and advanced sensing module, depth percpetion demo will be compiled")
 
-    FILE(GLOB STEREO_UTILITY_SRC_FILE
-            stereo_utility/camera_param.cpp
-            stereo_utility/stereo_frame.cpp
-            stereo_utility/config.cpp
-            stereo_utility/point_cloud_viewer.cpp)
-
     add_executable(stereo_vision_depth_perception_node
-                   stereo_vision_depth_perception_node.cpp
-            ${STEREO_UTILITY_SRC_FILE} )
+                   stereo_vision_depth_perception_node.cpp)
     target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
 
     if (OpenCV_FOUND)
