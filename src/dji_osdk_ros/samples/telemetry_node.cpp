@@ -315,6 +315,9 @@ int main(int argc ,char** argv)
     ROS_INFO("imu x: %f",imu_data_.orientation.x);
     ROS_INFO("imu y: %f",imu_data_.orientation.y);
     ROS_INFO("imu z: %f\n",imu_data_.orientation.z);
+    ROS_INFO("imu linear acceleration x: %f", imu_data_.linear_acceleration.x);
+    ROS_INFO("imu linear acceleration y: %f", imu_data_.linear_acceleration.y);
+    ROS_INFO("imu linear acceleration z: %f", imu_data_.linear_acceleration.z);
     ROS_INFO("fromMobileData:");
     if (from_mobile_data_.data.size() > 1)
     {
@@ -400,7 +403,9 @@ int main(int argc ,char** argv)
                    acceleration_.vector.y, acceleration_.vector.z);
       //400HZ
         ROS_INFO("trigger:");
-        ROS_INFO("trigger_: %s\n", trigger_.source.c_str());
+        ROS_INFO("trigger_fc_time(if you choose align_time): %d", trigger_.header.stamp.nsec);
+        ROS_INFO("trigger_ros_time: %d", trigger_.time_ref.nsec);
+        ROS_INFO("trigger_time_source: %s", trigger_.source.c_str());
     }
     std::cout << "-------\n\n";
     ros::Duration(1).sleep();
