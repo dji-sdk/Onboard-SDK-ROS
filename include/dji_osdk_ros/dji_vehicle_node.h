@@ -83,8 +83,8 @@
 #include <dji_osdk_ros/GetDroneType.h>
 
 #ifdef ADVANCED_SENSING
-#include <dji_osdk_ros/AdvancedSensing.h>
-#include <dji_osdk_ros/CameraData.h>
+#include <dji_osdk_ros/SetupCameraH264.h>
+#include <dji_osdk_ros/SetupCameraStream.h>
 #include <dji_osdk_ros/Stereo240pSubscription.h>
 #include <dji_osdk_ros/StereoDepthSubscription.h>
 #include <dji_osdk_ros/StereoVGASubscription.h>
@@ -124,12 +124,8 @@ namespace dji_osdk_ros
       bool initCameraModule();
       void initService();
       bool initTopic();
-      void publishTopic();
       bool initDataSubscribeFromFC();
       bool cleanUpSubscribeFromFC();
-#ifdef ADVANCED_SENSING
-      dji_osdk_ros::CameraData getCameraData();
-#endif
     protected:
       /*! services */
       /*! for general */
@@ -165,7 +161,8 @@ namespace dji_osdk_ros
       ros::ServiceServer send_data_to_payload_device_server_;
       /*! for advanced sensing */
 #ifdef ADVANCED_SENSING
-      ros::ServiceServer advanced_sensing_server_;
+      ros::ServiceServer setup_camera_stream_server_;
+      ros::ServiceServer setup_camera_h264_server_;
       ros::ServiceServer subscribe_stereo_240p_server_;
       ros::ServiceServer subscribe_stereo_depth_server_;
       ros::ServiceServer subscribe_stereo_vga_server_;
@@ -209,7 +206,9 @@ namespace dji_osdk_ros
 
       //advanced sensing
       #ifdef ADVANCED_SENSING
-      ros::Publisher advanced_sensing_pub_;
+      ros::Publisher main_camera_stream_publisher_;
+      ros::Publisher fpv_camera_stream_publisher_;
+      ros::Publisher camera_h264_publisher_;
       ros::Publisher stereo_240p_front_left_publisher_;
       ros::Publisher stereo_240p_front_right_publisher_;
       ros::Publisher stereo_240p_down_front_publisher_;
@@ -255,7 +254,10 @@ namespace dji_osdk_ros
       bool sendToPayloadCallback(dji_osdk_ros::SendPayloadData::Request& request,dji_osdk_ros::SendPayloadData::Response& response);
       /*! for advanced sensing conrol */
 #ifdef ADVANCED_SENSING
-      bool advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response);
+      bool setupCameraStreamCallback(dji_osdk_ros::SetupCameraStream::Request& request,
+                                     dji_osdk_ros::SetupCameraStream::Response& response);
+      bool setupCameraH264Callback(dji_osdk_ros::SetupCameraH264::Request& request,
+                                   dji_osdk_ros::SetupCameraH264::Response& response);
       //! stereo image service callback
       bool stereo240pSubscriptionCallback(dji_osdk_ros::Stereo240pSubscription::Request&  request,
                                           dji_osdk_ros::Stereo240pSubscription::Response& response);
@@ -354,6 +356,9 @@ namespace dji_osdk_ros
                                  DJI::OSDK::UserData userData);
 
 #ifdef ADVANCED_SENSING
+    static void publishMainCameraImage(CameraRGBImage rgbImg, void* userData);
+    static void publishFPVCameraImage(CameraRGBImage rgbImg, void* userData);
+    static void publishCameraH264(uint8_t* buf, int bufLen, void* userData);
     static void publish240pStereoImage(Vehicle*            vehicle,
                                        RecvContainer       recvFrame,
                                        DJI::OSDK::UserData userData);

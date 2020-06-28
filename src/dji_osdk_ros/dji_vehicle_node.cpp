@@ -216,7 +216,9 @@ void VehicleNode::initService()
   send_data_to_payload_device_server_ = nh_.advertiseService("send_data_to_payload_device_server", &VehicleNode::sendToPayloadCallback, this);
   /*! advanced sensing server */
 #ifdef ADVANCED_SENSING
-  advanced_sensing_server_ = nh_.advertiseService("advanced_sensing", &VehicleNode::advancedSensingCallback,this);
+  //advanced_sensing_server_ = nh_.advertiseService("advanced_sensing", &VehicleNode::advancedSensingCallback,this);
+  setup_camera_stream_server_ = nh_.advertiseService("setup_camera_stream", &VehicleNode::setupCameraStreamCallback, this);
+  setup_camera_h264_server_ = nh_.advertiseService("setup_camera_h264", &VehicleNode::setupCameraH264Callback, this);
   subscribe_stereo_240p_server_  = nh_.advertiseService("stereo_240p_subscription",   &VehicleNode::stereo240pSubscriptionCallback, this);
   subscribe_stereo_depth_server_ = nh_.advertiseService("stereo_depth_subscription",  &VehicleNode::stereoDepthSubscriptionCallback,this);
   subscribe_stereo_vga_server_   = nh_.advertiseService("stereo_vga_subscription",    &VehicleNode::stereoVGASubscriptionCallback,  this);
@@ -280,7 +282,10 @@ bool VehicleNode::initTopic()
   time_sync_pps_source_publisher_ = nh_.advertise<std_msgs::String>("dji_osdk_ros/time_sync_pps_source", 10);
 
   #ifdef ADVANCED_SENSING
-  advanced_sensing_pub_ = nh_.advertise<dji_osdk_ros::CameraData>("dji_osdk_ros/cameradata", 1000);
+  main_camera_stream_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/main_camera_images", 10);
+  fpv_camera_stream_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/fpv_camera_images", 10);
+  camera_h264_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/camera_h264_stream", 10);
+  // advanced_sensing_pub_ = nh_.advertise<dji_osdk_ros::CameraData>("dji_osdk_ros/cameradata", 1000);
   stereo_240p_front_left_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_left_images", 10);
   stereo_240p_front_right_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_right_images", 10);
   stereo_240p_down_front_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_down_front_images", 10);
@@ -593,63 +598,68 @@ bool VehicleNode::cleanUpSubscribeFromFC()
   return true;
 }
 
-void VehicleNode::publishTopic()
-{
-#ifdef ADVANCED_SENSING
-    publishAdvancedSeningData();
-#endif
-}
 
 #ifdef ADVANCED_SENSING
-void VehicleNode::publishAdvancedSeningData()
+bool VehicleNode::setupCameraStreamCallback(dji_osdk_ros::SetupCameraStream::Request& request,
+                                            dji_osdk_ros::SetupCameraStream::Response& response)
 {
-    ros::AsyncSpinner spinner(4);
-    spinner.start();
-
-    dji_osdk_ros::CameraData cameraData;
-    std::vector<uint8_t> lastCameraData = cameraData.raw_data;
-
-    ros::Rate rate(40);
-    while(ros::ok())
-    {
-        cameraData = getCameraData();
-        if (cameraData.raw_data != lastCameraData)
-        {
-            lastCameraData = cameraData.raw_data;
-            ROS_INFO("raw data len is %ld\n",cameraData.raw_data.size());
-            advanced_sensing_pub_.publish(cameraData);
-
-            ros::spinOnce();
-            rate.sleep();
-        }
-    }
-
-    ros::waitForShutdown();
-}
-
-bool VehicleNode::advancedSensingCallback(AdvancedSensing::Request& request, AdvancedSensing::Response& response)
-{
-    ROS_DEBUG("called advancedSensingCallback");
+  ROS_DEBUG("called cameraStreamCallback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
     response.result = false;
-    if(ptr_wrapper_ == nullptr)
-    {
-        ROS_ERROR_STREAM("Vehicle modules is nullptr");
-        return true;
-    }
+  }
 
-    ptr_wrapper_->setAcmDevicePath(device_acm_);
-    is_h264_ = request.is_h264;
+  ptr_wrapper_->setAcmDevicePath(device_acm_);
 
-    if (request.is_open)
+  if(request.cameraType == request.FPV_CAM)
+  {
+    if(request.start == 1)
     {
-        response.result = ptr_wrapper_->startStream(request.is_h264, request.request_view);
+      response.result = ptr_wrapper_->startFPVCameraStream(&publishFPVCameraImage, this);
     }
     else
     {
-        response.result = ptr_wrapper_->stopStream(request.is_h264, request.request_view);
+      response.result = ptr_wrapper_->stopFPVCameraStream();
     }
+  }
+  else if(request.cameraType == request.MAIN_CAM)
+  {
+    if(request.start == 1)
+    {
+      response.result = ptr_wrapper_->startMainCameraStream(&publishMainCameraImage, this);
+    }
+    else
+    {
+      response.result = ptr_wrapper_->stopMainCameraStream();
+    }
+  }
 
-    return response.result;
+  return response.result;
+}
+
+bool VehicleNode::setupCameraH264Callback(dji_osdk_ros::SetupCameraH264::Request& request,
+                                          dji_osdk_ros::SetupCameraH264::Response& response)
+{
+  ROS_DEBUG("called camerah264Callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    response.result = false;
+  }
+
+  ptr_wrapper_->setAcmDevicePath(device_acm_);
+
+  if (request.start == 1)
+  {
+    response.result = ptr_wrapper_->startH264Stream(static_cast<DJI::OSDK::LiveView::LiveViewCameraPosition>(request.request_view), &publishCameraH264, this);
+  }
+  else
+  {
+    response.result = ptr_wrapper_->stopH264Stream(static_cast<DJI::OSDK::LiveView::LiveView::LiveViewCameraPosition>(request.request_view));
+  }
+
+  return response.result;
 }
 
 bool VehicleNode::stereo240pSubscriptionCallback(dji_osdk_ros::Stereo240pSubscription::Request&  request,
@@ -823,24 +833,6 @@ bool VehicleNode::getM300StereoParamsCallback(dji_osdk_ros::GetM300StereoParams:
   }
 
   return response.result;
-}
-
-dji_osdk_ros::CameraData VehicleNode::getCameraData()
-{
-    dji_osdk_ros::CameraData cameraData;
-    if (is_h264_)
-    {
-        cameraData.raw_data = ptr_wrapper_->getCameraRawData();
-    }
-    else
-    {
-        CameraRGBImage image = ptr_wrapper_->getCameraImage();
-        cameraData.raw_data = image.rawData;
-        cameraData.height = image.height;
-        cameraData.width = image.width;
-    }
-
-    return cameraData;
 }
 #endif
 
@@ -1369,7 +1361,6 @@ int main(int argc, char** argv)
 {
   ros::init(argc, argv, "vehicle_node");
   VehicleNode vh_node;
-  vh_node.publishTopic();
 
   ros::spin();
   return 0;

@@ -1,8 +1,8 @@
-/** @file advanced_sensing_node.cpp
+/** @file camera_stream_node.cpp
  *  @version 4.0
- *  @date May 2020
+ *  @date June 2020
  *
- *  @brief sample node of advanced sensing.
+ *  @brief sample node of camera stream.
  *
  *  @Copyright (c) 2020 DJI
  *
@@ -29,12 +29,10 @@
 //INCLUDE
 #include <ros/ros.h>
 #include <dji_osdk_ros/common_type.h>
-#include <string>
+#include <sensor_msgs/Image.h>
 #include <stdio.h>
-
-#include <dji_osdk_ros/AdvancedSensing.h>
 #include <dji_camera_image.hpp>
-#include <dji_osdk_ros/CameraData.h>
+#include <dji_osdk_ros/SetupCameraStream.h>
 
 #ifdef OPEN_CV_INSTALLED
 #include "opencv2/opencv.hpp"
@@ -43,30 +41,6 @@
 
 //CODE
 using namespace dji_osdk_ros;
-
-bool is_h264 = true;
-
-int writeH264StreamData(const char *fileName, const uint8_t *data, uint32_t len)
-{
-    FILE *fp = NULL;
-    size_t size = 0;
-
-    fp = fopen(fileName, "a+");
-    if(fp == NULL) {
-        printf("fopen failed!\n");
-        return -1;
-    }
-    size = fwrite(data, 1, len, fp);
-    if(size != len) {
-        return -1;
-    }
-
-    fflush(fp);
-    if(fp) {
-        fclose(fp);
-    }
-    return 0;
-}
 
 void show_rgb(CameraRGBImage img, void *p)
 {
@@ -80,162 +54,93 @@ void show_rgb(CameraRGBImage img, void *p)
 #endif
 }
 
-void cameraDataCallBack(const dji_osdk_ros::CameraData& msg)
+void fpvCameraStreamCallBack(const sensor_msgs::Image& msg)
 {
-    if (is_h264)
-    {
-        uint8_t tempData[msg.raw_data.size()];
-        memcpy(tempData, msg.raw_data.data(), msg.raw_data.size());
-        writeH264StreamData("H264View.h264", tempData, msg.raw_data.size());
-    }
-    else
-    {
-        CameraRGBImage img;
-        img.rawData = msg.raw_data;
-        img.height  = msg.height;
-        img.width   = msg.width;
-        char Name[] = "CAM";
-        show_rgb(img, &Name);
-        std::cout<<"height is"<<msg.height<<std::endl;
-        std::cout<<"width is"<<msg.width<<std::endl;
-    }
-    std::cout<<"sub msg len is"<<msg.raw_data.size()<<std::endl;
+    CameraRGBImage img;
+    img.rawData = msg.data;
+    img.height  = msg.height;
+    img.width   = msg.width;
+    char Name[] = "FPV_CAM";
+    show_rgb(img, &Name);
+    std::cout<<"height is"<<msg.height<<std::endl;
+    std::cout<<"width is"<<msg.width<<std::endl;
+}
+
+void mainCameraStreamCallBack(const sensor_msgs::Image& msg)
+{
+    CameraRGBImage img;
+    img.rawData = msg.data;
+    img.height  = msg.height;
+    img.width   = msg.width;
+    char Name[] = "MAIN_CAM";
+    show_rgb(img, &Name);
+    std::cout<<"height is"<<msg.height<<std::endl;
+    std::cout<<"width is"<<msg.width<<std::endl;
 }
 
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "advanced_sensing_node");
+    ros::init(argc, argv, "camera_stream_node");
     ros::NodeHandle nh;
-    auto advanced_sensing_client = nh.serviceClient<AdvancedSensing>("/advanced_sensing");
-    auto sub = nh.subscribe("dji_osdk_ros/cameradata", 1000, cameraDataCallBack);
-    std::cout
-            << "| Available commands:                                            |"
-            << std::endl;
-    std::cout
-            << "| [y] device is h264                                             |"
-            << std::endl;
-    std::cout
-            << "| [n] device is not h264                                         |"
-            << std::endl;
+    auto setup_camera_stream_client = nh.serviceClient<dji_osdk_ros::SetupCameraStream>("setup_camera_stream");
+    auto fpv_camera_stream_sub = nh.subscribe("dji_osdk_ros/fpv_camera_images", 10, fpvCameraStreamCallBack);
+    auto main_camera_stream_sub = nh.subscribe("dji_osdk_ros/main_camera_images", 10, mainCameraStreamCallBack);
+    dji_osdk_ros::SetupCameraStream setupCameraStream_;
 
-    char input_device_char;
-    bool input_result = true;
-    std::cin >> input_device_char;
+    bool f = false;
+    bool m = false;
+    char c = 0;
+    std::cout << "Please enter the type of camera stream you want to view (M210 V2)\n"
+              << "m: Main Camera\n"
+              << "f: FPV  Camera" << std::endl;
+    std::cin >> c;
 
-    AdvancedSensing advanced_sensing;
-    switch(input_device_char)
+    switch(c)
     {
-        case 'y':
-        {
-            advanced_sensing.request.is_h264 = true;
-            std::cout << std::endl;
-            std::cout
-                    << "| Available commands:                                            |"
-                    << std::endl
-                    << "| [a] Start getting FPV H264 stream sample                       |"
-                    << std::endl
-                    << "| [b] Start getting main camera H264 stream sample               |"
-                    << std::endl
-                    << "| [c] Start getting vice camera H264 stream sample               |"
-                    << std::endl
-                    << "| [d] Start getting top camera H264 stream sample                |"
-                    << std::endl;
-
-            char input_view_char;
-            std::cin >> input_view_char;
-
-            switch(input_view_char)
-            {
-                case 'a':
-                {
-                    advanced_sensing.request.request_view = AdvancedSensing::Request::FPV_CAMERA;
-                    break;
-                }
-                case 'b':
-                {
-                    advanced_sensing.request.request_view = AdvancedSensing::Request::MAIN_CAMERA;
-                    break;
-                }
-                case 'c':
-                {
-                    advanced_sensing.request.request_view = AdvancedSensing::Request::VICE_CAMERA;
-                    break;
-                }
-                case 'd':
-                {
-                    advanced_sensing.request.request_view = AdvancedSensing::Request::TOP_CAMERA;
-                    break;
-                }
-                default:
-                {
-                    std::cout << "No camera selected" << std::endl;
-                    input_result = false;
-                }
-            }
-            break;
-        }
-        case 'n':
-        {
-            advanced_sensing.request.is_h264 = false;
-            std::cout << std::endl;
-            std::cout
-                    << "| Available commands:                                            |"
-                    << std::endl
-                    << "| [a] Start getting FPV stream sample                       |"
-                    << std::endl
-                    << "| [b] Start getting main camera stream sample               |"
-                    << std::endl;
-
-            char input_view_char;
-            std::cin >> input_view_char;
-
-            switch(input_view_char)
-            {
-                case 'a':
-                {
-                    advanced_sensing.request.request_view = AdvancedSensing::Request::FPV_CAMERA;
-                    break;
-                }
-                case 'b':
-                {
-                    advanced_sensing.request.request_view = AdvancedSensing::Request::MAIN_CAMERA;
-                    break;
-                }
-                default:
-                {
-                    std::cout << "No camera selected" << std::endl;
-                    input_result = false;
-                }
-            }
-            break;
-        }
+        case 'm':
+        m=true; break;
+        case 'f':
+        f=true; break;
+        default:
+        ROS_DEBUG("No camera selected");
+        return 1;
     }
 
-    if (!input_result)
+    if(f)
     {
-        std::cout << "Please check your input!"<< std::endl;
-        return false;
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.FPV_CAM;
+        setupCameraStream_.request.start = 1;
+        setup_camera_stream_client.call(setupCameraStream_);
+    }
+    else if(m)
+    {
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.MAIN_CAM;
+        setupCameraStream_.request.start = 1;
+        setup_camera_stream_client.call(setupCameraStream_);
     }
 
-    is_h264 = advanced_sensing.request.is_h264;
+    //cameraZoomControl(vehicle);     //run camera zoom control test
+    CameraRGBImage camImg;            //get the camera's image
 
-    advanced_sensing.request.is_open = true;
-    advanced_sensing_client.call(advanced_sensing);
+    // main thread just sleep
+    // callback function will be called whenever a new image is ready
     ros::AsyncSpinner spinner(2);
     spinner.start();
-    if (advanced_sensing.response.result)
+    ros::Duration(3000).sleep();
+
+    if(f)
     {
-        ROS_INFO_STREAM("open advanced sensing task successful!");
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.FPV_CAM;
+        setupCameraStream_.request.start = 0;
+        setup_camera_stream_client.call(setupCameraStream_);
+    }
+    else if(m)
+    {
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.MAIN_CAM;
+        setupCameraStream_.request.start = 0;
+        setup_camera_stream_client.call(setupCameraStream_);
     }
 
-    ros::Duration(10.0).sleep();
-
-    advanced_sensing.request.is_open = false;
-    advanced_sensing_client.call(advanced_sensing);
-    if (advanced_sensing.response.result)
-    {
-        ROS_INFO_STREAM("close advanced sensing task successful!");
-    }
     ROS_INFO_STREAM("Finished. Press CTRL-C to terminate the node");
     ros::waitForShutdown();
     return 0;
