@@ -216,7 +216,6 @@ void VehicleNode::initService()
   send_data_to_payload_device_server_ = nh_.advertiseService("send_data_to_payload_device_server", &VehicleNode::sendToPayloadCallback, this);
   /*! advanced sensing server */
 #ifdef ADVANCED_SENSING
-  //advanced_sensing_server_ = nh_.advertiseService("advanced_sensing", &VehicleNode::advancedSensingCallback,this);
   setup_camera_stream_server_ = nh_.advertiseService("setup_camera_stream", &VehicleNode::setupCameraStreamCallback, this);
   setup_camera_h264_server_ = nh_.advertiseService("setup_camera_h264", &VehicleNode::setupCameraH264Callback, this);
   subscribe_stereo_240p_server_  = nh_.advertiseService("stereo_240p_subscription",   &VehicleNode::stereo240pSubscriptionCallback, this);
@@ -285,7 +284,6 @@ bool VehicleNode::initTopic()
   main_camera_stream_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/main_camera_images", 10);
   fpv_camera_stream_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/fpv_camera_images", 10);
   camera_h264_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/camera_h264_stream", 10);
-  // advanced_sensing_pub_ = nh_.advertise<dji_osdk_ros::CameraData>("dji_osdk_ros/cameradata", 1000);
   stereo_240p_front_left_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_left_images", 10);
   stereo_240p_front_right_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_right_images", 10);
   stereo_240p_down_front_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_down_front_images", 10);

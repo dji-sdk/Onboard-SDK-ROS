@@ -302,9 +302,6 @@ namespace dji_osdk_ros
       bool stereo_subscription_success;
       bool stereo_vga_subscription_success;
 
-#ifdef ADVANCED_SENSING
-      bool is_h264_;
-#endif
     //! data broadcast callback
     void dataBroadcastCallback();
     void fromMobileDataCallback(RecvContainer recvFrame);
