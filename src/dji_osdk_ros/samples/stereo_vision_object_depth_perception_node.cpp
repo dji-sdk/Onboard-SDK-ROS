@@ -35,6 +35,8 @@ bool is_disp_filterd;
 bool vga_imgs_subscribed = false;
 
 dji_osdk_ros::StereoVGASubscription subscription;
+dji_osdk_ros::GetDroneType drone_type;
+dji_osdk_ros::GetM300StereoParams m300_stereo_params;
 ros::Publisher rect_img_left_publisher;
 ros::Publisher rect_img_right_publisher;
 ros::Publisher left_disparity_publisher;
@@ -42,7 +44,9 @@ ros::Publisher point_cloud_publisher;
 ros::Publisher object_info_pub;
 ros::Subscriber bounding_box_subscriber;
 visualization_msgs::MarkerArray marker_array;
-
+ros::ServiceClient stereo_vga_subscription_client;
+ros::ServiceClient get_drone_type_client;
+ros::ServiceClient get_m300_stereo_params_client;
 int
 main(int argc, char** argv)
 {
@@ -203,7 +207,9 @@ void displayObjectPtCloudCallback(const sensor_msgs::ImageConstPtr &img_left,
   timer pt_cloud_end  = std::chrono::high_resolution_clock::now();
 
   //! Calculate object depth info
+#ifdef USE_DARKNET_ROS
   stereo_frame_ptr->calcObjectInfo(b_box, marker_array);
+#endif
 
   visualizeRectImgHelper(stereo_frame_ptr);
 
@@ -295,7 +301,7 @@ visualizeDisparityMapHelper(StereoFrame::Ptr stereo_frame_ptr)
 }
 
 bool
-imgSubscriptionHelper(dji_sdk::StereoVGASubscription &service)
+imgSubscriptionHelper(dji_osdk_ros::StereoVGASubscription &service)
 {
   std::string action;
   if(service.request.unsubscribe_vga){
