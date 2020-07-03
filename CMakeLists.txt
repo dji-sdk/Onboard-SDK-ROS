@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
     rospy
     std_msgs
     sensor_msgs
+    message_filters # for message_filter
   )
 
 ## System dependencies are found with CMake's conventions
@@ -90,6 +91,9 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
+
+  GetDroneType.srv
+  GetM300StereoParams.srv
   FlightTaskControl.srv
   GimbalAction.srv
   CameraEV.srv

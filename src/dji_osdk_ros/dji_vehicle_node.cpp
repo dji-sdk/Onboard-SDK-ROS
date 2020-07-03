@@ -29,9 +29,11 @@
 //INCLUDE
 #include <dji_osdk_ros/dji_vehicle_node.h>
 #include <dji_osdk_ros/vehicle_wrapper.h>
+#include <dji_osdk_ros/stereo_utility/m300_stereo_param_tool.hpp>
 #include <vector>
 //CODE
 using namespace dji_osdk_ros;
+#define M300_FRONT_STEREO_PARAM_YAML_NAME "m300_front_stereo_param.yaml"
 const int WAIT_TIMEOUT = 10;
 const int FLIGHT_CONTROL_WAIT_TIMEOUT = 1;
 
@@ -176,6 +178,9 @@ bool VehicleNode::initCameraModule()
 void VehicleNode::initService()
 {
   ROS_INFO_STREAM("Topic startup!");
+  /*! general server */
+  get_drone_type_server_ = nh_.advertiseService("get_drone_type", &VehicleNode::getDroneTypeCallback, this);
+
   /*! flight control server */
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
@@ -212,6 +217,10 @@ void VehicleNode::initService()
   /*! advanced sensing server */
 #ifdef ADVANCED_SENSING
   advanced_sensing_server_ = nh_.advertiseService("advanced_sensing", &VehicleNode::advancedSensingCallback,this);
+  subscribe_stereo_240p_server_  = nh_.advertiseService("stereo_240p_subscription",   &VehicleNode::stereo240pSubscriptionCallback, this);
+  subscribe_stereo_depth_server_ = nh_.advertiseService("stereo_depth_subscription",  &VehicleNode::stereoDepthSubscriptionCallback,this);
+  subscribe_stereo_vga_server_   = nh_.advertiseService("stereo_vga_subscription",    &VehicleNode::stereoVGASubscriptionCallback,  this);
+  get_m300_stereo_params_server_ = nh_.advertiseService("get_m300_stereo_params", &VehicleNode::getM300StereoParamsCallback, this);
 #endif
   ROS_INFO_STREAM("Services startup!");
 }
@@ -269,10 +278,16 @@ bool VehicleNode::initTopic()
   time_sync_gps_utc_publisher_ = nh_.advertise<dji_osdk_ros::GPSUTC>("dji_osdk_ros/time_sync_gps_utc", 10);
   time_sync_fc_utc_publisher_ = nh_.advertise<dji_osdk_ros::FCTimeInUTC>("dji_osdk_ros/time_sync_fc_time_utc", 10);
   time_sync_pps_source_publisher_ = nh_.advertise<std_msgs::String>("dji_osdk_ros/time_sync_pps_source", 10);
-  // Extra topics that is only available from subscription
-  // Details can be found in DisplayMode enum in dji_sdk.h
+
   #ifdef ADVANCED_SENSING
-    advanced_sensing_pub_ = nh_.advertise<dji_osdk_ros::CameraData>("cameradata", 1000);
+  advanced_sensing_pub_ = nh_.advertise<dji_osdk_ros::CameraData>("dji_osdk_ros/cameradata", 1000);
+  stereo_240p_front_left_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_left_images", 10);
+  stereo_240p_front_right_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_right_images", 10);
+  stereo_240p_down_front_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_down_front_images", 10);
+  stereo_240p_down_back_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_down_back_images", 10);
+  stereo_240p_front_depth_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_depth_images", 10);
+  stereo_vga_front_left_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front_left_images", 10);
+  stereo_vga_front_right_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front_right_images", 10);
   #endif
 
   if(ptr_wrapper_ == nullptr)
@@ -637,6 +652,179 @@ bool VehicleNode::advancedSensingCallback(AdvancedSensing::Request& request, Adv
     return response.result;
 }
 
+bool VehicleNode::stereo240pSubscriptionCallback(dji_osdk_ros::Stereo240pSubscription::Request&  request,
+                                                 dji_osdk_ros::Stereo240pSubscription::Response& response)
+{
+  ROS_DEBUG("called stereo240pSubscriptionCallback");
+
+  if(ptr_wrapper_ == nullptr)
+  {
+      ROS_ERROR_STREAM("Vehicle modules is nullptr");
+      return true;
+  }
+
+  if (request.unsubscribe_240p == 1)
+  {
+    ptr_wrapper_->unsubscribeStereoImages();
+    response.result = true;
+    ROS_INFO("unsubscribe stereo 240p images");
+    return true;
+  }
+
+  dji_osdk_ros::ImageSelection image_select;
+  memset(&image_select, 0, sizeof(dji_osdk_ros::ImageSelection));
+
+  if (request.front_right_240p == 1)
+    image_select.front_right = 1;
+
+  if (request.front_left_240p == 1)
+    image_select.front_left = 1;
+
+  if (request.down_front_240p == 1)
+    image_select.down_front = 1;
+
+  if (request.down_back_240p == 1)
+    image_select.down_back = 1;
+
+  this->stereo_subscription_success = false;
+  ptr_wrapper_->subscribeStereoImages(&image_select, &publish240pStereoImage, this);
+
+  ros::Duration(1).sleep();
+
+  if (this->stereo_subscription_success == true)
+  {
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+    ROS_WARN("Stereo 240p subscription service failed, please check your request content.");
+  }
+
+  return true;
+}
+
+bool
+VehicleNode::stereoDepthSubscriptionCallback(dji_osdk_ros::StereoDepthSubscription::Request&  request,
+                                             dji_osdk_ros::StereoDepthSubscription::Response& response)
+{
+  ROS_DEBUG("called stereoDepthSubscriptionCallback");
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return true;
+  }
+
+  if (request.unsubscribe_240p == 1)
+  {
+    ptr_wrapper_->unsubscribeStereoImages();
+    response.result = true;
+    ROS_INFO("unsubscribe stereo 240p images");
+    return true;
+  }
+
+  if (request.front_depth_240p == 1)
+  {
+    this->stereo_subscription_success = false;
+    ptr_wrapper_->subscribeFrontStereoDisparity(&publish240pStereoImage, this);
+  }
+  else
+  {
+    ROS_WARN("no depth image is subscribed");
+    return true;
+  }
+
+  ros::Duration(1).sleep();
+
+  if (this->stereo_subscription_success == true)
+  {
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+    ROS_WARN("Stereo 240p subscription service failed, please check your request content.");
+  }
+
+  return true;
+}
+
+bool VehicleNode::stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscription::Request&  request,
+                                                dji_osdk_ros::StereoVGASubscription::Response& response)
+{
+  ROS_INFO("called stereoVGASubscriptionCallback");
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return true;
+  }
+
+  if (request.unsubscribe_vga == 1)
+  {
+    ptr_wrapper_->unsubscribeVGAImages();
+    response.result = true;
+    ROS_INFO("unsubscribe stereo vga images");
+    return true;
+  }
+
+  if (request.vga_freq != request.VGA_20_HZ
+      && request.vga_freq != request.VGA_10_HZ)
+  {
+    ROS_ERROR("VGA subscription frequency is wrong");
+    response.result = false;
+    return true;
+  }
+
+  if (request.front_vga == 1)
+  {
+    this->stereo_vga_subscription_success = false;
+    ptr_wrapper_->subscribeFrontStereoVGA(request.vga_freq, &publishVGAStereoImage, this);
+    ros::Duration(1).sleep();
+  }
+
+  if (this->stereo_vga_subscription_success == true)
+  {
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+    ROS_WARN("Stereo VGA subscription service failed, please check your request content.");
+  }
+
+  return true;
+}
+
+bool VehicleNode::getM300StereoParamsCallback(dji_osdk_ros::GetM300StereoParams::Request& request, 
+                                              dji_osdk_ros::GetM300StereoParams::Response& response)
+{
+  ROS_INFO("called getM300StereoParamsCallback");
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    response.result = false;
+  }
+
+  Vehicle* vehicle = ptr_wrapper_->getVehicle();
+  M300StereoParamTool *tool = new M300StereoParamTool(vehicle);
+  Perception::CamParamType stereoParam =
+      tool->getM300stereoParams(Perception::DirectionType::RECTIFY_FRONT);
+  if (tool->createStereoParamsYamlFile(M300_FRONT_STEREO_PARAM_YAML_NAME, stereoParam))
+  {
+    tool->setParamFileForM300(M300_FRONT_STEREO_PARAM_YAML_NAME);
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+  }
+
+  return response.result;
+}
+
 dji_osdk_ros::CameraData VehicleNode::getCameraData()
 {
     dji_osdk_ros::CameraData cameraData;
@@ -655,6 +843,45 @@ dji_osdk_ros::CameraData VehicleNode::getCameraData()
     return cameraData;
 }
 #endif
+
+bool VehicleNode::getDroneTypeCallback(dji_osdk_ros::GetDroneType::Request &request,
+                                       dji_osdk_ros::GetDroneType::Response &response)
+{
+  ROS_DEBUG("called getDroneTypeCallback");
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return true;
+  }
+
+  if (ptr_wrapper_->isM100())
+  {
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM410);
+    return true;
+  }
+  else if (ptr_wrapper_->isM200())
+  {
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM420);
+    return true;
+  }
+  else if (ptr_wrapper_->isM300())
+  {
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM430);
+    return true;
+  }
+  else if (ptr_wrapper_->isM600())
+  {
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM820);
+    return true;
+  }
+  else
+  {
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::INVALID_TYPE);
+    return false;
+  }
+
+}
 
 bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightTaskControl::Response& response)
 {
