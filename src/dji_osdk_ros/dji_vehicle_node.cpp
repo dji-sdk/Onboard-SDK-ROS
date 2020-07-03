@@ -34,8 +34,6 @@
 //CODE
 using namespace dji_osdk_ros;
 #define M300_FRONT_STEREO_PARAM_YAML_NAME "m300_front_stereo_param.yaml"
-const int WAIT_TIMEOUT = 10;
-const int FLIGHT_CONTROL_WAIT_TIMEOUT = 1;
 
 VehicleNode::VehicleNode(int test)
 {
@@ -223,6 +221,19 @@ void VehicleNode::initService()
   subscribe_stereo_vga_server_   = nh_.advertiseService("stereo_vga_subscription",    &VehicleNode::stereoVGASubscriptionCallback,  this);
   get_m300_stereo_params_server_ = nh_.advertiseService("get_m300_stereo_params", &VehicleNode::getM300StereoParamsCallback, this);
 #endif
+  /* mission server */
+  waypoint_upload_server_    = nh_.advertiseService("dji_osdk_ros/mission_waypoint_upload",        &VehicleNode::missionWpUploadCallback,        this);
+  waypoint_action_server_    = nh_.advertiseService("dji_osdk_ros/mission_waypoint_action",        &VehicleNode::missionWpActionCallback,        this);
+  waypoint_getInfo_server_   = nh_.advertiseService("dji_osdk_ros/mission_waypoint_getInfo",       &VehicleNode::missionWpGetInfoCallback,       this);
+  waypoint_getSpeed_server_  = nh_.advertiseService("dji_osdk_ros/mission_waypoint_getSpeed",      &VehicleNode::missionWpGetSpeedCallback,      this);
+  waypoint_setSpeed_server_  = nh_.advertiseService("dji_osdk_ros/mission_waypoint_setSpeed",      &VehicleNode::missionWpSetSpeedCallback,      this);
+  hotpoint_upload_server_    = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_upload",        &VehicleNode::missionHpUploadCallback,        this);
+  hotpoint_action_server_    = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_action",        &VehicleNode::missionHpActionCallback,        this);
+  hotpoint_getInfo_server_   = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_getInfo",       &VehicleNode::missionHpGetInfoCallback,       this);
+  hotpoint_setSpeed_server_  = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_updateYawRate", &VehicleNode::missionHpUpdateYawRateCallback, this);
+  hotpoint_resetYaw_server_  = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_resetYaw",      &VehicleNode::missionHpResetYawCallback,      this);
+  hotpoint_setRadius_server_ = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_updateRadius",  &VehicleNode::missionHpUpdateRadiusCallback,  this);
+  mission_status_server_     = nh_.advertiseService("dji_osdk_ros/mission_status",                 &VehicleNode::missionStatusCallback,          this);
   ROS_INFO_STREAM("Services startup!");
 }
 
@@ -847,22 +858,22 @@ bool VehicleNode::getDroneTypeCallback(dji_osdk_ros::GetDroneType::Request &requ
 
   if (ptr_wrapper_->isM100())
   {
-    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM410);
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::M100);
     return true;
   }
-  else if (ptr_wrapper_->isM200())
+  else if (ptr_wrapper_->isM200V2())
   {
-    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM420);
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::M210V2);
     return true;
   }
   else if (ptr_wrapper_->isM300())
   {
-    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM430);
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::M300);
     return true;
   }
   else if (ptr_wrapper_->isM600())
   {
-    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM820);
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::M600);
     return true;
   }
   else

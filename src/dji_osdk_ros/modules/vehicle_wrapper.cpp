@@ -2050,7 +2050,7 @@ static T_OsdkOsalHandler osalHandler = {
     return(vehicle->isM100());
   }
 
-  bool VehicleWrapper::isM200()
+  bool VehicleWrapper::isM200V2()
   {
     return(vehicle->isM210V2());
   }

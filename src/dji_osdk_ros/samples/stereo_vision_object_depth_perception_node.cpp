@@ -48,8 +48,7 @@ ros::ServiceClient stereo_vga_subscription_client;
 ros::ServiceClient get_drone_type_client;
 ros::ServiceClient get_m300_stereo_params_client;
 
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "stereo_vision_object_depth_perception");
   ros::NodeHandle nh;
@@ -60,7 +59,7 @@ main(int argc, char** argv)
 
   get_drone_type_client.call(drone_type);
 
-  if (drone_type.response.drone_type == static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM420))
+  if (drone_type.response.drone_type == static_cast<uint8_t>(dji_osdk_ros::Dronetype::M210V2))
   {
       if (argc >= 2)
       {
@@ -76,7 +75,7 @@ main(int argc, char** argv)
        return -1;
       }
   }
-  else if (drone_type.response.drone_type == static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM430))
+  else if (drone_type.response.drone_type == static_cast<uint8_t>(dji_osdk_ros::Dronetype::M300))
   {
     /* code */
     ROS_INFO("M300 stereo parameters can be got from the drone. So yaml file is not need here for M300 stereo camera.");
