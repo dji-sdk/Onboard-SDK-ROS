@@ -2,6 +2,29 @@ FILE(GLOB EXAMPLES *.cc *.c *.cpp)
 
 # include_directories(stereo_utility)
 
+find_path(OPENCV_CONTRIB_IMG_PROC
+        NAMES
+        disparity_filter.hpp
+        PATHS
+        /usr/include/opencv2/ximgproc
+        /usr/local/include/opencv2/ximgproc
+        /opt/local/include/opencv2/ximgproc
+        /sw/include/opencv2/ximgproc
+        PATH_SUFFIXES
+        opencv2/ximgproc
+        )
+
+find_path(OPENCV_VIZ
+        NAMES
+        viz3d.hpp
+        PATHS
+        /usr/include/opencv2/viz
+        /usr/local/include/opencv2/viz
+        /opt/local/include/opencv2/viz
+        /sw/include/opencv2/viz
+        PATH_SUFFIXES
+        opencv2/viz
+        )
 # Try to see if user has OpenCV installed
 # If there's version 3.3.0+, depth perception samples will be compiled
 # If it's not version 3.3.0+, the sample will not be compiled
@@ -45,6 +68,12 @@ if(CUDA_FOUND)
     add_definitions(-DUSE_GPU)
 elseif()
     message(STATUS "Did not find CUDA in the system")
+endif()
+
+find_package(darknet_ros QUIET)
+if(darknet_ros_FOUND)
+    message(STATUS "Found darknet_ros package, will use it for object depth perception demo.")
+    add_definitions(-DUSE_DARKNET_ROS)
 endif()
 
 add_executable(flight_control_node
@@ -119,3 +148,20 @@ if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ)
 else()
    message(STATUS "Did not find required libraries, stereo vision depth perception sample will not be compiled.")
 endif ()
+
+if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ AND darknet_ros_FOUND)
+    message(STATUS "Found OpenCV ${OpenCV_VERSION}, Viz3d, darknet_ros, depth percpetion demo will be compiled")
+
+    add_executable(stereo_vision_object_depth_perception_node
+                   stereo_vision_object_depth_perception_node.cpp
+                  )
+    target_link_libraries(stereo_vision_object_depth_perception_node
+            ${catkin_LIBRARIES}
+            ${PROJECT_NAME}
+            ${OpenCV_LIBS}
+            )
+    add_dependencies(stereo_vision_object_depth_perception_node dji_sdk_generate_messages_cpp)
+else()
+    message(STATUS "Did not find required libraries, stereo vision object depth perception sample will not be compiled.")
+ endif ()
+
