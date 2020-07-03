@@ -160,7 +160,7 @@ namespace dji_osdk_ros
       void unsubscribeVGAImages();
 #endif
       bool isM100();
-      bool isM200();
+      bool isM200V2();
       bool isM300();
       bool isM600();
       void setUpM100DefaultFreq(uint8_t freq[16]);

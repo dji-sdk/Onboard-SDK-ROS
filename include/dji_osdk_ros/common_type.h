@@ -62,10 +62,10 @@ namespace dji_osdk_ros
 
   enum class Dronetype
   {
-      PM410 = 0,
-      PM420 = 1,
-      PM430 = 2,
-      PM820 = 3,
+      M100 = 0,
+      M210V2 = 1,
+      M300 = 2,
+      M600 = 3,
       INVALID_TYPE = 0xFF,
   };
 

@@ -858,22 +858,22 @@ bool VehicleNode::getDroneTypeCallback(dji_osdk_ros::GetDroneType::Request &requ
 
   if (ptr_wrapper_->isM100())
   {
-    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM410);
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::M100);
     return true;
   }
-  else if (ptr_wrapper_->isM200())
+  else if (ptr_wrapper_->isM200V2())
   {
-    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM420);
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::M210V2);
     return true;
   }
   else if (ptr_wrapper_->isM300())
   {
-    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM430);
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::M300);
     return true;
   }
   else if (ptr_wrapper_->isM600())
   {
-    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::PM820);
+    response.drone_type = static_cast<uint8_t>(dji_osdk_ros::Dronetype::M600);
     return true;
   }
   else
