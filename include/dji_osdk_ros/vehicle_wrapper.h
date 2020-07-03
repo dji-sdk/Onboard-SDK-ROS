@@ -116,13 +116,14 @@ namespace dji_osdk_ros
 
       /*! Parts of advanced_sendsing */
 #ifdef ADVANCED_SENSING
-      bool startStream(bool is_h264, uint8_t request_view);
-      bool stopStream(bool is_h264, uint8_t request_view);
-
-      CameraRGBImage& getCameraImage();
-      std::vector<uint8_t>& getCameraRawData();
-      void setCameraRawData(uint8_t* rawData, int bufLen);
-      void setCameraImage(const CameraRGBImage& img);
+      /*! CameraStream */
+      bool startFPVCameraStream(CameraImageCallback cb = NULL, void * cbParam = NULL);
+      bool startMainCameraStream(CameraImageCallback cb = NULL, void * cbParam = NULL);
+      bool stopFPVCameraStream();
+      bool stopMainCameraStream();
+      /*! H264 */
+      bool startH264Stream(LiveView::LiveViewCameraPosition pos, H264Callback cb, void *userData);
+      bool stopH264Stream(LiveView::LiveViewCameraPosition pos);
       void setAcmDevicePath(const std::string& acm_path);
 
       /*! @brief subscribe to QVGA (240x320) stereo images at 20 fps
@@ -231,13 +232,6 @@ namespace dji_osdk_ros
       unsigned int baudrate_;
       std::string  sample_case_;
       const static unsigned int default_acm_baudrate = 230400;
-
-
-#ifdef ADVANCED_SENSING
-      CameraRGBImage image_from_camera_;
-      std::vector<uint8_t> raw_data_from_camera_;
-      std::mutex camera_data_mutex_;
-#endif
 };
 }
 

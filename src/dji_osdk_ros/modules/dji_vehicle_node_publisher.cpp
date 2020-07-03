@@ -817,4 +817,52 @@ void VehicleNode::publishVGAStereoImage(Vehicle*            vehicle,
   node_ptr->stereo_vga_front_right_publisher_.publish(img);
 }
 
+void VehicleNode::publishMainCameraImage(CameraRGBImage rgbImg, void* userData)
+{
+  VehicleNode *node_ptr = (VehicleNode *)userData;
+
+  sensor_msgs::Image img;
+  img.height = rgbImg.height;
+  img.width = rgbImg.width;
+  img.step = rgbImg.width*3;
+  img.encoding = "rgb8";
+  img.data = rgbImg.rawData;
+
+  img.header.stamp = ros::Time::now();
+  img.header.frame_id = "MAIN_CAMERA";
+  node_ptr->main_camera_stream_publisher_.publish(img);
+}
+
+void VehicleNode::publishFPVCameraImage(CameraRGBImage rgbImg, void* userData)
+{
+  VehicleNode *node_ptr = (VehicleNode *)userData;
+
+  sensor_msgs::Image img;
+  img.height = rgbImg.height;
+  img.width = rgbImg.width;
+  img.step = rgbImg.width*3;
+  img.encoding = "rgb8";
+  img.data = rgbImg.rawData;
+
+  img.header.stamp = ros::Time::now();
+  img.header.frame_id = "FPV_CAMERA";
+  node_ptr->fpv_camera_stream_publisher_.publish(img);
+}
+
+void VehicleNode::publishCameraH264(uint8_t* buf, int bufLen, void* userData)
+{
+  if (userData)
+  {
+    VehicleNode *node_ptr = reinterpret_cast<VehicleNode*>(userData);
+    std::vector<uint8_t> tempRawData(buf, buf+bufLen);
+    sensor_msgs::Image img;
+    img.data = tempRawData;
+    node_ptr->camera_h264_publisher_.publish(img);
+  } 
+  else 
+  {
+   DERROR("userData is a null value (should be a pointer to VehicleWrapper).");
+  }
+}
+
 #endif

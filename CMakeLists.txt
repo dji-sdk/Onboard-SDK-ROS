@@ -71,7 +71,6 @@ find_package(FFMPEG REQUIRED)
 ## Generate msg in the 'msg' folder
 add_message_files(
   FILES
-  CameraData.msg
 
   FCTimeInUTC.msg
   GPSUTC.msg
@@ -112,7 +111,7 @@ add_service_files(
   MFIO.srv
   SetGoHomeAltitude.srv
   SetNewHomePoint.srv
-  AdvancedSensing.srv
+  SetupCameraH264.srv
   AvoidEnable.srv
 
   Activation.srv
