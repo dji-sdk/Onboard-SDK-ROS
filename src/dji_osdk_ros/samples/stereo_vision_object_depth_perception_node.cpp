@@ -48,8 +48,7 @@ ros::ServiceClient stereo_vga_subscription_client;
 ros::ServiceClient get_drone_type_client;
 ros::ServiceClient get_m300_stereo_params_client;
 
-int
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
   ros::init(argc, argv, "stereo_vision_object_depth_perception");
   ros::NodeHandle nh;

@@ -81,6 +81,19 @@
 #include <dji_osdk_ros/SendMobileData.h>
 #include <dji_osdk_ros/SendPayloadData.h>
 #include <dji_osdk_ros/GetDroneType.h>
+//mission services
+#include <dji_osdk_ros/MissionStatus.h>
+#include <dji_osdk_ros/MissionWpUpload.h>
+#include <dji_osdk_ros/MissionWpAction.h>
+#include <dji_osdk_ros/MissionWpGetSpeed.h>
+#include <dji_osdk_ros/MissionWpSetSpeed.h>
+#include <dji_osdk_ros/MissionWpGetInfo.h>
+#include <dji_osdk_ros/MissionHpUpload.h>
+#include <dji_osdk_ros/MissionHpAction.h>
+#include <dji_osdk_ros/MissionHpGetInfo.h>
+#include <dji_osdk_ros/MissionHpUpdateYawRate.h>
+#include <dji_osdk_ros/MissionHpResetYaw.h>
+#include <dji_osdk_ros/MissionHpUpdateRadius.h>
 
 #ifdef ADVANCED_SENSING
 #include <dji_osdk_ros/SetupCameraH264.h>
@@ -105,6 +118,8 @@
 #define C_PI (double)3.141592653589793
 #define DEG2RAD(DEG) ((DEG) * ((C_PI) / (180.0)))
 #define RAD2DEG(RAD) ((RAD) * (180.0) / (C_PI))
+const int WAIT_TIMEOUT = 10;
+const int FLIGHT_CONTROL_WAIT_TIMEOUT = 1;
 
 // Declaration
 namespace dji_osdk_ros
@@ -168,6 +183,19 @@ namespace dji_osdk_ros
       ros::ServiceServer subscribe_stereo_vga_server_;
       ros::ServiceServer get_m300_stereo_params_server_;
 #endif
+      /*! for mission */
+      ros::ServiceServer waypoint_upload_server_;
+      ros::ServiceServer waypoint_action_server_;
+      ros::ServiceServer waypoint_getInfo_server_;
+      ros::ServiceServer waypoint_getSpeed_server_;
+      ros::ServiceServer waypoint_setSpeed_server_;
+      ros::ServiceServer hotpoint_upload_server_;
+      ros::ServiceServer hotpoint_action_server_;
+      ros::ServiceServer hotpoint_getInfo_server_;
+      ros::ServiceServer hotpoint_setSpeed_server_;
+      ros::ServiceServer hotpoint_resetYaw_server_;
+      ros::ServiceServer hotpoint_setRadius_server_;
+      ros::ServiceServer mission_status_server_;
 
       /*! publishers */
       //! telemetry data publisher
@@ -269,6 +297,35 @@ namespace dji_osdk_ros
                                        dji_osdk_ros::GetM300StereoParams::Response& response);
       void publishAdvancedSeningData();
 #endif
+      /*! for mission service callback*/
+      // mission manager
+      bool missionStatusCallback(dji_osdk_ros::MissionStatus::Request&  request,
+                                 dji_osdk_ros::MissionStatus::Response& response);
+      // waypoint mission
+      bool missionWpUploadCallback(dji_osdk_ros::MissionWpUpload::Request&  request,
+                                    dji_osdk_ros::MissionWpUpload::Response& response);
+      bool missionWpActionCallback(dji_osdk_ros::MissionWpAction::Request&  request,
+                                   dji_osdk_ros::MissionWpAction::Response& response);
+      bool missionWpGetInfoCallback(dji_osdk_ros::MissionWpGetInfo::Request&  request,
+                                    dji_osdk_ros::MissionWpGetInfo::Response& response);
+      bool missionWpGetSpeedCallback(dji_osdk_ros::MissionWpGetSpeed::Request&  request,
+                                     dji_osdk_ros::MissionWpGetSpeed::Response& response);
+      bool missionWpSetSpeedCallback(dji_osdk_ros::MissionWpSetSpeed::Request&  request,
+                                     dji_osdk_ros::MissionWpSetSpeed::Response& response);
+      // hotpoint mission
+      bool missionHpUploadCallback(dji_osdk_ros::MissionHpUpload::Request&  request,
+                                   dji_osdk_ros::MissionHpUpload::Response& response);
+      bool missionHpActionCallback(dji_osdk_ros::MissionHpAction::Request&  request,
+                                   dji_osdk_ros::MissionHpAction::Response& response);
+      bool missionHpGetInfoCallback(dji_osdk_ros::MissionHpGetInfo::Request&  request,
+                                    dji_osdk_ros::MissionHpGetInfo::Response& response);
+      bool missionHpUpdateYawRateCallback(dji_osdk_ros::MissionHpUpdateYawRate::Request&  request,
+                                          dji_osdk_ros::MissionHpUpdateYawRate::Response& response);
+      bool missionHpResetYawCallback(dji_osdk_ros::MissionHpResetYaw::Request&  request,
+                                     dji_osdk_ros::MissionHpResetYaw::Response& response);
+      bool missionHpUpdateRadiusCallback(dji_osdk_ros::MissionHpUpdateRadius::Request&  request,
+                                         dji_osdk_ros::MissionHpUpdateRadius::Response& response);
+
       bool initSubscribe();
 
     private:
