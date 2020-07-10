@@ -29,7 +29,11 @@
 //INCLUDE
 #include <dji_osdk_ros/dji_vehicle_node.h>
 #include <dji_osdk_ros/vehicle_wrapper.h>
+
+#ifdef OPEN_CV_INSTALLED
 #include <dji_osdk_ros/stereo_utility/m300_stereo_param_tool.hpp>
+#endif
+
 #include <vector>
 //CODE
 using namespace dji_osdk_ros;
@@ -219,7 +223,9 @@ void VehicleNode::initService()
   subscribe_stereo_240p_server_  = nh_.advertiseService("stereo_240p_subscription",   &VehicleNode::stereo240pSubscriptionCallback, this);
   subscribe_stereo_depth_server_ = nh_.advertiseService("stereo_depth_subscription",  &VehicleNode::stereoDepthSubscriptionCallback,this);
   subscribe_stereo_vga_server_   = nh_.advertiseService("stereo_vga_subscription",    &VehicleNode::stereoVGASubscriptionCallback,  this);
+#ifdef OPEN_CV_INSTALLED
   get_m300_stereo_params_server_ = nh_.advertiseService("get_m300_stereo_params", &VehicleNode::getM300StereoParamsCallback, this);
+#endif
 #endif
   /* mission server */
   waypoint_upload_server_    = nh_.advertiseService("dji_osdk_ros/mission_waypoint_upload",        &VehicleNode::missionWpUploadCallback,        this);
@@ -816,6 +822,7 @@ bool VehicleNode::stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscript
   return true;
 }
 
+#ifdef OPEN_CV_INSTALLED
 bool VehicleNode::getM300StereoParamsCallback(dji_osdk_ros::GetM300StereoParams::Request& request, 
                                               dji_osdk_ros::GetM300StereoParams::Response& response)
 {
@@ -843,6 +850,7 @@ bool VehicleNode::getM300StereoParamsCallback(dji_osdk_ros::GetM300StereoParams:
 
   return response.result;
 }
+#endif
 #endif
 
 bool VehicleNode::getDroneTypeCallback(dji_osdk_ros::GetDroneType::Request &request,
