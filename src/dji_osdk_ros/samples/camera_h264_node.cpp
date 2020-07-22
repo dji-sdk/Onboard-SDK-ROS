@@ -140,7 +140,7 @@ int main(int argc, char** argv)
       }
     }
 
-    ros::AsyncSpinner spinner(2);
+    ros::AsyncSpinner spinner(1);
     spinner.start();
     ROS_INFO("Wait 10 second to record stream");
     ros::Duration(10).sleep();

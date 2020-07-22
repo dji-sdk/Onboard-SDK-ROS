@@ -124,9 +124,9 @@ int main(int argc, char** argv)
 
     // main thread just sleep
     // callback function will be called whenever a new image is ready
-    ros::AsyncSpinner spinner(2);
+    ros::AsyncSpinner spinner(1);
     spinner.start();
-    ros::Duration(3000).sleep();
+    ros::Duration(30).sleep();
 
     if(f)
     {
