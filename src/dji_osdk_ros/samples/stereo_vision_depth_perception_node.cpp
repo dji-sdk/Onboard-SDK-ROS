@@ -32,6 +32,7 @@ using namespace M210_STEREO;
 // for visualization purpose
 bool is_disp_filterd;
 bool vga_imgs_subscribed = false;
+#define M300_FRONT_STEREO_PARAM_YAML_NAME "m300_front_stereo_param.yaml"
 
 dji_osdk_ros::StereoVGASubscription subscription;
 dji_osdk_ros::GetDroneType drone_type;
@@ -80,6 +81,10 @@ main(int argc, char** argv)
     if (!get_m300_stereo_params_client.call(m300_stereo_params))
     {
       return -1;
+    }
+    else
+    {
+      M210_STEREO::Config::setParamFile(M300_FRONT_STEREO_PARAM_YAML_NAME);
     }
   }
 

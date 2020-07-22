@@ -120,7 +120,7 @@ if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ AND darknet_ros_FOUND)
             ${PROJECT_NAME}
             ${OpenCV_LIBS}
             )
-    add_dependencies(stereo_vision_object_depth_perception_node dji_sdk_generate_messages_cpp)
+    add_dependencies(stereo_vision_object_depth_perception_node dji_osdk_ros_generate_messages_cpp)
 else()
     message(STATUS "Did not find required libraries, stereo vision object depth perception sample will not be compiled.")
  endif ()
