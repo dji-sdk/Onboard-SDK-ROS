@@ -119,11 +119,13 @@ target_link_libraries(time_sync_node
         )
 add_dependencies(time_sync_node dji_osdk_ros_generate_messages_cpp)
 
+if(OpenCV_FOUND)
 add_executable(camera_stream_node camera_stream_node.cpp)
 target_link_libraries(camera_stream_node
         ${PROJECT_NAME}
         )
 add_dependencies(camera_stream_node dji_osdk_ros_generate_messages_cpp)
+endif()
 
 add_executable(camera_h264_node camera_h264_node.cpp)
 target_link_libraries(camera_h264_node
