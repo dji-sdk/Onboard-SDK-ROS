@@ -1,79 +1,21 @@
 FILE(GLOB EXAMPLES *.cc *.c *.cpp)
 
-# include_directories(stereo_utility)
+include_directories(stereo_utility)
 
-find_path(OPENCV_CONTRIB_IMG_PROC
-        NAMES
-        disparity_filter.hpp
-        PATHS
-        /usr/include/opencv2/ximgproc
-        /usr/local/include/opencv2/ximgproc
-        /opt/local/include/opencv2/ximgproc
-        /sw/include/opencv2/ximgproc
-        PATH_SUFFIXES
-        opencv2/ximgproc
-        )
-
-find_path(OPENCV_VIZ
-        NAMES
-        viz3d.hpp
-        PATHS
-        /usr/include/opencv2/viz
-        /usr/local/include/opencv2/viz
-        /opt/local/include/opencv2/viz
-        /sw/include/opencv2/viz
-        PATH_SUFFIXES
-        opencv2/viz
-        )
-# Try to see if user has OpenCV installed
-# If there's version 3.3.0+, depth perception samples will be compiled
-# If it's not version 3.3.0+, the sample will not be compiled
-find_package( OpenCV 3.3.0 QUIET )
-if (OpenCV_FOUND)
-    message( "\n${PROJECT_NAME}...")
-    message( STATUS "Found OpenCV ${OpenCV_VERSION} installed in the system, will use it for depth perception sample")
-    message( STATUS " - Includes: ${OpenCV_INCLUDE_DIRS}")
-    message( STATUS " - Libraries: ${OpenCV_LIBRARIES}")
-    add_definitions(-DOPEN_CV_INSTALLED)
-    set(OPEN_CV_3_3_0_INSTALLED 1)
-
-    if(NOT OPENCV_CONTRIB_IMG_PROC STREQUAL OPENCV_CONTRIB_IMG_PROC-NOTFOUND)
-        message(STATUS "Found ximgproc module in OpenCV, will use it to filter disparity map in depth perception sample")
-        add_definitions(-DUSE_OPEN_CV_CONTRIB)
-    else()
-        message(STATUS "Did not find ximgproc in OpenCV")
-    endif()
-
-    if(NOT OPENCV_VIZ STREQUAL OPENCV_VIZ-NOTFOUND)
-        message(STATUS "Found viz3d in OpenCV, will use it to visualize point cloud")
-        set(FOUND_OPENCV_VIZ TRUE)
-    else()
-        message(STATUS "Did not find viz3d in OpenCV")
-    endif()
-else()
-    find_package( OpenCV QUIET )
-    if (OpenCV_FOUND)
-        message(STATUS "Found OpenCV ${OpenCV_VERSION} installed in the system, this sample requires 3.3.0+ for better experience")
-        message(STATUS " - Includes: ${OpenCV_INCLUDE_DIRS}")
-        add_definitions(-DOPEN_CV_INSTALLED)
-    else()
-        message(STATUS "Did not find OpenCV in the system, image data is inside RecvContainer as raw data")
-    endif()
+if(ENABLE_OPEN_CV_CONTRIB)
+add_definitions(-DUSE_OPEN_CV_CONTRIB)
 endif()
 
-find_package(CUDA QUIET)
-if(CUDA_FOUND)
-    message(STATUS "Found ${CUDA_VERSION} CUDA installed in the system, will use it for depth perception sample")
-    message(STATUS " - Includes: ${CUDA_INCLUDE_DIRS}")
-    add_definitions(-DUSE_GPU)
-elseif()
-    message(STATUS "Did not find CUDA in the system")
+if(ENABLE_OPEN_CV_INSTALLED)
+add_definitions(-DOPEN_CV_INSTALLED)
 endif()
 
-find_package(darknet_ros QUIET)
-if(darknet_ros_FOUND)
-    message(STATUS "Found darknet_ros package, will use it for object depth perception demo.")
-    add_definitions(-DUSE_DARKNET_ROS)
+if(ENABLE_GPU)
+add_definitions(-DUSE_GPU)
+endif()
+
+if(ENABLE_DARKNET_ROS)
+add_definitions(-DUSE_DARKNET_ROS)
 endif()
 
 add_executable(flight_control_node
@@ -140,8 +82,9 @@ target_link_libraries(mission_node
 add_dependencies(mission_node dji_osdk_ros_generate_messages_cpp)
 
 if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ)
-    message(STATUS "Found OpenCV ${OpenCV_VERSION}, Viz3d, and advanced sensing module, depth percpetion demo will be compiled")
 
+    message(STATUS "Found OpenCV ${OpenCV_VERSION}, Viz3d, and advanced sensing module, depth percpetion demo will be compiled")
+    add_definitions(-DOPEN_CV_INSTALLED)
     add_executable(stereo_vision_depth_perception_node
                    stereo_vision_depth_perception_node.cpp)
     target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
