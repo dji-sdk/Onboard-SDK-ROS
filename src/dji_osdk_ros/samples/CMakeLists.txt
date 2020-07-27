@@ -61,12 +61,15 @@ target_link_libraries(time_sync_node
         )
 add_dependencies(time_sync_node dji_osdk_ros_generate_messages_cpp)
 
-if(OpenCV_FOUND)
+if(ENABLE_OPEN_CV_INSTALLED OR OPEN_CV_3_3_0_INSTALLED)
+message(STATUS "Find OPENCV, camera stream node will be compiled.")
 add_executable(camera_stream_node camera_stream_node.cpp)
 target_link_libraries(camera_stream_node
         ${PROJECT_NAME}
         )
 add_dependencies(camera_stream_node dji_osdk_ros_generate_messages_cpp)
+else()
+message(STATUS "Did not find OPENCV, camera stream node will not be compiled.")
 endif()
 
 add_executable(camera_h264_node camera_h264_node.cpp)
@@ -89,7 +92,7 @@ if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ)
                    stereo_vision_depth_perception_node.cpp)
     target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
 
-    if (OpenCV_FOUND)
+    if (OPEN_CV_3_3_0_INSTALLED)
         target_link_libraries(stereo_vision_depth_perception_node
                 ${catkin_LIBRARIES}  
                 ${PROJECT_NAME}
