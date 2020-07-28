@@ -95,6 +95,19 @@
 #include <dji_osdk_ros/MissionHpResetYaw.h>
 #include <dji_osdk_ros/MissionHpUpdateRadius.h>
 
+//waypointV2.0 services
+#include <dji_osdk_ros/InitWaypointV2Setting.h>
+#include <dji_osdk_ros/UploadWaypointV2Mission.h>
+#include <dji_osdk_ros/UploadWaypointV2Action.h>
+#include <dji_osdk_ros/DownloadWaypointV2Mission.h>
+#include <dji_osdk_ros/StartWaypointV2Mission.h>
+#include <dji_osdk_ros/StopWaypointV2Mission.h>
+#include <dji_osdk_ros/PauseWaypointV2Mission.h>
+#include <dji_osdk_ros/ResumeWaypointV2Mission.h>
+#include <dji_osdk_ros/GenerateWaypointV2Action.h>
+#include <dji_osdk_ros/SetGlobalCruisespeed.h>
+#include <dji_osdk_ros/GetGlobalCruisespeed.h>
+
 #ifdef ADVANCED_SENSING
 #include <dji_osdk_ros/SetupCameraH264.h>
 #include <dji_osdk_ros/SetupCameraStream.h>
@@ -113,6 +126,24 @@
 #include <dji_osdk_ros/FCTimeInUTC.h>
 #include <dji_osdk_ros/GPSUTC.h>
 
+//waypointV2.0
+#include <dji_osdk_ros/WaypointV2.h>
+#include <dji_osdk_ros/WaypointV2Action.h>
+#include <dji_osdk_ros/WaypointV2AircraftControlActuator.h>
+#include <dji_osdk_ros/WaypointV2AircraftControlActuatorFlying.h>
+#include <dji_osdk_ros/WaypointV2AircraftControlActuatorRotateHeading.h>
+#include <dji_osdk_ros/WaypointV2AssociateTrigger.h>
+#include <dji_osdk_ros/WaypointV2CameraActuator.h>
+#include <dji_osdk_ros/WaypointV2CameraActuatorFocusParam.h>
+#include <dji_osdk_ros/WaypointV2CameraActuatorFocalLengthParam.h>
+#include <dji_osdk_ros/WaypointV2Config.h>
+#include <dji_osdk_ros/WaypointV2GimbalActuator.h>
+#include <dji_osdk_ros/WaypointV2GimbalActuatorRotationParam.h>
+#include <dji_osdk_ros/WaypointV2InitSetting.h>
+#include <dji_osdk_ros/WaypointV2IntervalTrigger.h>
+#include <dji_osdk_ros/WaypointV2ReachpointTrigger.h>
+#include <dji_osdk_ros/WaypointV2SampleReachPointTrigger.h>
+#include <dji_osdk_ros/WaypointV2TrajectoryTrigger.h>
 
 #define C_EARTH (double)6378137.0
 #define C_PI (double)3.141592653589793
@@ -196,6 +227,20 @@ namespace dji_osdk_ros
       ros::ServiceServer hotpoint_resetYaw_server_;
       ros::ServiceServer hotpoint_setRadius_server_;
       ros::ServiceServer mission_status_server_;
+
+      /*! for waypoint2.0 */
+      ros::ServiceServer waypointV2_init_setting_server_;
+      ros::ServiceServer waypointV2_upload_mission_server_;
+      ros::ServiceServer waypointV2_download_mission_server_;
+      ros::ServiceServer waypointV2_upload_action_server_;
+      ros::ServiceServer waypointV2_start_mission_server_;
+      ros::ServiceServer waypointV2_stop_mission_server_;
+      ros::ServiceServer waypointV2_pause_mission_server_;
+      ros::ServiceServer waypointV2_resume_mission_server_;
+      ros::ServiceServer waypointV2_generate_actions_server_;
+      ros::ServiceServer waypointv2_set_global_cruisespeed_server_;
+      ros::ServiceServer waypointv2_get_global_cruisespeed_server_;
+      ros::ServiceServer waypointV2_generate_polygon_server_;
 
       /*! publishers */
       //! telemetry data publisher
@@ -325,6 +370,29 @@ namespace dji_osdk_ros
                                      dji_osdk_ros::MissionHpResetYaw::Response& response);
       bool missionHpUpdateRadiusCallback(dji_osdk_ros::MissionHpUpdateRadius::Request&  request,
                                          dji_osdk_ros::MissionHpUpdateRadius::Response& response);
+      /*! for waypiontV2.0 service callback*/
+      bool waypointV2InitSettingCallback(dji_osdk_ros::InitWaypointV2Setting::Request&  request,
+                                         dji_osdk_ros::InitWaypointV2Setting::Response& response);
+      bool waypointV2UploadMissionCallback(dji_osdk_ros::UploadWaypointV2Mission::Request&  request,
+                                           dji_osdk_ros::UploadWaypointV2Mission::Response& response);
+      bool waypointV2DownloadMissionCallback(dji_osdk_ros::DownloadWaypointV2Mission::Request&  request,
+                                             dji_osdk_ros::DownloadWaypointV2Mission::Response& response);
+      bool waypointV2UploadActionCallback(dji_osdk_ros::UploadWaypointV2Action::Request&  request,
+                                          dji_osdk_ros::UploadWaypointV2Action::Response& response);
+      bool waypointV2StartMissionCallback(dji_osdk_ros::StartWaypointV2Mission::Request&  request,
+                                          dji_osdk_ros::StartWaypointV2Mission::Response& response);
+      bool waypointV2StopMissionCallback(dji_osdk_ros::StopWaypointV2Mission::Request&  request,
+                                         dji_osdk_ros::StopWaypointV2Mission::Response& response);
+      bool waypointV2PauseMissionCallback(dji_osdk_ros::PauseWaypointV2Mission::Request&  request,
+                                          dji_osdk_ros::PauseWaypointV2Mission::Response& response);
+      bool waypointV2ResumeMissionCallback(dji_osdk_ros::ResumeWaypointV2Mission::Request&  request,
+                                           dji_osdk_ros::ResumeWaypointV2Mission::Response& response);
+      bool waypointV2GenerateActionsCallback(dji_osdk_ros::GenerateWaypointV2Action::Request&  request,
+                                             dji_osdk_ros::GenerateWaypointV2Action::Response& response);
+      bool waypointV2SetGlobalCruisespeedCallback(dji_osdk_ros::SetGlobalCruisespeed::Request& request,
+                                                  dji_osdk_ros::SetGlobalCruisespeed::Response& respons);
+      bool waypointV2GetGlobalCruisespeedCallback(dji_osdk_ros::GetGlobalCruisespeed::Request& request,
+                                                  dji_osdk_ros::GetGlobalCruisespeed::Response& response);
 
       bool initSubscribe();
 
@@ -358,6 +426,8 @@ namespace dji_osdk_ros
 
       bool stereo_subscription_success;
       bool stereo_vga_subscription_success;
+
+      std::vector<DJIWaypointV2Action> actions;
 
     //! data broadcast callback
     void dataBroadcastCallback();

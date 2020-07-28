@@ -77,6 +77,24 @@ add_message_files(
   Gimbal.msg
   Waypoint.msg
   WaypointList.msg
+  WaypointV2AircraftControlActuatorFlying.msg
+  WaypointV2AircraftControlActuatorRotateHeading.msg
+  WaypointV2AircraftControlActuator.msg
+  WaypointV2AssociateTrigger.msg
+  WaypointV2CameraActuatorFocalLengthParam.msg
+  WaypointV2CameraActuatorFocusParam.msg
+  WaypointV2CameraActuator.msg
+  WaypointV2Config.msg
+  WaypointV2GimbalActuatorRotationParam.msg
+  WaypointV2GimbalActuator.msg
+  WaypointV2InitSetting.msg
+  WaypointV2IntervalTrigger.msg
+  WaypointV2ReachpointTrigger.msg
+  WaypointV2SampleReachPointTrigger.msg
+  WaypointV2TrajectoryTrigger.msg
+  WaypointV2Action.msg
+  WaypointV2.msg
+
   MobileData.msg
   PayloadData.msg
   MissionWaypointAction.msg
@@ -113,6 +131,17 @@ add_service_files(
   SetNewHomePoint.srv
   SetupCameraH264.srv
   AvoidEnable.srv
+  InitWaypointV2Setting.srv
+  UploadWaypointV2Mission.srv
+  UploadWaypointV2Action.srv
+  DownloadWaypointV2Mission.srv
+  StartWaypointV2Mission.srv
+  StopWaypointV2Mission.srv
+  PauseWaypointV2Mission.srv
+  ResumeWaypointV2Mission.srv
+  GenerateWaypointV2Action.srv
+  SetGlobalCruisespeed.srv
+  GetGlobalCruisespeed.srv
 
   Activation.srv
   CameraAction.srv
