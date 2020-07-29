@@ -114,6 +114,18 @@ namespace dji_osdk_ros
       /*! Parts of payload device */
       void sendDataToPSDK(uint8_t* data, uint8_t len);
 
+      /*! Parts of waypointV2 */
+      bool initWaypointV2(DJI::OSDK::WayPointV2InitSettings *info, int timeout);
+      bool uploadWaypointV2(int timeout);
+      bool downloadWaypointV2(std::vector<DJI::OSDK::WaypointV2> &mission, int timeout);
+      bool uploadWaypointV2Actions(std::vector<DJIWaypointV2Action> &actions, int timeout);
+      bool startWaypointV2Mission(int timeout);
+      bool stopWaypointV2Mission(int timeout);
+      bool pauseWaypointV2Mission(int timeout);
+      bool resumeWaypointV2Mission(int timeout);
+      bool setGlobalCruiseSpeed(const float32_t &cruiseSpeed, int timeout);
+      bool getGlobalCruiseSpeed(float32_t &cruiseSpeed, int timeout);
+
       /*! Parts of advanced_sendsing */
 #ifdef ADVANCED_SENSING
       /*! CameraStream */

@@ -1,0 +1,5 @@
+#request
+---
+#response
+WaypointV2[] mission
+bool result

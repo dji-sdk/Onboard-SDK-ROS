@@ -1933,6 +1933,214 @@ static T_OsdkOsalHandler osalHandler = {
     vehicle->payloadDevice->sendDataToPSDK(data, len);
   }
 
+  bool VehicleWrapper::initWaypointV2(DJI::OSDK::WayPointV2InitSettings *info, int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->init(info,timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+       DERROR("Init mission setting ErrorCode:0x%lX\n", ret);
+       ErrorCode::printErrorCodeMsg(ret);
+       return false;
+    }
+    else
+    {
+      DSTATUS("Init mission setting successfully!\n");
+    }
+    return true;
+  }
+
+  bool VehicleWrapper::uploadWaypointV2(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->uploadMission(timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("Upload waypoint v2 mission ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Upload waypoint v2 mission successfully!\n");
+    }
+    return true;
+
+  }
+
+  bool VehicleWrapper::downloadWaypointV2(std::vector<DJI::OSDK::WaypointV2> &mission, int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->downloadMission(mission, timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("Download waypoint v2 mission ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Download waypoint v2 mission successfully!\n");
+    }
+    return true;
+  }
+
+  bool VehicleWrapper::uploadWaypointV2Actions(std::vector<DJIWaypointV2Action> &actions, int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->uploadAction(actions,timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("Upload waypoint v2 actions ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Upload waypoint v2 actions successfully!\n");
+    }
+    return true;
+  }
+
+  bool VehicleWrapper::startWaypointV2Mission(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->start(timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("Start waypoint v2 mission ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Start waypoint v2 mission successfully!\n");
+    }
+    return true;
+
+  }
+
+  bool VehicleWrapper::stopWaypointV2Mission(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->stop(timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("stop waypoint v2 mission ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("stop waypoint v2 mission successfully!\n");
+    }
+    return true;
+  }
+
+  bool VehicleWrapper::pauseWaypointV2Mission(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->pause(timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("pause waypoint v2 mission ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("pause waypoint v2 mission successfully!\n");
+    }
+    return true;
+  }
+
+bool VehicleWrapper::resumeWaypointV2Mission(int timeout)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+  }
+
+  ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->resume(timeout);
+  if(ret != ErrorCode::SysCommonErr::Success)
+  {
+    DERROR("resume waypoint v2 mission ErrorCode:0x%lX\n", ret);
+    ErrorCode::printErrorCodeMsg(ret);
+    return false;
+  }
+  else
+  {
+    DSTATUS("resume waypoint v2 mission successfully!\n");
+  }
+  return true;
+}
+
+bool VehicleWrapper::setGlobalCruiseSpeed(const float32_t &cruiseSpeed, int timeout)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->setGlobalCruiseSpeed(cruiseSpeed, timeout);
+  if(ret !=  ErrorCode::SysCommonErr::Success)
+  {
+    DERROR("Set glogal cruise speed %f m/s failed ErrorCode:0x%lX\n", cruiseSpeed, ret);
+    ErrorCode::printErrorCodeMsg(ret);
+    return false;
+  }
+  DSTATUS("Current cruise speed is: %f m/s\n", cruiseSpeed);
+  return true;
+}
+
+bool VehicleWrapper::getGlobalCruiseSpeed(float32_t &cruiseSpeed, int timeout)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->getGlobalCruiseSpeed(cruiseSpeed, timeout);
+  if(ret !=  ErrorCode::SysCommonErr::Success)
+  {
+    DERROR("Get glogal cruise speed failed ErrorCode:0x%lX\n", ret);
+    ErrorCode::printErrorCodeMsg(ret);
+    return false;
+  }
+  DSTATUS("Current cruise speed is: %f m/s\n",cruiseSpeed);
+  return true;
+}
+
 #ifdef ADVANCED_SENSING
   bool VehicleWrapper::startFPVCameraStream(CameraImageCallback cb, void * cbParam)
   {
@@ -1945,6 +2153,7 @@ static T_OsdkOsalHandler osalHandler = {
       return vehicle->advancedSensing->startFPVCameraStream(cb, cbParam);
     }
   }
+
   bool VehicleWrapper::startMainCameraStream(CameraImageCallback cb, void * cbParam)
   {
     if (!vehicle->advancedSensing)

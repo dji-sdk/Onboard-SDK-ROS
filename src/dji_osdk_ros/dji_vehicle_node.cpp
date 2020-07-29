@@ -240,6 +240,18 @@ void VehicleNode::initService()
   hotpoint_resetYaw_server_  = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_resetYaw",      &VehicleNode::missionHpResetYawCallback,      this);
   hotpoint_setRadius_server_ = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_updateRadius",  &VehicleNode::missionHpUpdateRadiusCallback,  this);
   mission_status_server_     = nh_.advertiseService("dji_osdk_ros/mission_status",                 &VehicleNode::missionStatusCallback,          this);
+  /* waypoint2.0 server */
+  waypointV2_init_setting_server_     = nh_.advertiseService("dji_osdk_ros/waypointV2_initSetting",    &VehicleNode::waypointV2InitSettingCallback, this);
+  waypointV2_upload_mission_server_   = nh_.advertiseService("dji_osdk_ros/waypointV2_uploadMission", &VehicleNode::waypointV2UploadMissionCallback, this);
+  waypointV2_download_mission_server_ = nh_.advertiseService("dji_osdk_ros/waypointV2_downloadMission", &VehicleNode::waypointV2DownloadMissionCallback, this);
+  waypointV2_upload_action_server_    = nh_.advertiseService("dji_osdk_ros/waypointV2_uploadAction", &VehicleNode::waypointV2UploadActionCallback, this);
+  waypointV2_start_mission_server_    = nh_.advertiseService("dji_osdk_ros/waypointV2_startMission", &VehicleNode::waypointV2StartMissionCallback, this);
+  waypointV2_stop_mission_server_     = nh_.advertiseService("dji_osdk_ros/waypointV2_stopMission", &VehicleNode::waypointV2StopMissionCallback, this);
+  waypointV2_pause_mission_server_    = nh_.advertiseService("dji_osdk_ros/waypointV2_pauseMission", &VehicleNode::waypointV2PauseMissionCallback, this);
+  waypointV2_resume_mission_server_   = nh_.advertiseService("dji_osdk_ros/waypointV2_resumeMission", &VehicleNode::waypointV2ResumeMissionCallback, this);
+  waypointV2_generate_actions_server_ = nh_.advertiseService("dji_osdk_ros/waypointV2_generateActions", &VehicleNode::waypointV2GenerateActionsCallback, this);
+  waypointv2_set_global_cruisespeed_server_ = nh_.advertiseService("dji_osdk_ros/waypointV2_setGlobalCruisespeed", &VehicleNode::waypointV2SetGlobalCruisespeedCallback, this);
+  waypointv2_get_global_cruisespeed_server_ = nh_.advertiseService("dji_osdk_ros/waypointV2_getGlobalCruisespeed", &VehicleNode::waypointV2GetGlobalCruisespeedCallback, this);
   ROS_INFO_STREAM("Services startup!");
 }
 

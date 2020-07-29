@@ -1,0 +1,8 @@
+#request
+WaypointV2InitSetting waypointV2InitSettings
+uint16 polygonNum
+float32 radius
+uint16 actionNum
+
+---
+bool result

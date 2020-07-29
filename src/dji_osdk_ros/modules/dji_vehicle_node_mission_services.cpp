@@ -510,3 +510,455 @@ VehicleNode::missionHpUpdateRadiusCallback(
 
   return true;
 }
+
+bool VehicleNode::waypointV2InitSettingCallback(
+  dji_osdk_ros::InitWaypointV2Setting::Request&  request,
+  dji_osdk_ros::InitWaypointV2Setting::Response& response)
+{
+  ROS_INFO("called waypointV2InitSettingCallback");
+  response.result = false;
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+  uint16_t polygonNum = request.polygonNum;
+  float32_t radius = request.radius;
+
+  uint16_t actionNum = request.actionNum;
+  srand(int(time(0)));
+
+  /*! Init waypoint settings*/
+  DJI::OSDK::WayPointV2InitSettings missionInitSettings;
+  DJI::OSDK::WaypointV2 waypointV2Vector;
+  missionInitSettings.missionID                         = rand();
+  missionInitSettings.repeatTimes                       = request.waypointV2InitSettings.repeatTimes;
+  missionInitSettings.finishedAction                    = static_cast<DJI::OSDK::DJIWaypointV2MissionFinishedAction>(request.waypointV2InitSettings.finishedAction);
+  missionInitSettings.maxFlightSpeed                    = request.waypointV2InitSettings.maxFlightSpeed;
+  missionInitSettings.autoFlightSpeed                   = request.waypointV2InitSettings.autoFlightSpeed;
+  missionInitSettings.exitMissionOnRCSignalLost         = request.waypointV2InitSettings.exitMissionOnRCSignalLost;
+  missionInitSettings.gotoFirstWaypointMode             = static_cast<DJI::OSDK::DJIWaypointV2MissionGotoFirstWaypointMode>(request.waypointV2InitSettings.gotoFirstWaypointMode);
+
+  for (uint16_t i = 0; i < request.waypointV2InitSettings.mission.size(); i++)
+  {
+    waypointV2Vector.longitude                 = request.waypointV2InitSettings.mission[i].longitude;
+    waypointV2Vector.latitude                  = request.waypointV2InitSettings.mission[i].latitude;
+    waypointV2Vector.relativeHeight            = request.waypointV2InitSettings.mission[i].relativeHeight;
+    waypointV2Vector.waypointType              = static_cast<DJI::OSDK::DJIWaypointV2FlightPathMode>(request.waypointV2InitSettings.mission[i].waypointType);
+    waypointV2Vector.headingMode               = static_cast<DJI::OSDK::DJIWaypointV2HeadingMode>(request.waypointV2InitSettings.mission[i].headingMode);
+    waypointV2Vector.config.useLocalCruiseVel  = request.waypointV2InitSettings.mission[i].config.useLocalCruiseVel;
+    waypointV2Vector.config.useLocalMaxVel     = request.waypointV2InitSettings.mission[i].config.useLocalMaxVel;
+    waypointV2Vector.dampingDistance           = request.waypointV2InitSettings.mission[i].dampingDistance;
+    waypointV2Vector.heading                   = request.waypointV2InitSettings.mission[i].heading;
+    waypointV2Vector.turnMode                  = static_cast<DJI::OSDK::DJIWaypointV2TurnMode>(request.waypointV2InitSettings.mission[i].turnMode);
+    waypointV2Vector.pointOfInterest.positionX = request.waypointV2InitSettings.mission[i].positionX;
+    waypointV2Vector.pointOfInterest.positionY = request.waypointV2InitSettings.mission[i].positionY;
+    waypointV2Vector.pointOfInterest.positionZ = request.waypointV2InitSettings.mission[i].positionZ;
+    waypointV2Vector.maxFlightSpeed            = request.waypointV2InitSettings.mission[i].maxFlightSpeed;
+    waypointV2Vector.autoFlightSpeed           = request.waypointV2InitSettings.mission[i].autoFlightSpeed;
+
+    missionInitSettings.mission.push_back(waypointV2Vector);
+  }
+
+  missionInitSettings.missTotalLen = missionInitSettings.mission.size();
+
+  response.result = ptr_wrapper_->initWaypointV2(&missionInitSettings,WAIT_TIMEOUT);
+
+  return response.result;
+
+}
+
+bool VehicleNode::waypointV2UploadMissionCallback(
+  dji_osdk_ros::UploadWaypointV2Mission::Request&  request,
+  dji_osdk_ros::UploadWaypointV2Mission::Response& response)
+{
+  ROS_INFO("called waypointV2UploadMissionCallback");
+  response.result = false;
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->uploadWaypointV2(WAIT_TIMEOUT);
+
+  return response.result;
+}
+
+bool VehicleNode::waypointV2DownloadMissionCallback(
+  dji_osdk_ros::DownloadWaypointV2Mission::Request&  request,
+  dji_osdk_ros::DownloadWaypointV2Mission::Response& response)
+{
+  ROS_INFO("called waypointV2DownloadMissionCallback");
+  response.result = false;
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  std::vector<DJI::OSDK::WaypointV2> mission;
+  dji_osdk_ros::WaypointV2 waypointV2Vector;
+
+  response.result = ptr_wrapper_->downloadWaypointV2(mission, WAIT_TIMEOUT);
+  for (uint16_t i = 0; i < mission.size(); i++)
+  {
+    waypointV2Vector.longitude                 = mission[i].longitude;
+    waypointV2Vector.latitude                  = mission[i].latitude;
+    waypointV2Vector.relativeHeight            = mission[i].relativeHeight;
+    waypointV2Vector.waypointType              = static_cast<DJI::OSDK::DJIWaypointV2FlightPathMode>(mission[i].waypointType);
+    waypointV2Vector.headingMode               = static_cast<DJI::OSDK::DJIWaypointV2HeadingMode>(mission[i].headingMode);
+    waypointV2Vector.config.useLocalCruiseVel  = mission[i].config.useLocalCruiseVel;
+    waypointV2Vector.config.useLocalMaxVel     = mission[i].config.useLocalMaxVel;
+    waypointV2Vector.dampingDistance           = mission[i].dampingDistance;
+    waypointV2Vector.heading                   = mission[i].heading;
+    waypointV2Vector.turnMode                  = static_cast<DJI::OSDK::DJIWaypointV2TurnMode>(mission[i].turnMode);
+    waypointV2Vector.positionX                 = mission[i].pointOfInterest.positionX;
+    waypointV2Vector.positionY                 = mission[i].pointOfInterest.positionY;
+    waypointV2Vector.positionZ                 = mission[i].pointOfInterest.positionZ;
+    waypointV2Vector.maxFlightSpeed            = mission[i].maxFlightSpeed;
+    waypointV2Vector.autoFlightSpeed           = mission[i].autoFlightSpeed;
+
+    response.mission.push_back(waypointV2Vector);
+  }
+
+  return response.result;
+}
+
+bool VehicleNode::waypointV2UploadActionCallback(
+  dji_osdk_ros::UploadWaypointV2Action::Request&  request,
+  dji_osdk_ros::UploadWaypointV2Action::Response& response)
+{
+  ROS_INFO("called waypointV2UploadActionCallback");
+  response.result = false;
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+  if (this->actions.size() == 0)
+  {
+    return false;
+  }
+  response.result = ptr_wrapper_->uploadWaypointV2Actions(this->actions, WAIT_TIMEOUT);
+
+  return response.result;
+}
+
+bool VehicleNode::waypointV2StartMissionCallback(
+  dji_osdk_ros::StartWaypointV2Mission::Request&  request,
+  dji_osdk_ros::StartWaypointV2Mission::Response& response)
+{
+  ROS_INFO("called waypointV2StartMissionCallback");
+  response.result = false;
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->startWaypointV2Mission(WAIT_TIMEOUT);
+}
+
+bool VehicleNode::waypointV2StopMissionCallback(
+  dji_osdk_ros::StopWaypointV2Mission::Request&  request,
+  dji_osdk_ros::StopWaypointV2Mission::Response& response)
+{
+  ROS_INFO("called waypointV2StopMissionCallback");
+  response.result = false;
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->stopWaypointV2Mission(WAIT_TIMEOUT);
+}
+
+bool VehicleNode::waypointV2PauseMissionCallback(
+  dji_osdk_ros::PauseWaypointV2Mission::Request&  request,
+  dji_osdk_ros::PauseWaypointV2Mission::Response& response)
+{
+  ROS_INFO("called waypointV2PauseMissionCallback");
+  response.result = false;
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->pauseWaypointV2Mission(WAIT_TIMEOUT);
+}
+
+bool VehicleNode::waypointV2ResumeMissionCallback(
+  dji_osdk_ros::ResumeWaypointV2Mission::Request&  request,
+  dji_osdk_ros::ResumeWaypointV2Mission::Response& response)
+{
+  ROS_INFO("called waypointV2ResumeMissionCallback");
+  response.result = false;
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->resumeWaypointV2Mission(WAIT_TIMEOUT);
+}
+
+bool VehicleNode::waypointV2GenerateActionsCallback(
+  dji_osdk_ros::GenerateWaypointV2Action::Request&  request,
+  dji_osdk_ros::GenerateWaypointV2Action::Response& response)
+{
+  ROS_INFO("called waypointV2GenerateActionsCallback");
+  response.result = false;
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+  DJI::OSDK::DJIWaypointV2Trigger *trigger;
+  DJI::OSDK::DJIWaypointV2Actuator *actuator;
+  DJI::OSDK::DJIWaypointV2CameraActuatorParam *cameraActuatorParam;
+  DJI::OSDK::DJIWaypointV2GimbalActuatorParam *gimbalActuatorParam;
+  DJI::OSDK::DJIWaypointV2AircraftControlParam *aircraftControlActuatorParam;
+
+  for (uint16_t i = 0; i < request.actions.size(); i++)
+  {
+     switch(request.actions[i].waypointV2ActionTriggerType)
+     {
+       case dji_osdk_ros::WaypointV2Action::DJIWaypointV2ActionTriggerTypeReachPoint:
+       { 
+         DJI::OSDK::DJIWaypointV2ReachPointTriggerParam param;
+         param.startIndex = request.actions[i].waypointV2ReachpointTrigger.startIndex;
+         param.endIndex = request.actions[i].waypointV2ReachpointTrigger.endIndex;
+         param.intervalWPNum = request.actions[i].waypointV2ReachpointTrigger.intervalWPNum;
+         param.waypointCountToTerminate = request.actions[i].waypointV2ReachpointTrigger.waypointCountToTerminate;
+         trigger = new DJI::OSDK::DJIWaypointV2Trigger(
+           DJI::OSDK::DJIWaypointV2ActionTriggerTypeReachPoint, &param);
+         response.result = true;
+
+         break;
+       }
+
+       case dji_osdk_ros::WaypointV2Action::DJIWaypointV2ActionTriggerTypeActionAssociated:
+       { 
+         DJI::OSDK::DJIWaypointV2AssociateTriggerParam param;
+         param.actionAssociatedType = static_cast<DJI::OSDK::DJIWaypointV2TriggerAssociatedTimingType>
+                                      (request.actions[i].waypointV2AssociateTrigger.actionAssociatedType);
+         param.actionIdAssociated   = request.actions[i].waypointV2AssociateTrigger.actionIdAssociated;
+         param.waitingTime          = request.actions[i].waypointV2AssociateTrigger.waitingTime;
+         trigger = new DJI::OSDK::DJIWaypointV2Trigger(
+           DJI::OSDK::DJIWaypointV2ActionTriggerTypeActionAssociated, &param);
+         response.result = true;
+
+         break;
+       }
+
+       case dji_osdk_ros::WaypointV2Action::DJIWaypointV2ActionTriggerTypeTrajectory:
+       { 
+         DJI::OSDK::DJIWaypointV2TrajectoryTriggerParam param;
+         param.endIndex   = request.actions[i].waypointV2TrajectoryTrigger.endIndex;
+         param.startIndex = request.actions[i].waypointV2TrajectoryTrigger.startIndex;
+         trigger = new DJI::OSDK::DJIWaypointV2Trigger(
+           DJI::OSDK::DJIWaypointV2ActionTriggerTypeTrajectory, &param);
+
+         response.result = true;
+         break;
+       }
+
+       case dji_osdk_ros::WaypointV2Action::DJIWaypointV2ActionTriggerTypeInterval:
+       { 
+         DJI::OSDK::DJIWaypointV2IntervalTriggerParam param;
+         param.actionIntervalType = static_cast<DJI::OSDK::DJIWaypointV2ActionIntervalType>
+                                    (request.actions[i].waypointV2IntervalTrigger.actionIntervalType);
+         param.interval           = request.actions[i].waypointV2IntervalTrigger.interval;
+         param.startIndex         = request.actions[i].waypointV2IntervalTrigger.startIndex;
+         trigger = new DJI::OSDK::DJIWaypointV2Trigger(
+           DJI::OSDK::DJIWaypointV2ActionTriggerTypeInterval, &param);
+
+         response.result = true;
+         break;
+       }
+
+       case dji_osdk_ros::WaypointV2Action::DJIWaypointV2ActionTriggerTypeSampleReachPoint:
+       { 
+         DJI::OSDK::DJIWaypointV2SampleReachPointTriggerParam param;
+         param.terminateNum  = request.actions[i].waypointV2SampleReachPointTrigger.terminateNum;
+         param.waypointIndex = request.actions[i].waypointV2SampleReachPointTrigger.waypointIndex;
+         trigger = new DJI::OSDK::DJIWaypointV2Trigger(
+           DJI::OSDK::DJIWaypointV2ActionTriggerTypeSampleReachPoint, &param);
+
+         response.result = true;
+         break;
+       }
+
+       default:
+       {
+         ROS_DEBUG("Invalid trigger type%d\n", request.actions[i].waypointV2ActionTriggerType);
+         response.result = false;
+         break;
+       }
+
+     }
+
+     switch(request.actions[i].waypointV2ACtionActuatorType)
+     {
+       case dji_osdk_ros::WaypointV2Action::DJIWaypointV2ActionActuatorTypeCamera:
+       { 
+         if (request.actions[i].waypointV2CameraActuator.DJIWaypointV2ActionActuatorCameraOperationType ==  
+             dji_osdk_ros::WaypointV2CameraActuator::DJIWaypointV2ActionActuatorCameraOperationTypeFocus)
+         {
+            DJI::OSDK::DJIWaypointV2CameraFocusParam focusParam;
+            focusParam.focusTarget.x = request.actions[i].waypointV2CameraActuator.focusParam.x;
+            focusParam.focusTarget.y = request.actions[i].waypointV2CameraActuator.focusParam.y;
+            focusParam.retryTimes = request.actions[i].waypointV2CameraActuator.focusParam.retryTimes;
+            focusParam.focusDelayTime = request.actions[i].waypointV2CameraActuator.focusParam.focusDelayTime;
+            cameraActuatorParam = new DJI::OSDK::DJIWaypointV2CameraActuatorParam(DJI::OSDK::DJIWaypointV2ActionActuatorCameraOperationTypeFocus, &focusParam);
+         }
+         else if(request.actions[i].waypointV2CameraActuator.DJIWaypointV2ActionActuatorCameraOperationType ==  
+                 dji_osdk_ros::WaypointV2CameraActuator::DJIWaypointV2ActionActuatorCameraOperationTypeFocalLength)
+         {
+            DJI::OSDK::DJIWaypointV2CameraFocalLengthParam zoomParam;
+            zoomParam.retryTimes = request.actions[i].waypointV2CameraActuator.zoomParam.retryTimes;
+            zoomParam.focalLength = request.actions[i].waypointV2CameraActuator.zoomParam.focalLength;
+            cameraActuatorParam = new DJI::OSDK::DJIWaypointV2CameraActuatorParam(DJI::OSDK::DJIWaypointV2ActionActuatorCameraOperationTypeFocalLength, &zoomParam);
+         }
+         else if(request.actions[i].waypointV2CameraActuator.DJIWaypointV2ActionActuatorCameraOperationType ==  
+                 dji_osdk_ros::WaypointV2CameraActuator::DJIWaypointV2ActionActuatorCameraOperationTypeTakePhoto)
+         {
+            cameraActuatorParam = new DJI::OSDK::DJIWaypointV2CameraActuatorParam(DJI::OSDK::DJIWaypointV2ActionActuatorCameraOperationTypeTakePhoto, nullptr);
+         }
+         else if(request.actions[i].waypointV2CameraActuator.DJIWaypointV2ActionActuatorCameraOperationType ==  
+                 dji_osdk_ros::WaypointV2CameraActuator::DJIWaypointV2ActionActuatorCameraOperationTypeStartRecordVideo)
+         {
+            cameraActuatorParam = new DJI::OSDK::DJIWaypointV2CameraActuatorParam(DJI::OSDK::DJIWaypointV2ActionActuatorCameraOperationTypeStartRecordVideo, nullptr);
+         }
+         else if(request.actions[i].waypointV2CameraActuator.DJIWaypointV2ActionActuatorCameraOperationType ==  
+                 dji_osdk_ros::WaypointV2CameraActuator::DJIWaypointV2ActionActuatorCameraOperationTypeStopRecordVideo)
+         {
+            cameraActuatorParam = new DJI::OSDK::DJIWaypointV2CameraActuatorParam(DJI::OSDK::DJIWaypointV2ActionActuatorCameraOperationTypeStopRecordVideo, nullptr);
+         }
+         else
+         {
+            cameraActuatorParam = nullptr;
+         }
+         
+         actuator = new DJI::OSDK::DJIWaypointV2Actuator(
+           DJI::OSDK::DJIWaypointV2ActionActuatorTypeCamera, request.actions[i].waypointV2CameraActuator.actuatorIndex, cameraActuatorParam);
+         response.result = true;
+
+         break;
+       }
+
+       case dji_osdk_ros::WaypointV2Action::DJIWaypointV2ActionActuatorTypeGimbal:
+       { 
+         if (request.actions[i].waypointV2GimbalActuator.DJIWaypointV2ActionActuatorGimbalOperationType == 
+             dji_osdk_ros::WaypointV2GimbalActuator::DJIWaypointV2ActionActuatorGimbalOperationTypeRotateGimbal)
+         {
+            DJI::OSDK::DJIGimbalRotation param;
+            param.x              = request.actions[i].waypointV2GimbalActuator.waypointV2GimbalActuatorRotationParam.x;
+            param.y              = request.actions[i].waypointV2GimbalActuator.waypointV2GimbalActuatorRotationParam.y;
+            param.z              = request.actions[i].waypointV2GimbalActuator.waypointV2GimbalActuatorRotationParam.z;
+            param.ctrl_mode      = request.actions[i].waypointV2GimbalActuator.waypointV2GimbalActuatorRotationParam.ctrl_mode;
+            param.rollCmdIgnore  = request.actions[i].waypointV2GimbalActuator.waypointV2GimbalActuatorRotationParam.rollCmdIgnore;
+            param.pitchCmdIgnore = request.actions[i].waypointV2GimbalActuator.waypointV2GimbalActuatorRotationParam.pitchCmdIgnore;
+            param.yawCmdIgnore   = request.actions[i].waypointV2GimbalActuator.waypointV2GimbalActuatorRotationParam.yawCmdIgnore;
+            param.absYawModeRef  = request.actions[i].waypointV2GimbalActuator.waypointV2GimbalActuatorRotationParam.absYawModeRef;
+            param.duationTime    = request.actions[i].waypointV2GimbalActuator.waypointV2GimbalActuatorRotationParam.duationTime;
+            gimbalActuatorParam  = new DJI::OSDK::DJIWaypointV2GimbalActuatorParam(DJI::OSDK::DJIWaypointV2ActionActuatorGimbalOperationTypeRotateGimbal, &param);
+         }
+         else
+         {
+            gimbalActuatorParam = nullptr;
+         }
+         actuator = new DJI::OSDK::DJIWaypointV2Actuator(
+           DJI::OSDK::DJIWaypointV2ActionActuatorTypeGimbal, request.actions[i].waypointV2GimbalActuator.actuatorIndex, gimbalActuatorParam);
+         response.result = true;
+
+         break;
+       }
+
+       case dji_osdk_ros::WaypointV2Action::DJIWaypointV2ActionActuatorTypeAircraftControl:
+       { 
+         if (request.actions[i].waypointV2AircraftControlActuator.DJIWaypointV2ActionActuatorAircraftControlOperationType ==
+             dji_osdk_ros::WaypointV2AircraftControlActuator::DJIWaypointV2ActionActuatorAircraftControlOperationTypeRotateYaw)             
+         {
+            DJI::OSDK::DJIWaypointV2AircraftControlRotateHeadingParam param;
+            param.isRelative = request.actions[i].waypointV2AircraftControlActuator.waypointV2AircraftControlActuatorRotateHeading.isRelative;
+            param.yaw        = request.actions[i].waypointV2AircraftControlActuator.waypointV2AircraftControlActuatorRotateHeading.yaw;
+            aircraftControlActuatorParam = new DJI::OSDK::DJIWaypointV2AircraftControlParam(DJI::OSDK::DJIWaypointV2ActionActuatorAircraftControlOperationTypeRotateYaw, &param);
+         }
+         else if(request.actions[i].waypointV2AircraftControlActuator.DJIWaypointV2ActionActuatorAircraftControlOperationType ==
+                 dji_osdk_ros::WaypointV2AircraftControlActuator::DJIWaypointV2ActionActuatorAircraftControlOperationTypeFlyingControl)
+         {
+            DJI::OSDK::DJIWaypointV2AircraftControlFlyingParam param;
+            param.isStartFlying = request.actions[i].waypointV2AircraftControlActuator.waypointV2AircraftControlActuatorFlying.isStartFlying;
+            aircraftControlActuatorParam = new DJI::OSDK::DJIWaypointV2AircraftControlParam(DJI::OSDK::DJIWaypointV2ActionActuatorAircraftControlOperationTypeFlyingControl, &param);
+         }
+         else
+         {
+            aircraftControlActuatorParam = nullptr;
+         }
+         actuator = new DJI::OSDK::DJIWaypointV2Actuator(
+           DJI::OSDK::DJIWaypointV2ActionActuatorTypeAircraftControl, request.actions[i].waypointV2AircraftControlActuator.actuatorIndex, aircraftControlActuatorParam);
+         response.result = true;
+
+         break;
+       }
+
+       default:
+       {
+         ROS_DEBUG("Invalid actuator type%d\n", request.actions[i].waypointV2ACtionActuatorType);
+         response.result = true;
+ 
+         break;
+       }
+
+     }
+
+    if(trigger != NULL && actuator != NULL)
+    {
+      auto *action = new DJI::OSDK::DJIWaypointV2Action(i, *trigger,*actuator);
+      this->actions.push_back(*action);
+      response.result = true;
+    }
+  }
+  return response.result;
+}
+
+bool VehicleNode::waypointV2SetGlobalCruisespeedCallback(
+  dji_osdk_ros::SetGlobalCruisespeed::Request& request,
+  dji_osdk_ros::SetGlobalCruisespeed::Response& response
+)
+{
+  ROS_INFO("called waypointV2SetGlobalCruisespeedCallback");
+  response.result = false;
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->setGlobalCruiseSpeed(request.global_cruisespeed, WAIT_TIMEOUT);
+
+  return response.result;
+}
+
+bool VehicleNode::waypointV2GetGlobalCruisespeedCallback(
+  dji_osdk_ros::GetGlobalCruisespeed::Request& request,
+  dji_osdk_ros::GetGlobalCruisespeed::Response& response
+)
+{
+  ROS_INFO("called waypointV2GetGlobalCruisespeedCallback");
+  response.result = false;
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->getGlobalCruiseSpeed(response.global_cruisespeed, WAIT_TIMEOUT);
+}
+

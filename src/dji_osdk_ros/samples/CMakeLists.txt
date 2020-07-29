@@ -84,6 +84,12 @@ target_link_libraries(mission_node
         )
 add_dependencies(mission_node dji_osdk_ros_generate_messages_cpp)
 
+add_executable(waypointV2_node waypointV2_node.cpp)
+target_link_libraries(waypointV2_node
+        ${PROJECT_NAME}
+        )
+add_dependencies(waypointV2_node dji_osdk_ros_generate_messages_cpp)
+
 if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ)
 
     message(STATUS "Found OpenCV ${OpenCV_VERSION}, Viz3d, and advanced sensing module, depth percpetion demo will be compiled")
