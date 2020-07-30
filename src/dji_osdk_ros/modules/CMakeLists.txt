@@ -2,7 +2,6 @@ FILE(GLOB_RECURSE HEADERS
      ../../include/*/*.h*
      ../../include/*.h*
      )
-FILE(GLOB_RECURSE SOURCES *.cc *.cpp *.c *.cxx stereo_utility/*cpp)
 
 find_path(OPENCV_CONTRIB_IMG_PROC
         NAMES
@@ -85,7 +84,12 @@ if(darknet_ros_FOUND)
     set(ENABLE_DARKNET_ROS 1 CACHE INTERNAL "ENABLE_DARKNET_ROS")
 endif()
 
-include_directories(../../../include/dji_osdk_ros/stereo_utility)
+if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ)
+    FILE(GLOB SOURCES *.cc *.cpp *.c *.cxx stereo_utility/*cpp)
+    include_directories(../../../include/dji_osdk_ros/stereo_utility)
+    else()
+    FILE(GLOB SOURCES *.cc *.cpp *.c *.cxx)
+endif()
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCES})
 MESSAGE(STATUS "PROJECT_NAME: ${PROJECT_NAME}")
