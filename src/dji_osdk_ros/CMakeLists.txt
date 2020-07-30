@@ -3,7 +3,7 @@ add_subdirectory(samples)
 
 FILE(GLOB EXAMPLES *.cc *.c *.cpp)
 
-if(ENABLE_OPEN_CV_INSTALLED OR OPEN_CV_3_3_0_INSTALLED)
+if(OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ)
 add_definitions(-DOPEN_CV_INSTALLED)
 endif()
 
