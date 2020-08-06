@@ -180,10 +180,16 @@ bool VehicleNode::initCameraModule()
 void VehicleNode::initService()
 {
   ROS_INFO_STREAM("Topic startup!");
-  /*! general server */
+  /*! @brief
+   *  general server
+   *  @platforms M210V2, M300
+   */
   get_drone_type_server_ = nh_.advertiseService("get_drone_type", &VehicleNode::getDroneTypeCallback, this);
 
-  /*! flight control server */
+  /*! @brief
+   *  flight control server
+   *  @platforms M210V2, M300
+   */
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
   set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
@@ -191,10 +197,16 @@ void VehicleNode::initService()
   avoid_enable_server_ = nh_.advertiseService("enable_avoid", &VehicleNode::setAvoidCallback,this);
   upwards_avoid_enable_server_ = nh_.advertiseService("enable_upwards_avoid", &VehicleNode::setUpwardsAvoidCallback, this);
 
-  /*! gimbal control server */
+  /*! @brief
+   *  gimbal control server
+   *  @platforms M210V2, M300
+   */
   gimbal_control_server_ = nh_.advertiseService("gimbal_task_control", &VehicleNode::gimbalCtrlCallback, this);
 
-  /*! camera control server */
+  /*! @brief
+   *  camera control server
+   *  @platforms M210V2, M300
+   */
   camera_control_set_EV_server_ = nh_.advertiseService("camera_task_set_EV", &VehicleNode::cameraSetEVCallback, this);
   camera_control_set_shutter_speed_server_ = nh_.advertiseService("camera_task_set_shutter_speed", &VehicleNode::cameraSetShutterSpeedCallback, this);
   camera_control_set_aperture_server_ = nh_.advertiseService("camera_task_set_aperture", &VehicleNode::cameraSetApertureCallback, this);
@@ -209,14 +221,28 @@ void VehicleNode::initService()
   camera_control_stop_shoot_photo_server_ = nh_.advertiseService("camera_stop_shoot_photo", &VehicleNode::cameraStopShootPhotoCallback, this);
   camera_control_record_video_action_server_ = nh_.advertiseService("camera_record_video_action", &VehicleNode::cameraRecordVideoActionCallback, this);
 
-  /*! mfio control server */
+  /*! @brief
+   *  mfio control server
+   *  @platforms null
+   */
   mfio_control_server_ = nh_.advertiseService("mfio_control", &VehicleNode::mfioCtrlCallback, this);
 
-  /*! mobile device server */
+  /*! @brief
+   *  mobile device server
+   *  @platforms M210V2, M300
+   */
   send_data_to_mobile_device_server_ = nh_.advertiseService("send_data_to_mobile_device", &VehicleNode::sendToMobileCallback, this);
-  /*! payload device server*/
+
+  /*! @brief
+   *  payload device server
+   *  @platforms M210V2, M300
+   */
   send_data_to_payload_device_server_ = nh_.advertiseService("send_data_to_payload_device_server", &VehicleNode::sendToPayloadCallback, this);
-  /*! advanced sensing server */
+
+  /*! @brief
+   *  advanced sensing server
+   *  @platforms M210V2, M300
+   */
 #ifdef ADVANCED_SENSING
   setup_camera_stream_server_ = nh_.advertiseService("setup_camera_stream", &VehicleNode::setupCameraStreamCallback, this);
   setup_camera_h264_server_ = nh_.advertiseService("setup_camera_h264", &VehicleNode::setupCameraH264Callback, this);
@@ -224,15 +250,27 @@ void VehicleNode::initService()
   subscribe_stereo_depth_server_ = nh_.advertiseService("stereo_depth_subscription",  &VehicleNode::stereoDepthSubscriptionCallback,this);
   subscribe_stereo_vga_server_   = nh_.advertiseService("stereo_vga_subscription",    &VehicleNode::stereoVGASubscriptionCallback,  this);
 #ifdef OPEN_CV_INSTALLED
+  /*! @brief
+   *  get m300 stereo params server
+   *  @platforms M300
+   */
   get_m300_stereo_params_server_ = nh_.advertiseService("get_m300_stereo_params", &VehicleNode::getM300StereoParamsCallback, this);
 #endif
 #endif
-  /* mission server */
+  /*! @brief
+   *  waypointV1.0 server
+   *  @platforms M210
+   */
   waypoint_upload_server_    = nh_.advertiseService("dji_osdk_ros/mission_waypoint_upload",        &VehicleNode::missionWpUploadCallback,        this);
   waypoint_action_server_    = nh_.advertiseService("dji_osdk_ros/mission_waypoint_action",        &VehicleNode::missionWpActionCallback,        this);
   waypoint_getInfo_server_   = nh_.advertiseService("dji_osdk_ros/mission_waypoint_getInfo",       &VehicleNode::missionWpGetInfoCallback,       this);
   waypoint_getSpeed_server_  = nh_.advertiseService("dji_osdk_ros/mission_waypoint_getSpeed",      &VehicleNode::missionWpGetSpeedCallback,      this);
   waypoint_setSpeed_server_  = nh_.advertiseService("dji_osdk_ros/mission_waypoint_setSpeed",      &VehicleNode::missionWpSetSpeedCallback,      this);
+
+  /*! @brief
+   *  hotpoint server
+   *  @platforms M210, M300
+   */
   hotpoint_upload_server_    = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_upload",        &VehicleNode::missionHpUploadCallback,        this);
   hotpoint_action_server_    = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_action",        &VehicleNode::missionHpActionCallback,        this);
   hotpoint_getInfo_server_   = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_getInfo",       &VehicleNode::missionHpGetInfoCallback,       this);
@@ -240,7 +278,11 @@ void VehicleNode::initService()
   hotpoint_resetYaw_server_  = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_resetYaw",      &VehicleNode::missionHpResetYawCallback,      this);
   hotpoint_setRadius_server_ = nh_.advertiseService("dji_osdk_ros/mission_hotpoint_updateRadius",  &VehicleNode::missionHpUpdateRadiusCallback,  this);
   mission_status_server_     = nh_.advertiseService("dji_osdk_ros/mission_status",                 &VehicleNode::missionStatusCallback,          this);
-  /* waypoint2.0 server */
+
+  /*! @brief
+   *  waypoint2.0 server
+   *  @platforms M300
+   */
   waypointV2_init_setting_server_     = nh_.advertiseService("dji_osdk_ros/waypointV2_initSetting",    &VehicleNode::waypointV2InitSettingCallback, this);
   waypointV2_upload_mission_server_   = nh_.advertiseService("dji_osdk_ros/waypointV2_uploadMission", &VehicleNode::waypointV2UploadMissionCallback, this);
   waypointV2_download_mission_server_ = nh_.advertiseService("dji_osdk_ros/waypointV2_downloadMission", &VehicleNode::waypointV2DownloadMissionCallback, this);
@@ -258,6 +300,17 @@ void VehicleNode::initService()
 bool VehicleNode::initTopic()
 {
   attitude_publisher_ = nh_.advertise<geometry_msgs::QuaternionStamped>("dji_osdk_ros/attitude", 10);
+/* @brief Provides various data about the battery
+ * @note Most of these details need a DJI Intelligent battery to work correctly
+ * (this is usually not the case with A3/N3 based setups)
+ * @details Please be aware that some of the data elements in this topic may not be able to update
+ * at high rates due to the limitations of the sensing for that data. e.g. current can only update @ 1 Hz.
+ * @platforms M210,M300
+ * @units
+ * |voltage           | mV |
+ * |current           | mA |
+ * @datastruct \ref Battery
+ */
   battery_state_publisher_ = nh_.advertise<sensor_msgs::BatteryState>("dji_osdk_ros/battery_state",10);
   /*!
    * - Fused attitude (duplicated from attitude topic)
