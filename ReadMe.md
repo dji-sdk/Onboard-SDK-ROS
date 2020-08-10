@@ -19,11 +19,11 @@ This update mainly includes:
 
 | **nodes**                            |  **services's name**                             | **topics's name**                     |
 |--------------------------------------|--------------------------------------------------|---------------------------------------|
+|dji_vehicle_node                      |get_drone_type                                    |                                       |
 |flight_control_node                   |flight_task_control                               |                                       |
 |                                      |set_go_home_altitude                              |                                       |
 |                                      |set_current_point_as_home                         |                                       |
 |                                      |enable_avoid                                      |                                       |
-|advanced_sensing_node                 |advanced_sensing                                  |cameradata                             | 
 |gimbal_camera_control_node            |gimbal_task_control                               |                                       |
 |                                      |camera_task_set_EV                                |                                       |
 |                                      |camera_task_set_shutter_speed                     |                                       |
@@ -38,8 +38,68 @@ This update mainly includes:
 |                                      |camera_start_shoot_interval_photo                 |                                       |
 |                                      |camera_stop_shoot_photo                           |                                       |
 |                                      |camera_record_video_action                        |                                       |
-|wapoint(will be supported in next version) |waypoint(will be supported in next version)       |waypoint(will be supported in next version) | 
- 
+|telemetry_node                        |                                                  |dji_osdk_ros/attitude                  |
+|                                      |                                                  |dji_osdk_ros/battery_state             |
+|                                      |                                                  |dji_osdk_ros/imu                       |
+|                                      |                                                  |dji_osdk_ros/flight_status             |
+|                                      |                                                  |dji_osdk_ros/gps_health                |
+|                                      |                                                  |dji_osdk_ros/gps_position              |
+|                                      |                                                  |dji_osdk_ros/vo_position               |
+|                                      |                                                  |dji_osdk_ros/height_above_takeoff      |
+|                                      |                                                  |dji_osdk_ros/velocity                  |
+|                                      |                                                  |dji_osdk_ros/from_mobile_data          |
+|                                      |                                                  |dji_osdk_ros/from_payload_data         |
+|                                      |                                                  |dji_osdk_ros/gimbal_angle              |
+|                                      |                                                  |dji_osdk_ros/rc                        |
+|                                      |                                                  |dji_osdk_ros/local_position            |
+|                                      |                                                  |dji_osdk_ros/local_frame_ref           |
+|                                      |                                                  |dji_osdk_ros/time_sync_nmea_msg        |
+|                                      |                                                  |dji_osdk_ros/time_sync_gps_utc         |
+|                                      |                                                  |dji_osdk_ros/time_sync_fc_time_utc     |
+|                                      |                                                  |dji_osdk_ros/time_sync_pps_source      |
+|                                      |                                                  |dji_osdk_ros/main_camera_images        |
+|                                      |                                                  |dji_osdk_ros/fpv_camera_images         |
+|                                      |                                                  |dji_osdk_ros/camera_h264_stream        |
+|                                      |                                                  |dji_osdk_ros/stereo_240p_front_left_images|
+|                                      |                                                  |dji_osdk_ros/stereo_240p_front_right_images|
+|                                      |                                                  |dji_osdk_ros/stereo_240p_down_front_images |
+|                                      |                                                  |dji_osdk_ros/stereo_240p_down_back_images  |
+|                                      |                                                  |dji_osdk_ros/stereo_240p_front_depth_images|
+|                                      |                                                  |dji_osdk_ros/stereo_vga_front_left_images  |
+|                                      |                                                  |dji_osdk_ros/stereo_vga_front_right_images |
+|time_sync_node                        |                                                  |                                       |
+|mission_node                          |dji_osdk_ros/mission_waypoint_upload              |                                       |
+|                                      |dji_osdk_ros/mission_waypoint_action              |                                       |
+|                                      |dji_osdk_ros/mission_waypoint_getInfo             |                                       |
+|                                      |dji_osdk_ros/mission_waypoint_getSpeed            |                                       |
+|                                      |dji_osdk_ros/mission_waypoint_setSpeed            |                                       |
+|                                      |dji_osdk_ros/mission_hotpoint_upload              |                                       |
+|                                      |dji_osdk_ros/mission_hotpoint_action              |                                       |
+|                                      |dji_osdk_ros/mission_hotpoint_getInfo             |                                       |
+|                                      |dji_osdk_ros/mission_hotpoint_updateYawRate       |                                       |
+|                                      |dji_osdk_ros/mission_hotpoint_resetYaw            |                                       |
+|                                      |dji_osdk_ros/mission_hotpoint_updateRadius        |                                       |
+|                                      |dji_osdk_ros/mission_status                       |                                       |
+|camera_stream_node                    |setup_camera_stream                               |                                       |
+|camera_h264_node                      |setup_camera_h264                                 |                                       |
+|stereo_vision_depth_perception_node   |get_m300_stereo_params                            |                                       |
+|                                      |stereo_240p_subscription                          |                                       |
+|                                      |stereo_depth_subscription                         |                                       |
+|                                      |stereo_vga_subscription                           |                                       |
+|mobile_device_node                    |send_data_to_mobile_device                        |                                       |
+|payload_device_node                   |send_data_to_payload_device_server                |                                       |
+|waypointV2_node                       |dji_osdk_ros/waypointV2_initSetting               |                                       |
+|                                      |dji_osdk_ros/waypointV2_uploadMission             |                                       |
+|                                      |dji_osdk_ros/waypointV2_downloadMission           |                                       |
+|                                      |dji_osdk_ros/waypointV2_uploadAction              |                                       |
+|                                      |dji_osdk_ros/waypointV2_startMission              |                                       |
+|                                      |dji_osdk_ros/waypointV2_stopMission               |                                       |
+|                                      |dji_osdk_ros/waypointV2_pauseMission              |                                       |
+|                                      |dji_osdk_ros/waypointV2_resumeMission             |                                       |
+|                                      |dji_osdk_ros/waypointV2_generateActions           |                                       |
+|                                      |dji_osdk_ros/waypointV2_setGlobalCruisespeed      |                                       |
+|                                      |dji_osdk_ros/waypointV2_getGlobalCruisespeed      |                                       |
+
 3. At the same time, we kept all services and topics of osdk-ros 3.8.1. If you want to use these interfaces,you need to run dji_sdk_node and use it's services and topics.   
 (__note: These interfaces are not fully compatible with onboard-sdk4.0.0.And they will not be supported in next osdk-ros version.__)
 ### 2. Prerequisites
@@ -48,7 +108,7 @@ The system environment we have tested is in the table below.
 |                            |                                             |
 |----------------------------|-------------------------------------------- |  
 | **system version**         | ubuntu 16.04                                |
-| **processor architecture** | x86(mainfold2-c),armv8(mainfold2-c)           |
+| **processor architecture** | x86(mainfold2-c),armv8(mainfold2-g)           |
 #### Firmware Compatibility
 OSDK-ROS 4.0's firmware compatibility depends on onboard-sdk 4.0.0's. you can get more information [here](https://github.com/dji-sdk/Onboard-SDK);
 #### Ros  
@@ -70,7 +130,9 @@ __note:we only test on kinetic,but it should be support on other version.__
 #### libusb-1.0-0-dev
 > $sudo apt install libusb-1.0-0-dev
 #### opencv3.x
-We use OpenCV to show images from camera stream. Download and install instructions can be found at: http://opencv.org. Tested with OpenCV 3.2.0.
+We use OpenCV to show images from camera stream. Download and install instructions can be found at: http://opencv.org. Tested with OpenCV 3.3.0.Suggest using 3.3.0+.
+#### stereo-vision function
+Follow the instruction of [here](https://developer.dji.com/onboard-sdk/documentation/sample-doc/advanced-sensing-stereo-depth-perception.html).
 
 ### 3.Permission
 #### uart permission

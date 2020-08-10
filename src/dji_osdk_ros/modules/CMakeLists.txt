@@ -79,7 +79,7 @@ endif()
 
 find_package(darknet_ros QUIET)
 if(darknet_ros_FOUND)
-    message(STATUS "Found darknet_ros package, will use it for object depth perception demo.")
+    message(STATUS "Found darknet_ros package, will use it for object depth perception sample.")
     add_definitions(-DUSE_DARKNET_ROS)
     set(ENABLE_DARKNET_ROS 1 CACHE INTERNAL "ENABLE_DARKNET_ROS")
 endif()
