@@ -509,7 +509,7 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
 
   int nTopicRTKSupport    = sizeof(topicRTKSupport)/sizeof(topicRTKSupport[0]);
   if (vehicle->subscribe->initPackageFromTopicList(PACKAGE_ID_5HZ, nTopicRTKSupport,
-                                                   topicRTKSupport, 1, 10))
+                                                   topicRTKSupport, 1, 5))
   {
     ack = vehicle->subscribe->startPackage(PACKAGE_ID_5HZ, WAIT_TIMEOUT);
     if (ack.data == ErrorCode::SubscribeACK::SOURCE_DEVICE_OFFLINE)
@@ -542,19 +542,19 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
 
     // Advertise rtk data only when rtk is supported
     rtk_position_publisher =
-            nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/rtk_position", 10);
+            nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/rtk_position", 5);
 
     rtk_velocity_publisher =
-            nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/rtk_velocity", 10);
+            nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/rtk_velocity", 5);
 
     rtk_yaw_publisher =
-            nh.advertise<std_msgs::Int16>("dji_sdk/rtk_yaw", 10);
+            nh.advertise<std_msgs::Int16>("dji_sdk/rtk_yaw", 5);
 
     rtk_position_info_publisher =
-            nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_info_position", 10);
+            nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_info_position", 5);
 
     rtk_yaw_info_publisher =
-            nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_info_yaw", 10);
+            nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_info_yaw", 5);
 
     if(vehicle->getFwVersion() > versionBase33)
     {
@@ -562,7 +562,7 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
 
       // Advertise rtk connection only when rtk is supported
       rtk_connection_status_publisher =
-              nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_connection_status", 10);
+              nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_connection_status", 5);
     }
   }
 
