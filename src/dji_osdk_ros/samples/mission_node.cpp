@@ -232,7 +232,7 @@ bool runHotpointMission(int initialRadius, int responseTimeout)
     ROS_WARN("Failed sending mission start command");
     return false;
   }
-  ros::Duration(25).sleep();
+  ros::Duration(20).sleep();
 
   // Pause
   ROS_INFO("Pause for 5s");
@@ -323,9 +323,9 @@ void setHotpointInitDefault(dji_osdk_ros::MissionHotpointTask& hotpointTask)
   hotpointTask.altitude      = 20;
   hotpointTask.radius        = 10;
   hotpointTask.angular_speed = 15;
-  hotpointTask.is_clockwise  = 0;
+  hotpointTask.is_clockwise  = 1;
   hotpointTask.start_point   = 0;
-  hotpointTask.yaw_mode      = 0;
+  hotpointTask.yaw_mode      = 1;
 }
 
 ServiceAck initWaypointMission(dji_osdk_ros::MissionWaypointTask& waypointTask)
