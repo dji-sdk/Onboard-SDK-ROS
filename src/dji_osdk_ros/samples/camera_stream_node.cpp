@@ -177,7 +177,6 @@ void decodeToDisplay(uint8_t *buf, int bufLen)
 
 void cameraH264CallBack(const sensor_msgs::Image& msg)
 {
-  printf("msg.data.size() = %lu\n", msg.data.size());
   decodeToDisplay((uint8_t *)&msg.data[0], msg.data.size());
 }
 
