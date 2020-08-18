@@ -243,7 +243,7 @@ bool generateWaypointV2Actions(ros::NodeHandle &nh, uint16_t actionNum)
       actionVector.waypointV2SampleReachPointTrigger.waypointIndex = i;
       actionVector.waypointV2SampleReachPointTrigger.terminateNum = 0;
       actionVector.waypointV2ACtionActuatorType = dji_osdk_ros::WaypointV2Action::DJIWaypointV2ActionActuatorTypeCamera;
-      actionVector.waypointV2CameraActuator.actuatorIndex = 1;
+      actionVector.waypointV2CameraActuator.actuatorIndex = 0;
       actionVector.waypointV2CameraActuator.DJIWaypointV2ActionActuatorCameraOperationType = dji_osdk_ros::WaypointV2CameraActuator::DJIWaypointV2ActionActuatorCameraOperationTypeTakePhoto;
       generateWaypointV2Action_.request.actions.push_back(actionVector);
     }
