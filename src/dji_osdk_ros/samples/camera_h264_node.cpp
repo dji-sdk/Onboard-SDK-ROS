@@ -94,14 +94,10 @@ int main(int argc, char** argv)
     gettimeofday(&tv, NULL);
     localtime_r(&tv.tv_sec, &tm);
 
-    char h264FileName[50] = "H264View.h264";
-
     switch (inputChar) 
     {
       case 'a':
       {
-        sprintf(h264FileName, "FPV_%d-%d-%d_%d-%d-%d.h264", tm.tm_year + 1900,
-                tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         setupCameraH264_.request.request_view = setupCameraH264_.request.FPV_CAMERA;
         setupCameraH264_.request.start        = 1;
         setup_camera_h264_client.call(setupCameraH264_);
@@ -110,8 +106,6 @@ int main(int argc, char** argv)
       }
       case 'b':
       {
-        sprintf(h264FileName, "FPV_%d-%d-%d_%d-%d-%d.h264", tm.tm_year + 1900,
-                tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         setupCameraH264_.request.request_view = setupCameraH264_.request.MAIN_CAMERA;
         setupCameraH264_.request.start        = 1;
         setup_camera_h264_client.call(setupCameraH264_);
@@ -120,8 +114,6 @@ int main(int argc, char** argv)
       }
       case 'c':
       {
-        sprintf(h264FileName, "FPV_%d-%d-%d_%d-%d-%d.h264", tm.tm_year + 1900,
-                tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         setupCameraH264_.request.request_view = setupCameraH264_.request.VICE_CAMERA;
         setupCameraH264_.request.start        = 1;
         setup_camera_h264_client.call(setupCameraH264_);
@@ -130,8 +122,6 @@ int main(int argc, char** argv)
       }
       case 'd':
       {
-        sprintf(h264FileName, "FPV_%d-%d-%d_%d-%d-%d.h264", tm.tm_year + 1900,
-                tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
         setupCameraH264_.request.request_view = setupCameraH264_.request.TOP_CAMERA;
         setupCameraH264_.request.start        = 1;
         setup_camera_h264_client.call(setupCameraH264_);
