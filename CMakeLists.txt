@@ -94,6 +94,8 @@ add_message_files(
   WaypointV2TrajectoryTrigger.msg
   WaypointV2Action.msg
   WaypointV2.msg
+  WaypointV2MissionEventPush.msg
+  WaypointV2MissionStatePush.msg
 
   MobileData.msg
   PayloadData.msg
@@ -142,6 +144,8 @@ add_service_files(
   GenerateWaypointV2Action.srv
   SetGlobalCruisespeed.srv
   GetGlobalCruisespeed.srv
+  SubscribeWaypointV2Event.srv
+  SubscribeWaypointV2State.srv
 
   Activation.srv
   CameraAction.srv

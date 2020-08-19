@@ -962,3 +962,125 @@ bool VehicleNode::waypointV2GetGlobalCruisespeedCallback(
   response.result = ptr_wrapper_->getGlobalCruiseSpeed(response.global_cruisespeed, WAIT_TIMEOUT);
 }
 
+//10HZ push
+E_OsdkStat VehicleNode::updateMissionState(T_CmdHandle *cmdHandle, const T_CmdInfo *cmdInfo,
+                                           const uint8_t *cmdData, void *userData) {
+  if (cmdInfo) {
+    if (userData) {
+      auto *vh_ = (VehicleNode *)userData;
+      auto *missionStatePushAck =
+        (DJI::OSDK::MissionStatePushAck *)cmdData;
+      dji_osdk_ros::WaypointV2MissionStatePush waypointV2MissionStatePushInfo;
+
+      waypointV2MissionStatePushInfo.commonDataVersion = missionStatePushAck->commonDataVersion;
+      waypointV2MissionStatePushInfo.commonDataLen     = missionStatePushAck->commonDataLen;
+      waypointV2MissionStatePushInfo.state             = missionStatePushAck->data.state;
+      waypointV2MissionStatePushInfo.curWaypointIndex  = missionStatePushAck->data.curWaypointIndex;
+      waypointV2MissionStatePushInfo.velocity          = missionStatePushAck->data.velocity;
+
+      vh_->waypointV2_mission_state_publisher_.publish(waypointV2MissionStatePushInfo);
+
+    } else {
+      DERROR("cmdInfo is a null value");
+    }
+
+    return OSDK_STAT_OK;
+  }
+  return OSDK_STAT_ERR_ALLOC;
+}
+
+/*! only push 0x00,0x10,0x11 event*/
+E_OsdkStat VehicleNode::updateMissionEvent(T_CmdHandle *cmdHandle, const T_CmdInfo *cmdInfo,
+                                           const uint8_t *cmdData, void *userData) {
+
+  if (cmdInfo) {
+    if (userData) {
+      auto *MissionEventPushAck =
+        (DJI::OSDK::MissionEventPushAck *)cmdData;
+      auto *vh_ = (VehicleNode *)userData;
+
+      dji_osdk_ros::WaypointV2MissionEventPush waypointV2MissionEventPushInfo;
+      waypointV2MissionEventPushInfo.event = MissionEventPushAck->event;
+
+      if(MissionEventPushAck->event == 0x01)
+      {
+        waypointV2MissionEventPushInfo.interruptReason = MissionEventPushAck->data.interruptReason;
+      }
+      if(MissionEventPushAck->event == 0x02)
+      {
+        waypointV2MissionEventPushInfo.recoverProcess  = MissionEventPushAck->data.recoverProcess;
+      }
+      if(MissionEventPushAck->event == 0x03)
+      {
+        waypointV2MissionEventPushInfo.finishReason    = MissionEventPushAck->data.finishReason;
+      }
+
+      if(MissionEventPushAck->event == 0x10)
+      {
+        waypointV2MissionEventPushInfo.waypointIndex   = MissionEventPushAck->data.waypointIndex;
+      }
+
+      if(MissionEventPushAck->event == 0x11)
+      {
+        waypointV2MissionEventPushInfo.currentMissionExecNum = MissionEventPushAck->data.MissionExecEvent.currentMissionExecNum;
+        waypointV2MissionEventPushInfo.finishedAllExecNum    = MissionEventPushAck->data.MissionExecEvent.finishedAllExecNum;
+      }
+
+      vh_->waypointV2_mission_event_publisher_.publish(waypointV2MissionEventPushInfo);
+
+      return OSDK_STAT_OK;
+    }
+  }
+  return OSDK_STAT_SYS_ERR;
+}
+
+bool VehicleNode::waypointV2SubscribeMissionEventCallback(
+  dji_osdk_ros::SubscribeWaypointV2Event::Request& request,
+  dji_osdk_ros::SubscribeWaypointV2Event::Response& response
+)
+{
+  ROS_INFO("called waypointV2SubscribeMissionEventCallback");
+  response.result = false;
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+  if (request.enable_sub)
+  {
+    response.result = ptr_wrapper_->RegisterMissionEventCallback(this, updateMissionEvent);
+  }
+  else
+  {
+    response.result = ptr_wrapper_->RegisterMissionEventCallback(this, nullptr);
+  }
+
+  return response.result;
+}
+
+bool VehicleNode::waypointV2SubscribeMissionStateCallback(
+  dji_osdk_ros::SubscribeWaypointV2State::Request& request,
+  dji_osdk_ros::SubscribeWaypointV2State::Response& response
+)
+{
+  ROS_INFO("called waypointV2SubscribeMissionStateCallback");
+  response.result = false;
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  if (request.enable_sub)
+  {
+    response.result = ptr_wrapper_->RegisterMissionStateCallback(this, updateMissionState);
+  }
+  else
+  {
+    response.result = ptr_wrapper_->RegisterMissionStateCallback(this, nullptr);
+  }
+
+  return response.result;
+}
