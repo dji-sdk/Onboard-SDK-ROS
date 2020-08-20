@@ -107,6 +107,8 @@
 #include <dji_osdk_ros/GenerateWaypointV2Action.h>
 #include <dji_osdk_ros/SetGlobalCruisespeed.h>
 #include <dji_osdk_ros/GetGlobalCruisespeed.h>
+#include <dji_osdk_ros/SubscribeWaypointV2Event.h>
+#include <dji_osdk_ros/SubscribeWaypointV2State.h>
 
 #ifdef ADVANCED_SENSING
 #include <dji_osdk_ros/SetupCameraH264.h>
@@ -144,6 +146,8 @@
 #include <dji_osdk_ros/WaypointV2ReachpointTrigger.h>
 #include <dji_osdk_ros/WaypointV2SampleReachPointTrigger.h>
 #include <dji_osdk_ros/WaypointV2TrajectoryTrigger.h>
+#include <dji_osdk_ros/WaypointV2MissionEventPush.h>
+#include <dji_osdk_ros/WaypointV2MissionStatePush.h>
 
 #define C_EARTH (double)6378137.0
 #define C_PI (double)3.141592653589793
@@ -241,6 +245,8 @@ namespace dji_osdk_ros
       ros::ServiceServer waypointv2_set_global_cruisespeed_server_;
       ros::ServiceServer waypointv2_get_global_cruisespeed_server_;
       ros::ServiceServer waypointV2_generate_polygon_server_;
+      ros::ServiceServer waypointv2_subscribe_mission_event_server_;
+      ros::ServiceServer waypointv2_subscribe_mission_state_server_;
 
       /*! publishers */
       //! telemetry data publisher
@@ -290,6 +296,10 @@ namespace dji_osdk_ros
       ros::Publisher stereo_vga_front_left_publisher_;
       ros::Publisher stereo_vga_front_right_publisher_;
       #endif
+
+      //waypointV2
+      ros::Publisher waypointV2_mission_state_publisher_;
+      ros::Publisher waypointV2_mission_event_publisher_;
 
     protected:
       /*! for general */
@@ -393,6 +403,10 @@ namespace dji_osdk_ros
                                                   dji_osdk_ros::SetGlobalCruisespeed::Response& respons);
       bool waypointV2GetGlobalCruisespeedCallback(dji_osdk_ros::GetGlobalCruisespeed::Request& request,
                                                   dji_osdk_ros::GetGlobalCruisespeed::Response& response);
+      bool waypointV2SubscribeMissionEventCallback(dji_osdk_ros::SubscribeWaypointV2Event::Request& request,
+                                                   dji_osdk_ros::SubscribeWaypointV2Event::Response& response);
+      bool waypointV2SubscribeMissionStateCallback(dji_osdk_ros::SubscribeWaypointV2State::Request& request,
+                                                   dji_osdk_ros::SubscribeWaypointV2State::Response& response);
 
       bool initSubscribe();
 
@@ -491,6 +505,11 @@ namespace dji_osdk_ros
                                       RecvContainer       recvFrame,
                                       DJI::OSDK::UserData userData);
 #endif
+
+    static E_OsdkStat updateMissionEvent(T_CmdHandle *cmdHandle, const T_CmdInfo *cmdInfo,
+                                         const uint8_t *cmdData, void *userData);
+    static E_OsdkStat updateMissionState(T_CmdHandle *cmdHandle, const T_CmdInfo *cmdInfo,
+                                         const uint8_t *cmdData, void *userData);
 
 public:
     void gpsConvertENU(double &ENU_x, double &ENU_y,

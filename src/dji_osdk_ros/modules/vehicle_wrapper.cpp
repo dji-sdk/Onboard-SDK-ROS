@@ -2140,6 +2140,28 @@ bool VehicleWrapper::getGlobalCruiseSpeed(float32_t &cruiseSpeed, int timeout)
   DSTATUS("Current cruise speed is: %f m/s\n",cruiseSpeed);
   return true;
 }
+bool VehicleWrapper::RegisterMissionEventCallback(void *userData, PushCallback cb)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+  vehicle->waypointV2Mission->RegisterMissionEventCallback(userData, cb);
+
+  return true;
+}
+bool VehicleWrapper::RegisterMissionStateCallback(void *userData, PushCallback cb)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+  vehicle->waypointV2Mission->RegisterMissionStateCallback(userData, cb);
+
+  return true;
+}
 
 #ifdef ADVANCED_SENSING
   bool VehicleWrapper::startFPVCameraStream(CameraImageCallback cb, void * cbParam)

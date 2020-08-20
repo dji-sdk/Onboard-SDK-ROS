@@ -294,6 +294,9 @@ void VehicleNode::initService()
   waypointV2_generate_actions_server_ = nh_.advertiseService("dji_osdk_ros/waypointV2_generateActions", &VehicleNode::waypointV2GenerateActionsCallback, this);
   waypointv2_set_global_cruisespeed_server_ = nh_.advertiseService("dji_osdk_ros/waypointV2_setGlobalCruisespeed", &VehicleNode::waypointV2SetGlobalCruisespeedCallback, this);
   waypointv2_get_global_cruisespeed_server_ = nh_.advertiseService("dji_osdk_ros/waypointV2_getGlobalCruisespeed", &VehicleNode::waypointV2GetGlobalCruisespeedCallback, this);
+  waypointv2_subscribe_mission_event_server_ = nh_.advertiseService("dji_osdk_ros/waypointV2_subscribeMissionEvent", &VehicleNode::waypointV2SubscribeMissionEventCallback, this);
+  waypointv2_subscribe_mission_state_server_ = nh_.advertiseService("dji_osdk_ros/waypointV2_subscribeMissionState", &VehicleNode::waypointV2SubscribeMissionStateCallback, this);
+
   ROS_INFO_STREAM("Services startup!");
 }
 
@@ -374,6 +377,9 @@ bool VehicleNode::initTopic()
   stereo_vga_front_left_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front_left_images", 10);
   stereo_vga_front_right_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front_right_images", 10);
   #endif
+
+  waypointV2_mission_state_publisher_ = nh_.advertise<dji_osdk_ros::WaypointV2MissionStatePush>("dji_osdk_ros/waypointV2_mission_state", 10);
+  waypointV2_mission_event_publisher_ = nh_.advertise<dji_osdk_ros::WaypointV2MissionEventPush>("dji_osdk_ros/waypointV2_mission_event", 10);
 
   if(ptr_wrapper_ == nullptr)
   {

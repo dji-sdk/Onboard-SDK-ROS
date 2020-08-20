@@ -125,6 +125,8 @@ namespace dji_osdk_ros
       bool resumeWaypointV2Mission(int timeout);
       bool setGlobalCruiseSpeed(const float32_t &cruiseSpeed, int timeout);
       bool getGlobalCruiseSpeed(float32_t &cruiseSpeed, int timeout);
+      bool RegisterMissionEventCallback(void *userData, PushCallback cb);
+      bool RegisterMissionStateCallback(void *userData, PushCallback cb);
 
       /*! Parts of advanced_sendsing */
 #ifdef ADVANCED_SENSING

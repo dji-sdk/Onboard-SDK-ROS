@@ -46,6 +46,8 @@ dji_osdk_ros::ResumeWaypointV2Mission resumeWaypointV2Mission_;
 dji_osdk_ros::SetGlobalCruisespeed setGlobalCruisespeed_;
 dji_osdk_ros::GetGlobalCruisespeed getGlobalCruisespeed_;
 dji_osdk_ros::GenerateWaypointV2Action generateWaypointV2Action_;
+dji_osdk_ros::SubscribeWaypointV2Event subscribeWaypointV2Event_;
+dji_osdk_ros::SubscribeWaypointV2State subscribeWaypointV2State_;
 
 ros::ServiceClient waypointV2_init_setting_client;
 ros::ServiceClient waypointV2_upload_mission_client;
@@ -58,11 +60,20 @@ ros::ServiceClient waypointV2_resume_mission_client;
 ros::ServiceClient waypointV2_set_global_cruisespeed_client;
 ros::ServiceClient waypointV2_get_global_cruisespeed_client;
 ros::ServiceClient waypointV2_generate_actions_client;
+ros::ServiceClient waypointV2_mission_event_push_client;
+ros::ServiceClient waypointV2_mission_state_push_client;
+
+ros::Subscriber waypointV2EventSub;
+ros::Subscriber waypointV2StateSub;
 
 ros::ServiceClient get_drone_type_client;
 sensor_msgs::NavSatFix gps_position_;
+dji_osdk_ros::WaypointV2MissionEventPush waypoint_V2_mission_event_push_;
+dji_osdk_ros::WaypointV2MissionStatePush waypoint_V2_mission_state_push_;
 
 void gpsPositionSubCallback(const sensor_msgs::NavSatFix::ConstPtr& gpsPosition);
+void waypointV2MissionStateSubCallback(const dji_osdk_ros::WaypointV2MissionStatePush::ConstPtr& waypointV2MissionStatePush);
+void waypointV2MissionEventSubCallback(const dji_osdk_ros::WaypointV2MissionEventPush::ConstPtr& waypointV2MissionEventPush);
 
 void setWaypointV2Defaults(dji_osdk_ros::WaypointV2& waypointV2);
 std::vector<dji_osdk_ros::WaypointV2> generatePolygonWaypoints(const ros::NodeHandle &nh, float32_t radius, uint16_t polygonNum);
