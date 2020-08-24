@@ -1,21 +1,31 @@
-# DJI Onboard SDK ROS 4.0.0
+# DJI Onboard SDK ROS 4.0.1
 
 ## Latest Update
 
-OSDK-ROS 4.0.0 was released on 8 May 2020.You need to read newest update below to get update information. Please see the [release notes](https://developer.dji.com/onboard-sdk/downloads/) and [ROS sample setup](https://developer.dji.com/onboard-sdk/documentation/quickstart/development-environment.html) for more information.And We will update [ROS Wiki](http://wiki.ros.org/dji_sdk/) later.
+OSDK-ROS 4.0.1 was released on 24 August 2020.You need to read newest update below to get update information. Please see the [release notes](https://developer.dji.com/onboard-sdk/downloads/) and [ROS sample setup](https://developer.dji.com/cn/onboard-sdk/documentation/development-workflow/environment-setup.html#linux-with-ros) for more information.And We will update [ROS Wiki](http://wiki.ros.org/dji_sdk/) later.
 
 ### 1. feature  
-This 4.0 version releases a feature package: dji_osdk_ros. The package contains two different framework's interface. OSDK-ROS-obsoleted kept ros3.8.1's interface.  
+This 4.0.1 version releases a feature package: dji_osdk_ros. The package contains two different framework's interface. OSDK-ROS-obsoleted kept ros3.8.1's interface.  
 (__note:We will cancel support for the OSDK-ROS-obsoleted's interface in the next version.__)
 
-| **OSDK-ROS4.0 interface**            | **OSDK-ROS-obsoleted interface**            |
+| **OSDK-ROS4.0.1 interface**          | **OSDK-ROS-obsoleted interface**            |
 |--------------------------------------|---------------------------------------------|
 |files below in dji_osdk_ros folder    | files below in dji_osdk_ros_obsoleted folder|
 
 This update mainly includes:  
-1. Redesigned the 4.0 version of the framework and interface (ROS side interacts with the OSDK side through the wrapper layer, business-related interfaces are fully encapsulated into the wrapper layer, and the ROS side provides all services and topics);  
-2. OSDK-ROS4.0's interfaces are completely matched with onboard-sdk4.0.0.
-3. Version 4.0 provides a main node (dji_vehicle_node), which completes the activation of the drone, the acquisition of control rights, and the initialization of all services and topics;  
+1. Data subscription interface and sample;  
+2. Mobile device interface and sample;  
+3. Payload device interface and sample;  
+4. Add the top obstacle avoidance enable interface;
+5. Waypoint1.0/2.0 interface and sample;  
+6. Advanced sensing interface and sample perfection;  
+   include:  
+   > camera-h264  
+   > camera-stream  
+   > stereo-vision-depth-perception(rectified stereo images．disparity mapfiltered disparity map (Optional)．point cloud)  
+  (__note: If you roslaunch dji_vehicle_node.launch to get m300_stereo_param.yaml, the yaml file will be prouduced in .ros folder(/home/${user}/.ros).And you need to copy it to the directory which you need to rosrun.__)  
+7. we also kept all services and topics of osdk-ros 3.8.1. If you want to use these interfaces,you need to run dji_sdk_node and use it's services and topics.   
+(__note: These interfaces are not fully compatible with onboard-sdk4.0.1.And they will not be supported in next osdk-ros version.__)
 
 | **nodes**                            |  **services's name**                             | **topics's name**                     |
 |--------------------------------------|--------------------------------------------------|---------------------------------------|
@@ -24,6 +34,7 @@ This update mainly includes:
 |                                      |set_go_home_altitude                              |                                       |
 |                                      |set_current_point_as_home                         |                                       |
 |                                      |enable_avoid                                      |                                       |
+|                                      |enable_upwards_avoid                              |                                       |
 |gimbal_camera_control_node            |gimbal_task_control                               |                                       |
 |                                      |camera_task_set_EV                                |                                       |
 |                                      |camera_task_set_shutter_speed                     |                                       |
@@ -99,24 +110,23 @@ This update mainly includes:
 |                                      |dji_osdk_ros/waypointV2_generateActions           |                                       |
 |                                      |dji_osdk_ros/waypointV2_setGlobalCruisespeed      |                                       |
 |                                      |dji_osdk_ros/waypointV2_getGlobalCruisespeed      |                                       |
-
-3. At the same time, we kept all services and topics of osdk-ros 3.8.1. If you want to use these interfaces,you need to run dji_sdk_node and use it's services and topics.   
-(__note: These interfaces are not fully compatible with onboard-sdk4.0.0.And they will not be supported in next osdk-ros version.__)
+|                                      |dji_osdk_ros/waypointV2_subscribeMissionEvent     |dji_osdk_ros/waypointV2_mission_event  |
+|                                      |dji_osdk_ros/waypointV2_subscribeMissionState     |dji_osdk_ros/swaypointV2_mission_state |
 ### 2. Prerequisites
 The system environment we have tested is in the table below.
 
 |                            |                                             |
 |----------------------------|-------------------------------------------- |  
 | **system version**         | ubuntu 16.04                                |
-| **processor architecture** | x86(mainfold2-c),armv8(mainfold2-g)           |
+| **processor architecture** | x86(mainfold2-c),armv8(mainfold2-g)         |
 #### Firmware Compatibility
-OSDK-ROS 4.0's firmware compatibility depends on onboard-sdk 4.0.0's. you can get more information [here](https://github.com/dji-sdk/Onboard-SDK);
+OSDK-ROS 4.0.1's firmware compatibility depends on onboard-sdk 4.0.1's. you can get more information [here](https://developer.dji.com/cn/document/0c2b2d75-d019-480c-9241-8c8e7209692d);
 #### Ros  
 you need to install ros first.Install instruction can be found at: http://wiki.ros.org/ROS/Installation. We just tested ROS kinetic version.  
 #### C++11 Compiler
 We compile with C + + 11 Standard.
 #### onboard-sdk
-you need to download onboard-sdk4.0.0,and install it.
+you need to download onboard-sdk4.0.1,and install it.
 >$mkdir build  
 >$cd build  
 >$cmake..  
@@ -159,8 +169,8 @@ If you don't have a catkin workspace, create one as follows:
 >$mkdir src  
 >$cd src  
 >$catkin_init_workspace
-#### add osdk-ros 4.0 
-Download osdk-ros 4.0 and put it into src.
+#### add osdk-ros 4.0.1 
+Download osdk-ros 4.0.1 and put it into src.
 #### Build the dji_osdk_ros ROS package
 >$cd ..  
 >$catkin_make
@@ -171,7 +181,7 @@ Download osdk-ros 4.0 and put it into src.
 2.Edit the launch file and enter your App ID, Key, Baudrate and Port name in the designated places.  
 (__note:there are two launch file.  
 dji_sdk_node.launch is for dji_sdk_node.(3.8.1's interface)  
-dji_vehicle_node is for dji_vehicle_node(4.0.0's interface)__)
+dji_vehicle_node is for dji_vehicle_node(4.0.1's interface)__)
 > $rosed dji_osdk_ros dji_sdk_node.launch  
 > $rosed dji_osdk_ros dji_vehicle_node.launch  
 
@@ -180,7 +190,7 @@ dji_vehicle_node is for dji_vehicle_node(4.0.0's interface)__)
 >dji_vehicle_node.launch does not need UserConfig.txt.
 #### Running the Samples
 1.Start up the dji_osdk_ros ROS node.  
-if you want to use OSDK ROS 4.0.0's services and topics:
+if you want to use OSDK ROS 4.0.1's services and topics:
 >$roslaunch dji_osdk_ros dji_vehicle_node.launch  
 
 if you want to adapt to OSDK ROS 3.8.1's services and topics:
