@@ -1,17 +1,17 @@
 # Here is an example how to use FlightAnomaly msg:
 #
-# void flightAnomalyCallback(const dji_sdk::FlightAnomaly::ConstPtr & msg)
+# void flightAnomalyCallback(const dji_osdk_ros::FlightAnomaly::ConstPtr & msg)
 # {
 #   uint32_t flightAnomalyData = msg->data;
 #   if(flightAnomalyData)
 #   {
 #     ROS_INFO("Flight Anomaly Reported by Flight Controller. Here are details:");
-#     if(flightAnomalyData && dji_sdk::FlightAnomaly::COMPASS_INSTALLATION_ERROR)
+#     if(flightAnomalyData && dji_osdk_ros::FlightAnomaly::COMPASS_INSTALLATION_ERROR)
 #     {
 #         ROS_INFO("COMPASS_INSTALLATION_ERROR");
 #     }
 #
-#     if(flightAnomalyData && dji_sdk::FlightAnomaly::IMU_INSTALLATION_ERROR)
+#     if(flightAnomalyData && dji_osdk_ros::FlightAnomaly::IMU_INSTALLATION_ERROR)
 #     {
 #         ROS_INFO("IMU_INSTALLATION_ERROR");
 #     }

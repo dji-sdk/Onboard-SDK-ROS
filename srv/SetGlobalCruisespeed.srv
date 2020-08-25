@@ -1,0 +1,8 @@
+#request
+# Global cruise speed of mission
+# unit: m/s
+# range:[0,WayPointV2InitSettings::maxFlightSpeed]
+float32 global_cruisespeed
+---
+#response
+bool result
