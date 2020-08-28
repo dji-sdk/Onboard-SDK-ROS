@@ -63,6 +63,7 @@
 #include <dji_osdk_ros/SetNewHomePoint.h>
 #include <dji_osdk_ros/SetLocalPosRef.h>
 #include <dji_osdk_ros/AvoidEnable.h>
+#include <dji_osdk_ros/ObtainControlAuthority.h>
 #include <dji_osdk_ros/GimbalAction.h>
 #include <dji_osdk_ros/CameraEV.h>
 #include <dji_osdk_ros/CameraShutterSpeed.h>
@@ -187,6 +188,7 @@ namespace dji_osdk_ros
       ros::ServiceServer set_local_pos_reference_server_;
       ros::ServiceServer avoid_enable_server_;
       ros::ServiceServer upwards_avoid_enable_server_;
+      ros::ServiceServer obtain_releae_control_authority_server_;
       /*! for gimbal */
       ros::ServiceServer gimbal_control_server_;
       /*! for camera */
@@ -313,6 +315,7 @@ namespace dji_osdk_ros
                                   dji_osdk_ros::SetLocalPosRef::Response &response);
       bool setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
       bool setUpwardsAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
+      bool obtainReleaseControlAuthorityCallback(ObtainControlAuthority::Request& request, ObtainControlAuthority::Response& reponse);
       /*! for gimbal control */
       bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);
       /*! for camera conrol */

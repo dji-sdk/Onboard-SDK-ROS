@@ -1664,6 +1664,34 @@ static T_OsdkOsalHandler osalHandler = {
     return ACK::SUCCESS;
   }
 
+  bool VehicleWrapper::obtainReleaseCtrlAuthority(bool enableObtain, int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+
+    ACK::ErrorCode initAck;
+
+    if (enableObtain)
+    {
+      initAck = vehicle->control->obtainCtrlAuthority(timeout);
+    }
+    else
+    {
+      initAck = vehicle->control->releaseCtrlAuthority(timeout);
+    }
+
+    if (ACK::getError(initAck))
+    {
+      ACK::getErrorCodeMessage(initAck, __func__);
+      return false;
+    }
+
+    return true;
+  }
+
   bool VehicleWrapper::startGlobalPositionBroadcast()
   {
     uint8_t freq[16];

@@ -34,6 +34,7 @@
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetNewHomePoint.h>
 #include <dji_osdk_ros/AvoidEnable.h>
+#include <dji_osdk_ros/ObtainControlAuthority.h>
 
 //CODE
 using namespace dji_osdk_ros;
@@ -52,6 +53,7 @@ int main(int argc, char** argv)
   auto set_current_point_as_home_client = nh.serviceClient<SetNewHomePoint>("/set_current_point_as_home");
   auto enable_avoid_client = nh.serviceClient<AvoidEnable>("/enable_avoid");
   auto enable_upward_avoid_client = nh.serviceClient<AvoidEnable>("/enable_upwards_avoid");
+  auto obtain_ctrl_authority_client = nh.serviceClient<dji_osdk_ros::ObtainControlAuthority>("obtain_release_control_authority");
   std::cout
       << "| Available commands:                                            |"
       << std::endl;
@@ -70,6 +72,9 @@ int main(int argc, char** argv)
   std::cin >> inputChar;
 
   FlightTaskControl control_task;
+  ObtainControlAuthority obtainCtrlAuthority;
+  obtainCtrlAuthority.request.enable_obtain = true;
+  obtain_ctrl_authority_client.call(obtainCtrlAuthority);
 
   switch (inputChar)
   {
@@ -112,6 +117,7 @@ int main(int argc, char** argv)
         {
           ROS_INFO_STREAM("Takeoff task successful");
           ros::Duration(2.0).sleep();
+
           
           ROS_INFO_STREAM("Move by position offset request sending ...");
           moveByPosOffset(control_task, MoveOffset(0.0, 6.0, 6.0, 30.0));
