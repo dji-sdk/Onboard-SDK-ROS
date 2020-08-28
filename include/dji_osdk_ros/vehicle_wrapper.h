@@ -102,6 +102,7 @@ namespace dji_osdk_ros
       bool monitoredTakeoff(ACK::ErrorCode& ack, int timeout);
       bool monitoredLanding(ACK::ErrorCode& ack, int timeout);
       bool moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset);
+      bool obtainReleaseCtrlAuthority(bool enableObtain, int timeout);
 
       /*! Parts of mfio */
       uint8_t outputMFIO(uint8_t mode, uint8_t channel, uint32_t init_on_time_us, uint16_t freq, bool block, uint8_t gpio_value);

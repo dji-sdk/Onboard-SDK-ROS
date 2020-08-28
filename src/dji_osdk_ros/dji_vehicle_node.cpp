@@ -196,6 +196,7 @@ void VehicleNode::initService()
   set_local_pos_reference_server_ = nh_.advertiseService("set_local_pos_reference", &VehicleNode::setLocalPosRefCallback,this);
   avoid_enable_server_ = nh_.advertiseService("enable_avoid", &VehicleNode::setAvoidCallback,this);
   upwards_avoid_enable_server_ = nh_.advertiseService("enable_upwards_avoid", &VehicleNode::setUpwardsAvoidCallback, this);
+  obtain_releae_control_authority_server_ = nh_.advertiseService("obtain_release_control_authority", &VehicleNode::obtainReleaseControlAuthorityCallback, this);
 
   /*! @brief
    *  gimbal control server
@@ -1443,6 +1444,29 @@ bool VehicleNode::setUpwardsAvoidCallback(AvoidEnable::Request& request, AvoidEn
   }
 
   return true;
+}
+
+bool VehicleNode::obtainReleaseControlAuthorityCallback(ObtainControlAuthority::Request& request, ObtainControlAuthority::Response& response)
+{
+  
+  if(request.enable_obtain)
+  {
+    ROS_INFO_STREAM("Obtain Control Authority Callback");
+  }
+  else
+  {
+    ROS_INFO_STREAM("release Control Authority Callback");
+  }
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return true;
+  }
+
+  response.result = ptr_wrapper_->obtainReleaseCtrlAuthority(request.enable_obtain, FLIGHT_CONTROL_WAIT_TIMEOUT);
+
+  return response.result;
 }
 
 int main(int argc, char** argv)
