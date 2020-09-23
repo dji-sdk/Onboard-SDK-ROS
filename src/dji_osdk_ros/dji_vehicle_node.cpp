@@ -320,7 +320,7 @@ bool VehicleNode::initTopic()
    * - Fused attitude (duplicated from attitude topic)
    * - Raw linear acceleration (body frame: FLU, m/s^2)
    *       Z value is +9.8 when placed on level ground statically
-   * - Raw angular velocity (body frame: FLU, rad/s^2)
+   * - Raw angular velocity (body frame: FLU, rad/s)
    */
   imu_publisher_ = nh_.advertise<sensor_msgs::Imu>("dji_osdk_ros/imu", 10);
   // Refer to dji_sdk.h for different enums for M100 and A3/N3
