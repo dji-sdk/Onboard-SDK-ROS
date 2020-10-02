@@ -1,3 +1,7 @@
+# This is a fork of DJI's Onboard-SDK-ROS.
+# Created by Masahiro Ogawa
+#
+
 # DJI Onboard SDK ROS 4.0.1
 
 ## Latest Update
