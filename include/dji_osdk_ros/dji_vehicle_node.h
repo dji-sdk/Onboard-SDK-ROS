@@ -183,6 +183,9 @@ namespace dji_osdk_ros
       ros::ServiceServer get_drone_type_server_;
       /*! for flight control */
       ros::ServiceServer task_control_server_;
+      ros::ServiceServer flight_control_position_server_;
+      ros::ServiceServer flight_control_velocity_server_;
+      ros::ServiceServer flight_control_angle_server_;
       ros::ServiceServer set_home_altitude_server_;
       ros::ServiceServer set_current_point_as_home_server_;
       ros::ServiceServer set_local_pos_reference_server_;
@@ -309,6 +312,10 @@ namespace dji_osdk_ros
                                 dji_osdk_ros::GetDroneType::Response &response);
       /*! for flight control */
       bool taskCtrlCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
+      bool flightCtrlPositionCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
+      bool flightCtrlVelocityCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
+      bool flightCtrlAngleCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
+      bool flightCtrl(Control::HorizontalLogic control_mode,FlightTaskControl::Request& request, FlightTaskControl::Response& response);
       bool setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request, SetGoHomeAltitude::Response& response);
       bool setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response);
       bool setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,

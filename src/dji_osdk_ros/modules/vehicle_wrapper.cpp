@@ -1664,6 +1664,210 @@ static T_OsdkOsalHandler osalHandler = {
     return ACK::SUCCESS;
   }
 
+  bool VehicleWrapper::moveByPositionOffsetIndoor(Control::HorizontalLogic control_mode,
+                                                  ACK::ErrorCode& ack, MoveOffset& p_offset)
+  {
+    using namespace Telemetry;
+    auto xOffsetDesired = p_offset.x;
+    auto yOffsetDesired = p_offset.y;
+    auto zOffsetDesired = p_offset.z;
+    auto posThresholdInM = p_offset.pos_threshold;
+
+    // Set timeout: this timeout is the time you allow the drone to take to finish
+    // the
+    // mission
+    int timeoutInMilSec              = 5000; //5 seconds
+    int controlFreqInHz              = 50; // Hz
+    int cycleTimeInMs                = 1000 / controlFreqInHz;
+    int breakTimeLimit               = 50 * cycleTimeInMs; // 50 cycles
+
+    if (!vehicle->isM300()) {
+      std::cout << "Vehicle type is not M300!" << std::endl;
+      return ACK::FAIL;
+    }
+
+    startGlobalPositionBroadcast();
+    // Wait for data to come in
+    sleep(1);
+
+    // Global position retrieved via subscription
+    Telemetry::TypeMap<TOPIC_POSITION_VO>::type currentSubscriptionVO;
+    Telemetry::TypeMap<TOPIC_POSITION_VO>::type originSubscriptionVO;
+    // Global position retrieved via broadcast
+    Telemetry::GlobalPosition currentBroadcastGP;
+
+    // Convert position offset from first position to local coordinates
+    Telemetry::Vector3f localOffset;
+
+    currentSubscriptionVO = vehicle->subscribe->getValue<TOPIC_POSITION_VO>();
+    originSubscriptionVO  = currentSubscriptionVO;
+    localOffsetFromVoOffset(localOffset,
+                             static_cast<void*>(&currentSubscriptionVO),
+                             static_cast<void*>(&originSubscriptionVO));
+
+
+    // Get initial offset. We will update this in a loop later.
+    double xOffsetRemaining = xOffsetDesired - localOffset.x;
+    double yOffsetRemaining = yOffsetDesired - localOffset.y;
+    double zOffsetRemaining = zOffsetDesired - localOffset.z;
+
+    std::cout << "Remaining x(m)=" << xOffsetRemaining << " y(m)=" << yOffsetRemaining << " z(m)=" << zOffsetRemaining << std::endl;
+
+    int   elapsedTimeInMs     = 0;
+    int   brakeCounter        = 0;
+    int   speedFactor         = 2;
+    int   maxDistance         = 2;
+    float xCmd, yCmd;
+
+    /*! Calculate the inputs to send the position controller. We implement basic
+     *  receding setpoint position control and the setpoint is always 2 m away
+     *  from the current position - until we get within a threshold of the goal.
+     *  From that point on, we send the remaining distance as the setpoint.
+     */
+    if (xOffsetDesired > 0)
+      xCmd = (xOffsetDesired < speedFactor) ? xOffsetDesired : speedFactor;
+    else if (xOffsetDesired < 0)
+      xCmd =
+          (xOffsetDesired > -1 * speedFactor) ? xOffsetDesired : -1 * speedFactor;
+    else
+      xCmd = 0;
+
+    if (yOffsetDesired > 0)
+      yCmd = (yOffsetDesired < speedFactor) ? yOffsetDesired : speedFactor;
+    else if (yOffsetDesired < 0)
+      yCmd =
+          (yOffsetDesired > -1 * speedFactor) ? yOffsetDesired : -1 * speedFactor;
+    else
+      yCmd = 0;
+
+
+    //! Main closed-loop receding setpoint position control
+    while (elapsedTimeInMs < timeoutInMilSec)
+    {
+      // call flight control API
+      flightCtrl(control_mode, xCmd, yCmd);
+
+      usleep(cycleTimeInMs * 1000);
+      elapsedTimeInMs += cycleTimeInMs;
+
+      //! Get current position in required coordinates and units
+      currentSubscriptionVO = vehicle->subscribe->getValue<TOPIC_POSITION_VO>();
+      localOffsetFromVoOffset(localOffset,
+                               static_cast<void*>(&currentSubscriptionVO),
+                               static_cast<void*>(&originSubscriptionVO));
+
+      //! See how much farther we have to go
+      xOffsetRemaining = xOffsetDesired - localOffset.x;
+      yOffsetRemaining = yOffsetDesired - localOffset.y;
+      zOffsetRemaining = zOffsetDesired - localOffset.z;
+      std::cout << "Remaining x(m)=" << xOffsetRemaining << " y(m)=" << yOffsetRemaining << " z(m)=" << zOffsetRemaining << std::endl;
+
+      //! See if we need to modify the setpoint
+      if (std::abs(xOffsetRemaining) < speedFactor)
+      {
+        xCmd = xOffsetRemaining;
+      }
+      if (std::abs(yOffsetRemaining) < speedFactor)
+      {
+        yCmd = yOffsetRemaining;
+      }
+
+
+      //! If x,y in bounds, start brake
+      if (std::abs(xOffsetRemaining) < posThresholdInM &&
+          std::abs(yOffsetRemaining) < posThresholdInM)
+      {
+        std::cout << "move inBounds (ms) : " << elapsedTimeInMs << " start brake!" << std::endl;
+        break;
+      }
+
+      //! If out of scope(Distance > 2m), start brake
+      if (std::pow(xOffsetRemaining, 2.0) +
+          std::pow(yOffsetRemaining, 2.0) +
+          std::pow(zOffsetRemaining, 2.0) > std::pow(maxDistance, 2.0))
+      {
+        std::cout << "move out of scope (ms) : " << elapsedTimeInMs << " start brake!" << std::endl;
+        break;
+      }
+    }
+
+    //! start brake
+    std::cout << "start brake!" << std::endl;
+    while (brakeCounter < breakTimeLimit)
+    {
+      vehicle->control->emergencyBrake();
+      usleep(cycleTimeInMs * 10);
+      brakeCounter += cycleTimeInMs;
+    }
+    std::cout << "brake finished!" << std::endl;
+
+    return ACK::SUCCESS;
+  }
+
+  void VehicleWrapper::flightCtrl(Control::HorizontalLogic control_mode, float xCmd, float yCmd)
+  {
+    uint8_t flag = 0;
+    Control::CtrlData ctrlData(flag, 0.0, 0.0, 0.0, 0.0);
+    switch (control_mode) {
+    case Control::HORIZONTAL_POSITION:
+      // use flightCtrl API
+      std::cout << "PositionCmd Px(m)=" << xCmd << " Py(m)=" << yCmd << " Vz(m/s)=0 Yawrate(deg/s)=0" << std::endl;
+      flag = (Control::VERTICAL_VELOCITY |
+              Control::HORIZONTAL_POSITION |
+              Control::YAW_RATE |
+              Control::HORIZONTAL_BODY |
+              Control::STABLE_ENABLE);
+      ctrlData.flag = flag;
+      ctrlData.x = xCmd;
+      ctrlData.y = yCmd;
+      ctrlData.z = 0.0;
+      ctrlData.yaw = 0.0;
+      vehicle->control->flightCtrl(ctrlData);
+
+      // use positionAndYawCtrl API
+//      std::cout << "PositionCmd Px(m)=" << xCmd << " Py(m)=" << yCmd << " Pz(m)=1.2 Yaw(deg)=0" << std::endl;
+//      vehicle->control->positionAndYawCtrl(xCmd, yCmd, 1.2, 0.0);
+      break;
+    case Control::HORIZONTAL_VELOCITY:
+      // use flightCtrl API
+      std::cout << "VelocityCmd Vx(m/s)=0.2 Vy(m/s)=0 Vz(m/s)=0 Yawrate(deg/s)=0" << std::endl;
+      flag = (Control::VERTICAL_VELOCITY |
+              Control::HORIZONTAL_VELOCITY |
+              Control::YAW_RATE |
+              Control::HORIZONTAL_BODY |
+              Control::STABLE_ENABLE);
+      ctrlData.flag = flag;
+      ctrlData.x = 0.2;
+      ctrlData.y = 0.0;
+      ctrlData.z = 0.0;
+      ctrlData.yaw = 0.0;
+      vehicle->control->flightCtrl(ctrlData);
+
+      // velocityAndYawRateCtrl API
+//      std::cout << "VelocityCmd Vx(m/s)=0.2 Vy(m/s)=0 Vz(m/s)=0 Yawrate(deg/s)=0" << std::endl;
+//      vehicle->control->velocityAndYawRateCtrl(0.2, 0.0, 0.0, 0.0);
+      break;
+    case Control::HORIZONTAL_ANGLE:
+      std::cout << "AngleCmd roll(deg)=0 pitch(deg)=1 Vz(m/s)=0 Yawrate(deg/s)=0" << std::endl;
+      flag = (Control::VERTICAL_VELOCITY |
+              Control::HORIZONTAL_ANGLE |
+              Control::YAW_RATE |
+              Control::HORIZONTAL_BODY |
+              Control::STABLE_ENABLE);
+      ctrlData.flag = flag;
+      ctrlData.x = 0.0;
+      ctrlData.y = 1.0;
+      ctrlData.z = 0.0;
+      ctrlData.yaw = 0.0;
+      vehicle->control->flightCtrl(ctrlData);
+
+      // use attitudeAndVertPosCtrl API
+//      std::cout << "AngleCmd roll(deg)=0 pitch(deg)=1 yaw(deg)=0 Pz(m)=1.2" << std::endl;
+//      vehicle->control->attitudeAndVertPosCtrl(0.0, 1.0, 0.0, 1.2);
+      break;
+    }
+  }
+
   bool VehicleWrapper::obtainReleaseCtrlAuthority(bool enableObtain, int timeout)
   {
     if (!vehicle)
@@ -1767,6 +1971,17 @@ static T_OsdkOsalHandler osalHandler = {
       deltaNed.y      = deltaLon * C_EARTH * cos(broadcastTarget->latitude);
       deltaNed.z      = broadcastTarget->altitude - broadcastOrigin->altitude;
     }
+  }
+
+  void VehicleWrapper::localOffsetFromVoOffset(Vector3f &deltaNed, void *target, void *origin)
+  {
+    Telemetry::LocalPositionVO*       subscriptionTarget;
+    Telemetry::LocalPositionVO*       subscriptionOrigin;
+    subscriptionTarget = (Telemetry::LocalPositionVO*)target;
+    subscriptionOrigin = (Telemetry::LocalPositionVO*)origin;
+    deltaNed.x = subscriptionTarget->x - subscriptionOrigin->x;
+    deltaNed.y = subscriptionTarget->y - subscriptionOrigin->y;
+    deltaNed.z = subscriptionTarget->z - subscriptionOrigin->z;
   }
 
   Telemetry::Vector3f VehicleWrapper::toEulerAngle(void* quaternionData)

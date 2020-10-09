@@ -102,6 +102,8 @@ namespace dji_osdk_ros
       bool monitoredTakeoff(ACK::ErrorCode& ack, int timeout);
       bool monitoredLanding(ACK::ErrorCode& ack, int timeout);
       bool moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset);
+      bool moveByPositionOffsetIndoor(Control::HorizontalLogic control_mode, ACK::ErrorCode& ack, MoveOffset& p_offset);
+      void flightCtrl(Control::HorizontalLogic control_mode, float xCmd, float yCmd);
       bool obtainReleaseCtrlAuthority(bool enableObtain, int timeout);
 
       /*! Parts of mfio */
@@ -220,6 +222,7 @@ namespace dji_osdk_ros
       bool startGlobalPositionBroadcast();
       Telemetry::Vector3f toEulerAngle(void* quaternionData);
       void localOffsetFromGpsOffset(Telemetry::Vector3f& deltaNed, void* target, void* origin);
+      void localOffsetFromVoOffset(Telemetry::Vector3f& deltaNed, void* target, void* origin);
     
     public:
       Vehicle::ActivateData *getActivateData()
