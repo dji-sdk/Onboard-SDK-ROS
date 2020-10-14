@@ -11,6 +11,6 @@ uint8 DJIWaypointV2ActionActuatorAircraftControlOperationTypeUnknown = 255
 
 uint8 actuatorIndex   # The index of actuator. It is valid when the diagnostics is related
                       # to camera or gimbal and the connected product has multiple gimbals and cameras.
-uint8 DJIWaypointV2ActionActuatorAircraftControlOperationType 
+uint16 DJIWaypointV2ActionActuatorAircraftControlOperationType 
 WaypointV2AircraftControlActuatorFlying waypointV2AircraftControlActuatorFlying
 WaypointV2AircraftControlActuatorRotateHeading waypointV2AircraftControlActuatorRotateHeading
