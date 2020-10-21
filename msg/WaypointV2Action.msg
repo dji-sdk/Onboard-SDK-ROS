@@ -33,7 +33,7 @@ uint8 DJIWaypointV2ActionActuatorTypeGimbal = 2
 
 # The action will executes by control aircraft.
 # The parameters should be setting by ``DJIWaypointV2Action_DJIWaypointV2CameraActuatorParam``.
-uint8 DJIWaypointV2ActionActuatorTypeAircraftControl = 3
+uint8 DJIWaypointV2ActionActuatorTypeAircraftControl = 4
 
 # Unknown actuator type.
 uint8 DJIWaypointV2ActionActuatorTypeUnknown = 255
