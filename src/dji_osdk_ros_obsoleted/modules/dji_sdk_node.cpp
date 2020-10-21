@@ -224,7 +224,7 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
    * - Fused attitude (duplicated from attitude topic)
    * - Raw linear acceleration (body frame: FLU, m/s^2)
    *       Z value is +9.8 when placed on level ground statically
-   * - Raw angular velocity (body frame: FLU, rad/s^2)
+   * - Raw angular velocity (body frame: FLU, rad/s)
    */
   imu_publisher = nh.advertise<sensor_msgs::Imu>("dji_osdk_ros/imu", 10);
 
