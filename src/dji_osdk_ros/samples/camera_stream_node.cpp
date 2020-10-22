@@ -29,7 +29,8 @@
 //INCLUDE
 #include <ros/ros.h>
 #include <iostream>
-
+#include <dji_camera_image.hpp>
+#include <dji_osdk_ros/SetupCameraStream.h>
 #include <dji_osdk_ros/SetupCameraH264.h>
 #include <sensor_msgs/Image.h>
 
@@ -96,13 +97,14 @@ bool ffmpeg_init()
     pCodecCtx->flags2 |= AV_CODEC_FLAG2_SHOW_ALL;
 }
 
-void show_rgb(uint8_t *rawData, int height, int width)
+void show_rgb(CameraRGBImage img, char* name)
 {
+  std::cout << "#### Got image from:\t" << std::string(name) << std::endl;
 #ifdef OPEN_CV_INSTALLED
-    cv::Mat mat(height, width, CV_8UC3, rawData, width*3);
-    cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
-    cv::imshow("camera_stream_node", mat);
-    cv::waitKey(1);
+  cv::Mat mat(img.height, img.width, CV_8UC3, img.rawData.data(), img.width*3);
+  cvtColor(mat, mat, cv::COLOR_RGB2BGR);
+  imshow(name,mat);
+  cv::waitKey(1);
 #endif
 }
 
@@ -175,6 +177,32 @@ void decodeToDisplay(uint8_t *buf, int bufLen)
     av_free_packet(&pkt);
 }
 
+
+void fpvCameraStreamCallBack(const sensor_msgs::Image& msg)
+{
+  CameraRGBImage img;
+  img.rawData = msg.data;
+  img.height  = msg.height;
+  img.width   = msg.width;
+  char Name[] = "FPV_CAM";
+  show_rgb(img, Name);
+  std::cout<<"height is"<<msg.height<<std::endl;
+  std::cout<<"width is"<<msg.width<<std::endl;
+}
+
+void mainCameraStreamCallBack(const sensor_msgs::Image& msg)
+{
+  CameraRGBImage img;
+  img.rawData = msg.data;
+  img.height  = msg.height;
+  img.width   = msg.width;
+  char Name[] = "MAIN_CAM";
+  show_rgb(img, Name);
+  std::cout<<"height is"<<msg.height<<std::endl;
+  std::cout<<"width is"<<msg.width<<std::endl;
+}
+
+
 void cameraH264CallBack(const sensor_msgs::Image& msg)
 {
   decodeToDisplay((uint8_t *)&msg.data[0], msg.data.size());
@@ -184,15 +212,36 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "camera_stream_node");
     ros::NodeHandle nh;
+
+    /*! H264 flow init and H264 decoder init */
     auto setup_camera_h264_client = nh.serviceClient<dji_osdk_ros::SetupCameraH264>("setup_camera_h264");
     auto fpv_camera_h264_sub = nh.subscribe("dji_osdk_ros/camera_h264_stream", 10, cameraH264CallBack);
     dji_osdk_ros::SetupCameraH264 setupCameraH264_;
     ffmpeg_init();
 
+    /*! RGB flow init */
+    auto setup_camera_stream_client = nh.serviceClient<dji_osdk_ros::SetupCameraStream>("setup_camera_stream");
+    auto fpv_camera_stream_sub = nh.subscribe("dji_osdk_ros/fpv_camera_images", 10, fpvCameraStreamCallBack);
+    auto main_camera_stream_sub = nh.subscribe("dji_osdk_ros/main_camera_images", 10, mainCameraStreamCallBack);
+    dji_osdk_ros::SetupCameraStream setupCameraStream_;
+
     char inputChar = 0;
     std::cout << std::endl;
     std::cout
-        << "| Available commands:                                          |"
+        << "| Input 'm' or 'f' to view the camera stream from the RGB flow |\n"
+           "| of the topic \"dji_osdk_ros/fpv_camera_images\" and            |\n"
+           "| \"dji_osdk_ros/main_camera_images\" :                          |"
+        << std::endl
+        << "| [m] Start to display main camera stream                      |"
+        << std::endl
+        << "| [f] Start to display fpv stream                              |"
+        << std::endl;
+    std::cout
+        << "|                                                              |"
+        << std::endl;
+    std::cout
+        << "| Input 'a' ~ 'b' to view the camera stream decoded by the h264|\n"
+           "| flow from the topic \"dji_osdk_ros/camera_h264_stream\" :      |"
         << std::endl
         << "| [a] Start to display FPV stream sample                       |"
         << std::endl
@@ -205,14 +254,24 @@ int main(int argc, char** argv)
 
     std::cin >> inputChar;
 
-    struct timeval tv;
-    struct tm tm;
-    gettimeofday(&tv, NULL);
-    localtime_r(&tv.tv_sec, &tm);
-
-
     switch (inputChar) 
     {
+      case 'f':
+      {
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.FPV_CAM;
+        setupCameraStream_.request.start = 1;
+        setup_camera_stream_client.call(setupCameraStream_);
+
+        break;
+      }
+      case 'm':
+      {
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.MAIN_CAM;
+        setupCameraStream_.request.start = 1;
+        setup_camera_stream_client.call(setupCameraStream_);
+
+        break;
+      }
       case 'a':
       {
         setupCameraH264_.request.request_view = setupCameraH264_.request.FPV_CAMERA;
@@ -254,6 +313,22 @@ int main(int argc, char** argv)
 
     switch (inputChar)
     {
+      case 'f':
+      {
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.FPV_CAM;
+        setupCameraStream_.request.start = 0;
+        setup_camera_stream_client.call(setupCameraStream_);
+
+        break;
+      }
+      case 'm':
+      {
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.MAIN_CAM;
+        setupCameraStream_.request.start = 0;
+        setup_camera_stream_client.call(setupCameraStream_);
+
+        break;
+      }
       case 'a':
       {
         setupCameraH264_.request.request_view = setupCameraH264_.request.FPV_CAMERA;
