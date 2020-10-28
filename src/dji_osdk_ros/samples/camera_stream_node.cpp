@@ -313,7 +313,7 @@ int main(int argc, char** argv)
 
     ros::AsyncSpinner spinner(1);
     spinner.start();
-    ros::Duration(20).sleep();
+    ros::Duration(120).sleep();
 
     switch (inputChar)
     {
@@ -377,6 +377,7 @@ int main(int argc, char** argv)
 
 SDL_Renderer* sdlRenderer = NULL;
 SDL_Texture* sdlTexture = NULL;
+#define REFRESH_EVENT  (SDL_USEREVENT + 1)
 
 void sdl_showimg(AVFrame* pFrameRGB) {
   ROS_INFO("sdl_showing ...");
@@ -398,20 +399,24 @@ void sdl_showimg(AVFrame* pFrameRGB) {
       return;
     }
     sdlRenderer = SDL_CreateRenderer(screen, -1, 0);
-    uint32_t pixformat = SDL_PIXELFORMAT_BGR24;
+    uint32_t pixformat = SDL_PIXELFORMAT_RGB24;
     sdlTexture = SDL_CreateTexture(sdlRenderer,pixformat, SDL_TEXTUREACCESS_STREAMING,pFrameRGB->width,pFrameRGB->height);
   }
 
+  SDL_Event event;
+  event.type = REFRESH_EVENT;
+  SDL_PushEvent(&event);
+  if (SDL_WaitEventTimeout(&event, 5)) {
+    static SDL_Rect sdlRect;
 
-  static SDL_Rect sdlRect;
+    SDL_UpdateTexture( sdlTexture, NULL, pFrameRGB->data[0], pFrameRGB->width * 3);
+    sdlRect.x = 0;
+    sdlRect.y = 0;
+    sdlRect.w = pFrameRGB->width;
+    sdlRect.h = pFrameRGB->height;
 
-  SDL_UpdateTexture( sdlTexture, NULL, pFrameRGB->data[0], pFrameRGB->width * 3);
-  sdlRect.x = 0;
-  sdlRect.y = 0;
-  sdlRect.w = pFrameRGB->width;
-  sdlRect.h = pFrameRGB->height;
-
-  SDL_RenderClear( sdlRenderer );
-  SDL_RenderCopy( sdlRenderer, sdlTexture, NULL, &sdlRect);
-  SDL_RenderPresent( sdlRenderer );
+    SDL_RenderClear(sdlRenderer);
+    SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, &sdlRect);
+    SDL_RenderPresent(sdlRenderer);
+  }
 }
