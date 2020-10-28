@@ -61,11 +61,19 @@ target_link_libraries(time_sync_node
         )
 add_dependencies(time_sync_node dji_osdk_ros_generate_messages_cpp)
 
+find_package(SDL2 REQUIRED)
+if (SDL2_FOUND)
+    message(STATUS "Found SDL2:")
+    message(STATUS " - Includes: ${SDL2_INCLUDE_DIRS}")
+    message(STATUS " - Libraries: ${SDL2_LIBRARIES}")
+endif()
 if(ENABLE_OPEN_CV_INSTALLED OR OPEN_CV_3_3_0_INSTALLED)
 message(STATUS "Find OPENCV, camera stream node will be compiled.")
+include_directories(${SDL2_LIBRARIES})
 add_executable(camera_stream_node camera_stream_node.cpp)
 target_link_libraries(camera_stream_node
         ${PROJECT_NAME}
+        -lSDL2
         )
 add_dependencies(camera_stream_node dji_osdk_ros_generate_messages_cpp)
 else()

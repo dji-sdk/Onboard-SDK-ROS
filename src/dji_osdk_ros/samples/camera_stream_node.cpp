@@ -45,6 +45,8 @@ extern "C"{
 #include "opencv2/highgui/highgui.hpp"
 #endif
 
+int sdl_setup();
+void sdl_showimg(AVFrame* pFrameRGB);
 
 //CODE
 using namespace dji_osdk_ros;
@@ -164,11 +166,14 @@ void decodeToDisplay(uint8_t *buf, int bufLen)
                     pFrameRGB->height = h;
                     pFrameRGB->width = w;
 
+                  sdl_showimg(pFrameRGB);
 #ifdef OPEN_CV_INSTALLED
+                    /*
                     cv::Mat mat(pFrameRGB->height, pFrameRGB->width, CV_8UC3, pFrameRGB->data[0], pFrameRGB->width * 3);
                     cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
                     cv::imshow("camera_stream_node", mat);
                     cv::waitKey(1);
+                     */
 #endif
                 }
             }
@@ -308,8 +313,7 @@ int main(int argc, char** argv)
 
     ros::AsyncSpinner spinner(1);
     spinner.start();
-    ROS_INFO("Wait 10 second to record stream");
-    ros::Duration(10).sleep();
+    ros::Duration(20).sleep();
 
     switch (inputChar)
     {
@@ -367,4 +371,47 @@ int main(int argc, char** argv)
     ros::waitForShutdown();
 
     return 0;
+}
+
+#include <SDL2/SDL.h>
+
+SDL_Renderer* sdlRenderer = NULL;
+SDL_Texture* sdlTexture = NULL;
+
+void sdl_showimg(AVFrame* pFrameRGB) {
+  ROS_INFO("sdl_showing ...");
+
+  static int initFlag = 0;
+  if (initFlag == 0) {
+    initFlag = 1;
+    if(SDL_Init(SDL_INIT_VIDEO)) {
+      printf( "Could not initialize SDL - %s\n", SDL_GetError());
+      return;
+    }
+
+    SDL_Window *screen;
+    //SDL 2.0 Support for multiple windows
+    screen = SDL_CreateWindow("Simplest Video Play SDL2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                              1600, 900,SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+    if(!screen) {
+      printf("SDL: could not create window - exiting:%s\n",SDL_GetError());
+      return;
+    }
+    sdlRenderer = SDL_CreateRenderer(screen, -1, 0);
+    uint32_t pixformat = SDL_PIXELFORMAT_BGR24;
+    sdlTexture = SDL_CreateTexture(sdlRenderer,pixformat, SDL_TEXTUREACCESS_STREAMING,pFrameRGB->width,pFrameRGB->height);
+  }
+
+
+  static SDL_Rect sdlRect;
+
+  SDL_UpdateTexture( sdlTexture, NULL, pFrameRGB->data[0], pFrameRGB->width * 3);
+  sdlRect.x = 0;
+  sdlRect.y = 0;
+  sdlRect.w = pFrameRGB->width;
+  sdlRect.h = pFrameRGB->height;
+
+  SDL_RenderClear( sdlRenderer );
+  SDL_RenderCopy( sdlRenderer, sdlTexture, NULL, &sdlRect);
+  SDL_RenderPresent( sdlRenderer );
 }
