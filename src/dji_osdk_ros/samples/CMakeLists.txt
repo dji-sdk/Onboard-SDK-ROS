@@ -66,14 +66,19 @@ if (SDL2_FOUND)
     message(STATUS "Found SDL2:")
     message(STATUS " - Includes: ${SDL2_INCLUDE_DIRS}")
     message(STATUS " - Libraries: ${SDL2_LIBRARIES}")
+    add_definitions(-DSDL2_INSTALLED)
+    set(SDL2_LIB_DEPEND_FLAG -lSDL2)
+else ()
+message(STATUS "--Recommendation : It is found that using \"cv::imshow\" on some platforms will cause more
+                CPU resources and more processing time in camera_stream_node. Using SDL to display images can improve this
+                situation. \n--Install SDL2 library in shell : \"sudo apt-get install libsdl2-dev\".")
 endif()
 if(ENABLE_OPEN_CV_INSTALLED OR OPEN_CV_3_3_0_INSTALLED)
 message(STATUS "Find OPENCV, camera stream node will be compiled.")
-include_directories(${SDL2_LIBRARIES})
 add_executable(camera_stream_node camera_stream_node.cpp)
 target_link_libraries(camera_stream_node
         ${PROJECT_NAME}
-        -lSDL2
+        ${SDL2_LIB_DEPEND_FLAG}
         )
 add_dependencies(camera_stream_node dji_osdk_ros_generate_messages_cpp)
 else()
