@@ -856,6 +856,7 @@ void VehicleNode::publishCameraH264(uint8_t* buf, int bufLen, void* userData)
     VehicleNode *node_ptr = reinterpret_cast<VehicleNode*>(userData);
     std::vector<uint8_t> tempRawData(buf, buf+bufLen);
     sensor_msgs::Image img;
+    img.header.stamp = ros::Time::now();
     img.data = tempRawData;
     node_ptr->camera_h264_publisher_.publish(img);
   } 
