@@ -28,10 +28,12 @@
 
 #include <dji_osdk_ros/mission_node.h>
 #include <dji_osdk_ros/FlightTaskControl.h>
+#include <dji_osdk_ros/ObtainControlAuthority.h>
 
 using namespace DJI::OSDK;
 
 // global variables
+ros::ServiceClient     obtain_ctrl_authority_client;
 ros::ServiceClient     waypoint_upload_client;
 ros::ServiceClient     waypoint_action_client;
 ros::ServiceClient     hotpoint_upload_client;
@@ -450,6 +452,8 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
 
   // ROS stuff
+  obtain_ctrl_authority_client = nh.serviceClient<dji_osdk_ros::ObtainControlAuthority>(
+    "obtain_release_control_authority");
   waypoint_upload_client = nh.serviceClient<dji_osdk_ros::MissionWpUpload>(
     "dji_osdk_ros/mission_waypoint_upload");
   waypoint_action_client = nh.serviceClient<dji_osdk_ros::MissionWpAction>(
@@ -470,9 +474,13 @@ int main(int argc, char** argv)
     "dji_osdk_ros/gps_position", 10, &gpsPosCallback);
 
   // Setup variables for use
+  dji_osdk_ros::ObtainControlAuthority obtainCtrlAuthority;
+  obtainCtrlAuthority.request.enable_obtain = true;
   uint8_t wayptPolygonSides;
   int     hotptInitRadius;
   int     responseTimeout = 1;
+
+  obtain_ctrl_authority_client.call(obtainCtrlAuthority);
 
   // Display interactive prompt
   std::cout
