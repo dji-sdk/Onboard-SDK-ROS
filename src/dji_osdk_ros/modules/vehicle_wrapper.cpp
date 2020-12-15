@@ -189,14 +189,7 @@ static T_OsdkOsalHandler osalHandler = {
       ACK::getErrorCodeMessage(ack, __func__);
       return false;
     }
-    ack = vehicle->control->obtainCtrlAuthority(timeout_);
-    if (ACK::getError(ack))
-    {
-        ACK::getErrorCodeMessage(ack, __func__);
-        return false;
-    }
-
-      return true;
+    return true;
   }
 
   bool VehicleWrapper::setEV(const PayloadIndex& payloadIndex, const ExposureCompensation& exposureCompensation)
