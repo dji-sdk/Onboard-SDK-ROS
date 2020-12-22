@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
       case 'a': {
         CameraShutterSpeed cameraShutterSpeed;
         cameraShutterSpeed.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
-        cameraShutterSpeed.request.exposure_mode = static_cast<uint8_t>(ExposureMode::SHUTTER_PRIORITY);
+        cameraShutterSpeed.request.exposure_mode = static_cast<uint8_t>(ExposureMode::EXPOSURE_MANUAL);
         cameraShutterSpeed.request.shutter_speed = static_cast<uint8_t>(ShutterSpeed::SHUTTER_SPEED_1_50);
         camera_set_shutter_speed_client.call(cameraShutterSpeed);
         sleep(2);
@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
       case 'b': {
         CameraAperture cameraAperture;
         cameraAperture.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
-        cameraAperture.request.exposure_mode = static_cast<uint8_t>(ExposureMode::APERTURE_PRIORITY);
+        cameraAperture.request.exposure_mode = static_cast<uint8_t>(ExposureMode::EXPOSURE_MANUAL);
         cameraAperture.request.aperture = static_cast<uint8_t>(Aperture::F_3_DOT_5);
         camera_set_aperture_client.call(cameraAperture);
         sleep(2);
