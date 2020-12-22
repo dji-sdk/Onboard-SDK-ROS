@@ -42,6 +42,7 @@ This update mainly includes:
 |                                      |camera_task_set_ISO                               |                                       |
 |                                      |camera_task_set_focus_point                       |                                       |
 |                                      |camera_task_tap_zoom_point                        |                                       |
+|                                      |camera_task_set_zoom_para                         |                                       |
 |                                      |camera_task_zoom_ctrl                             |                                       |
 |                                      |camera_start_shoot_single_photo                   |                                       |
 |                                      |camera_start_shoot_aeb_photo                      |                                       |

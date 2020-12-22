@@ -1,0 +1,6 @@
+#request
+uint8 payload_index #see enum class PayloadIndex in common_type.h
+float32 factor
+---
+#response
+bool result
