@@ -222,6 +222,42 @@ void flightAnomalySubCallback(const dji_osdk_ros::FlightAnomaly::ConstPtr& fligh
   flight_anomaly_ = *flightAnomaly;
 }
 
+ros::Subscriber batteryStateSub;
+ros::Subscriber imuSub;
+ros::Subscriber flightStatusSub;
+ros::Subscriber gpsHealthSub;
+ros::Subscriber gpsPositionSub;
+ros::Subscriber heightSub;
+ros::Subscriber localPositionSub;
+ros::Subscriber velocitySub;
+ros::Subscriber gimbalAngleSub;
+ros::Subscriber rcDataSub;
+ros::Subscriber attitudeSub;
+
+ros::Subscriber fromMobileDataSub;
+ros::Subscriber fromPayloadDataSub;
+
+ros::Subscriber localFrameRefSub;
+ros::Subscriber timeSyncNmeaSub;
+ros::Subscriber timeSyncGpsUtcSub;
+ros::Subscriber timeSyncFcUtcSub;
+ros::Subscriber timeSyncPpsSourceSub;
+
+ros::Subscriber voPositionSub;
+ros::Subscriber angularRateSub;
+ros::Subscriber accelerationSub;
+ros::Subscriber displayModeSub;
+ros::Subscriber triggerSub;
+
+ros::Subscriber rcConnectionStatusSub;
+ros::Subscriber rtkPositionSub;
+ros::Subscriber rtkVelocitySub;
+ros::Subscriber rtkYawSub;
+ros::Subscriber rtkPositionInfoSub;
+ros::Subscriber rtkYawInfoSub;
+ros::Subscriber rtkConnectionStatusSub;
+ros::Subscriber flightAnomalySub;
+
 int main(int argc ,char** argv)
 {
   ros::init(argc, argv, "telemetry_node");
@@ -229,45 +265,44 @@ int main(int argc ,char** argv)
   bool userSelectBroadcast = false;
   nh.getParam("/vehicle_node/use_broadcast", userSelectBroadcast);
 
-  ros::Subscriber batteryStateSub = nh.subscribe("dji_osdk_ros/battery_state", 10, &batteryStateSubCallback);
-  ros::Subscriber imuSub = nh.subscribe("dji_osdk_ros/imu", 10, &imuSubCallback);
-  ros::Subscriber flightStatusSub = nh.subscribe("dji_osdk_ros/flight_status", 10, &flightStatusSubCallback);
-  ros::Subscriber gpsHealthSub = nh.subscribe("dji_osdk_ros/gps_health", 10, &gpsHealthSubCallback);
-  ros::Subscriber gpsPositionSub = nh.subscribe("dji_osdk_ros/gps_position", 10, &gpsPositionSubCallback);
-  ros::Subscriber heightSub = nh.subscribe("dji_osdk_ros/height_above_takeoff", 10, &heightSubCallback);
-  ros::Subscriber localPositionSub = nh.subscribe("dji_osdk_ros/local_position", 10, &localPositionSubCallback);
-  ros::Subscriber velocitySub = nh.subscribe("dji_osdk_ros/velocity", 10, &velocitySubCallback);
-  ros::Subscriber gimbalAngleSub = nh.subscribe("dji_osdk_ros/gimbal_angle", 10, &gimbalAngleSubCallback);
-  ros::Subscriber rcDataSub = nh.subscribe("dji_osdk_ros/rc", 10, &rcDataCallback);
-  ros::Subscriber attitudeSub = nh.subscribe("dji_osdk_ros/attitude", 10, &attitudeSubCallback);
+  batteryStateSub  = nh.subscribe("dji_osdk_ros/battery_state", 10, &batteryStateSubCallback);
+  imuSub           = nh.subscribe("dji_osdk_ros/imu", 10, &imuSubCallback);
+  flightStatusSub  = nh.subscribe("dji_osdk_ros/flight_status", 10, &flightStatusSubCallback);
+  gpsHealthSub     = nh.subscribe("dji_osdk_ros/gps_health", 10, &gpsHealthSubCallback);
+  gpsPositionSub   = nh.subscribe("dji_osdk_ros/gps_position", 10, &gpsPositionSubCallback);
+  heightSub        = nh.subscribe("dji_osdk_ros/height_above_takeoff", 10, &heightSubCallback);
+  localPositionSub = nh.subscribe("dji_osdk_ros/local_position", 10, &localPositionSubCallback);
+  velocitySub      = nh.subscribe("dji_osdk_ros/velocity", 10, &velocitySubCallback);
+  gimbalAngleSub   = nh.subscribe("dji_osdk_ros/gimbal_angle", 10, &gimbalAngleSubCallback);
+  rcDataSub        = nh.subscribe("dji_osdk_ros/rc", 10, &rcDataCallback);
 
-  ros::Subscriber fromMobileDataSub = nh.subscribe("dji_osdk_ros/from_mobile_data", 10, &fromMobileDataSubCallback);
-  ros::Subscriber fromPayloadDataSub = nh.subscribe("dji_osdk_ros/from_payload_data", 10, &fromPayloadDataSubCallback);
+  fromMobileDataSub  = nh.subscribe("dji_osdk_ros/from_mobile_data", 10, &fromMobileDataSubCallback);
+  fromPayloadDataSub = nh.subscribe("dji_osdk_ros/from_payload_data", 10, &fromPayloadDataSubCallback);
 
   /* only if you call the service of set_local_pos_reference ,the topic can be valid" */
-  ros::Subscriber localFrameRefSub = nh.subscribe("dji_osdk_ros/local_frame_ref", 10, &localFrameRefSubCallback);
-  ros::Subscriber timeSyncNmeaSub = nh.subscribe("dji_osdk_ros/time_sync_nmea_msg", 10, &timeSyncNmeaSubSCallback);
-  ros::Subscriber timeSyncGpsUtcSub = nh.subscribe("dji_osdk_ros/time_sync_gps_utc", 10, &timeSyncGpsUtcSubCallback);
-  ros::Subscriber timeSyncFcUtcSub = nh.subscribe("dji_osdk_ros/time_sync_fc_time_utc", 10, &timeSyncFcUtcSubCallback);
-  ros::Subscriber timeSyncPpsSourceSub = nh.subscribe("dji_osdk_ros/time_sync_pps_source", 10, &timeSyncPpsSourceSubCallback);
+  localFrameRefSub     = nh.subscribe("dji_osdk_ros/local_frame_ref", 10, &localFrameRefSubCallback);
+  timeSyncNmeaSub      = nh.subscribe("dji_osdk_ros/time_sync_nmea_msg", 10, &timeSyncNmeaSubSCallback);
+  timeSyncGpsUtcSub    = nh.subscribe("dji_osdk_ros/time_sync_gps_utc", 10, &timeSyncGpsUtcSubCallback);
+  timeSyncFcUtcSub     = nh.subscribe("dji_osdk_ros/time_sync_fc_time_utc", 10, &timeSyncFcUtcSubCallback);
+  timeSyncPpsSourceSub = nh.subscribe("dji_osdk_ros/time_sync_pps_source", 10, &timeSyncPpsSourceSubCallback);
   
   if (!userSelectBroadcast)
   {
-    ros::Subscriber attitudeSub = nh.subscribe("dji_osdk_ros/attitude", 10, &attitudeSubCallback);
-    ros::Subscriber voPositionSub = nh.subscribe("dji_osdk_ros/vo_position", 10, &voPositionSubCallback);
-    ros::Subscriber angularRateSub = nh.subscribe("dji_osdk_ros/angular_velocity_fused", 10, &angularRateSubSCallback);
-    ros::Subscriber accelerationSub = nh.subscribe("dji_osdk_ros/acceleration_ground_fused", 10, &accelerationSubCallback);
-    ros::Subscriber displayModeSub = nh.subscribe("dji_osdk_ros/display_mode", 10, &displayModeSubCallback);
-    ros::Subscriber triggerSub = nh.subscribe("dji_osdk_ros/trigger_time", 10, &triggerSubCallback);
+    voPositionSub   = nh.subscribe("dji_osdk_ros/vo_position", 10, &voPositionSubCallback);
+    angularRateSub  = nh.subscribe("dji_osdk_ros/angular_velocity_fused", 10, &angularRateSubSCallback);
+    accelerationSub = nh.subscribe("dji_osdk_ros/acceleration_ground_fused", 10, &accelerationSubCallback);
+    displayModeSub  = nh.subscribe("dji_osdk_ros/display_mode", 10, &displayModeSubCallback);
+    triggerSub      = nh.subscribe("dji_osdk_ros/trigger_time", 10, &triggerSubCallback);
 
-    ros::Subscriber rcConnectionStatusSub = nh.subscribe("dji_osdk_ros/rc_connection_status", 10, &rcConnectionStatusSubCallback);
-    ros::Subscriber rtkPositionSub = nh.subscribe("dji_osdk_ros/rtk_position", 10, &rtkPositionSubCallback);
-    ros::Subscriber rtkVelocitySub = nh.subscribe("dji_osdk_ros/rtk_velocity", 10, &rtkVelocitySubCallback);
-    ros::Subscriber rtkYawSub = nh.subscribe("dji_osdk_ros/rtk_yaw", 10, &rtkYawSubCallback);
-    ros::Subscriber rtkPositionInfoSub = nh.subscribe("dji_osdk_ros/rtk_info_position", 10, &rtkPositionInfoSubCallback);
-    ros::Subscriber rtkYawInfoSub = nh.subscribe("dji_osdk_ros/rtk_info_yaw", 10, &rtkYawInfoSubCallback);
-    ros::Subscriber rtkConnectionStatusSub = nh.subscribe("dji_osdk_ros/rtk_connection_status", 10, &rtkConnectionStatusSubCallback);
-    ros::Subscriber flightAnomalySub = nh.subscribe("dji_osdk_ros/flight_anomaly", 10, &flightAnomalySubCallback);
+    rcConnectionStatusSub  = nh.subscribe("dji_osdk_ros/rc_connection_status", 10, &rcConnectionStatusSubCallback);
+    rtkPositionSub         = nh.subscribe("dji_osdk_ros/rtk_position", 10, &rtkPositionSubCallback);
+    rtkVelocitySub         = nh.subscribe("dji_osdk_ros/rtk_velocity", 10, &rtkVelocitySubCallback);
+    rtkYawSub              = nh.subscribe("dji_osdk_ros/rtk_yaw", 10, &rtkYawSubCallback);
+    rtkPositionInfoSub     = nh.subscribe("dji_osdk_ros/rtk_info_position", 10, &rtkPositionInfoSubCallback);
+    rtkYawInfoSub          = nh.subscribe("dji_osdk_ros/rtk_info_yaw", 10, &rtkYawInfoSubCallback);
+    rtkConnectionStatusSub = nh.subscribe("dji_osdk_ros/rtk_connection_status", 10, &rtkConnectionStatusSubCallback);
+    flightAnomalySub       = nh.subscribe("dji_osdk_ros/flight_anomaly", 10, &flightAnomalySubCallback);
+    attitudeSub      = nh.subscribe("dji_osdk_ros/attitude", 10, &attitudeSubCallback);
   }
 
   ros::Duration(1).sleep();
