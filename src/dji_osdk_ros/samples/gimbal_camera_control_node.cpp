@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
         CameraAperture cameraAperture;
         cameraAperture.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         cameraAperture.request.exposure_mode = static_cast<uint8_t>(ExposureMode::EXPOSURE_MANUAL);
-        cameraAperture.request.aperture = static_cast<uint8_t>(Aperture::F_3_DOT_5);
+        cameraAperture.request.aperture = static_cast<uint16_t>(Aperture::F_3_DOT_5);
         camera_set_aperture_client.call(cameraAperture);
         sleep(2);
         break;

@@ -244,24 +244,22 @@ static T_OsdkOsalHandler osalHandler = {
 
     PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
     CameraModule::ExposureMode dataTarget = static_cast<CameraModule::ExposureMode>(exposureMode);
+
     retCode = pm->getExposureModeSync(index, exposureModeGet, 1);
     if (retCode == ErrorCode::SysCommonErr::Success) {
       DSTATUS("Get exposure mode = %d", exposureModeGet);
-      if (dataTarget != exposureModeGet) {
-        DSTATUS("Set exposure mode = %d", dataTarget);
-        retCode = pm->setExposureModeSync(index, dataTarget, 1);
-        if (retCode == ErrorCode::SysCommonErr::Success) {
-          DSTATUS("Set exposure mode successfully.");
-        } else {
-          DERROR("Set exposure mode error. Error code : 0x%lX", retCode);
-          ErrorCode::printErrorCodeMsg(retCode);
-          return false;
-        }
-      } else {
+      if (dataTarget == exposureModeGet)  {
         DSTATUS("The exposure mode is already %d.", dataTarget);
+        return ErrorCode::SysCommonErr::Success;
       }
+    }
+
+    DSTATUS("Set exposure mode = %d", dataTarget);
+    retCode = pm->setExposureModeSync(index, dataTarget, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Set exposure mode successfully.");
     } else {
-      DERROR("Get exposure mode error. Error code : 0x%lX", retCode);
+      DERROR("Set exposure mode error. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
       return false;
     }
@@ -331,7 +329,7 @@ static T_OsdkOsalHandler osalHandler = {
         DSTATUS("Set shutterSpeed = %d", dataTarget);
         retCode = pm->setShutterSpeedSync(index, dataTarget, 1);
         if (retCode == ErrorCode::SysCommonErr::Success) {
-          DSTATUS("Set iso successfully");
+          DSTATUS("Set shutterSpeed successfully");
         } else {
           DERROR("Set shutterSpeed parameter error. Error code : 0x%lX", retCode);
           ErrorCode::printErrorCodeMsg(retCode);
