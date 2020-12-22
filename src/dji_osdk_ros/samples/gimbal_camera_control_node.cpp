@@ -36,6 +36,7 @@
 #include <dji_osdk_ros/CameraISO.h>
 #include <dji_osdk_ros/CameraFocusPoint.h>
 #include <dji_osdk_ros/CameraTapZoomPoint.h>
+#include <dji_osdk_ros/CameraSetZoomPara.h>
 #include <dji_osdk_ros/CameraZoomCtrl.h>
 #include <dji_osdk_ros/CameraStartShootBurstPhoto.h>
 #include <dji_osdk_ros/CameraStartShootAEBPhoto.h>
@@ -58,6 +59,7 @@ int main(int argc, char** argv) {
   auto camera_set_iso_client = nh.serviceClient<CameraISO>("camera_task_set_ISO");
   auto camera_set_focus_point_client = nh.serviceClient<CameraFocusPoint>("camera_task_set_focus_point");
   auto camera_set_tap_zoom_point_client = nh.serviceClient<CameraTapZoomPoint>("camera_task_tap_zoom_point");
+  auto camera_set_zoom_para_client = nh.serviceClient<CameraSetZoomPara>("camera_task_set_zoom_para");
   auto camera_task_zoom_ctrl_client = nh.serviceClient<CameraZoomCtrl>("camera_task_zoom_ctrl");
   auto camera_start_shoot_single_photo_client = nh.serviceClient<CameraStartShootSinglePhoto>(
       "camera_start_shoot_single_photo");
@@ -111,7 +113,7 @@ int main(int argc, char** argv) {
         CameraShutterSpeed cameraShutterSpeed;
         cameraShutterSpeed.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         cameraShutterSpeed.request.exposure_mode = static_cast<uint8_t>(ExposureMode::EXPOSURE_MANUAL);
-        cameraShutterSpeed.request.shutter_speed = static_cast<uint8_t>(ShutterSpeed::SHUTTER_SPEED_1_50);
+        cameraShutterSpeed.request.shutter_speed = static_cast<uint8_t>(ShutterSpeed::SHUTTER_SPEED_1_100);
         camera_set_shutter_speed_client.call(cameraShutterSpeed);
         sleep(2);
         break;
@@ -170,21 +172,23 @@ int main(int argc, char** argv) {
         break;
       }
       case 'g': {
+        CameraSetZoomPara cameraSetZoomPara;
+        cameraSetZoomPara.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_1);
+        cameraSetZoomPara.request.factor = 5;
+        camera_set_zoom_para_client.call(cameraSetZoomPara);
+        sleep(4);
+        cameraSetZoomPara.request.factor = 10;
+        camera_set_zoom_para_client.call(cameraSetZoomPara);
+        sleep(4);
         CameraZoomCtrl cameraZoomCtrl;
         cameraZoomCtrl.request.start_stop = 1;
         cameraZoomCtrl.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_1);
-        cameraZoomCtrl.request.direction = static_cast<uint8_t>(dji_osdk_ros::ZoomDirection::ZOOM_IN);
-        cameraZoomCtrl.request.speed = static_cast<uint8_t>(dji_osdk_ros::ZoomSpeed::NORMAL);
-        camera_task_zoom_ctrl_client.call(cameraZoomCtrl);
-        sleep(4);
-        cameraZoomCtrl.request.start_stop = 0;
-        camera_task_zoom_ctrl_client.call(cameraZoomCtrl);
-        sleep(2);
-        cameraZoomCtrl.request.start_stop = 1;
         cameraZoomCtrl.request.direction = static_cast<uint8_t>(dji_osdk_ros::ZoomDirection::ZOOM_OUT);
         cameraZoomCtrl.request.speed = static_cast<uint8_t>(dji_osdk_ros::ZoomSpeed::FASTEST);
+        camera_task_zoom_ctrl_client.call(cameraZoomCtrl);
         sleep(8);
         cameraZoomCtrl.request.start_stop = 0;
+        cameraZoomCtrl.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_1);
         camera_task_zoom_ctrl_client.call(cameraZoomCtrl);
         break;
       }
@@ -216,7 +220,7 @@ int main(int argc, char** argv) {
         CameraStartShootIntervalPhoto cameraStartShootIntervalPhoto;
         cameraStartShootIntervalPhoto.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         cameraStartShootIntervalPhoto.request.photo_num_conticap = 255;
-        cameraStartShootIntervalPhoto.request.time_interval = 4;
+        cameraStartShootIntervalPhoto.request.time_interval = 3;
         camera_start_shoot_interval_photo_client.call(cameraStartShootIntervalPhoto);
         std::cout << "Sleep 15 seconds" << std::endl;
         sleep(15);

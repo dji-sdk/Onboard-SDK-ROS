@@ -122,6 +122,7 @@ add_service_files(
   CameraISO.srv
   CameraFocusPoint.srv
   CameraTapZoomPoint.srv
+  CameraSetZoomPara.srv
   CameraZoomCtrl.srv
   CameraStartShootSinglePhoto.srv
   CameraStartShootBurstPhoto.srv

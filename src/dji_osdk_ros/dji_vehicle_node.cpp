@@ -214,6 +214,7 @@ void VehicleNode::initService()
   camera_control_set_ISO_server_ = nh_.advertiseService("camera_task_set_ISO", &VehicleNode::cameraSetISOCallback, this);
   camera_control_set_focus_point_server_ = nh_.advertiseService("camera_task_set_focus_point", &VehicleNode::cameraSetFocusPointCallback, this);
   camera_control_set_tap_zoom_point_server_ = nh_.advertiseService("camera_task_tap_zoom_point", &VehicleNode::cameraSetTapZoomPointCallback, this);
+  camera_control_set_zoom_para_server_ = nh_.advertiseService("camera_task_set_zoom_para", &VehicleNode::cameraSetZoomParaCallback, this);
   camera_control_zoom_ctrl_server_ = nh_.advertiseService("camera_task_zoom_ctrl", &VehicleNode::cameraZoomCtrlCallback, this);
   camera_control_start_shoot_single_photo_server_ = nh_.advertiseService("camera_start_shoot_single_photo", &VehicleNode::cameraStartShootSinglePhotoCallback, this);
   camera_control_start_shoot_AEB_photo_server_ = nh_.advertiseService("camera_start_shoot_aeb_photo", &VehicleNode::cameraStartShootAEBPhotoCallback, this);
@@ -1174,6 +1175,18 @@ bool VehicleNode::cameraSetTapZoomPointCallback(CameraTapZoomPoint::Request& req
     return false;
   }
   response.result = ptr_wrapper_->setTapZoomPoint(static_cast<PayloadIndex>(request.payload_index),request.multiplier, request.x, request.y);
+  return response.result;
+}
+
+bool VehicleNode::cameraSetZoomParaCallback(CameraSetZoomPara::Request& request, CameraSetZoomPara::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->setZoom(static_cast<PayloadIndex>(request.payload_index), request.factor);
   return response.result;
 }
 

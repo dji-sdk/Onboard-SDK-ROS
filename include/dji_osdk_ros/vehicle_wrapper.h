@@ -76,6 +76,7 @@ namespace dji_osdk_ros
       bool setAperture(const PayloadIndex& payloadIndex, const Aperture& aperture);
       bool setFocusPoint(const PayloadIndex& payloadIndex,const float& x, const float& y);
       bool setTapZoomPoint(const PayloadIndex& payloadIndex,const uint8_t& multiplier, const float& x,const float& y);
+      bool setZoom(const PayloadIndex& payloadIndex, float factor);
       bool startZoom(const PayloadIndex& payloadIndex,const uint8_t& direction, const uint8_t& speed);
       bool stopZoom(const PayloadIndex& payloadIndex);
       bool startShootSinglePhoto(const PayloadIndex& payloadIndex);

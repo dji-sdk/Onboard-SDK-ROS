@@ -71,6 +71,7 @@
 #include <dji_osdk_ros/CameraISO.h>
 #include <dji_osdk_ros/CameraFocusPoint.h>
 #include <dji_osdk_ros/CameraTapZoomPoint.h>
+#include <dji_osdk_ros/CameraSetZoomPara.h>
 #include <dji_osdk_ros/CameraZoomCtrl.h>
 #include <dji_osdk_ros/CameraStartShootBurstPhoto.h>
 #include <dji_osdk_ros/CameraStartShootAEBPhoto.h>
@@ -198,6 +199,7 @@ namespace dji_osdk_ros
       ros::ServiceServer camera_control_set_ISO_server_;
       ros::ServiceServer camera_control_set_focus_point_server_;
       ros::ServiceServer camera_control_set_tap_zoom_point_server_;
+      ros::ServiceServer camera_control_set_zoom_para_server_;
       ros::ServiceServer camera_control_zoom_ctrl_server_;
       ros::ServiceServer camera_control_start_shoot_single_photo_server_;
       ros::ServiceServer camera_control_start_shoot_burst_photo_server_;
@@ -325,6 +327,7 @@ namespace dji_osdk_ros
       bool cameraSetISOCallback(CameraISO::Request& request, CameraISO::Response& response);
       bool cameraSetFocusPointCallback(CameraFocusPoint::Request& request, CameraFocusPoint::Response& response);
       bool cameraSetTapZoomPointCallback(CameraTapZoomPoint::Request& request, CameraTapZoomPoint::Response& response);
+      bool cameraSetZoomParaCallback(CameraSetZoomPara::Request& request, CameraSetZoomPara::Response& response);
       bool cameraZoomCtrlCallback(CameraZoomCtrl::Request& request, CameraZoomCtrl::Response& response);
       bool cameraStartShootSinglePhotoCallback(CameraStartShootSinglePhoto::Request& request, CameraStartShootSinglePhoto::Response& response);
       bool cameraStartShootAEBPhotoCallback(CameraStartShootAEBPhoto::Request& request, CameraStartShootAEBPhoto::Response& response);

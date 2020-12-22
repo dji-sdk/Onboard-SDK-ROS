@@ -206,26 +206,23 @@ static T_OsdkOsalHandler osalHandler = {
     retCode = pm->getExposureCompensationSync(index, evGet, 1);
     if (retCode == ErrorCode::SysCommonErr::Success) {
       DSTATUS("Get ev = %d", evGet);
-      if (dataTarget != evGet) {
-        DSTATUS("Set evTarget = %d", dataTarget);
-        retCode = pm->setExposureCompensationSync(index, dataTarget, 1);
-        if (retCode == ErrorCode::SysCommonErr::Success) {
-          DSTATUS("Set ev value successfully.");
-        } else {
-          DERROR("Set ev parameter error. Error code : 0x%lX", retCode);
-          ErrorCode::printErrorCodeMsg(retCode);
-          DERROR(
-              "In order to use this function, the camera exposure mode should be "
-              "set to be PROGRAM_AUTO, SHUTTER_PRIORITY or APERTURE_PRIORITY "
-              "first");
-          return false;
-        }
-      } else {
+      if (dataTarget == evGet) {
         DSTATUS("The ev value is already %d.", dataTarget);
+        return true;
       }
+    }
+
+    DSTATUS("Set evTarget = %d", dataTarget);
+    retCode = pm->setExposureCompensationSync(index, dataTarget, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Set ev value successfully.");
     } else {
-      DERROR("Get ev error. Error code : 0x%lX", retCode);
+      DERROR("Set ev parameter error. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
+      DERROR(
+        "In order to use this function, the camera exposure mode should be "
+        "set to be PROGRAM_AUTO, SHUTTER_PRIORITY or APERTURE_PRIORITY "
+        "first");
       return false;
     }
 
@@ -250,7 +247,7 @@ static T_OsdkOsalHandler osalHandler = {
       DSTATUS("Get exposure mode = %d", exposureModeGet);
       if (dataTarget == exposureModeGet)  {
         DSTATUS("The exposure mode is already %d.", dataTarget);
-        return ErrorCode::SysCommonErr::Success;
+        return true;
       }
     }
 
@@ -283,26 +280,23 @@ static T_OsdkOsalHandler osalHandler = {
     retCode = pm->getISOSync(index, isoGet, 1);
     if (retCode == ErrorCode::SysCommonErr::Success) {
       DSTATUS("Get iso = %d", isoGet);
-      if (dataTarget != isoGet) {
-        DSTATUS("Set iso = %d", dataTarget);
-        retCode = pm->setISOSync(index, dataTarget, 1);
-        if (retCode == ErrorCode::SysCommonErr::Success) {
-          DSTATUS("Set iso successfully");
-        } else {
-          DERROR("Set ISO parameter error. Error code : 0x%lX", retCode);
-          ErrorCode::printErrorCodeMsg(retCode);
-          DERROR(
-              "For the X5, X5R, X4S and X5S, the ISO value can be set for all "
-              "modes. For the other cameras, the ISO value can only be set when "
-              "the camera exposure mode is in Manual mode.");
-          return false;
-        }
-      } else {
+      if (dataTarget == isoGet) {
         DSTATUS("The iso parameter is already %d.", dataTarget);
+        return true;
       }
+    }
+
+    DSTATUS("Set iso = %d", dataTarget);
+    retCode = pm->setISOSync(index, dataTarget, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Set iso successfully");
     } else {
-      DERROR("Get iso error. Error code : 0x%lX", retCode);
+      DERROR("Set ISO parameter error. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
+      DERROR(
+        "For the X5, X5R, X4S and X5S, the ISO value can be set for all "
+        "modes. For the other cameras, the ISO value can only be set when "
+        "the camera exposure mode is in Manual mode.");
       return false;
     }
 
@@ -325,27 +319,24 @@ static T_OsdkOsalHandler osalHandler = {
     retCode = pm->getShutterSpeedSync(index, shutterSpeedGet, 1);
     if (retCode == ErrorCode::SysCommonErr::Success) {
       DSTATUS("Get shutterSpeed = %d", shutterSpeedGet);
-      if (dataTarget != shutterSpeedGet) {
-        DSTATUS("Set shutterSpeed = %d", dataTarget);
-        retCode = pm->setShutterSpeedSync(index, dataTarget, 1);
-        if (retCode == ErrorCode::SysCommonErr::Success) {
-          DSTATUS("Set shutterSpeed successfully");
-        } else {
-          DERROR("Set shutterSpeed parameter error. Error code : 0x%lX", retCode);
-          ErrorCode::printErrorCodeMsg(retCode);
-          DERROR(
-              "The shutter speed can be set only when the camera exposure mode "
-              "is Shutter mode or Manual mode. The shutter speed should not be "
-              "set slower than the video frame rate when the camera's mode is "
-              "RECORD_VIDEO.");
-          return false;
-        }
-      } else {
+      if (dataTarget == shutterSpeedGet) {
         DSTATUS("The shutterSpeed is already %d.", dataTarget);
+        return true;
       }
+    }
+
+    DSTATUS("Set shutterSpeed = %d", dataTarget);
+    retCode = pm->setShutterSpeedSync(index, dataTarget, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Set iso successfully");
     } else {
-      DERROR("Get shutterSpeed error. Error code : 0x%lX", retCode);
+      DERROR("Set shutterSpeed parameter error. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
+      DERROR(
+        "The shutter speed can be set only when the camera exposure mode "
+        "is Shutter mode or Manual mode. The shutter speed should not be "
+        "set slower than the video frame rate when the camera's mode is "
+        "RECORD_VIDEO.");
       return false;
     }
 
@@ -367,27 +358,24 @@ static T_OsdkOsalHandler osalHandler = {
     retCode = pm->getApertureSync(index, apertureGet, 1);
     if (retCode == ErrorCode::SysCommonErr::Success) {
       DSTATUS("Get aperture = %d", apertureGet);
-      if (dataTarget != apertureGet) {
-        DSTATUS("Set aperture = %d", dataTarget);
-        retCode = pm->setApertureSync(index, dataTarget, 1);
-        if (retCode == ErrorCode::SysCommonErr::Success) {
-          DSTATUS("Set aperture successfully");
-        } else {
-          DERROR("Set aperture parameter error. Error code : 0x%lX", retCode);
-          ErrorCode::printErrorCodeMsg(retCode);
-          DERROR(
-              "In order to use this function, the exposure mode ExposureMode "
-              "must be in MANUAL or APERTURE_PRIORITY. Supported only by the X5, "
-              "X5R, X4S, X5S camera.");
-          return false;
-        }
-      } else {
+      if (dataTarget == apertureGet) {
         DSTATUS("The aperture is already %d.", dataTarget);
+        return true;
       }
+    }
+
+    DSTATUS("Set aperture = %d", dataTarget);
+    retCode = pm->setApertureSync(index, dataTarget, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Set aperture successfully");
     } else {
-      DERROR("Get aperture error. Error code : 0x%lX", retCode);
+      DERROR("Set aperture parameter error. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
-      return false;
+      DERROR(
+        "In order to use this function, the exposure mode ExposureMode "
+        "must be in MANUAL or APERTURE_PRIORITY. Supported only by the X5, "
+        "X5R, X4S, X5S camera.");
+        return false;
     }
 
     return true;
@@ -425,6 +413,7 @@ static T_OsdkOsalHandler osalHandler = {
             "It's should be attention that X4S will keep focus point as (0.5,0.5) "
             "all the time, the setting of focus point to X4S will quickly replaced "
             "by (0.5, 0.5).");
+        return false;
       }
     } else {
       DERROR("Set focus mode parameter error. Error code : 0x%lX", retCode);
@@ -471,7 +460,7 @@ static T_OsdkOsalHandler osalHandler = {
     if (retCode != ErrorCode::SysCommonErr::Success) {
       DERROR("Set tap zoom multiplier fail. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
-      DERROR("It is only supported Z30 camera.");
+      DERROR("It is only supported Z30 camera or H20/H20T zoom mode.");
       return false;
     }
 
@@ -481,13 +470,55 @@ static T_OsdkOsalHandler osalHandler = {
     if (retCode != ErrorCode::SysCommonErr::Success) {
       DERROR("Set tap zoom target fail. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
-      DERROR("It is only supported Z30 camera.");
+      DERROR("It is only supported Z30 camera or H20/H20T zoom mode.");
       return false;
     } else {
       DSTATUS(
           "tap zoom at target (%0.2f, %0.2f) successfully, need several seconds "
           "to zoom.",
           x, y);
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::setZoom(const PayloadIndex& payloadIndex,  float factor)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+    DERROR("vehicle or cameraManager is a null value.");
+    return ErrorCode::SysCommonErr::InstInitParamInvalid;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+
+    DSTATUS("Attention : It is only supported by X5, X5R and X5S camera on Osmo with"
+            "lens Olympus M.Zuiko ED 14-42mm f/3.5-5.6 EZ, Z3 camera, Z30 camera.");
+
+    float curFactor = 0;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    retCode = pm->getOpticalZoomFactorSync(index, curFactor, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Get zoom parameter fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      DSTATUS(
+          "Attention : It is only supported by X5, X5R and X5S camera on Osmo with"
+          "lens Olympus M.Zuiko ED 14-42mm f/3.5-5.6 EZ, Z3 camera, Z30 camera.");
+      return false;
+    }
+    DSTATUS("Got the current optical zoom factor : %0.1f", curFactor);
+    if (curFactor != factor) {
+      DSTATUS("Set the current optical zoom factor as %0.1f", factor);
+      retCode = pm->setOpticalZoomFactorSync(index, factor, 1);
+
+      if (retCode != ErrorCode::SysCommonErr::Success) {
+        DERROR("Set zoom parameter fail. Error code : 0x%lX", retCode);
+        ErrorCode::printErrorCodeMsg(retCode);
+        return false;
+      }
+      return true;
+    } else {
+      DSTATUS("The current zoom factor is already : %0.2f", factor);
+      return true;
     }
 
     return true;
@@ -558,20 +589,18 @@ static T_OsdkOsalHandler osalHandler = {
       return false;
     }
 
-    /*! @TODO XT* and Z30 don't support set shoot-photo mode. To fix it in the
-     * future */
-    /*!< set shoot-photo mode
+  /*! @TODO XT* and Z30 don't support set shoot-photo mode. To fix it in the
+    * future */
+    /*!< set shoot-photo mode */
     DSTATUS("set shoot-photo mode as SINGLE");
-    retCode =
-        pm->setShootPhotoModeSync(index, CameraModule::ShootPhotoMode::SINGLE, 1);
+    retCode = pm->setShootPhotoModeSync(index, CameraModule::ShootPhotoMode::SINGLE, 1);
     if (retCode != ErrorCode::SysCommonErr::Success) {
       DERROR("Set shoot-photo mode as SINGLE fail. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
       DERROR("If the camera is XT, XT2, or XTS, set shoot-photo mode interface is"
-             "temporarily not supported.");
-      return retCode;
+            "temporarily not supported.");
+      return false;
     }
-    */
 
     /*! wait the APP change the shoot-photo mode display */
     Platform::instance().taskSleepMs(500);
