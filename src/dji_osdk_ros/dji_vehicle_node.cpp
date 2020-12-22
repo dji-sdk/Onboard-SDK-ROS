@@ -104,7 +104,7 @@ bool VehicleNode::initGimbalModule()
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   /*! init gimbal modules for gimbalManager */
@@ -144,7 +144,7 @@ bool VehicleNode::initCameraModule()
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   /*! init camera modules for cameraManager */
@@ -385,7 +385,7 @@ bool VehicleNode::initTopic()
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   Vehicle* vehicle = ptr_wrapper_->getVehicle();
@@ -479,7 +479,7 @@ bool VehicleNode::initDataSubscribeFromFC()
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   ACK::ErrorCode ack = ptr_wrapper_->verify(WAIT_TIMEOUT);
@@ -757,7 +757,7 @@ bool VehicleNode::stereo240pSubscriptionCallback(dji_osdk_ros::Stereo240pSubscri
   if(ptr_wrapper_ == nullptr)
   {
       ROS_ERROR_STREAM("Vehicle modules is nullptr");
-      return true;
+      return false;
   }
 
   if (request.unsubscribe_240p == 1)
@@ -810,7 +810,7 @@ VehicleNode::stereoDepthSubscriptionCallback(dji_osdk_ros::StereoDepthSubscripti
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   if (request.unsubscribe_240p == 1)
@@ -855,7 +855,7 @@ bool VehicleNode::stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscript
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   if (request.unsubscribe_vga == 1)
@@ -933,7 +933,7 @@ bool VehicleNode::getDroneTypeCallback(dji_osdk_ros::GetDroneType::Request &requ
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   if (ptr_wrapper_->isM100())
@@ -972,7 +972,7 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   switch (request.task)
@@ -1063,7 +1063,7 @@ bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalActio
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = false;
   ROS_INFO("Current gimbal %d, angle (p,r,y) = (%0.2f, %0.2f, %0.2f)", static_cast<int>(request.payload_index),
@@ -1100,20 +1100,14 @@ bool VehicleNode::cameraSetEVCallback(CameraEV::Request& request, CameraEV::Resp
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
-  }
-  response.result = false;
-  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
-  {
-    return false;
-  }
-  if (ptr_wrapper_->setEV(static_cast<PayloadIndex>(request.payload_index),
-                          static_cast<ExposureCompensation>(request.exposure_compensation)))
-  {
     return false;
   }
   response.result = true;
-  return true;
+  response.result &= ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index),
+                                                   static_cast<ExposureMode>(request.exposure_mode));
+  response.result &= ptr_wrapper_->setEV(static_cast<PayloadIndex>(request.payload_index),
+                                         static_cast<ExposureCompensation>(request.exposure_compensation));
+  return response.result;
 }
 
 bool VehicleNode::cameraSetShutterSpeedCallback(CameraShutterSpeed::Request& request, CameraShutterSpeed::Response& response)
@@ -1121,19 +1115,14 @@ bool VehicleNode::cameraSetShutterSpeedCallback(CameraShutterSpeed::Request& req
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
-  }
-  response.result = false;
-  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
-  {
-    return false;
-  }
-  if (ptr_wrapper_->setShutterSpeed(static_cast<PayloadIndex>(request.payload_index), static_cast<ShutterSpeed>(request.shutter_speed)))
-  {
     return false;
   }
   response.result = true;
-  return true;
+  response.result &= ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index),
+                                                   static_cast<ExposureMode>(request.exposure_mode));
+  response.result &= ptr_wrapper_->setShutterSpeed(static_cast<PayloadIndex>(request.payload_index),
+                                                   static_cast<ShutterSpeed>(request.shutter_speed));
+  return response.result;
 }
 
 bool VehicleNode::cameraSetApertureCallback(CameraAperture::Request& request, CameraAperture::Response& response)
@@ -1141,19 +1130,14 @@ bool VehicleNode::cameraSetApertureCallback(CameraAperture::Request& request, Ca
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
-  }
-  response.result = false;
-  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
-  {
-    return false;
-  }
-  if (ptr_wrapper_->setAperture(static_cast<PayloadIndex>(request.payload_index), static_cast<Aperture>(request.aperture)))
-  {
     return false;
   }
   response.result = true;
-  return true;
+  response.result &= ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index),
+                                                   static_cast<ExposureMode>(request.exposure_mode));
+  response.result &= ptr_wrapper_->setAperture(static_cast<PayloadIndex>(request.payload_index),
+                                               static_cast<Aperture>(request.aperture));
+  return response.result;
 }
 
 bool VehicleNode::cameraSetISOCallback(CameraISO::Request& request, CameraISO::Response& response)
@@ -1161,19 +1145,14 @@ bool VehicleNode::cameraSetISOCallback(CameraISO::Request& request, CameraISO::R
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
-  }
-  response.result = false;
-  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
-  {
-    return false;
-  }
-  if (ptr_wrapper_->setISO(static_cast<PayloadIndex>(request.payload_index), static_cast<ISO>(request.iso_data)))
-  {
     return false;
   }
   response.result = true;
-  return true;
+  response.result &= ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index),
+                                                   static_cast<ExposureMode>(request.exposure_mode));
+  response.result &= ptr_wrapper_->setISO(static_cast<PayloadIndex>(request.payload_index),
+                                          static_cast<ISO>(request.iso_data));
+  return response.result;
 }
 
 bool VehicleNode::cameraSetFocusPointCallback(CameraFocusPoint::Request& request, CameraFocusPoint::Response& response)
@@ -1181,7 +1160,7 @@ bool VehicleNode::cameraSetFocusPointCallback(CameraFocusPoint::Request& request
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->setFocusPoint(static_cast<PayloadIndex>(request.payload_index), request.x, request.y);
   return response.result;
@@ -1192,7 +1171,7 @@ bool VehicleNode::cameraSetTapZoomPointCallback(CameraTapZoomPoint::Request& req
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->setTapZoomPoint(static_cast<PayloadIndex>(request.payload_index),request.multiplier, request.x, request.y);
   return response.result;
@@ -1203,7 +1182,7 @@ bool VehicleNode::cameraZoomCtrlCallback(CameraZoomCtrl::Request& request, Camer
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   if (request.start_stop == 1)
   {
@@ -1221,7 +1200,7 @@ bool VehicleNode::cameraStartShootSinglePhotoCallback(CameraStartShootSinglePhot
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->startShootSinglePhoto(static_cast<PayloadIndex>(request.payload_index));
   return response.result;
@@ -1232,7 +1211,7 @@ bool VehicleNode::cameraStartShootAEBPhotoCallback(CameraStartShootAEBPhoto::Req
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->startShootAEBPhoto(static_cast<PayloadIndex>(request.payload_index), static_cast<PhotoAEBCount>(request.photo_aeb_count));
   return response.result;
@@ -1243,7 +1222,7 @@ bool VehicleNode::cameraStartShootBurstPhotoCallback(CameraStartShootBurstPhoto:
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->startShootBurstPhoto(static_cast<PayloadIndex>(request.payload_index),static_cast<PhotoBurstCount>(request.photo_burst_count));
   return response.result;
@@ -1254,7 +1233,7 @@ bool VehicleNode::cameraStartShootIntervalPhotoCallback(CameraStartShootInterval
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   PhotoIntervalData photoIntervalData;
   photoIntervalData.photoNumConticap = request.photo_num_conticap;
@@ -1268,7 +1247,7 @@ bool VehicleNode::cameraStopShootPhotoCallback(CameraStopShootPhoto::Request& re
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->shootPhotoStop(static_cast<PayloadIndex>(request.payload_index));
   return response.result;
@@ -1279,7 +1258,7 @@ bool VehicleNode::cameraRecordVideoActionCallback(CameraRecordVideoAction::Reque
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   if(request.start_stop == 1)
   {
@@ -1298,7 +1277,7 @@ bool VehicleNode::mfioCtrlCallback(MFIO::Request& request, MFIO::Response& respo
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   if(request.mode == MFIO::Request::MODE_PWM_OUT ||
@@ -1332,7 +1311,7 @@ bool VehicleNode::setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request,
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   if(request.altitude < 5)
   {
@@ -1357,7 +1336,7 @@ bool VehicleNode::setHomeCallback(SetNewHomePoint::Request& request, SetNewHomeP
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   if(ptr_wrapper_->setNewHomeLocation() == true)
@@ -1410,7 +1389,7 @@ bool VehicleNode::setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::R
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   if(ptr_wrapper_->setAvoid(request.enable) == true)
@@ -1431,7 +1410,7 @@ bool VehicleNode::setUpwardsAvoidCallback(AvoidEnable::Request& request, AvoidEn
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   if(ptr_wrapper_->setUpwardsAvoidance(request.enable) == true)
@@ -1461,7 +1440,7 @@ bool VehicleNode::obtainReleaseControlAuthorityCallback(ObtainControlAuthority::
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   response.result = ptr_wrapper_->obtainReleaseCtrlAuthority(request.enable_obtain, FLIGHT_CONTROL_WAIT_TIMEOUT);
