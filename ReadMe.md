@@ -158,7 +158,7 @@ You will need to add an udev file to allow your system to obtain permission and 
 >$sudo vi DJIDevice.rules
 
 Then add these content into DJIDevice.rules.
->$SUBSYSTEM=="usb", ATTRS{idVendor}=="2ca3", MODE="0666"
+>SUBSYSTEM=="usb", ATTRS{idVendor}=="2ca3", MODE="0666"
 
 At last,you need to reboot your computer to make sure it works.
 
