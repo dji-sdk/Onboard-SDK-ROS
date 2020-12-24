@@ -140,6 +140,8 @@ __note:we only test on kinetic,but it should be support on other version.__
 > $sudo apt install ffmpeg  
 #### libusb-1.0-0-dev
 > $sudo apt install libusb-1.0-0-dev
+#### libsdl2-dev
+> $sudo apt install libsdl2-dev
 #### opencv3.x
 We use OpenCV to show images from camera stream. Download and install instructions can be found at: http://opencv.org. Tested with OpenCV 3.3.0.Suggest using 3.3.0+.
 #### stereo-vision function
