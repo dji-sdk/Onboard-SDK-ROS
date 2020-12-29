@@ -223,6 +223,12 @@ void VehicleNode::initService()
   camera_control_stop_shoot_photo_server_ = nh_.advertiseService("camera_stop_shoot_photo", &VehicleNode::cameraStopShootPhotoCallback, this);
   camera_control_record_video_action_server_ = nh_.advertiseService("camera_record_video_action", &VehicleNode::cameraRecordVideoActionCallback, this);
 
+  /* @brief
+   * get whole battery info server
+   * @platforms M210V2
+   */
+  get_whole_battery_info_server_ = nh_.advertiseService("get_whole_battery_info", &VehicleNode::getWholeBatteryInfoCallback, this);
+
   /*! @brief
    *  mfio control server
    *  @platforms null
@@ -1282,6 +1288,51 @@ bool VehicleNode::cameraRecordVideoActionCallback(CameraRecordVideoAction::Reque
     response.result = ptr_wrapper_->stopRecordVideo(static_cast<PayloadIndex>(request.payload_index));
   }
   return response.result;
+}
+
+bool VehicleNode::getWholeBatteryInfoCallback(GetWholeBatteryInfo::Request& request,GetWholeBatteryInfo::Response& response)
+{
+  ROS_INFO_STREAM("get Whole Battery Info callback");
+  if (ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  DJI::OSDK::BatteryWholeInfo batteryWholeInfo;
+  if (ptr_wrapper_->getBatteryWholeInfo(batteryWholeInfo))
+  {
+    response.battery_whole_info.remainFlyTime  = batteryWholeInfo.remainFlyTime;
+    response.battery_whole_info.goHomeNeedTime = batteryWholeInfo.goHomeNeedTime ;
+    response.battery_whole_info.landNeedTime   = batteryWholeInfo.landNeedTime;
+    response.battery_whole_info.goHomeNeedCapacity = batteryWholeInfo.goHomeNeedCapacity;
+    response.battery_whole_info.landNeedCapacity = batteryWholeInfo.landNeedCapacity ;
+    response.battery_whole_info.safeFlyRadius = batteryWholeInfo.safeFlyRadius;
+    response.battery_whole_info.capacityConsumeSpeed = batteryWholeInfo.capacityConsumeSpeed;
+    response.battery_whole_info.goHomeCountDownState = batteryWholeInfo.goHomeCountDownState;
+    response.battery_whole_info.gohomeCountDownvalue = batteryWholeInfo.gohomeCountDownvalue;
+    response.battery_whole_info.voltage = batteryWholeInfo.voltage;
+    response.battery_whole_info.batteryCapacityPercentage = batteryWholeInfo.batteryCapacityPercentage;
+    response.battery_whole_info.lowBatteryAlarmThreshold = batteryWholeInfo.lowBatteryAlarmThreshold;
+    response.battery_whole_info.lowBatteryAlarmEnable = batteryWholeInfo.lowBatteryAlarmEnable;
+    response.battery_whole_info.seriousLowBatteryAlarmThreshold = batteryWholeInfo.seriousLowBatteryAlarmThreshold;
+    response.battery_whole_info.seriousLowBatteryAlarmEnable = batteryWholeInfo.seriousLowBatteryAlarmEnable;
+
+    response.battery_whole_info.batteryState.isFakeSingleBatteryMode = batteryWholeInfo.batteryState.isFakeSingleBatteryMode;
+    response.battery_whole_info.batteryState.isSingleBatteryMode     = batteryWholeInfo.batteryState.isSingleBatteryMode;
+    response.battery_whole_info.batteryState.batteryNotReady         = batteryWholeInfo.batteryState.batteryNotReady;
+    response.battery_whole_info.batteryState.voltageNotSafety        = batteryWholeInfo.batteryState.voltageNotSafety;
+    response.battery_whole_info.batteryState.veryLowVoltageAlarm     = batteryWholeInfo.batteryState.veryLowVoltageAlarm;
+    response.battery_whole_info.batteryState.LowVoltageAlarm         = batteryWholeInfo.batteryState.LowVoltageAlarm;
+    response.battery_whole_info.batteryState.seriousLowCapacityAlarm = batteryWholeInfo.batteryState.seriousLowCapacityAlarm;
+    response.battery_whole_info.batteryState.LowCapacityAlarm        = batteryWholeInfo.batteryState.LowCapacityAlarm;
+  }
+  else
+  {
+    DSTATUS("get Battery Whole Info false!");
+    return false;
+  }
+  return true;
 }
 
 bool VehicleNode::mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response)

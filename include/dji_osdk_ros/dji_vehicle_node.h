@@ -96,6 +96,8 @@
 #include <dji_osdk_ros/MissionHpUpdateYawRate.h>
 #include <dji_osdk_ros/MissionHpResetYaw.h>
 #include <dji_osdk_ros/MissionHpUpdateRadius.h>
+//battery services
+#include <dji_osdk_ros/GetWholeBatteryInfo.h>
 
 //waypointV2.0 services
 #include <dji_osdk_ros/InitWaypointV2Setting.h>
@@ -207,6 +209,10 @@ namespace dji_osdk_ros
       ros::ServiceServer camera_control_start_shoot_interval_photo_server_;
       ros::ServiceServer camera_control_stop_shoot_photo_server_;
       ros::ServiceServer camera_control_record_video_action_server_;
+
+      /*! for battery */
+      ros::ServiceServer get_single_battery_dynamic_info_server_;
+      ros::ServiceServer get_whole_battery_info_server_;
       /*! for mfio */
       ros::ServiceServer mfio_control_server_;
       /*! for mobile device */
@@ -335,6 +341,8 @@ namespace dji_osdk_ros
       bool cameraStartShootIntervalPhotoCallback(CameraStartShootIntervalPhoto::Request& request, CameraStartShootIntervalPhoto::Response& response);
       bool cameraStopShootPhotoCallback(CameraStopShootPhoto::Request& request, CameraStopShootPhoto::Response& response);
       bool cameraRecordVideoActionCallback(CameraRecordVideoAction::Request& request, CameraRecordVideoAction::Response& response);
+      /*! for battery info */
+      bool getWholeBatteryInfoCallback(GetWholeBatteryInfo::Request& request,GetWholeBatteryInfo::Response& reponse);
       /*! for mfio conrol */
       bool mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response);
       /*! for mobile device */

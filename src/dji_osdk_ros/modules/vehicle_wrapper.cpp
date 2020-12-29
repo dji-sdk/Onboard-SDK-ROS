@@ -1896,6 +1896,21 @@ static T_OsdkOsalHandler osalHandler = {
     return true;
   }
 
+  bool VehicleWrapper::getBatteryWholeInfo(DJI::OSDK::BatteryWholeInfo& batteryWholeInfo)
+  {
+    if (!vehicle) {
+      DERROR("vehicle is a null value");
+      return false;
+    }
+    bool result = true;
+
+    result &= vehicle->djiBattery->subscribeBatteryWholeInfo(true);
+    OsdkOsal_TaskSleepMs(500);
+    result &= vehicle->djiBattery->getBatteryWholeInfo(batteryWholeInfo);
+
+    return result;
+  }
+
   uint8_t VehicleWrapper::outputMFIO(uint8_t mode, uint8_t channel, uint32_t init_on_time_us, uint16_t freq, bool block, uint8_t gpio_set_value)
   {
     int responseTimeout = 1;
