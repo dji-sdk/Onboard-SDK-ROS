@@ -1,4 +1,4 @@
-uint16  remainFlyTime
+uint16  remainFlyTime             # remain fly time(s)
 uint16  goHomeNeedTime            # Time required for the gohome flight (s)
 uint16  landNeedTime              # Time required for the land flight (s).max value:100*/
 uint16  goHomeNeedCapacity        # Capacity required for the gohome flight (%).max value:100*/
@@ -16,4 +16,4 @@ uint8   batteryCapacityPercentage # uint:%.max value:100
 uint8   lowBatteryAlarmThreshold
 uint8   lowBatteryAlarmEnable
 uint8   seriousLowBatteryAlarmThreshold
-uint8   seriousLowBatteryAlarmEnable
+uint8   seriousLowBatteryAlarmEnable  

@@ -98,6 +98,7 @@
 #include <dji_osdk_ros/MissionHpUpdateRadius.h>
 //battery services
 #include <dji_osdk_ros/GetWholeBatteryInfo.h>
+#include <dji_osdk_ros/GetSingleBatteryDynamicInfo.h>
 
 //waypointV2.0 services
 #include <dji_osdk_ros/InitWaypointV2Setting.h>
@@ -343,6 +344,7 @@ namespace dji_osdk_ros
       bool cameraRecordVideoActionCallback(CameraRecordVideoAction::Request& request, CameraRecordVideoAction::Response& response);
       /*! for battery info */
       bool getWholeBatteryInfoCallback(GetWholeBatteryInfo::Request& request,GetWholeBatteryInfo::Response& reponse);
+      bool getSingleBatteryDynamicInfoCallback(GetSingleBatteryDynamicInfo::Request& request, GetSingleBatteryDynamicInfo::Response& response);
       /*! for mfio conrol */
       bool mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response);
       /*! for mobile device */

@@ -107,6 +107,8 @@ add_message_files(
   VOPosition.msg
   BatteryState.msg
   BatteryWholeInfo.msg
+  SmartBatteryState.msg
+  SmartBatteryDynamicInfo.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -133,6 +135,7 @@ add_service_files(
   CameraStopShootPhoto.srv
   CameraRecordVideoAction.srv
   GetWholeBatteryInfo.srv
+  GetSingleBatteryDynamicInfo.srv
   MFIO.srv
   SetGoHomeAltitude.srv
   SetNewHomePoint.srv

@@ -228,7 +228,7 @@ void VehicleNode::initService()
    * @platforms M210V2
    */
   get_whole_battery_info_server_ = nh_.advertiseService("get_whole_battery_info", &VehicleNode::getWholeBatteryInfoCallback, this);
-
+  get_single_battery_dynamic_info_server_ = nh_.advertiseService("get_single_battery_dynamic_info", &VehicleNode::getSingleBatteryDynamicInfoCallback, this);
   /*! @brief
    *  mfio control server
    *  @platforms null
@@ -1318,9 +1318,6 @@ bool VehicleNode::getWholeBatteryInfoCallback(GetWholeBatteryInfo::Request& requ
     response.battery_whole_info.seriousLowBatteryAlarmThreshold = batteryWholeInfo.seriousLowBatteryAlarmThreshold;
     response.battery_whole_info.seriousLowBatteryAlarmEnable = batteryWholeInfo.seriousLowBatteryAlarmEnable;
 
-    response.battery_whole_info.batteryState.isFakeSingleBatteryMode = batteryWholeInfo.batteryState.isFakeSingleBatteryMode;
-    response.battery_whole_info.batteryState.isSingleBatteryMode     = batteryWholeInfo.batteryState.isSingleBatteryMode;
-    response.battery_whole_info.batteryState.batteryNotReady         = batteryWholeInfo.batteryState.batteryNotReady;
     response.battery_whole_info.batteryState.voltageNotSafety        = batteryWholeInfo.batteryState.voltageNotSafety;
     response.battery_whole_info.batteryState.veryLowVoltageAlarm     = batteryWholeInfo.batteryState.veryLowVoltageAlarm;
     response.battery_whole_info.batteryState.LowVoltageAlarm         = batteryWholeInfo.batteryState.LowVoltageAlarm;
@@ -1329,9 +1326,51 @@ bool VehicleNode::getWholeBatteryInfoCallback(GetWholeBatteryInfo::Request& requ
   }
   else
   {
-    DSTATUS("get Battery Whole Info false!");
+    DSTATUS("get Battery Whole Info failed!");
     return false;
   }
+  return true;
+}
+
+bool VehicleNode::getSingleBatteryDynamicInfoCallback(GetSingleBatteryDynamicInfo::Request& request, 
+                                                      GetSingleBatteryDynamicInfo::Response& response)
+{
+  ROS_INFO_STREAM("get Single Battery Dynamic Info callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  DJI::OSDK::SmartBatteryDynamicInfo SmartBatteryDynamicInfo;
+  if (ptr_wrapper_->getSingleBatteryDynamicInfo(static_cast<DJI::OSDK::DJIBattery::RequestSmartBatteryIndex>(request.batteryIndex),
+                                                SmartBatteryDynamicInfo))
+  {
+    response.smartBatteryDynamicInfo.batteryIndex           = SmartBatteryDynamicInfo.batteryIndex;
+    response.smartBatteryDynamicInfo.currentVoltage         = SmartBatteryDynamicInfo.currentVoltage;
+    response.smartBatteryDynamicInfo.currentElectric        = SmartBatteryDynamicInfo.currentElectric;
+    response.smartBatteryDynamicInfo.fullCapacity           = SmartBatteryDynamicInfo.fullCapacity;
+    response.smartBatteryDynamicInfo.remainedCapacity       = SmartBatteryDynamicInfo.remainedCapacity;
+    response.smartBatteryDynamicInfo.batteryTemperature     = SmartBatteryDynamicInfo.batteryTemperature;
+    response.smartBatteryDynamicInfo.cellCount              = SmartBatteryDynamicInfo.cellCount;
+    response.smartBatteryDynamicInfo.batteryCapacityPercent = SmartBatteryDynamicInfo.batteryCapacityPercent;
+    response.smartBatteryDynamicInfo.SOP                    = SmartBatteryDynamicInfo.SOP;
+
+    response.smartBatteryDynamicInfo.batteryState.cellBreak                    = SmartBatteryDynamicInfo.batteryState.cellBreak;
+    response.smartBatteryDynamicInfo.batteryState.selfCheckError               = SmartBatteryDynamicInfo.batteryState.selfCheckError;
+    response.smartBatteryDynamicInfo.batteryState.batteryClosedReason          = SmartBatteryDynamicInfo.batteryState.batteryClosedReason;
+    response.smartBatteryDynamicInfo.batteryState.batSOHState                  = SmartBatteryDynamicInfo.batteryState.batSOHState;
+    response.smartBatteryDynamicInfo.batteryState.maxCycleLimit                = SmartBatteryDynamicInfo.batteryState.maxCycleLimit;
+    response.smartBatteryDynamicInfo.batteryState.batteryCommunicationAbnormal = SmartBatteryDynamicInfo.batteryState.batteryCommunicationAbnormal;
+    response.smartBatteryDynamicInfo.batteryState.hasCellBreak                 = SmartBatteryDynamicInfo.batteryState.hasCellBreak;
+    response.smartBatteryDynamicInfo.batteryState.heatState                    = SmartBatteryDynamicInfo.batteryState.heatState;
+  }
+  else
+  {
+    DSTATUS("get Single Battery Dynamic Info failed!");
+    return false;
+  }
+
   return true;
 }
 

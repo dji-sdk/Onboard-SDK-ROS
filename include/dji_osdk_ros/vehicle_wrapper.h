@@ -107,6 +107,8 @@ namespace dji_osdk_ros
 
       /*! Parts of Battery */
       bool getBatteryWholeInfo(DJI::OSDK::BatteryWholeInfo& batteryWholeInfo);
+      bool getSingleBatteryDynamicInfo(const DJI::OSDK::DJIBattery::RequestSmartBatteryIndex batteryIndex,
+                                       DJI::OSDK::SmartBatteryDynamicInfo& batteryDynamicInfo);
 
       /*! Parts of mfio */
       uint8_t outputMFIO(uint8_t mode, uint8_t channel, uint32_t init_on_time_us, uint16_t freq, bool block, uint8_t gpio_value);

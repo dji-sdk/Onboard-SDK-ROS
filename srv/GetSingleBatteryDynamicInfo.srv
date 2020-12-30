@@ -1,0 +1,8 @@
+#request
+uint8 first_smart_battery = 1
+uint8 second_smart_battery = 2
+
+uint8 batteryIndex
+---
+#response
+SmartBatteryDynamicInfo smartBatteryDynamicInfo
