@@ -51,8 +51,8 @@ int main(int argc, char** argv)
   task_control_client = nh.serviceClient<FlightTaskControl>("/flight_task_control");
   auto set_go_home_altitude_client = nh.serviceClient<SetGoHomeAltitude>("/set_go_home_altitude");
   auto set_current_point_as_home_client = nh.serviceClient<SetNewHomePoint>("/set_current_point_as_home");
-  auto enable_avoid_client = nh.serviceClient<AvoidEnable>("/enable_avoid");
-  auto enable_upward_avoid_client = nh.serviceClient<AvoidEnable>("/enable_upwards_avoid");
+  auto enable_avoid_client = nh.serviceClient<AvoidEnable>("/set_collision_avoid_enable");
+  auto enable_upward_avoid_client = nh.serviceClient<AvoidEnable>("/set_upwards_avoid_enable");
   auto obtain_ctrl_authority_client = nh.serviceClient<dji_osdk_ros::ObtainControlAuthority>("obtain_release_control_authority");
   std::cout
       << "| Available commands:                                            |"

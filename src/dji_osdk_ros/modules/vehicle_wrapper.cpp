@@ -1436,7 +1436,7 @@ static T_OsdkOsalHandler osalHandler = {
     }
   }
 
-  bool VehicleWrapper::setAvoid(bool enable)
+  bool VehicleWrapper::setCollisionAvoidance(bool enable)
   {
     auto enum_enable = enable ? FlightController::AvoidEnable::AVOID_ENABLE : FlightController::AvoidEnable::AVOID_DISABLE;
     ErrorCode::ErrorCodeType ack = vehicle->flightController->setCollisionAvoidanceEnabledSync(enum_enable, 1);
@@ -1444,6 +1444,20 @@ static T_OsdkOsalHandler osalHandler = {
     {
       return true;
     }
+    return false;
+  }
+
+  bool VehicleWrapper::getCollisionAvoidance(uint8_t& enable)
+  {
+    FlightController::AvoidEnable enum_enable;
+    ErrorCode::ErrorCodeType ack = vehicle->flightController->getCollisionAvoidanceEnabledSync(enum_enable, 1);
+    enable = static_cast<uint8_t>(enum_enable);
+    if (ack == ErrorCode::SysCommonErr::Success)
+    {
+      return true;
+    }
+
+    enable = 0xF;
     return false;
   }
 
@@ -1455,6 +1469,20 @@ static T_OsdkOsalHandler osalHandler = {
     {
       return true;
     }
+    return false;
+  }
+
+  bool VehicleWrapper::getUpwardsAvoidance(uint8_t& enable)
+  {
+    FlightController::UpwardsAvoidEnable enum_enable;
+    ErrorCode::ErrorCodeType ack = vehicle->flightController->getUpwardsAvoidanceEnabledSync(enum_enable, 1);
+    enable = static_cast<uint8_t>(enum_enable);
+    if (ack == ErrorCode::SysCommonErr::Success)
+    {
+      return true;
+    }
+
+    enable = 0xF;
     return false;
   }
 

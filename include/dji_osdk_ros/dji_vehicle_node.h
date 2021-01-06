@@ -63,6 +63,7 @@
 #include <dji_osdk_ros/SetNewHomePoint.h>
 #include <dji_osdk_ros/SetLocalPosRef.h>
 #include <dji_osdk_ros/AvoidEnable.h>
+#include <dji_osdk_ros/GetAvoidEnable.h>
 #include <dji_osdk_ros/ObtainControlAuthority.h>
 #include <dji_osdk_ros/GimbalAction.h>
 #include <dji_osdk_ros/CameraEV.h>
@@ -186,13 +187,24 @@ namespace dji_osdk_ros
       /*! for general */
       ros::ServiceServer get_drone_type_server_;
       /*! for flight control */
+      ros::ServiceServer obtain_releae_control_authority_server_;
       ros::ServiceServer task_control_server_;
       ros::ServiceServer set_home_altitude_server_;
       ros::ServiceServer set_current_point_as_home_server_;
       ros::ServiceServer set_local_pos_reference_server_;
-      ros::ServiceServer avoid_enable_server_;
-      ros::ServiceServer upwards_avoid_enable_server_;
-      ros::ServiceServer obtain_releae_control_authority_server_;
+
+      ros::ServiceServer get_home_altitude_server_;
+      ros::ServiceServer set_collision_avoid_enable_server_;
+      ros::ServiceServer get_avoid_enable_status_server_;
+      ros::ServiceServer set_upwards_avoid_enable_server_;
+      ros::ServiceServer set_home_point_server_;
+      ros::ServiceServer set_current_aircraft_point_as_home_server_;
+      ros::ServiceServer turn_on_off_motors_server_;
+      ros::ServiceServer set_joystick_mode_server_;
+      ros::ServiceServer joystick_action_server_;
+      ros::ServiceServer emergency_brake_action_server_;
+      ros::ServiceServer kill_switch_server_;
+
       /*! for gimbal */
       ros::ServiceServer gimbal_control_server_;
       /*! for camera */
@@ -322,8 +334,9 @@ namespace dji_osdk_ros
       bool setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response);
       bool setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
                                   dji_osdk_ros::SetLocalPosRef::Response &response);
-      bool setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
+      bool setCollisionAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
       bool setUpwardsAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
+      bool getAvoidEnableStatusCallback(GetAvoidEnable::Request& request, GetAvoidEnable::Response& response);
       bool obtainReleaseControlAuthorityCallback(ObtainControlAuthority::Request& request, ObtainControlAuthority::Response& reponse);
       /*! for gimbal control */
       bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);

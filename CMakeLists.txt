@@ -141,6 +141,7 @@ add_service_files(
   SetNewHomePoint.srv
   SetupCameraH264.srv
   AvoidEnable.srv
+  GetAvoidEnable.srv
   InitWaypointV2Setting.srv
   UploadWaypointV2Mission.srv
   UploadWaypointV2Action.srv
