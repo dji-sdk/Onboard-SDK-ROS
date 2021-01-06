@@ -195,7 +195,7 @@ void VehicleNode::initService()
   get_home_altitude_server_ = nh_.advertiseService("get_go_home_altitude", &VehicleNode::getGoHomeAltitudeCallback,this);
   set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
   set_local_pos_reference_server_ = nh_.advertiseService("set_local_pos_reference", &VehicleNode::setLocalPosRefCallback,this);
-  set_collision_avoid_enable_server_ = nh_.advertiseService("set_collision_avoid_enable", &VehicleNode::setCollisionAvoidCallback,this);
+  set_horizon_avoid_enable_server_ = nh_.advertiseService("set_horizon_avoid_enable", &VehicleNode::setHorizonAvoidCallback,this);
   set_upwards_avoid_enable_server_ = nh_.advertiseService("set_upwards_avoid_enable", &VehicleNode::setUpwardsAvoidCallback, this);
   get_avoid_enable_status_server_ = nh_.advertiseService("get_avoid_enable_status", &VehicleNode::getAvoidEnableStatusCallback, this);
   obtain_releae_control_authority_server_ = nh_.advertiseService("obtain_release_control_authority", &VehicleNode::obtainReleaseControlAuthorityCallback, this);
@@ -1509,9 +1509,9 @@ bool VehicleNode::setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &
   return true;
 }
 
-bool VehicleNode::setCollisionAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response)
+bool VehicleNode::setHorizonAvoidCallback(SetAvoidEnable::Request& request, SetAvoidEnable::Response& response)
 {
-  ROS_INFO_STREAM("Set collision avoid function callback");
+  ROS_INFO_STREAM("Set horizon avoid function callback");
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
@@ -1528,7 +1528,7 @@ bool VehicleNode::setCollisionAvoidCallback(AvoidEnable::Request& request, Avoid
   return true;
 }
 
-bool VehicleNode::setUpwardsAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response)
+bool VehicleNode::setUpwardsAvoidCallback(SetAvoidEnable::Request& request, SetAvoidEnable::Response& response)
 {
   ROS_INFO_STREAM("Set upwards avoid function callback");
   if(ptr_wrapper_ == nullptr)
@@ -1557,15 +1557,15 @@ bool VehicleNode::getAvoidEnableStatusCallback(GetAvoidEnable::Request& request,
     return false;
   }
 
-  uint8_t get_collision_avoid_enable_status = 0xF;
+  uint8_t get_horizon_avoid_enable_status = 0xF;
   uint8_t get_upwards_avoid_enable_status = 0xF;
 
-  if (!(ptr_wrapper_->getCollisionAvoidance(get_collision_avoid_enable_status)))
+  if (!(ptr_wrapper_->getCollisionAvoidance(get_horizon_avoid_enable_status)))
   {
     response.result = false;
     return false;
   }
-  response.collision_avoid_enable_status = get_collision_avoid_enable_status;
+  response.horizon_avoid_enable_status = get_horizon_avoid_enable_status;
 
   if(!(ptr_wrapper_->getUpwardsAvoidance(get_upwards_avoid_enable_status)))
   {
@@ -1573,7 +1573,7 @@ bool VehicleNode::getAvoidEnableStatusCallback(GetAvoidEnable::Request& request,
     return false;
   }
 
-  response.upwards_avoid_enable_status = get_collision_avoid_enable_status;
+  response.upwards_avoid_enable_status = get_horizon_avoid_enable_status;
 
   response.result = true;
   return true;

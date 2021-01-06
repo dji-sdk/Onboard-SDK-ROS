@@ -63,7 +63,7 @@
 #include <dji_osdk_ros/GetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetNewHomePoint.h>
 #include <dji_osdk_ros/SetLocalPosRef.h>
-#include <dji_osdk_ros/AvoidEnable.h>
+#include <dji_osdk_ros/SetAvoidEnable.h>
 #include <dji_osdk_ros/GetAvoidEnable.h>
 #include <dji_osdk_ros/ObtainControlAuthority.h>
 #include <dji_osdk_ros/GimbalAction.h>
@@ -195,7 +195,7 @@ namespace dji_osdk_ros
       ros::ServiceServer set_local_pos_reference_server_;
 
       ros::ServiceServer get_home_altitude_server_;
-      ros::ServiceServer set_collision_avoid_enable_server_;
+      ros::ServiceServer set_horizon_avoid_enable_server_;
       ros::ServiceServer get_avoid_enable_status_server_;
       ros::ServiceServer set_upwards_avoid_enable_server_;
       ros::ServiceServer set_home_point_server_;
@@ -336,8 +336,8 @@ namespace dji_osdk_ros
       bool setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response);
       bool setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
                                   dji_osdk_ros::SetLocalPosRef::Response &response);
-      bool setCollisionAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
-      bool setUpwardsAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response);
+      bool setHorizonAvoidCallback(SetAvoidEnable::Request& request, SetAvoidEnable::Response& response);
+      bool setUpwardsAvoidCallback(SetAvoidEnable::Request& request, SetAvoidEnable::Response& response);
       bool getAvoidEnableStatusCallback(GetAvoidEnable::Request& request, GetAvoidEnable::Response& response);
       bool obtainReleaseControlAuthorityCallback(ObtainControlAuthority::Request& request, ObtainControlAuthority::Response& reponse);
       /*! for gimbal control */
