@@ -193,7 +193,9 @@ void VehicleNode::initService()
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
   get_home_altitude_server_ = nh_.advertiseService("get_go_home_altitude", &VehicleNode::getGoHomeAltitudeCallback,this);
-  set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
+  set_current_aircraft_point_as_home_server_ = nh_.advertiseService("set_current_aircraft_point_as_home",
+                                               &VehicleNode::setCurrentAircraftLocAsHomeCallback,this);
+  set_home_point_server_ = nh_.advertiseService("set_home_point", &VehicleNode::SetHomePointCallback, this);
   set_local_pos_reference_server_ = nh_.advertiseService("set_local_pos_reference", &VehicleNode::setLocalPosRefCallback,this);
   set_horizon_avoid_enable_server_ = nh_.advertiseService("set_horizon_avoid_enable", &VehicleNode::setHorizonAvoidCallback,this);
   set_upwards_avoid_enable_server_ = nh_.advertiseService("set_upwards_avoid_enable", &VehicleNode::setUpwardsAvoidCallback, this);
@@ -1456,16 +1458,16 @@ bool VehicleNode::getGoHomeAltitudeCallback(GetGoHomeAltitude::Request& request,
   return true;
 }
 
-bool VehicleNode::setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response)
+bool VehicleNode::setCurrentAircraftLocAsHomeCallback(SetCurrentAircraftLocAsHomePoint::Request& request, SetCurrentAircraftLocAsHomePoint::Response& response)
 {
-  ROS_INFO_STREAM("Set new home point callback");
+  ROS_INFO_STREAM("Set current aircraft location as new home point callback");
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return false;
   }
 
-  if(ptr_wrapper_->setNewHomeLocation() == true)
+  if(ptr_wrapper_->setCurrentAircraftLocAsHomePoint() == true)
   {
     response.result = true;
   }
@@ -1477,10 +1479,29 @@ bool VehicleNode::setHomeCallback(SetNewHomePoint::Request& request, SetNewHomeP
   return true;
 }
 
+bool VehicleNode::SetHomePointCallback(SetHomePoint::Request& request, SetHomePoint::Response& response)
+{
+  ROS_INFO_STREAM("Set home point callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  if (ptr_wrapper_->setHomePoint(request.latitude, request.longitude))
+  {
+    response.result = true;
+    return true;
+  }
+
+  response.result = false;
+  return false;
+}
+
 bool VehicleNode::setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
                                          dji_osdk_ros::SetLocalPosRef::Response &response)
 {
-  printf("Currrent GPS health is %d \n",current_gps_health_ );
+  ROS_INFO("Currrent GPS health is %d",current_gps_health_ );
   if (current_gps_health_ > 3)
   {
     local_pos_ref_latitude_ = current_gps_latitude_;

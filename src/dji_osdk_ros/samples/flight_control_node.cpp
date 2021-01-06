@@ -33,7 +33,7 @@
 #include <dji_osdk_ros/FlightTaskControl.h>
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
 #include <dji_osdk_ros/GetGoHomeAltitude.h>
-#include <dji_osdk_ros/SetNewHomePoint.h>
+#include <dji_osdk_ros/SetCurrentAircraftLocAsHomePoint.h>
 #include <dji_osdk_ros/SetAvoidEnable.h>
 #include <dji_osdk_ros/ObtainControlAuthority.h>
 
@@ -52,7 +52,7 @@ int main(int argc, char** argv)
   task_control_client = nh.serviceClient<FlightTaskControl>("/flight_task_control");
   auto set_go_home_altitude_client = nh.serviceClient<SetGoHomeAltitude>("/set_go_home_altitude");
   auto get_go_home_altitude_client = nh.serviceClient<GetGoHomeAltitude>("get_go_home_altitude");
-  auto set_current_point_as_home_client = nh.serviceClient<SetNewHomePoint>("/set_current_point_as_home");
+  auto set_current_point_as_home_client = nh.serviceClient<SetCurrentAircraftLocAsHomePoint>("/set_current_aircraft_point_as_home");
   auto enable_avoid_client = nh.serviceClient<SetAvoidEnable>("/set_horizon_avoid_enable");
   auto enable_upward_avoid_client = nh.serviceClient<SetAvoidEnable>("/set_upwards_avoid_enable");
   auto obtain_ctrl_authority_client = nh.serviceClient<dji_osdk_ros::ObtainControlAuthority>("obtain_release_control_authority");
@@ -183,7 +183,7 @@ int main(int argc, char** argv)
           moveByPosOffset(control_task, MoveOffset(10.0, 0.0, 0.0, 0.0));
 
           ROS_INFO_STREAM("Set aircraft current position as new home location");
-          SetNewHomePoint home_set_req;
+          SetCurrentAircraftLocAsHomePoint home_set_req;
           set_current_point_as_home_client.call(home_set_req);
           if(home_set_req.response.result == false)
           {

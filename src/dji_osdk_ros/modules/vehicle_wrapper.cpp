@@ -1353,7 +1353,7 @@ static T_OsdkOsalHandler osalHandler = {
     return true;
   }
 
-  bool VehicleWrapper::setNewHomeLocation(int timeout)
+  bool VehicleWrapper::setCurrentAircraftLocAsHomePoint(int timeout)
   {
     HomeLocationSetStatus homeLocationSetStatus;
     HomeLocationData originHomeLocation;
@@ -1447,6 +1447,24 @@ static T_OsdkOsalHandler osalHandler = {
     else
     {
       DSTATUS("Get go home altitude successfully,altitude is: %d", altitude);
+      return true;
+    }
+  }
+
+  bool VehicleWrapper::setHomePoint(float64_t latitude, float64_t longitude, int timeout)
+  {
+    DJI::OSDK::FlightController::HomeLocation homeLocation;
+    homeLocation.latitude = latitude;
+    homeLocation.longitude = longitude;
+    ErrorCode::ErrorCodeType ret = vehicle->flightController->setHomeLocationSync(homeLocation, timeout);
+    if (ret != ErrorCode::SysCommonErr::Success)
+    {
+      DSTATUS("Set home point failed, ErrorCode is:%8x", ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Set home point successfully,latitude: %f rad, longitude:%f rad", latitude, longitude);
       return true;
     }
   }

@@ -32,7 +32,7 @@ This update mainly includes:
 |dji_vehicle_node                      |get_drone_type                                    |                                       |
 |flight_control_node                   |flight_task_control                               |                                       |
 |                                      |set_go_home_altitude                              |                                       |
-|                                      |set_current_point_as_home                         |                                       |
+|                                      |set_current_aircraft_point_as_home                         |                                       |
 |                                      |set_horizon_avoid_enable                                      |                                       |
 |                                      |set_upwards_avoid_enable                              |                                       |
 |gimbal_camera_control_node            |gimbal_task_control                               |                                       |

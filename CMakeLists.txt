@@ -139,7 +139,8 @@ add_service_files(
   MFIO.srv
   SetGoHomeAltitude.srv
   GetGoHomeAltitude.srv
-  SetNewHomePoint.srv
+  SetCurrentAircraftLocAsHomePoint.srv
+  SetHomePoint.srv
   SetupCameraH264.srv
   SetAvoidEnable.srv
   GetAvoidEnable.srv

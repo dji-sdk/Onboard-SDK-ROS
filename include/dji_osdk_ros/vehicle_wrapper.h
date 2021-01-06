@@ -93,7 +93,8 @@ namespace dji_osdk_ros
 
       /*! Parts of Flight Control*/
       bool checkActionStarted(uint8_t mode);
-      bool setNewHomeLocation(int timeout = 1);
+      bool setCurrentAircraftLocAsHomePoint(int timeout = 1);
+      bool setHomePoint(float64_t latitude, float64_t longitude, int timeout = 1);
       bool setHomeAltitude(uint16_t altitude, int timeout = 1);
       bool getHomeAltitude(uint16_t& altitude, int timeout = 1);
       bool goHome(ACK::ErrorCode& ack, int timeout);
