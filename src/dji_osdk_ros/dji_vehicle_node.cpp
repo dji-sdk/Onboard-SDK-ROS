@@ -192,6 +192,7 @@ void VehicleNode::initService()
    */
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
+  get_home_altitude_server_ = nh_.advertiseService("get_go_home_altitude", &VehicleNode::getGoHomeAltitudeCallback,this);
   set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
   set_local_pos_reference_server_ = nh_.advertiseService("set_local_pos_reference", &VehicleNode::setLocalPosRefCallback,this);
   set_collision_avoid_enable_server_ = nh_.advertiseService("set_collision_avoid_enable", &VehicleNode::setCollisionAvoidCallback,this);
@@ -1431,6 +1432,27 @@ bool VehicleNode::setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request,
   {
     response.result = false;
   }
+  return true;
+}
+
+bool VehicleNode::getGoHomeAltitudeCallback(GetGoHomeAltitude::Request& request, GetGoHomeAltitude::Response& response)
+{
+  ROS_INFO_STREAM("Get go home altitude callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  uint16_t altitude = 0;
+  if (!(ptr_wrapper_->getHomeAltitude(altitude)))
+  {
+    response.result = false;
+    return false;
+  }
+  
+  response.altitude = altitude;
+  response.result = true;
   return true;
 }
 

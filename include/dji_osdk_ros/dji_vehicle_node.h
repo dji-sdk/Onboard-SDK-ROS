@@ -60,6 +60,7 @@
 /*! services */
 #include <dji_osdk_ros/FlightTaskControl.h>
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
+#include <dji_osdk_ros/GetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetNewHomePoint.h>
 #include <dji_osdk_ros/SetLocalPosRef.h>
 #include <dji_osdk_ros/AvoidEnable.h>
@@ -331,6 +332,7 @@ namespace dji_osdk_ros
       /*! for flight control */
       bool taskCtrlCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
       bool setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request, SetGoHomeAltitude::Response& response);
+      bool getGoHomeAltitudeCallback(GetGoHomeAltitude::Request& request, GetGoHomeAltitude::Response& response);
       bool setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response);
       bool setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
                                   dji_osdk_ros::SetLocalPosRef::Response &response);

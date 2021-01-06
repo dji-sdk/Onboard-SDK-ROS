@@ -1,0 +1,5 @@
+#request
+---
+#response
+bool result
+uint16 altitude

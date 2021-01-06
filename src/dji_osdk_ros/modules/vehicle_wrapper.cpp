@@ -1436,6 +1436,21 @@ static T_OsdkOsalHandler osalHandler = {
     }
   }
 
+  bool VehicleWrapper::getHomeAltitude(uint16_t& altitude, int timeout)
+  {
+    ErrorCode::ErrorCodeType ret = vehicle->flightController->getGoHomeAltitudeSync(altitude, timeout);
+    if (ret != ErrorCode::SysCommonErr::Success)
+    {
+      DSTATUS("Get go home altitude failed, ErrorCode is:%8x", ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Get go home altitude successfully,altitude is: %d", altitude);
+      return true;
+    }
+  }
+
   bool VehicleWrapper::setCollisionAvoidance(bool enable)
   {
     auto enum_enable = enable ? FlightController::AvoidEnable::AVOID_ENABLE : FlightController::AvoidEnable::AVOID_DISABLE;

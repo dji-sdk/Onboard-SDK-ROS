@@ -32,6 +32,7 @@
 
 #include <dji_osdk_ros/FlightTaskControl.h>
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
+#include <dji_osdk_ros/GetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetNewHomePoint.h>
 #include <dji_osdk_ros/AvoidEnable.h>
 #include <dji_osdk_ros/ObtainControlAuthority.h>
@@ -50,6 +51,7 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   task_control_client = nh.serviceClient<FlightTaskControl>("/flight_task_control");
   auto set_go_home_altitude_client = nh.serviceClient<SetGoHomeAltitude>("/set_go_home_altitude");
+  auto get_go_home_altitude_client = nh.serviceClient<GetGoHomeAltitude>("get_go_home_altitude");
   auto set_current_point_as_home_client = nh.serviceClient<SetNewHomePoint>("/set_current_point_as_home");
   auto enable_avoid_client = nh.serviceClient<AvoidEnable>("/set_collision_avoid_enable");
   auto enable_upward_avoid_client = nh.serviceClient<AvoidEnable>("/set_upwards_avoid_enable");
@@ -189,6 +191,17 @@ int main(int argc, char** argv)
             break;
           }
 
+
+          ROS_INFO_STREAM("Get current go home altitude");
+          GetGoHomeAltitude current_go_home_altitude;
+          get_go_home_altitude_client.call(current_go_home_altitude);
+          if(current_go_home_altitude.response.result == false)
+          {
+            ROS_ERROR_STREAM("Get altitude for go home FAILED");
+            break;
+          }
+          ROS_INFO("Current go home altitude is :%d m", current_go_home_altitude.response.altitude);
+
           ROS_INFO_STREAM("Set new go home altitude");
           SetGoHomeAltitude altitude_go_home;
           altitude_go_home.request.altitude = 50;
@@ -198,6 +211,14 @@ int main(int argc, char** argv)
             ROS_ERROR_STREAM("Set altitude for go home FAILED");
             break;
           }
+
+          get_go_home_altitude_client.call(current_go_home_altitude);
+          if(current_go_home_altitude.response.result == false)
+          {
+            ROS_ERROR_STREAM("Get altitude for go home FAILED");
+            break;
+          }
+          ROS_INFO("Current go home altitude is :%d m", current_go_home_altitude.response.altitude);
 
           ROS_INFO_STREAM("Move to another position");
           moveByPosOffset(control_task, MoveOffset(50.0, 0.0, 0.0, 0.0));

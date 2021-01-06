@@ -138,6 +138,7 @@ add_service_files(
   GetSingleBatteryDynamicInfo.srv
   MFIO.srv
   SetGoHomeAltitude.srv
+  GetGoHomeAltitude.srv
   SetNewHomePoint.srv
   SetupCameraH264.srv
   AvoidEnable.srv
