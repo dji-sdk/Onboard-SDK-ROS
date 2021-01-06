@@ -118,6 +118,7 @@ add_service_files(
   GetDroneType.srv
   GetM300StereoParams.srv
   FlightTaskControl.srv
+  SetJoystickMode.srv
   ObtainControlAuthority.srv
   GimbalAction.srv
   CameraEV.srv

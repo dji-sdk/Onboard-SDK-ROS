@@ -59,6 +59,7 @@
 
 /*! services */
 #include <dji_osdk_ros/FlightTaskControl.h>
+#include <dji_osdk_ros/SetJoystickMode.h>
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
 #include <dji_osdk_ros/GetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetHomePoint.h>
@@ -193,13 +194,14 @@ namespace dji_osdk_ros
       ros::ServiceServer task_control_server_;
       ros::ServiceServer set_home_altitude_server_;
       ros::ServiceServer get_home_altitude_server_;
+      ros::ServiceServer set_home_point_server_;
       ros::ServiceServer set_current_aircraft_point_as_home_server_;
       ros::ServiceServer set_local_pos_reference_server_;
       ros::ServiceServer set_horizon_avoid_enable_server_;
       ros::ServiceServer get_avoid_enable_status_server_;
       ros::ServiceServer set_upwards_avoid_enable_server_;
 
-      ros::ServiceServer set_home_point_server_;
+
       ros::ServiceServer turn_on_off_motors_server_;
       ros::ServiceServer set_joystick_mode_server_;
       ros::ServiceServer joystick_action_server_;
@@ -331,11 +333,12 @@ namespace dji_osdk_ros
                                 dji_osdk_ros::GetDroneType::Response &response);
       /*! for flight control */
       bool taskCtrlCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
+      bool setJoystickModeCallback(SetJoystickMode::Request& request, SetJoystickMode::Response& response);
       bool setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request, SetGoHomeAltitude::Response& response);
       bool getGoHomeAltitudeCallback(GetGoHomeAltitude::Request& request, GetGoHomeAltitude::Response& response);
       bool setCurrentAircraftLocAsHomeCallback(SetCurrentAircraftLocAsHomePoint::Request& request, 
                                                SetCurrentAircraftLocAsHomePoint::Response& response);
-      bool SetHomePointCallback(SetHomePoint::Request& request, SetHomePoint::Response& response);
+      bool setHomePointCallback(SetHomePoint::Request& request, SetHomePoint::Response& response);
       bool setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
                                   dji_osdk_ros::SetLocalPosRef::Response &response);
       bool setHorizonAvoidCallback(SetAvoidEnable::Request& request, SetAvoidEnable::Response& response);

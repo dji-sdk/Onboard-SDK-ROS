@@ -191,11 +191,12 @@ void VehicleNode::initService()
    *  @platforms M210V2, M300
    */
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
+  set_joystick_mode_server_ = nh_.advertiseService("set_joystick_mode", &VehicleNode::setJoystickModeCallback, this);
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
   get_home_altitude_server_ = nh_.advertiseService("get_go_home_altitude", &VehicleNode::getGoHomeAltitudeCallback,this);
   set_current_aircraft_point_as_home_server_ = nh_.advertiseService("set_current_aircraft_point_as_home",
                                                &VehicleNode::setCurrentAircraftLocAsHomeCallback,this);
-  set_home_point_server_ = nh_.advertiseService("set_home_point", &VehicleNode::SetHomePointCallback, this);
+  set_home_point_server_ = nh_.advertiseService("set_home_point", &VehicleNode::setHomePointCallback, this);
   set_local_pos_reference_server_ = nh_.advertiseService("set_local_pos_reference", &VehicleNode::setLocalPosRefCallback,this);
   set_horizon_avoid_enable_server_ = nh_.advertiseService("set_horizon_avoid_enable", &VehicleNode::setHorizonAvoidCallback,this);
   set_upwards_avoid_enable_server_ = nh_.advertiseService("set_upwards_avoid_enable", &VehicleNode::setUpwardsAvoidCallback, this);
@@ -1069,6 +1070,28 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
   }
 }
 
+bool VehicleNode::setJoystickModeCallback(SetJoystickMode::Request& request, SetJoystickMode::Response& response)
+{
+  ROS_DEBUG("called setJoystickModeCallback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  dji_osdk_ros::JoystickMode joystickMode;
+  joystickMode.horizontalLogic = request.horizontal_mode;
+  joystickMode.verticalLogic   = request.vertical_mode;
+  joystickMode.yawLogic        = request.yaw_mode;
+  joystickMode.horizontalCoordinate = request.horizontal_coordinate;
+  joystickMode.stableMode      = request.stable_mode;
+
+  ptr_wrapper_->setJoystickMode(joystickMode);
+
+  response.result = true;
+  return true;
+}
+
 bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response)
 {
   if(ptr_wrapper_ == nullptr)
@@ -1479,7 +1502,7 @@ bool VehicleNode::setCurrentAircraftLocAsHomeCallback(SetCurrentAircraftLocAsHom
   return true;
 }
 
-bool VehicleNode::SetHomePointCallback(SetHomePoint::Request& request, SetHomePoint::Response& response)
+bool VehicleNode::setHomePointCallback(SetHomePoint::Request& request, SetHomePoint::Response& response)
 {
   ROS_INFO_STREAM("Set home point callback");
   if(ptr_wrapper_ == nullptr)

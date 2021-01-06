@@ -1519,6 +1519,15 @@ static T_OsdkOsalHandler osalHandler = {
     return false;
   }
 
+  bool VehicleWrapper::setJoystickMode(const JoystickMode &joystickMode)
+  {
+    DJI::OSDK::FlightController::JoystickMode interJoystickMode;
+    memcpy(&interJoystickMode, &joystickMode, sizeof(interJoystickMode));
+    vehicle->flightController->setJoystickMode(interJoystickMode);
+
+    return true;
+  }
+
   bool VehicleWrapper::moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset)
   {
     using namespace Telemetry;

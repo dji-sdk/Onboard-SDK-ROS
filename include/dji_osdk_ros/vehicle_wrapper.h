@@ -107,6 +107,7 @@ namespace dji_osdk_ros
       bool monitoredTakeoff(ACK::ErrorCode& ack, int timeout);
       bool monitoredLanding(ACK::ErrorCode& ack, int timeout);
       bool moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset);
+      bool setJoystickMode(const JoystickMode &joystickMode);
       bool obtainReleaseCtrlAuthority(bool enableObtain, int timeout);
 
       /*! Parts of Battery */

@@ -53,6 +53,15 @@ namespace dji_osdk_ros
     double yaw_threshold;
   };
 
+  struct JoystickMode
+  {
+    uint8_t horizontalLogic;
+    uint8_t verticalLogic;
+    uint8_t yawLogic;
+    uint8_t horizontalCoordinate;
+    uint8_t stableMode;
+  };
+
   struct RotationAngle
   {
     DJI::OSDK::float32_t roll;
