@@ -204,7 +204,7 @@ void VehicleNode::initService()
   get_avoid_enable_status_server_ = nh_.advertiseService("get_avoid_enable_status", &VehicleNode::getAvoidEnableStatusCallback, this);
   obtain_releae_control_authority_server_ = nh_.advertiseService("obtain_release_control_authority",
                                             &VehicleNode::obtainReleaseControlAuthorityCallback, this);
-  kill_switch_server_ = nh_.advertiseService("kill switch", &VehicleNode::killSwitchCallback, this);
+  kill_switch_server_ = nh_.advertiseService("kill_switch", &VehicleNode::killSwitchCallback, this);
   emergency_brake_action_server_ = nh_.advertiseService("emergency_brake", &VehicleNode::emergencyBrakeCallback, this);
   /*! @brief
    *  gimbal control server
