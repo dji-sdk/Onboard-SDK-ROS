@@ -191,6 +191,7 @@ void VehicleNode::initService()
    *  @platforms M210V2, M300
    */
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
+  joystick_action_server_ = nh_.advertiseService("joystick_action", &VehicleNode::JoystickActionCallback, this);
   set_joystick_mode_server_ = nh_.advertiseService("set_joystick_mode", &VehicleNode::setJoystickModeCallback, this);
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
   get_home_altitude_server_ = nh_.advertiseService("get_go_home_altitude", &VehicleNode::getGoHomeAltitudeCallback,this);
@@ -202,7 +203,7 @@ void VehicleNode::initService()
   set_upwards_avoid_enable_server_ = nh_.advertiseService("set_upwards_avoid_enable", &VehicleNode::setUpwardsAvoidCallback, this);
   get_avoid_enable_status_server_ = nh_.advertiseService("get_avoid_enable_status", &VehicleNode::getAvoidEnableStatusCallback, this);
   obtain_releae_control_authority_server_ = nh_.advertiseService("obtain_release_control_authority", &VehicleNode::obtainReleaseControlAuthorityCallback, this);
-
+  turn_on_off_motors_server_ = nh_.advertiseService("turn_on_off_motors", &VehicleNode::turnOnOffNotorsCallback, this);
   /*! @brief
    *  gimbal control server
    *  @platforms M210V2, M300
@@ -1092,6 +1093,26 @@ bool VehicleNode::setJoystickModeCallback(SetJoystickMode::Request& request, Set
   return true;
 }
 
+bool VehicleNode::JoystickActionCallback(JoystickAction::Request& request, JoystickAction::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  dji_osdk_ros::JoystickCommand joystickCommand;
+  joystickCommand.x = request.x;
+  joystickCommand.y = request.y;
+  joystickCommand.z = request.z;
+  joystickCommand.yaw = request.yaw;
+
+  ptr_wrapper_->JoystickAction(joystickCommand);
+
+  response.result = true;
+  return true;
+}
+
 bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response)
 {
   if(ptr_wrapper_ == nullptr)
@@ -1625,7 +1646,6 @@ bool VehicleNode::getAvoidEnableStatusCallback(GetAvoidEnable::Request& request,
 
 bool VehicleNode::obtainReleaseControlAuthorityCallback(ObtainControlAuthority::Request& request, ObtainControlAuthority::Response& response)
 {
-  
   if(request.enable_obtain)
   {
     ROS_INFO_STREAM("Obtain Control Authority Callback");
@@ -1643,6 +1663,27 @@ bool VehicleNode::obtainReleaseControlAuthorityCallback(ObtainControlAuthority::
 
   response.result = ptr_wrapper_->obtainReleaseCtrlAuthority(request.enable_obtain, FLIGHT_CONTROL_WAIT_TIMEOUT);
 
+  return response.result;
+}
+
+bool VehicleNode::turnOnOffNotorsCallback(TurnOnOffMotors::Request& request, TurnOnOffMotors::Response& response)
+{
+  if (request.on_off)
+  {
+    ROS_INFO_STREAM("turn on motors Callback");
+  }
+  else
+  {
+    ROS_INFO_STREAM("turn off motors Callback");
+  }
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->turnOnOffMotors(request.on_off);
   return response.result;
 }
 

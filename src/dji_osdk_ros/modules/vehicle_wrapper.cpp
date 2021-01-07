@@ -1528,6 +1528,16 @@ static T_OsdkOsalHandler osalHandler = {
     return true;
   }
 
+  bool VehicleWrapper::JoystickAction(const JoystickCommand &JoystickCommand)
+  {
+    DJI::OSDK::FlightController::JoystickCommand interJoystickCommand;
+    memcpy(&interJoystickCommand, &JoystickCommand, sizeof(interJoystickCommand));
+    vehicle->flightController->setJoystickCommand(interJoystickCommand);
+    vehicle->flightController->joystickAction();
+
+    return true;
+  }
+
   bool VehicleWrapper::moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset)
   {
     using namespace Telemetry;
@@ -1780,6 +1790,34 @@ static T_OsdkOsalHandler osalHandler = {
     }
 
     return true;
+  }
+
+  bool VehicleWrapper::turnOnOffMotors(bool OnOff,int timeOut)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+
+    if (OnOff)
+    {
+      ErrorCode::ErrorCodeType ack = vehicle->flightController->turnOnMotorsSync(timeOut);
+      if (ack == ErrorCode::SysCommonErr::Success)
+      {
+          return true;
+      }
+    }
+    else
+    {
+      ErrorCode::ErrorCodeType ack = vehicle->flightController->turnOffMotorsSync(timeOut);
+      if (ack == ErrorCode::SysCommonErr::Success)
+      {
+          return true;
+      }
+    }
+    
+    return false;
   }
 
   bool VehicleWrapper::startGlobalPositionBroadcast()

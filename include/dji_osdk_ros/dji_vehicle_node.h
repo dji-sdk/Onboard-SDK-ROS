@@ -58,8 +58,11 @@
 #include <nmea_msgs/Sentence.h>
 
 /*! services */
+//flight control services
+#include <dji_osdk_ros/GetDroneType.h>
 #include <dji_osdk_ros/FlightTaskControl.h>
 #include <dji_osdk_ros/SetJoystickMode.h>
+#include <dji_osdk_ros/JoystickAction.h>
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
 #include <dji_osdk_ros/GetGoHomeAltitude.h>
 #include <dji_osdk_ros/SetHomePoint.h>
@@ -68,7 +71,12 @@
 #include <dji_osdk_ros/SetAvoidEnable.h>
 #include <dji_osdk_ros/GetAvoidEnable.h>
 #include <dji_osdk_ros/ObtainControlAuthority.h>
+#include <dji_osdk_ros/TurnOnOffMotors.h>
+
+//Gimbal control services
 #include <dji_osdk_ros/GimbalAction.h>
+
+//Camera control services
 #include <dji_osdk_ros/CameraEV.h>
 #include <dji_osdk_ros/CameraShutterSpeed.h>
 #include <dji_osdk_ros/CameraAperture.h>
@@ -83,10 +91,11 @@
 #include <dji_osdk_ros/CameraStartShootIntervalPhoto.h>
 #include <dji_osdk_ros/CameraStopShootPhoto.h>
 #include <dji_osdk_ros/CameraRecordVideoAction.h>
+//mfio services
 #include <dji_osdk_ros/MFIO.h>
+//MOP services
 #include <dji_osdk_ros/SendMobileData.h>
 #include <dji_osdk_ros/SendPayloadData.h>
-#include <dji_osdk_ros/GetDroneType.h>
 //mission services
 #include <dji_osdk_ros/MissionStatus.h>
 #include <dji_osdk_ros/MissionWpUpload.h>
@@ -192,6 +201,8 @@ namespace dji_osdk_ros
       /*! for flight control */
       ros::ServiceServer obtain_releae_control_authority_server_;
       ros::ServiceServer task_control_server_;
+      ros::ServiceServer set_joystick_mode_server_;
+      ros::ServiceServer joystick_action_server_;
       ros::ServiceServer set_home_altitude_server_;
       ros::ServiceServer get_home_altitude_server_;
       ros::ServiceServer set_home_point_server_;
@@ -201,10 +212,7 @@ namespace dji_osdk_ros
       ros::ServiceServer get_avoid_enable_status_server_;
       ros::ServiceServer set_upwards_avoid_enable_server_;
 
-
       ros::ServiceServer turn_on_off_motors_server_;
-      ros::ServiceServer set_joystick_mode_server_;
-      ros::ServiceServer joystick_action_server_;
       ros::ServiceServer emergency_brake_action_server_;
       ros::ServiceServer kill_switch_server_;
 
@@ -334,6 +342,7 @@ namespace dji_osdk_ros
       /*! for flight control */
       bool taskCtrlCallback(FlightTaskControl::Request& request, FlightTaskControl::Response& response);
       bool setJoystickModeCallback(SetJoystickMode::Request& request, SetJoystickMode::Response& response);
+      bool JoystickActionCallback(JoystickAction::Request& request, JoystickAction::Response& response);
       bool setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request, SetGoHomeAltitude::Response& response);
       bool getGoHomeAltitudeCallback(GetGoHomeAltitude::Request& request, GetGoHomeAltitude::Response& response);
       bool setCurrentAircraftLocAsHomeCallback(SetCurrentAircraftLocAsHomePoint::Request& request, 
@@ -344,7 +353,9 @@ namespace dji_osdk_ros
       bool setHorizonAvoidCallback(SetAvoidEnable::Request& request, SetAvoidEnable::Response& response);
       bool setUpwardsAvoidCallback(SetAvoidEnable::Request& request, SetAvoidEnable::Response& response);
       bool getAvoidEnableStatusCallback(GetAvoidEnable::Request& request, GetAvoidEnable::Response& response);
-      bool obtainReleaseControlAuthorityCallback(ObtainControlAuthority::Request& request, ObtainControlAuthority::Response& reponse);
+      bool obtainReleaseControlAuthorityCallback(ObtainControlAuthority::Request& request, 
+                                                 ObtainControlAuthority::Response& reponse);
+      bool turnOnOffNotorsCallback(TurnOnOffMotors::Request& request, TurnOnOffMotors::Response& response);
       /*! for gimbal control */
       bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);
       /*! for camera conrol */
@@ -356,21 +367,30 @@ namespace dji_osdk_ros
       bool cameraSetTapZoomPointCallback(CameraTapZoomPoint::Request& request, CameraTapZoomPoint::Response& response);
       bool cameraSetZoomParaCallback(CameraSetZoomPara::Request& request, CameraSetZoomPara::Response& response);
       bool cameraZoomCtrlCallback(CameraZoomCtrl::Request& request, CameraZoomCtrl::Response& response);
-      bool cameraStartShootSinglePhotoCallback(CameraStartShootSinglePhoto::Request& request, CameraStartShootSinglePhoto::Response& response);
-      bool cameraStartShootAEBPhotoCallback(CameraStartShootAEBPhoto::Request& request, CameraStartShootAEBPhoto::Response& response);
-      bool cameraStartShootBurstPhotoCallback(CameraStartShootBurstPhoto::Request& request, CameraStartShootBurstPhoto::Response& response);
-      bool cameraStartShootIntervalPhotoCallback(CameraStartShootIntervalPhoto::Request& request, CameraStartShootIntervalPhoto::Response& response);
-      bool cameraStopShootPhotoCallback(CameraStopShootPhoto::Request& request, CameraStopShootPhoto::Response& response);
-      bool cameraRecordVideoActionCallback(CameraRecordVideoAction::Request& request, CameraRecordVideoAction::Response& response);
+      bool cameraStartShootSinglePhotoCallback(CameraStartShootSinglePhoto::Request& request, 
+                                               CameraStartShootSinglePhoto::Response& response);
+      bool cameraStartShootAEBPhotoCallback(CameraStartShootAEBPhoto::Request& request,
+                                            CameraStartShootAEBPhoto::Response& response);
+      bool cameraStartShootBurstPhotoCallback(CameraStartShootBurstPhoto::Request& request,
+                                              CameraStartShootBurstPhoto::Response& response);
+      bool cameraStartShootIntervalPhotoCallback(CameraStartShootIntervalPhoto::Request& request, 
+                                                 CameraStartShootIntervalPhoto::Response& response);
+      bool cameraStopShootPhotoCallback(CameraStopShootPhoto::Request& request, 
+                                        CameraStopShootPhoto::Response& response);
+      bool cameraRecordVideoActionCallback(CameraRecordVideoAction::Request& request,
+                                           CameraRecordVideoAction::Response& response);
       /*! for battery info */
       bool getWholeBatteryInfoCallback(GetWholeBatteryInfo::Request& request,GetWholeBatteryInfo::Response& reponse);
-      bool getSingleBatteryDynamicInfoCallback(GetSingleBatteryDynamicInfo::Request& request, GetSingleBatteryDynamicInfo::Response& response);
+      bool getSingleBatteryDynamicInfoCallback(GetSingleBatteryDynamicInfo::Request& request,
+                                               GetSingleBatteryDynamicInfo::Response& response);
       /*! for mfio conrol */
       bool mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response);
       /*! for mobile device */
-      bool sendToMobileCallback(dji_osdk_ros::SendMobileData::Request& request,dji_osdk_ros::SendMobileData::Response& response);
+      bool sendToMobileCallback(dji_osdk_ros::SendMobileData::Request& request,
+                                dji_osdk_ros::SendMobileData::Response& response);
       /*! for payload device */
-      bool sendToPayloadCallback(dji_osdk_ros::SendPayloadData::Request& request,dji_osdk_ros::SendPayloadData::Response& response);
+      bool sendToPayloadCallback(dji_osdk_ros::SendPayloadData::Request& request,
+                                 dji_osdk_ros::SendPayloadData::Response& response);
       /*! for advanced sensing conrol */
 #ifdef ADVANCED_SENSING
       bool setupCameraStreamCallback(dji_osdk_ros::SetupCameraStream::Request& request,

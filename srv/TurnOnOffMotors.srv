@@ -1,0 +1,5 @@
+#request
+bool on_off #0:off 1:on
+---
+#response
+bool result
