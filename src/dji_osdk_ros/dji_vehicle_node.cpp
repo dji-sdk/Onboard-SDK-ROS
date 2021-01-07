@@ -995,7 +995,7 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
     case FlightTaskControl::Request::TASK_GOHOME:
      {
         ROS_INFO_STREAM("call go home service");
-        if (ptr_wrapper_->goHome(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        if (ptr_wrapper_->goHome(FLIGHT_CONTROL_WAIT_TIMEOUT))
         {
           response.result = true;
         }
@@ -1010,22 +1010,17 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
         }
         break;
       }
-    case FlightTaskControl::Request::TASK_GO_LOCAL_POS:
+    case FlightTaskControl::Request::TASK_POSITON_AND_YAW_CONTROL:
       {
-        ROS_INFO_STREAM("call move local position service");
-        if(request.pos_offset.size() < 3 && request.yaw_params.size() < 3)
-        {
-          ROS_INFO_STREAM("Local Position Service Params Error");
-          break;
-        }
-        MoveOffset tmp_offset{request.pos_offset[0],
-                             request.pos_offset[1],
-                             request.pos_offset[2],
-                             request.yaw_params[0],
-                             request.yaw_params[1],
-                             request.yaw_params[2]
-                            };
-        if (ptr_wrapper_->moveByPositionOffset(ack, FLIGHT_CONTROL_WAIT_TIMEOUT, tmp_offset))
+        ROS_INFO_STREAM("call move local position offset service");
+        dji_osdk_ros::JoystickCommand joystickCommand;
+        joystickCommand.x   = request.joystickCommand.x;
+        joystickCommand.y   = request.joystickCommand.y;
+        joystickCommand.z   = request.joystickCommand.z;
+        joystickCommand.yaw = request.joystickCommand.yaw;
+
+        if (ptr_wrapper_->moveByPositionOffset(joystickCommand, FLIGHT_CONTROL_WAIT_TIMEOUT,
+                                               request.posThresholdInM, request.yawThresholdInDeg))
         {
           response.result = true;
         }
@@ -1034,16 +1029,31 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
     case FlightTaskControl::Request::TASK_TAKEOFF:
       {
         ROS_INFO_STREAM("call takeoff service");
-        if (ptr_wrapper_->monitoredTakeoff(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        if (ptr_wrapper_->monitoredTakeoff(FLIGHT_CONTROL_WAIT_TIMEOUT))
         {
           response.result = true;
         }
         break;
       }
+    case FlightTaskControl::Request::TASK_VELOCITY_AND_YAWRATE_CONTROL:
+      {
+        ROS_INFO_STREAM("call velocity and yaw rate service");
+
+        dji_osdk_ros::JoystickCommand joystickCommand;
+        joystickCommand.x   = request.joystickCommand.x;
+        joystickCommand.y   = request.joystickCommand.y;
+        joystickCommand.z   = request.joystickCommand.z;
+        joystickCommand.yaw = request.joystickCommand.yaw;
+
+        ptr_wrapper_->velocityAndYawRateCtrl(joystickCommand, request.velocityControlTimeMs);
+        response.result = true;
+
+        break;
+      }
     case FlightTaskControl::Request::TASK_LAND:
       {
         ROS_INFO_STREAM("call land service");
-        if (ptr_wrapper_->monitoredLanding(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        if (ptr_wrapper_->monitoredLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
         {
           response.result = true;
         }
@@ -1056,12 +1066,6 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
         break;
       }
   }
-  ROS_DEBUG("ack.info: set=%i id=%i", ack.info.cmd_set, ack.info.cmd_id);
-  ROS_DEBUG("ack.data: %i", ack.data);
-
-  response.cmd_set  = (int)ack.info.cmd_set;
-  response.cmd_id   = (int)ack.info.cmd_id;
-  response.ack_data = (unsigned int)ack.data;
 
   if (response.result)
   {
@@ -1104,10 +1108,10 @@ bool VehicleNode::JoystickActionCallback(JoystickAction::Request& request, Joyst
   }
 
   dji_osdk_ros::JoystickCommand joystickCommand;
-  joystickCommand.x = request.x;
-  joystickCommand.y = request.y;
-  joystickCommand.z = request.z;
-  joystickCommand.yaw = request.yaw;
+  joystickCommand.x = request.joystickCommand.x;
+  joystickCommand.y = request.joystickCommand.y;
+  joystickCommand.z = request.joystickCommand.z;
+  joystickCommand.yaw = request.joystickCommand.yaw;
 
   ptr_wrapper_->JoystickAction(joystickCommand);
 

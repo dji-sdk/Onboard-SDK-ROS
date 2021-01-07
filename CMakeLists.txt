@@ -73,6 +73,7 @@ add_message_files(
   FILES
 
   FCTimeInUTC.msg
+  JoystickParams.msg
   GPSUTC.msg
   Gimbal.msg
   Waypoint.msg

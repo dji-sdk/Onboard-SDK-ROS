@@ -1,18 +1,18 @@
 #constant for tasks
 uint8 TASK_GOHOME = 1
-uint8 TASK_GO_LOCAL_POS = 2
+uint8 TASK_POSITON_AND_YAW_CONTROL = 2
 uint8 TASK_GOHOME_AND_CONFIRM_LANDING = 3
 uint8 TASK_TAKEOFF = 4
+uint8 TASK_VELOCITY_AND_YAWRATE_CONTROL = 5
 uint8 TASK_LAND = 6
 
 #request
 uint8 task    # see constants above for possible tasks
-float64[] pos_offset #A vector contains that position_x_offset, position_y_offset, position_z_offset in order
-float64[] yaw_params #A vector contains that yaw_desired, position_threshold(Meter), yaw_threshold(Degree)
+JoystickParams joystickCommand  #Provide Position and Velocity control
+uint32 velocityControlTimeMs    #Velocity control time
+float32 posThresholdInM  #(Meter)
+float32 yawThresholdInDeg  #(Degree)
 ---
+#response
 bool result
-# for debugging usage
-uint8 cmd_set
-uint8 cmd_id
-uint32 ack_data
 

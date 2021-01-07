@@ -60,14 +60,28 @@ namespace dji_osdk_ros
       virtual ~VehicleWrapper() = default;
     
     public:
+      /*! Parts of environment */
       void setupEnvironment(bool enable_advanced_sensing);
       bool initVehicle();
       ErrorCode::ErrorCodeType initGimbalModule(dji_osdk_ros::PayloadIndex index,
                                                 const char* name);
       ErrorCode::ErrorCodeType initCameraModule(dji_osdk_ros::PayloadIndex index,
                                                 const char* name);
+      Vehicle::ActivateData *getActivateData()
+      {
+        return &this->activate_data_;
+      }
+    
+      Vehicle *getVehicle()
+      {
+        return vehicle;
+      }
+    
+      Linker *getLinker()
+      {
+        return linker;
+      }
 
-    public:
       /*! Parts of Camera */
       bool setEV(const PayloadIndex& payloadIndex, const ExposureCompensation& exposureCompensation);
       bool setExposureMode(const PayloadIndex& index, const ExposureMode& dataTarget);
@@ -97,16 +111,19 @@ namespace dji_osdk_ros
       bool setHomePoint(float64_t latitude, float64_t longitude, int timeout = 1);
       bool setHomeAltitude(uint16_t altitude, int timeout = 1);
       bool getHomeAltitude(uint16_t& altitude, int timeout = 1);
-      bool goHome(ACK::ErrorCode& ack, int timeout);
+      bool goHome( int timeout);
       bool goHomeAndConfirmLanding(int timeout);
       bool setCollisionAvoidance(bool enable);
       bool getCollisionAvoidance(uint8_t& enable);
       bool setUpwardsAvoidance(bool enable);
       bool getUpwardsAvoidance(uint8_t& enable);
 
-      bool monitoredTakeoff(ACK::ErrorCode& ack, int timeout);
-      bool monitoredLanding(ACK::ErrorCode& ack, int timeout);
-      bool moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset);
+      bool monitoredTakeoff(int timeout = 1);
+      //bool monitoredTakeoff(ACK::ErrorCode& ack, int timeout);
+      bool monitoredLanding(int timeout);
+      bool moveByPositionOffset(const JoystickCommand &JoystickCommand,int timeout,
+                                float posThresholdInM = 0.8,float yawThresholdInDeg = 1.0);
+      void velocityAndYawRateCtrl(const JoystickCommand &JoystickCommand, int timeMs);
       bool setJoystickMode(const JoystickMode &joystickMode);
       bool JoystickAction(const JoystickCommand &JoystickCommand);
       bool obtainReleaseCtrlAuthority(bool enableObtain, int timeout);
@@ -220,8 +237,8 @@ namespace dji_osdk_ros
 
       /*! Parts of data subscription*/
       bool setUpSubscription(int pkgIndex, int freq,TopicName* topicList,
-                           uint8_t topicSize, int timeout);
-      bool teardownSubscription(const int pkgIndex, int timeout);
+                           uint8_t topicSize, int timeout = 1);
+      bool teardownSubscription(const int pkgIndex, int timeout = 1);
       ACK::ErrorCode verify(int timeout);
       bool initPackageFromTopicList(int packageID, int numberOfTopics,TopicName* topicList,
                                     bool sendTimeStamp, uint16_t freq);
@@ -231,27 +248,7 @@ namespace dji_osdk_ros
                                              UserData userData);
       Version::FirmWare getFwVersion() const;
       char* getHwVersion() const;
-  protected:
-      bool startGlobalPositionBroadcast();
-      Telemetry::Vector3f toEulerAngle(void* quaternionData);
-      void localOffsetFromGpsOffset(Telemetry::Vector3f& deltaNed, void* target, void* origin);
-    
-    public:
-      Vehicle::ActivateData *getActivateData()
-      {
-        return &this->activate_data_;
-      }
-    
-      Vehicle *getVehicle()
-      {
-        return vehicle;
-      }
-    
-      Linker *getLinker()
-      {
-        return linker;
-      }
-    
+
     private:
       uint32_t timeout_;
       Vehicle::ActivateData activate_data_;
@@ -262,6 +259,22 @@ namespace dji_osdk_ros
       unsigned int baudrate_;
       std::string  sample_case_;
       const static unsigned int default_acm_baudrate = 230400;
+
+      template <typename Type>
+      static int signOfData(Type type);
+      Vector3f vector3FSub(const Vector3f& vectorA,const Vector3f& vectorB);
+      float32_t vectorNorm(Vector3f v);
+      void horizCommandLimit(float speedFactor, float& commandX,float& commandY);
+      Vector3f quaternionToEulerAngle(const Telemetry::Quaternion& quat);
+      static Vector3f localOffsetFromGpsAndFusedHeightOffset(const Telemetry::GPSFused& target,
+                                                             const Telemetry::GPSFused& origin,
+                                                             const float32_t& targetHeight, 
+                                                            const float32_t& originHeight);
+      bool startGlobalPositionBroadcast();
+      bool motorStartedCheck();
+      bool takeOffInAirCheck();
+      bool takeoffFinishedCheck();
+      bool landFinishedCheck();
 };
 }
 
