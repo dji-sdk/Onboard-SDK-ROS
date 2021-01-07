@@ -72,7 +72,7 @@
 #include <dji_osdk_ros/GetAvoidEnable.h>
 #include <dji_osdk_ros/ObtainControlAuthority.h>
 #include <dji_osdk_ros/TurnOnOffMotors.h>
-
+#include <dji_osdk_ros/KillSwitch.h>
 //Gimbal control services
 #include <dji_osdk_ros/GimbalAction.h>
 
@@ -211,10 +211,11 @@ namespace dji_osdk_ros
       ros::ServiceServer set_horizon_avoid_enable_server_;
       ros::ServiceServer get_avoid_enable_status_server_;
       ros::ServiceServer set_upwards_avoid_enable_server_;
-
       ros::ServiceServer turn_on_off_motors_server_;
-      ros::ServiceServer emergency_brake_action_server_;
       ros::ServiceServer kill_switch_server_;
+
+      ros::ServiceServer emergency_brake_action_server_;
+      
 
       /*! for gimbal */
       ros::ServiceServer gimbal_control_server_;
@@ -356,6 +357,7 @@ namespace dji_osdk_ros
       bool obtainReleaseControlAuthorityCallback(ObtainControlAuthority::Request& request, 
                                                  ObtainControlAuthority::Response& reponse);
       bool turnOnOffNotorsCallback(TurnOnOffMotors::Request& request, TurnOnOffMotors::Response& response);
+      bool killSwitchCallback(KillSwitch::Request& request, KillSwitch::Response& response);
       /*! for gimbal control */
       bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);
       /*! for camera conrol */

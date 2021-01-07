@@ -122,6 +122,7 @@ add_service_files(
   JoystickAction.srv
   ObtainControlAuthority.srv
   TurnOnOffMotors.srv
+  KillSwitch.srv
   GimbalAction.srv
   CameraEV.srv
   CameraShutterSpeed.srv

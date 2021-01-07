@@ -202,8 +202,9 @@ void VehicleNode::initService()
   set_horizon_avoid_enable_server_ = nh_.advertiseService("set_horizon_avoid_enable", &VehicleNode::setHorizonAvoidCallback,this);
   set_upwards_avoid_enable_server_ = nh_.advertiseService("set_upwards_avoid_enable", &VehicleNode::setUpwardsAvoidCallback, this);
   get_avoid_enable_status_server_ = nh_.advertiseService("get_avoid_enable_status", &VehicleNode::getAvoidEnableStatusCallback, this);
-  obtain_releae_control_authority_server_ = nh_.advertiseService("obtain_release_control_authority", &VehicleNode::obtainReleaseControlAuthorityCallback, this);
-  turn_on_off_motors_server_ = nh_.advertiseService("turn_on_off_motors", &VehicleNode::turnOnOffNotorsCallback, this);
+  obtain_releae_control_authority_server_ = nh_.advertiseService("obtain_release_control_authority",
+                                            &VehicleNode::obtainReleaseControlAuthorityCallback, this);
+  turn_on_off_motors_server_ = nh_.advertiseService("turn_on_off_motors", &VehicleNode::killSwitchCallback, this);
   /*! @brief
    *  gimbal control server
    *  @platforms M210V2, M300
@@ -1684,6 +1685,19 @@ bool VehicleNode::turnOnOffNotorsCallback(TurnOnOffMotors::Request& request, Tur
   }
 
   response.result = ptr_wrapper_->turnOnOffMotors(request.on_off);
+  return response.result;
+}
+
+bool VehicleNode::killSwitchCallback(KillSwitch::Request& request, KillSwitch::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+  char msg[10] = "StopFLy";
+  response.result = ptr_wrapper_->killSwitch(request.enable, msg);
+
   return response.result;
 }
 

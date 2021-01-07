@@ -1820,6 +1820,34 @@ static T_OsdkOsalHandler osalHandler = {
     return false;
   }
 
+  bool VehicleWrapper::killSwitch(bool enable, char msg[10], int timeOut)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+
+    ErrorCode::ErrorCodeType ack;
+    if (enable)
+    {
+      ack = vehicle->flightController->killSwitch(DJI::OSDK::FlightActions::KillSwitch::ENABLE,
+                                                  timeOut, msg);
+    }
+    else
+    {
+      ack = vehicle->flightController->killSwitch(DJI::OSDK::FlightActions::KillSwitch::DISABLE,
+                                                  timeOut, msg);
+    }
+
+    if (ack == ErrorCode::SysCommonErr::Success)
+    {
+      return true;
+    }
+
+    return false;
+  }
+
   bool VehicleWrapper::startGlobalPositionBroadcast()
   {
     uint8_t freq[16];
