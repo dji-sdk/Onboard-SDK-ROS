@@ -1848,6 +1848,19 @@ static T_OsdkOsalHandler osalHandler = {
     return false;
   }
 
+  bool VehicleWrapper::emergencyBrake()
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+
+    vehicle->flightController->emergencyBrakeAction();
+
+    return true;
+  }
+
   bool VehicleWrapper::startGlobalPositionBroadcast()
   {
     uint8_t freq[16];

@@ -205,6 +205,7 @@ void VehicleNode::initService()
   obtain_releae_control_authority_server_ = nh_.advertiseService("obtain_release_control_authority",
                                             &VehicleNode::obtainReleaseControlAuthorityCallback, this);
   turn_on_off_motors_server_ = nh_.advertiseService("turn_on_off_motors", &VehicleNode::killSwitchCallback, this);
+  emergency_brake_action_server_ = nh_.advertiseService("emergency_brake", &VehicleNode::emergencyBrakeCallback, this);
   /*! @brief
    *  gimbal control server
    *  @platforms M210V2, M300
@@ -1697,6 +1698,19 @@ bool VehicleNode::killSwitchCallback(KillSwitch::Request& request, KillSwitch::R
   }
   char msg[10] = "StopFLy";
   response.result = ptr_wrapper_->killSwitch(request.enable, msg);
+
+  return response.result;
+}
+
+bool VehicleNode::emergencyBrakeCallback(EmergencyBrake::Request& request, EmergencyBrake::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->emergencyBrake();
 
   return response.result;
 }

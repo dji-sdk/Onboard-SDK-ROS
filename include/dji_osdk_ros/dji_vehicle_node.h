@@ -73,6 +73,7 @@
 #include <dji_osdk_ros/ObtainControlAuthority.h>
 #include <dji_osdk_ros/TurnOnOffMotors.h>
 #include <dji_osdk_ros/KillSwitch.h>
+#include <dji_osdk_ros/EmergencyBrake.h>
 //Gimbal control services
 #include <dji_osdk_ros/GimbalAction.h>
 
@@ -213,9 +214,7 @@ namespace dji_osdk_ros
       ros::ServiceServer set_upwards_avoid_enable_server_;
       ros::ServiceServer turn_on_off_motors_server_;
       ros::ServiceServer kill_switch_server_;
-
       ros::ServiceServer emergency_brake_action_server_;
-      
 
       /*! for gimbal */
       ros::ServiceServer gimbal_control_server_;
@@ -358,6 +357,7 @@ namespace dji_osdk_ros
                                                  ObtainControlAuthority::Response& reponse);
       bool turnOnOffNotorsCallback(TurnOnOffMotors::Request& request, TurnOnOffMotors::Response& response);
       bool killSwitchCallback(KillSwitch::Request& request, KillSwitch::Response& response);
+      bool emergencyBrakeCallback(EmergencyBrake::Request& request, EmergencyBrake::Response& response);
       /*! for gimbal control */
       bool gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response);
       /*! for camera conrol */

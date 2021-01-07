@@ -112,6 +112,7 @@ namespace dji_osdk_ros
       bool obtainReleaseCtrlAuthority(bool enableObtain, int timeout);
       bool turnOnOffMotors(bool OnOff,int timeOut = 1);
       bool killSwitch(bool enable, char msg[10], int timeOut = 1);
+      bool emergencyBrake();
 
       /*! Parts of Battery */
       bool getBatteryWholeInfo(DJI::OSDK::BatteryWholeInfo& batteryWholeInfo);

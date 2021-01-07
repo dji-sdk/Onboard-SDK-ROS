@@ -123,6 +123,7 @@ add_service_files(
   ObtainControlAuthority.srv
   TurnOnOffMotors.srv
   KillSwitch.srv
+  EmergencyBrake.srv
   GimbalAction.srv
   CameraEV.srv
   CameraShutterSpeed.srv
