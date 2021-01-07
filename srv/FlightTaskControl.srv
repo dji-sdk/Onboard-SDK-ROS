@@ -1,10 +1,16 @@
 #constant for tasks
 uint8 TASK_GOHOME = 1
-uint8 TASK_POSITON_AND_YAW_CONTROL = 2
+uint8 TASK_POSITON_AND_YAW_CONTROL    = 2
 uint8 TASK_GOHOME_AND_CONFIRM_LANDING = 3
 uint8 TASK_TAKEOFF = 4
 uint8 TASK_VELOCITY_AND_YAWRATE_CONTROL = 5
-uint8 TASK_LAND = 6
+uint8 TASK_LAND          = 6
+uint8 START_MOTOR        = 7
+uint8 STOP_MOTOR         = 8
+uint8 TASK_EXIT_GO_HOME  = 12
+uint8 TASK_EXIT_LANDING  = 14
+uint8 TASK_FORCE_LANDING_AVOID_GROUND = 30 #/*!< confirm landing */
+uint8 TASK_FORCE_LANDING              = 31 #/*!< force landing */
 
 #request
 uint8 task    # see constants above for possible tasks

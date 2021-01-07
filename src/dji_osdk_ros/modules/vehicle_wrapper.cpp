@@ -995,6 +995,7 @@ static T_OsdkOsalHandler osalHandler = {
     return true;
   }
 
+
   bool VehicleWrapper::monitoredLanding(int timeout)
   {
     if (!vehicle)
@@ -1047,6 +1048,60 @@ static T_OsdkOsalHandler osalHandler = {
     return true;
   }
 
+  bool VehicleWrapper::startForceLanding(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    ErrorCode::ErrorCodeType errCode = vehicle->flightController->startForceLandingSync(timeout);
+    if (errCode != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR( "Fail to execute force landing action! Error code: "
+              "%llx\n ",errCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::startConfirmLanding(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    ErrorCode::ErrorCodeType errCode = vehicle->flightController->startConfirmLandingSync(timeout);
+    if (errCode != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR( "Fail to execute confirm landing action! Error code: "
+              "%llx\n ",errCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::cancelLanding(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    ErrorCode::ErrorCodeType errCode = vehicle->flightController->cancelLandingSync(timeout);
+    if (errCode != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR( "Fail to execute cancel landing action! Error code: "
+              "%llx\n ",errCode);
+      return false;
+    }
+
+    return true;
+  }
+
   bool VehicleWrapper::goHome( int timeout)
   {
     if (!vehicle)
@@ -1058,6 +1113,24 @@ static T_OsdkOsalHandler osalHandler = {
     if (goHomeErrCode != ErrorCode::SysCommonErr::Success)
     {
       DERROR( "Fail to execute gohome action! Error code: "
+              "%llx\n ",goHomeErrCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::cancelGoHome( int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    ErrorCode::ErrorCodeType goHomeErrCode = vehicle->flightController->cancelGoHomeSync(timeout);
+    if (goHomeErrCode != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR( "Fail to execute cancel go home action! Error code: "
               "%llx\n ",goHomeErrCode);
       return false;
     }

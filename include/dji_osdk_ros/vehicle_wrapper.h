@@ -111,16 +111,19 @@ namespace dji_osdk_ros
       bool setHomePoint(float64_t latitude, float64_t longitude, int timeout = 1);
       bool setHomeAltitude(uint16_t altitude, int timeout = 1);
       bool getHomeAltitude(uint16_t& altitude, int timeout = 1);
-      bool goHome( int timeout);
+      bool goHome(int timeout);
+      bool cancelGoHome(int timeout);
       bool goHomeAndConfirmLanding(int timeout);
       bool setCollisionAvoidance(bool enable);
       bool getCollisionAvoidance(uint8_t& enable);
       bool setUpwardsAvoidance(bool enable);
       bool getUpwardsAvoidance(uint8_t& enable);
 
-      bool monitoredTakeoff(int timeout = 1);
-      //bool monitoredTakeoff(ACK::ErrorCode& ack, int timeout);
+      bool monitoredTakeoff(int timeout);
       bool monitoredLanding(int timeout);
+      bool startForceLanding(int timeout);
+      bool startConfirmLanding(int timeout);
+      bool cancelLanding(int timeout);
       bool moveByPositionOffset(const JoystickCommand &JoystickCommand,int timeout,
                                 float posThresholdInM = 0.8,float yawThresholdInDeg = 1.0);
       void velocityAndYawRateCtrl(const JoystickCommand &JoystickCommand, int timeMs);

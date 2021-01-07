@@ -204,7 +204,7 @@ void VehicleNode::initService()
   get_avoid_enable_status_server_ = nh_.advertiseService("get_avoid_enable_status", &VehicleNode::getAvoidEnableStatusCallback, this);
   obtain_releae_control_authority_server_ = nh_.advertiseService("obtain_release_control_authority",
                                             &VehicleNode::obtainReleaseControlAuthorityCallback, this);
-  turn_on_off_motors_server_ = nh_.advertiseService("turn_on_off_motors", &VehicleNode::killSwitchCallback, this);
+  kill_switch_server_ = nh_.advertiseService("kill switch", &VehicleNode::killSwitchCallback, this);
   emergency_brake_action_server_ = nh_.advertiseService("emergency_brake", &VehicleNode::emergencyBrakeCallback, this);
   /*! @brief
    *  gimbal control server
@@ -1059,6 +1059,60 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
         }
         break;
       }
+    case FlightTaskControl::Request::START_MOTOR:
+    {
+        ROS_INFO_STREAM("call start motor service");
+        if (ptr_wrapper_->turnOnOffMotors(true))
+        {
+          response.result = true;
+        }
+        break;
+    }
+    case FlightTaskControl::Request::STOP_MOTOR:
+    {
+        ROS_INFO_STREAM("call stop motor service");
+        if (ptr_wrapper_->turnOnOffMotors(false))
+        {
+          response.result = true;
+        }
+        break;
+    }
+    case FlightTaskControl::Request::TASK_EXIT_GO_HOME:
+      {
+        ROS_INFO_STREAM("call cancel go home service");
+        if (ptr_wrapper_->cancelGoHome(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+      }
+    case FlightTaskControl::Request::TASK_EXIT_LANDING:
+      {
+        ROS_INFO_STREAM("call cancel landing service");
+        if (ptr_wrapper_->cancelLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+      }
+    case FlightTaskControl::Request::TASK_FORCE_LANDING_AVOID_GROUND:
+    {
+        ROS_INFO_STREAM("call confirm landing service");
+        if (ptr_wrapper_->startConfirmLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+    }
+    case FlightTaskControl::Request::TASK_FORCE_LANDING:
+    {
+        ROS_INFO_STREAM("call force landing service");
+        if (ptr_wrapper_->startForceLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+    }
     default:
       {
         ROS_INFO_STREAM("No recognized task");
@@ -1669,27 +1723,6 @@ bool VehicleNode::obtainReleaseControlAuthorityCallback(ObtainControlAuthority::
 
   response.result = ptr_wrapper_->obtainReleaseCtrlAuthority(request.enable_obtain, FLIGHT_CONTROL_WAIT_TIMEOUT);
 
-  return response.result;
-}
-
-bool VehicleNode::turnOnOffNotorsCallback(TurnOnOffMotors::Request& request, TurnOnOffMotors::Response& response)
-{
-  if (request.on_off)
-  {
-    ROS_INFO_STREAM("turn on motors Callback");
-  }
-  else
-  {
-    ROS_INFO_STREAM("turn off motors Callback");
-  }
-
-  if(ptr_wrapper_ == nullptr)
-  {
-    ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return false;
-  }
-
-  response.result = ptr_wrapper_->turnOnOffMotors(request.on_off);
   return response.result;
 }
 

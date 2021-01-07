@@ -122,7 +122,6 @@ add_service_files(
   SetJoystickMode.srv
   JoystickAction.srv
   ObtainControlAuthority.srv
-  TurnOnOffMotors.srv
   KillSwitch.srv
   EmergencyBrake.srv
   GimbalAction.srv
