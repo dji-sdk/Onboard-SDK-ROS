@@ -9,10 +9,12 @@ find_package(catkin REQUIRED COMPONENTS
     geometry_msgs
     message_generation
     nav_msgs
+    nmea_msgs
     roscpp
     rospy
     std_msgs
     sensor_msgs
+    message_filters # for message_filter
   )
 
 ## System dependencies are found with CMake's conventions
@@ -69,13 +71,32 @@ find_package(FFMPEG REQUIRED)
 ## Generate msg in the 'msg' folder
 add_message_files(
   FILES
-  CameraData.msg
 
   FCTimeInUTC.msg
   GPSUTC.msg
   Gimbal.msg
   Waypoint.msg
   WaypointList.msg
+  WaypointV2AircraftControlActuatorFlying.msg
+  WaypointV2AircraftControlActuatorRotateHeading.msg
+  WaypointV2AircraftControlActuator.msg
+  WaypointV2AssociateTrigger.msg
+  WaypointV2CameraActuatorFocalLengthParam.msg
+  WaypointV2CameraActuatorFocusParam.msg
+  WaypointV2CameraActuator.msg
+  WaypointV2Config.msg
+  WaypointV2GimbalActuatorRotationParam.msg
+  WaypointV2GimbalActuator.msg
+  WaypointV2InitSetting.msg
+  WaypointV2IntervalTrigger.msg
+  WaypointV2ReachpointTrigger.msg
+  WaypointV2SampleReachPointTrigger.msg
+  WaypointV2TrajectoryTrigger.msg
+  WaypointV2Action.msg
+  WaypointV2.msg
+  WaypointV2MissionEventPush.msg
+  WaypointV2MissionStatePush.msg
+
   MobileData.msg
   PayloadData.msg
   MissionWaypointAction.msg
@@ -90,6 +111,9 @@ add_message_files(
 ## Generate services in the 'srv' folder
 add_service_files(
   FILES
+
+  GetDroneType.srv
+  GetM300StereoParams.srv
   FlightTaskControl.srv
   GimbalAction.srv
   CameraEV.srv
@@ -108,8 +132,21 @@ add_service_files(
   MFIO.srv
   SetGoHomeAltitude.srv
   SetNewHomePoint.srv
-  AdvancedSensing.srv
+  SetupCameraH264.srv
   AvoidEnable.srv
+  InitWaypointV2Setting.srv
+  UploadWaypointV2Mission.srv
+  UploadWaypointV2Action.srv
+  DownloadWaypointV2Mission.srv
+  StartWaypointV2Mission.srv
+  StopWaypointV2Mission.srv
+  PauseWaypointV2Mission.srv
+  ResumeWaypointV2Mission.srv
+  GenerateWaypointV2Action.srv
+  SetGlobalCruisespeed.srv
+  GetGlobalCruisespeed.srv
+  SubscribeWaypointV2Event.srv
+  SubscribeWaypointV2State.srv
 
   Activation.srv
   CameraAction.srv

@@ -3,7 +3,7 @@
  *  @date July, 2018
  *
  *  @brief
- *  A ROS wrapper to interact with DJI onboard SDK
+ *  A ROS modules to interact with DJI onboard SDK
  *
  *  @copyright 2018 DJI. All rights reserved.
  *

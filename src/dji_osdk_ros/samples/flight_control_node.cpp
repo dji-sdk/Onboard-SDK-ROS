@@ -51,7 +51,7 @@ int main(int argc, char** argv)
   auto set_go_home_altitude_client = nh.serviceClient<SetGoHomeAltitude>("/set_go_home_altitude");
   auto set_current_point_as_home_client = nh.serviceClient<SetNewHomePoint>("/set_current_point_as_home");
   auto enable_avoid_client = nh.serviceClient<AvoidEnable>("/enable_avoid");
-
+  auto enable_upward_avoid_client = nh.serviceClient<AvoidEnable>("/enable_upwards_avoid");
   std::cout
       << "| Available commands:                                            |"
       << std::endl;
@@ -157,6 +157,15 @@ int main(int argc, char** argv)
           if(avoid_req.response.result == false)
           {
             ROS_ERROR_STREAM("Enable Avoid FAILED");
+          }
+
+          ROS_INFO_STREAM("turn on Upwards-Collision-Avoidance-Enabled");
+          AvoidEnable upward_avoid_req;
+          upward_avoid_req.request.enable = true;
+          enable_upward_avoid_client.call(upward_avoid_req);
+          if(upward_avoid_req.response.result == false)
+          {
+            ROS_ERROR_STREAM("Enable Upward Avoid FAILED");
           }
 
           ROS_INFO_STREAM("Move by position offset request sending ...");

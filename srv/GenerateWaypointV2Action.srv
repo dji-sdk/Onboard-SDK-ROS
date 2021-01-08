@@ -1,0 +1,5 @@
+#request
+WaypointV2Action[] actions
+---
+#response
+bool result

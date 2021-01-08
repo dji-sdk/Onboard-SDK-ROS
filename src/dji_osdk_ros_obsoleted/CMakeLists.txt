@@ -88,8 +88,8 @@ add_executable(dji_sdk_node
   modules/dji_sdk_node_mobile_comm.cpp
   modules/dji_sdk_node_payload_comm.cpp
   modules/dji_sdk_node_time_sync.cpp
-  ../dji_osdk_ros/osdkhal_linux.c
-  ../dji_osdk_ros/osdkosal_linux.c
+        ../dji_osdk_ros/modules/osdkhal_linux.c
+        ../dji_osdk_ros/modules/osdkosal_linux.c
   dji_linux_environment.cpp
   dji_linux_helpers.cpp)
 

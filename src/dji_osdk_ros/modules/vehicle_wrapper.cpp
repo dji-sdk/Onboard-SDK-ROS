@@ -2,7 +2,7 @@
  *  @version 4.0
  *  @date May 2020
  *
- *  @brief layer of wrapper of osdk ros 4.0.Encapsulate the interface of osdk.
+ *  @brief layer of modules of osdk ros 4.0.Encapsulate the interface of osdk.
  *
  *  @Copyright (c) 2020 DJI
  *
@@ -64,25 +64,6 @@ static T_OsdkHalUSBBulkHandler halUSBBulkHandler = {
     .USBBulkReadData = OsdkLinux_USBBulkReadData,
     .USBBulkClose = OsdkLinux_USBBulkClose,
 };
-
-static void liveViewCb(uint8_t* buf, int bufLen, void* userData) {
-  if (userData) {
-      VehicleWrapper* vehicleWrapper = reinterpret_cast<VehicleWrapper*>(userData);
-      vehicleWrapper->setCameraRawData(buf, bufLen);
-  } else {
-  DERROR("userData is a null value (should be a pointer to VehicleWrapper).");
-  }
-}
-
-static void setCameraImageCb(CameraRGBImage img, void *p)
-{
- if (p) {
-     VehicleWrapper* vehicleWrapper = reinterpret_cast<VehicleWrapper*>(p);
-     vehicleWrapper->setCameraImage(img);
- } else{
-     DERROR("p is a null value (should be a pointer to VehicleWrapper).");
-     }
-}
 #endif
 
 static T_OsdkOsalHandler osalHandler = {
@@ -864,45 +845,8 @@ static T_OsdkOsalHandler osalHandler = {
 
   bool VehicleWrapper::monitoredTakeoff(ACK::ErrorCode& ack, int timeout)
   {
-    using namespace Telemetry;
     //@todo: remove this once the getErrorCode function signature changes
     char func[50];
-    int  pkgIndex;
-
-    if (vehicle->isM100() && vehicle->isLegacyM600())
-    {
-      // Telemetry: Verify the subscription
-      ack = vehicle->subscribe->verify(timeout);
-      if (ACK::getError(ack) != ACK::SUCCESS)
-      {
-        ACK::getErrorCodeMessage(ack, func);
-        return false;
-      }
-
-      // Telemetry: Subscribe to flight status and mode at freq 10 Hz
-      pkgIndex                  = 0;
-      int       freq            = 10;
-      TopicName topicList10Hz[] = { TOPIC_STATUS_FLIGHT,
-                                    TOPIC_STATUS_DISPLAYMODE };
-      int  numTopic        = sizeof(topicList10Hz) / sizeof(topicList10Hz[0]);
-      bool enableTimestamp = false;
-
-      bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
-        pkgIndex, numTopic, topicList10Hz, enableTimestamp, freq);
-      if (!(pkgStatus))
-      {
-        return pkgStatus;
-      }
-      ack = vehicle->subscribe->startPackage(pkgIndex, timeout);
-      if (ACK::getError(ack) != ACK::SUCCESS)
-      {
-        ACK::getErrorCodeMessage(ack, func);
-        // Cleanup before return
-        vehicle->subscribe->removePackage(pkgIndex, timeout);
-        return false;
-      }
-    }
-
     // Start takeoff
     ack = vehicle->control->takeoff(timeout);
     if (ACK::getError(ack) != ACK::SUCCESS)
@@ -915,7 +859,7 @@ static T_OsdkOsalHandler osalHandler = {
     int motorsNotStarted = 0;
     int timeoutCycles    = 20;
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       while (vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() !=
              VehicleStatus::FlightStatus::ON_GROUND &&
@@ -930,11 +874,6 @@ static T_OsdkOsalHandler osalHandler = {
       if (motorsNotStarted == timeoutCycles)
       {
         std::cout << "Takeoff failed. Motors are not spinning." << std::endl;
-        // Cleanup
-        if (vehicle->isM100() && vehicle->isLegacyM600())
-        {
-          vehicle->subscribe->removePackage(0, timeout);
-        }
         return false;
       }
       else
@@ -977,7 +916,7 @@ static T_OsdkOsalHandler osalHandler = {
     int stillOnGround = 0;
     timeoutCycles     = 110;
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       while (vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() !=
              VehicleStatus::FlightStatus::IN_AIR &&
@@ -996,11 +935,6 @@ static T_OsdkOsalHandler osalHandler = {
         std::cout << "Takeoff failed. Aircraft is still on the ground, but the "
                      "motors are spinning."
                   << std::endl;
-        // Cleanup
-        if (vehicle->isM100() && vehicle->isLegacyM600())
-        {
-          vehicle->subscribe->removePackage(0, timeout);
-        }
         return false;
       }
       else
@@ -1040,7 +974,7 @@ static T_OsdkOsalHandler osalHandler = {
     }
 
     // Final check: Finished takeoff
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
              VehicleStatus::DisplayMode::MODE_ASSISTED_TAKEOFF ||
@@ -1050,7 +984,7 @@ static T_OsdkOsalHandler osalHandler = {
         sleep(1);
       }
 
-      if (vehicle->isM100() && vehicle->isLegacyM600())
+      if (!vehicle->isM100() && !vehicle->isLegacyM600())
       {
         if (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
             VehicleStatus::DisplayMode::MODE_P_GPS ||
@@ -1062,9 +996,8 @@ static T_OsdkOsalHandler osalHandler = {
         else
         {
           std::cout
-            << "Takeoff finished, but the aircraft is in an unexpected mode. "
-               "Please connect DJI GO.\n";
-          vehicle->subscribe->removePackage(0, timeout);
+              << "Takeoff finished, but the aircraft is in an unexpected mode. "
+                 "Please connect DJI GO.\n";
           return false;
         }
       }
@@ -1074,29 +1007,17 @@ static T_OsdkOsalHandler osalHandler = {
       float32_t                 delta;
       Telemetry::GlobalPosition currentHeight;
       Telemetry::GlobalPosition deltaHeight =
-        vehicle->broadcast->getGlobalPosition();
+          vehicle->broadcast->getGlobalPosition();
 
       do
       {
         sleep(4);
         currentHeight = vehicle->broadcast->getGlobalPosition();
-        delta         = std::fabs(currentHeight.altitude - deltaHeight.altitude);
+        delta         = fabs(currentHeight.altitude - deltaHeight.altitude);
         deltaHeight.altitude = currentHeight.altitude;
       } while (delta >= 0.009);
 
       std::cout << "Aircraft hovering at " << currentHeight.altitude << "m!\n";
-    }
-
-    // Cleanup
-    if (vehicle->isM100() && vehicle->isLegacyM600())
-    {
-      ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
-      if (ACK::getError(ack))
-      {
-        std::cout
-          << "Error unsubscribing; please restart the drone/FC to get back "
-             "to a clean state.\n";
-      }
     }
 
     return true;
@@ -1104,44 +1025,8 @@ static T_OsdkOsalHandler osalHandler = {
 
   bool VehicleWrapper::monitoredLanding(ACK::ErrorCode& ack, int timeout)
   {
-    using namespace Telemetry;
     //@todo: remove this once the getErrorCode function signature changes
     char func[50];
-    int  pkgIndex;
-
-    if (vehicle->isM100() && vehicle->isLegacyM600())
-    {
-      // Telemetry: Verify the subscription
-      ack = vehicle->subscribe->verify(timeout);
-      if (ACK::getError(ack) != ACK::SUCCESS)
-      {
-        ACK::getErrorCodeMessage(ack, func);
-        return false;
-      }
-
-      // Telemetry: Subscribe to flight status and mode at freq 10 Hz
-      pkgIndex                  = 0;
-      int       freq            = 10;
-      TopicName topicList10Hz[] = { TOPIC_STATUS_FLIGHT,
-                                    TOPIC_STATUS_DISPLAYMODE };
-      int  numTopic        = sizeof(topicList10Hz) / sizeof(topicList10Hz[0]);
-      bool enableTimestamp = false;
-
-      bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
-        pkgIndex, numTopic, topicList10Hz, enableTimestamp, freq);
-      if (!(pkgStatus))
-      {
-        return pkgStatus;
-      }
-      ack = vehicle->subscribe->startPackage(pkgIndex, timeout);
-      if (ACK::getError(ack) != ACK::SUCCESS)
-      {
-        ACK::getErrorCodeMessage(ack, func);
-        // Cleanup before return
-        vehicle->subscribe->removePackage(pkgIndex, timeout);
-        return false;
-      }
-    }
 
     // Start landing
     ack = vehicle->control->land(timeout);
@@ -1155,7 +1040,7 @@ static T_OsdkOsalHandler osalHandler = {
     int landingNotStarted = 0;
     int timeoutCycles     = 20;
 
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
              VehicleStatus::DisplayMode::MODE_AUTO_LANDING &&
@@ -1179,15 +1064,6 @@ static T_OsdkOsalHandler osalHandler = {
     if (landingNotStarted == timeoutCycles)
     {
       std::cout << "Landing failed. Aircraft is still in the air." << std::endl;
-      if (vehicle->isM100() && vehicle->isLegacyM600())
-      {
-        // Cleanup before return
-        ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
-        if (ACK::getError(ack)) {
-          std::cout << "Error unsubscribing; please restart the drone/FC to get "
-                       "back to a clean state.\n";
-        }
-      }
       return false;
     }
     else
@@ -1196,7 +1072,7 @@ static T_OsdkOsalHandler osalHandler = {
     }
 
     // Second check: Finished landing
-    if (vehicle->isM100() && vehicle->isLegacyM600())
+    if (!vehicle->isM100() && !vehicle->isLegacyM600())
     {
       while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
              VehicleStatus::DisplayMode::MODE_AUTO_LANDING &&
@@ -1216,14 +1092,8 @@ static T_OsdkOsalHandler osalHandler = {
       else
       {
         std::cout
-          << "Landing finished, but the aircraft is in an unexpected mode. "
-             "Please connect DJI GO.\n";
-        ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
-        if (ACK::getError(ack))
-        {
-          std::cout << "Error unsubscribing; please restart the drone/FC to get "
-                       "back to a clean state.\n";
-        }
+            << "Landing finished, but the aircraft is in an unexpected mode. "
+               "Please connect DJI GO.\n";
         return false;
       }
     }
@@ -1245,8 +1115,8 @@ static T_OsdkOsalHandler osalHandler = {
       if (gp.altitude != 0)
       {
         std::cout
-          << "Landing finished, but the aircraft is in an unexpected mode. "
-             "Please connect DJI GO.\n";
+            << "Landing finished, but the aircraft is in an unexpected mode. "
+               "Please connect DJI GO.\n";
         return false;
       }
       else
@@ -1272,8 +1142,8 @@ static T_OsdkOsalHandler osalHandler = {
       if (gp.altitude != 0)
       {
         std::cout
-          << "Landing finished, but the aircraft is in an unexpected mode. "
-             "Please connect DJI GO.\n";
+            << "Landing finished, but the aircraft is in an unexpected mode. "
+               "Please connect DJI GO.\n";
         return false;
       }
       else
@@ -1282,24 +1152,12 @@ static T_OsdkOsalHandler osalHandler = {
       }
     }
 
-    // Cleanup
-    if (vehicle->isM100() && vehicle->isLegacyM600())
-    {
-      ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
-      if (ACK::getError(ack))
-      {
-        std::cout
-          << "Error unsubscribing; please restart the drone/FC to get back "
-             "to a clean state.\n";
-      }
-    }
-
     return true;
   }
 
-  bool VehicleWrapper::goHome(int timeout)
+  bool VehicleWrapper::goHome(ACK::ErrorCode& ack, int timeout)
   {
-    auto ack = vehicle->control->goHome(timeout);
+    ack = vehicle->control->goHome(timeout);
     if (ACK::getError(ack))
     {
       ACK::getErrorCodeMessage(ack, __func__);
@@ -1311,7 +1169,7 @@ static T_OsdkOsalHandler osalHandler = {
     }
   }
 
-  bool VehicleWrapper::setUpSubscription(int pkgIndex, int freq, TopicName topicList[],
+  bool VehicleWrapper::setUpSubscription(int pkgIndex, int freq, TopicName* topicList,
                                          uint8_t topicSize, int timeout)
   {
     if (vehicle) {
@@ -1384,10 +1242,11 @@ static T_OsdkOsalHandler osalHandler = {
   bool VehicleWrapper::goHomeAndConfirmLanding(int timeout)
   {
     /*! Step 1: Verify and setup the subscription */
-    const int pkgIndex = static_cast<int>(SubscribePackgeIndex::FLIGHT_CONTROL_GO_HOME_AND_FORCE_LANDING_DATA);
+    const int pkgIndex = static_cast<int>(SubscribePackgeIndex::TEMP_SUB_PACKAGE_INDEX);
     int freq = 10;
-    TopicName topicList[] = {TOPIC_STATUS_FLIGHT, TOPIC_STATUS_DISPLAYMODE,
-                             TOPIC_AVOID_DATA, TOPIC_VELOCITY};
+//    TopicName topicList[] = {TOPIC_STATUS_FLIGHT, TOPIC_STATUS_DISPLAYMODE,
+//                             TOPIC_AVOID_DATA, TOPIC_VELOCITY};
+    TopicName topicList[] = { TOPIC_AVOID_DATA };
     int topicSize = sizeof(topicList) / sizeof(topicList[0]);
     setUpSubscription(pkgIndex, freq, topicList, topicSize, timeout);
 
@@ -1489,7 +1348,7 @@ static T_OsdkOsalHandler osalHandler = {
         ACK::getErrorCodeMessage(subscribeStatus, __func__);
         return false;
       }
-      int pkgIndex = static_cast<int>(SubscribePackgeIndex::FLIGHT_CONTROL_SET_GO_HOME_DATA);
+      int pkgIndex = static_cast<int>(SubscribePackgeIndex::TEMP_SUB_PACKAGE_INDEX);
       int freq = 1;
       TopicName topicList[] = {TOPIC_HOME_POINT_SET_STATUS, TOPIC_HOME_POINT_INFO};
 
@@ -1568,11 +1427,19 @@ static T_OsdkOsalHandler osalHandler = {
     return false;
   }
 
+  bool VehicleWrapper::setUpwardsAvoidance(bool enable)
+  {
+    auto enum_enable = enable ? FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_DISABLE : FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_ENABLE;
+    ErrorCode::ErrorCodeType ack = vehicle->flightController->setUpwardsAvoidanceEnabledSync(enum_enable, 1);
+    if (ack == ErrorCode::SysCommonErr::Success)
+    {
+      return true;
+    }
+    return false;
+  }
+
   bool VehicleWrapper::moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset)
   {
-    // Set timeout: this timeout is the time you allow the drone to take to finish
-    // the
-    // mission
     using namespace Telemetry;
     auto xOffsetDesired = p_offset.x;
     auto yOffsetDesired = p_offset.y;
@@ -1584,62 +1451,16 @@ static T_OsdkOsalHandler osalHandler = {
     // Set timeout: this timeout is the time you allow the drone to take to finish
     // the
     // mission
-    int responseTimeout              = 1;
     int timeoutInMilSec              = 40000;
     int controlFreqInHz              = 50; // Hz
     int cycleTimeInMs                = 1000 / controlFreqInHz;
     int outOfControlBoundsTimeLimit  = 10 * cycleTimeInMs; // 10 cycles
     int withinControlBoundsTimeReqmt = 50 * cycleTimeInMs; // 50 cycles
-    int pkgIndex;
 
     //@todo: remove this once the getErrorCode function signature changes
     char func[50];
 
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
-    {
-      // Telemetry: Verify the subscription
-      ACK::ErrorCode subscribeStatus;
-      subscribeStatus = vehicle->subscribe->verify(responseTimeout);
-      if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
-      {
-        ACK::getErrorCodeMessage(subscribeStatus, func);
-        return false;
-      }
-
-      // Telemetry: Subscribe to quaternion, fused lat/lon and altitude at freq 50
-      // Hz
-      pkgIndex                  = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::FLIGHT_CONTROL_DATA);
-      int       freq            = 50;
-      TopicName topicList50Hz[] = { TOPIC_QUATERNION, TOPIC_GPS_FUSED };
-      int       numTopic = sizeof(topicList50Hz) / sizeof(topicList50Hz[0]);
-      bool      enableTimestamp = false;
-
-      bool pkgStatus = vehicle->subscribe->initPackageFromTopicList(
-          pkgIndex, numTopic, topicList50Hz, enableTimestamp, freq);
-      if (!(pkgStatus))
-      {
-        return pkgStatus;
-      }
-      subscribeStatus =
-          vehicle->subscribe->startPackage(pkgIndex, responseTimeout);
-      if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
-      {
-        ACK::getErrorCodeMessage(subscribeStatus, func);
-        // Cleanup before return
-        vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
-        return false;
-      }
-
-      // Also, since we don't have a source for relative height through subscription,
-      // start using broadcast height
-      if (!startGlobalPositionBroadcast())
-      {
-        // Cleanup before return
-        vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
-        return false;
-      }
-    }
-
+    startGlobalPositionBroadcast();
     // Wait for data to come in
     sleep(1);
 
@@ -1767,7 +1588,7 @@ static T_OsdkOsalHandler osalHandler = {
         broadcastQ         = vehicle->broadcast->getQuaternion();
         yawInRad           = toEulerAngle((static_cast<void*>(&broadcastQ))).z;
         currentBroadcastGP = vehicle->broadcast->getGlobalPosition();
-        localOffsetFromGpsOffset( localOffset,
+        localOffsetFromGpsOffset(localOffset,
                                  static_cast<void*>(&currentBroadcastGP),
                                  static_cast<void*>(&originBroadcastGP));
       }
@@ -1838,31 +1659,8 @@ static T_OsdkOsalHandler osalHandler = {
     if (elapsedTimeInMs >= timeoutInMilSec)
     {
       std::cout << "Task timeout!\n";
-      if (!vehicle->isM100() && !vehicle->isLegacyM600())
-      {
-        ACK::ErrorCode ack =
-            vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
-        if (ACK::getError(ack))
-        {
-          std::cout << "Error unsubscribing; please restart the drone/FC to get "
-                       "back to a clean state.\n";
-        }
-      }
       return ACK::FAIL;
     }
-
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
-    {
-      ACK::ErrorCode ack =
-          vehicle->subscribe->removePackage(pkgIndex, responseTimeout);
-      if (ACK::getError(ack))
-      {
-        std::cout
-            << "Error unsubscribing; please restart the drone/FC to get back "
-               "to a clean state.\n";
-      }
-    }
-
     return ACK::SUCCESS;
   }
 
@@ -2050,25 +1848,6 @@ static T_OsdkOsalHandler osalHandler = {
     return true;
   }
 
-//  bool VehicleWrapper::setGimbalAngle(const GimbalContainer& gimbal)
-//  {
-//    DJI::OSDK::Gimbal::AngleData gimbalAngle = {};
-//    gimbalAngle.roll     = gimbal.roll;
-//    gimbalAngle.pitch    = gimbal.pitch;
-//    gimbalAngle.yaw      = gimbal.yaw;
-//    gimbalAngle.duration = gimbal.duration;
-//    gimbalAngle.mode |= 0;
-//    gimbalAngle.mode |= gimbal.isAbsolute;
-//    gimbalAngle.mode |= gimbal.yaw_cmd_ignore << 1;
-//    gimbalAngle.mode |= gimbal.roll_cmd_ignore << 2;
-//    gimbalAngle.mode |= gimbal.pitch_cmd_ignore << 3;
-//
-//    vehicle->gimbal->setAngle(&gimbalAngle);
-//    // Give time for gimbal to sync
-//    sleep(4);
-//    return true;
-//  }
-
   uint8_t VehicleWrapper::outputMFIO(uint8_t mode, uint8_t channel, uint32_t init_on_time_us, uint16_t freq, bool block, uint8_t gpio_set_value)
   {
     int responseTimeout = 1;
@@ -2134,104 +1913,629 @@ static T_OsdkOsalHandler osalHandler = {
     return ack.value;
   }
 
+  void VehicleWrapper::sendDataToMSDK(uint8_t* data, uint8_t len)
+  {
+      if (!vehicle)
+      {
+        std::cout << "vehicle is a null value!" << std::endl;
+      }
+
+      vehicle->mobileDevice->sendDataToMSDK(data, len);
+  }
+
+  void VehicleWrapper::sendDataToPSDK(uint8_t* data, uint8_t len)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    vehicle->payloadDevice->sendDataToPSDK(data, len);
+  }
+
+  bool VehicleWrapper::initWaypointV2(DJI::OSDK::WayPointV2InitSettings *info, int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->init(info,timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+       DERROR("Init mission setting ErrorCode:0x%lX\n", ret);
+       ErrorCode::printErrorCodeMsg(ret);
+       return false;
+    }
+    else
+    {
+      DSTATUS("Init mission setting successfully!\n");
+    }
+    return true;
+  }
+
+  bool VehicleWrapper::uploadWaypointV2(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->uploadMission(timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("Upload waypoint v2 mission ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Upload waypoint v2 mission successfully!\n");
+    }
+    return true;
+
+  }
+
+  bool VehicleWrapper::downloadWaypointV2(std::vector<DJI::OSDK::WaypointV2> &mission, int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->downloadMission(mission, timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("Download waypoint v2 mission ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Download waypoint v2 mission successfully!\n");
+    }
+    return true;
+  }
+
+  bool VehicleWrapper::uploadWaypointV2Actions(std::vector<DJIWaypointV2Action> &actions, int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->uploadAction(actions,timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("Upload waypoint v2 actions ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Upload waypoint v2 actions successfully!\n");
+    }
+    return true;
+  }
+
+  bool VehicleWrapper::startWaypointV2Mission(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->start(timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("Start waypoint v2 mission ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Start waypoint v2 mission successfully!\n");
+    }
+    return true;
+
+  }
+
+  bool VehicleWrapper::stopWaypointV2Mission(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->stop(timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("stop waypoint v2 mission ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("stop waypoint v2 mission successfully!\n");
+    }
+    return true;
+  }
+
+  bool VehicleWrapper::pauseWaypointV2Mission(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+    }
+
+    ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->pause(timeout);
+    if(ret != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR("pause waypoint v2 mission ErrorCode:0x%lX\n", ret);
+      ErrorCode::printErrorCodeMsg(ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("pause waypoint v2 mission successfully!\n");
+    }
+    return true;
+  }
+
+bool VehicleWrapper::resumeWaypointV2Mission(int timeout)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+  }
+
+  ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->resume(timeout);
+  if(ret != ErrorCode::SysCommonErr::Success)
+  {
+    DERROR("resume waypoint v2 mission ErrorCode:0x%lX\n", ret);
+    ErrorCode::printErrorCodeMsg(ret);
+    return false;
+  }
+  else
+  {
+    DSTATUS("resume waypoint v2 mission successfully!\n");
+  }
+  return true;
+}
+
+bool VehicleWrapper::setGlobalCruiseSpeed(const float32_t &cruiseSpeed, int timeout)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->setGlobalCruiseSpeed(cruiseSpeed, timeout);
+  if(ret !=  ErrorCode::SysCommonErr::Success)
+  {
+    DERROR("Set glogal cruise speed %f m/s failed ErrorCode:0x%lX\n", cruiseSpeed, ret);
+    ErrorCode::printErrorCodeMsg(ret);
+    return false;
+  }
+  DSTATUS("Current cruise speed is: %f m/s\n", cruiseSpeed);
+  return true;
+}
+
+bool VehicleWrapper::getGlobalCruiseSpeed(float32_t &cruiseSpeed, int timeout)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  ErrorCode::ErrorCodeType ret = vehicle->waypointV2Mission->getGlobalCruiseSpeed(cruiseSpeed, timeout);
+  if(ret !=  ErrorCode::SysCommonErr::Success)
+  {
+    DERROR("Get glogal cruise speed failed ErrorCode:0x%lX\n", ret);
+    ErrorCode::printErrorCodeMsg(ret);
+    return false;
+  }
+  DSTATUS("Current cruise speed is: %f m/s\n",cruiseSpeed);
+  return true;
+}
+bool VehicleWrapper::RegisterMissionEventCallback(void *userData, PushCallback cb)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+  vehicle->waypointV2Mission->RegisterMissionEventCallback(userData, cb);
+
+  return true;
+}
+bool VehicleWrapper::RegisterMissionStateCallback(void *userData, PushCallback cb)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+  vehicle->waypointV2Mission->RegisterMissionStateCallback(userData, cb);
+
+  return true;
+}
+
 #ifdef ADVANCED_SENSING
-  bool VehicleWrapper::startStream(bool is_h264, uint8_t request_view)
+  bool VehicleWrapper::startFPVCameraStream(CameraImageCallback cb, void * cbParam)
   {
-      bool result = true;
-      if(is_h264)
-      {
-          vehicle->advancedSensing->startH264Stream(LiveView::LiveViewCameraPosition(request_view), liveViewCb, this);
-      }
-      else
-      {
-          switch(request_view)
-          {
-              case LiveView::OSDK_CAMERA_POSITION_FPV:
-              {
-                 std::cout << "called open FPV_CAMERA" << std::endl;
-                 result = vehicle->advancedSensing->startFPVCameraStream(setCameraImageCb, this);
-                 break;
-              }
-              case LiveView::OSDK_CAMERA_POSITION_NO_1:
-              {
-                 std::cout << "called open MAIN_CAMERA" << std::endl;
-                 result = vehicle->advancedSensing->startMainCameraStream(setCameraImageCb,this);
-                 break;
-              }
-              default:
-              {
-                 std::cout << "No recognized camera view" << std::endl;
-                 result = false;
-                 break;
-              }
-          }
-      }
-
-      return result;
+    if (!vehicle->advancedSensing)
+    {
+      return false;
+    }
+    else
+    {
+      return vehicle->advancedSensing->startFPVCameraStream(cb, cbParam);
+    }
   }
 
-  bool VehicleWrapper::stopStream(bool is_h264, uint8_t request_view)
+  bool VehicleWrapper::startMainCameraStream(CameraImageCallback cb, void * cbParam)
   {
-      bool result = true;
-
-      if(is_h264)
-      {
-         vehicle->advancedSensing->stopH264Stream(LiveView::LiveViewCameraPosition(request_view));
-      }
-      else
-      {
-          switch(request_view)
-          {
-              case LiveView::OSDK_CAMERA_POSITION_FPV:
-              {
-                  std::cout << "called stop FPV_CAMERA" << std::endl;
-                  vehicle->advancedSensing->stopFPVCameraStream();
-                  break;
-              }
-              case LiveView::OSDK_CAMERA_POSITION_NO_1:
-              {
-                  std::cout << "called stop MAIN_CAMERA" << std::endl;
-                  vehicle->advancedSensing->stopMainCameraStream();
-                  break;
-              }
-              default:
-              {
-                  std::cout << "No recognized camera view" << std::endl;
-                  result = false;
-              }
-          }
-      }
-
-      return result;
+    if (!vehicle->advancedSensing)
+    {
+      return false;
+    }
+    else
+    {
+      return vehicle->advancedSensing->startMainCameraStream(cb, cbParam);
+    }
   }
 
-  CameraRGBImage& VehicleWrapper::getCameraImage()
+  bool VehicleWrapper::stopFPVCameraStream()
   {
-    std::lock_guard<std::mutex> lock(camera_data_mutex_);
-    return this->image_from_camera_;
+    if (!vehicle->advancedSensing)
+    {
+      return false;
+    }
+    else
+    {
+      vehicle->advancedSensing->stopFPVCameraStream();
+      return true;
+    }
   }
 
-  std::vector<uint8_t>& VehicleWrapper::getCameraRawData()
+  bool VehicleWrapper::stopMainCameraStream()
   {
-      std::lock_guard<std::mutex> lock(camera_data_mutex_);
-      return this->raw_data_from_camera_;
+    if (!vehicle->advancedSensing)
+    {
+      return false;
+    }
+    else
+    {
+      vehicle->advancedSensing->stopMainCameraStream();
+      return true;
+    }
   }
 
-  void VehicleWrapper::setCameraRawData(uint8_t *rawData, int bufLen)
+  bool VehicleWrapper::startH264Stream(LiveView::LiveViewCameraPosition pos, H264Callback cb, void *userData)
   {
-      std::lock_guard<std::mutex> lock(camera_data_mutex_);
-      std::vector<uint8_t> tempRawData(rawData, rawData + bufLen);
-      raw_data_from_camera_ = tempRawData;
+    if (!vehicle->advancedSensing)
+    {
+      return false;
+    }
+    else
+    {
+      vehicle->advancedSensing->startH264Stream(pos, cb, userData);
+      return true;
+    }
   }
 
-  void VehicleWrapper::setCameraImage(const CameraRGBImage& img)
+  bool VehicleWrapper::stopH264Stream(LiveView::LiveViewCameraPosition pos)
   {
-      this->image_from_camera_ = img;
+    if (!vehicle->advancedSensing)
+    {
+      return false;
+    }
+    else
+    {
+      vehicle->advancedSensing->stopH264Stream(pos);
+      return true;
+    }
+  }
+
+  void VehicleWrapper::subscribeStereoImages(const dji_osdk_ros::ImageSelection *select, VehicleCallBack callback, UserData userData)
+  {
+      DJI::OSDK::AdvancedSensing::ImageSelection select_;
+      memcpy(&select_, select, sizeof(DJI::OSDK::AdvancedSensing::ImageSelection));
+      vehicle->advancedSensing->subscribeStereoImages(&select_, callback, userData);
+  }
+
+  void VehicleWrapper::subscribeFrontStereoVGA(const uint8_t freq, VehicleCallBack callback, UserData userData)
+  {
+      vehicle->advancedSensing->subscribeFrontStereoVGA(freq, callback, userData);
+  }
+
+  void VehicleWrapper::subscribeFrontStereoDisparity(VehicleCallBack callback, UserData userData)
+  {
+      vehicle->advancedSensing->subscribeFrontStereoDisparity(callback, userData);
+  }
+
+  void VehicleWrapper::unsubscribeStereoImages()
+  {
+      vehicle->advancedSensing->unsubscribeStereoImages();
+  }
+  
+  void VehicleWrapper::unsubscribeVGAImages()
+  {
+      vehicle->advancedSensing->unsubscribeVGAImages();
   }
 
   void VehicleWrapper::setAcmDevicePath(const std::string& acm_path)
   {
-      vehicle->advancedSensing->setAcmDevicePath(acm_path.c_str());
+      if (vehicle->advancedSensing)
+      {
+        vehicle->advancedSensing->setAcmDevicePath(acm_path.c_str());
+      }
   }
 #endif
+
+  bool VehicleWrapper::isM100()
+  {
+    return(vehicle->isM100());
+  }
+
+  bool VehicleWrapper::isM200V2()
+  {
+    return(vehicle->isM210V2());
+  }
+
+  bool VehicleWrapper::isM300()
+  {
+    return(vehicle->isM300());
+  }
+
+  bool VehicleWrapper::isM600()
+  {
+    return(vehicle->isLegacyM600());
+  }
+
+  void VehicleWrapper::setUpM100DefaultFreq(uint8_t freq[16])
+  {
+    /* Channels definition for M100
+     * 0 - Timestamp
+     * 1 - Attitude Quaterniouns
+     * 2 - Acceleration
+     * 3 - Velocity (Ground Frame)
+     * 4 - Angular Velocity (Body Frame)
+     * 5 - Position
+     * 6 - Magnetometer
+     * 7 - RC Channels Data
+     * 8 - Gimbal Data
+     * 9 - Flight Status
+     * 10 - Battery Level
+     * 11 - Control Information
+     */
+    freq[0]  = DataBroadcast::FREQ_1HZ;
+    freq[1]  = DataBroadcast::FREQ_10HZ;
+    freq[2]  = DataBroadcast::FREQ_50HZ;
+    freq[3]  = DataBroadcast::FREQ_100HZ;
+    freq[4]  = DataBroadcast::FREQ_50HZ;
+    freq[5]  = DataBroadcast::FREQ_10HZ;
+    freq[6]  = DataBroadcast::FREQ_1HZ;
+    freq[7]  = DataBroadcast::FREQ_10HZ;
+    freq[8]  = DataBroadcast::FREQ_50HZ;
+    freq[9]  = DataBroadcast::FREQ_100HZ;
+    freq[10] = DataBroadcast::FREQ_50HZ;
+    freq[11] = DataBroadcast::FREQ_10HZ;
+  }
+
+  void VehicleWrapper::setUpA3N3DefaultFreq(uint8_t freq[16])
+  {
+    /* Channels definition for A3/N3/M600
+     * 0 - Timestamp
+     * 1 - Attitude Quaterniouns
+     * 2 - Acceleration
+     * 3 - Velocity (Ground Frame)
+     * 4 - Angular Velocity (Body Frame)
+     * 5 - Position
+     * 6 - GPS Detailed Information
+     * 7 - RTK Detailed Information
+     * 8 - Magnetometer
+     * 9 - RC Channels Data
+     * 10 - Gimbal Data
+     * 11 - Flight Statusack
+     * 12 - Battery Level
+     * 13 - Control Information
+     * 14 - Compass Data
+     */
+    freq[0]  = DataBroadcast::FREQ_50HZ;
+    freq[1]  = DataBroadcast::FREQ_50HZ;
+    freq[2]  = DataBroadcast::FREQ_50HZ;
+    freq[3]  = DataBroadcast::FREQ_50HZ;
+    freq[4]  = DataBroadcast::FREQ_50HZ;
+    freq[5]  = DataBroadcast::FREQ_50HZ;
+    freq[6]  = DataBroadcast::FREQ_0HZ; // Don't send GPS details
+    freq[7]  = DataBroadcast::FREQ_0HZ; // Don't send RTK
+    freq[8]  = DataBroadcast::FREQ_0HZ; // Don't send Mag
+    freq[9]  = DataBroadcast::FREQ_50HZ;
+    freq[10] = DataBroadcast::FREQ_50HZ;
+    freq[11] = DataBroadcast::FREQ_10HZ;
+    freq[12] = DataBroadcast::FREQ_1HZ;
+    freq[13] = DataBroadcast::FREQ_1HZ;
+    freq[14] = DataBroadcast::FREQ_1HZ;
+  }
+
+  ACK::ErrorCode VehicleWrapper::setBroadcastFreq(uint8_t* dataLenIs16, int timeout)
+  {
+      return vehicle->broadcast->setBroadcastFreq(dataLenIs16, timeout);
+  }
+
+  void VehicleWrapper::setUserBroadcastCallback(VehicleCallBack callback,
+                                                UserData        userData)
+  {
+      vehicle->broadcast->setUserBroadcastCallback(callback, userData);
+  }
+
+  uint16_t VehicleWrapper::getPassFlag()
+  {
+      return vehicle->broadcast->getPassFlag();
+  }
+
+  Telemetry::RC VehicleWrapper::getRC()
+  {
+      return vehicle->broadcast->getRC();
+  }
+
+  Telemetry::Quaternion VehicleWrapper::getQuaternion()
+  {
+      return vehicle->broadcast->getQuaternion();
+  }
+
+  Telemetry::Vector3f VehicleWrapper::getAcceleration()
+  {
+      return vehicle->broadcast->getAcceleration();
+  }
+
+  Telemetry::Vector3f VehicleWrapper::getAngularRate()
+  {
+      return vehicle->broadcast->getAngularRate();
+  }
+
+  Telemetry::GlobalPosition VehicleWrapper::getGlobalPosition()
+  {
+     return vehicle->broadcast->getGlobalPosition();
+  }
+
+  Telemetry::Vector3f VehicleWrapper::getVelocity()
+  {
+     return vehicle->broadcast->getVelocity();
+  }
+
+  Telemetry::Battery VehicleWrapper::getBatteryInfo()
+  {
+     return vehicle->broadcast->getBatteryInfo();
+  }
+
+  Telemetry::Status VehicleWrapper::getStatus()
+  {
+      return vehicle->broadcast->getStatus();
+  }
+
+  Telemetry::Gimbal VehicleWrapper::getGimbal()
+  {
+     return vehicle->broadcast->getGimbal();
+  }
+
+  void VehicleWrapper::setFromMSDKCallback(VehicleCallBack callback, UserData userData)
+  {
+     vehicle->mobileDevice->setFromMSDKCallback(callback, userData);
+  }
+
+  void VehicleWrapper::setFromPSDKCallback(VehicleCallBack callback, UserData userData)
+  {
+     vehicle->payloadDevice->setFromPSDKCallback(callback, userData);
+  }
+
+  void VehicleWrapper::subscribeNMEAMsgs(VehicleCallBack cb, void *userData)
+  {
+     vehicle->hardSync->subscribeNMEAMsgs(cb, userData);
+  }
+
+  void VehicleWrapper::subscribeUTCTime(VehicleCallBack cb, void *userData)
+  {
+     vehicle->hardSync->subscribeUTCTime(cb, userData);
+  }
+
+  void VehicleWrapper::subscribeFCTimeInUTCRef(VehicleCallBack cb, void *userData)
+  {
+      vehicle->hardSync->subscribeFCTimeInUTCRef(cb, userData);
+  }
+
+  void VehicleWrapper::subscribePPSSource(VehicleCallBack cb, void *userData)
+  {
+      vehicle->hardSync->subscribePPSSource(cb, userData);
+  }
+
+  void VehicleWrapper::unsubscribeNMEAMsgs()
+  {
+      vehicle->hardSync->unsubscribeNMEAMsgs();
+  }
+
+  void VehicleWrapper::unsubscribeUTCTime()
+  {
+      vehicle->hardSync->unsubscribeUTCTime();
+  }
+
+  void VehicleWrapper::unsubscribeFCTimeInUTCRef()
+  {
+      vehicle->hardSync->unsubscribeFCTimeInUTCRef();
+  }
+
+  void VehicleWrapper::unsubscribePPSSource()
+  {
+      vehicle->hardSync->unsubscribePPSSource();
+  }
+
+  ACK::ErrorCode VehicleWrapper::verify(int timeout)
+  {
+      return vehicle->subscribe->verify(timeout);
+  }
+
+  /*!
+   * @details Setup members of package[packageID]
+   *          Do basic gate keeping. No api->send call involved
+   */
+  bool VehicleWrapper::initPackageFromTopicList(int packageID, int numberOfTopics,
+                                                TopicName* topicList,
+                                                bool sendTimeStamp, uint16_t freq)
+  {
+      return vehicle->subscribe->initPackageFromTopicList(packageID, numberOfTopics,
+                                                 topicList, sendTimeStamp, freq);
+  }
+
+  ACK::ErrorCode VehicleWrapper::startPackage(int packageID, int timeout)
+  {
+      return vehicle->subscribe->startPackage(packageID, timeout);
+  }
+
+  /*!
+   * @brief Non-blocking call for start package
+   * @param packageID
+   * @param timeout
+   * @return
+   */
+  ACK::ErrorCode VehicleWrapper::removePackage(int packageID, int timeout)
+  {
+      return vehicle->subscribe->removePackage(packageID, timeout);
+  }
+
+  /*!
+   * @brief Register a callback function after package[packageID] is received
+   * @param packageID
+   * @param userFunctionAfterPackageExtraction
+   */
+  void VehicleWrapper::registerUserPackageUnpackCallback(int packageID, VehicleCallBack userFunctionAfterPackageExtraction,
+                                                         UserData userData)
+  {
+      vehicle->subscribe->registerUserPackageUnpackCallback(packageID, userFunctionAfterPackageExtraction, userData);
+  }
+
+  Version::FirmWare VehicleWrapper::getFwVersion() const
+  {
+      return vehicle->getFwVersion();
+  }
+
+  char* VehicleWrapper::getHwVersion() const
+  {
+      return vehicle->getHwVersion();
+  }
+
+  ErrorCode::ErrorCodeType VehicleWrapper::initGimbalModule(dji_osdk_ros::PayloadIndex index,
+                                                            const char* name)
+  {
+      return vehicle->gimbalManager->initGimbalModule(static_cast<DJI::OSDK::PayloadIndexType>(index), name);
+  }
+
+  ErrorCode::ErrorCodeType VehicleWrapper::initCameraModule(dji_osdk_ros::PayloadIndex index,
+                                                            const char* name)
+  {
+      return vehicle->cameraManager->initCameraModule(static_cast<DJI::OSDK::PayloadIndexType>(index), name);
+  }
 }

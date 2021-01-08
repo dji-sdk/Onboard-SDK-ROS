@@ -2,7 +2,7 @@
  *  @version 4.0
  *  @date May 2020
  *
- *  @brief layer of wrapper of osdk ros 4.0.Encapsulate the interface of osdk.
+ *  @brief layer of modules of osdk ros 4.0.Encapsulate the interface of osdk.
  *
  *  @Copyright (c) 2020 DJI
  *
@@ -62,6 +62,10 @@ namespace dji_osdk_ros
     public:
       void setupEnvironment(bool enable_advanced_sensing);
       bool initVehicle();
+      ErrorCode::ErrorCodeType initGimbalModule(dji_osdk_ros::PayloadIndex index,
+                                                const char* name);
+      ErrorCode::ErrorCodeType initCameraModule(dji_osdk_ros::PayloadIndex index,
+                                                const char* name);
 
     public:
       /*! Parts of Camera */
@@ -86,36 +90,131 @@ namespace dji_osdk_ros
       bool rotateGimbal(const PayloadIndex& PayloadIndex, const GimbalRotationData& rotationData);
       bool resetGimbal(const PayloadIndex& payloadIndex);
 
-    /* Parts of Flight Control*/
-      bool setUpSubscription(int pkgIndex, int freq,TopicName topicList[],
-                             uint8_t topicSize, int timeout);
-      bool teardownSubscription(const int pkgIndex, int timeout);
+      /*! Parts of Flight Control*/
       bool checkActionStarted(uint8_t mode);
       bool setNewHomeLocation(int timeout = 1);
       bool setHomeAltitude(uint16_t altitude, int timeout = 1);
-      bool goHome(int timeout);
+      bool goHome(ACK::ErrorCode& ack, int timeout);
       bool goHomeAndConfirmLanding(int timeout);
       bool setAvoid(bool enable);
+      bool setUpwardsAvoidance(bool enable);
 
       bool monitoredTakeoff(ACK::ErrorCode& ack, int timeout);
       bool monitoredLanding(ACK::ErrorCode& ack, int timeout);
       bool moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset);
 
+      /*! Parts of mfio */
       uint8_t outputMFIO(uint8_t mode, uint8_t channel, uint32_t init_on_time_us, uint16_t freq, bool block, uint8_t gpio_value);
       uint32_t inputMFIO(uint8_t mode, uint8_t channel, bool block);
       uint8_t stopMFIO(uint8_t mode, uint8_t channel);
 
+      /*! Parts of mobile device */
+      void sendDataToMSDK(uint8_t* data, uint8_t len);
+
+      /*! Parts of payload device */
+      void sendDataToPSDK(uint8_t* data, uint8_t len);
+
+      /*! Parts of waypointV2 */
+      bool initWaypointV2(DJI::OSDK::WayPointV2InitSettings *info, int timeout);
+      bool uploadWaypointV2(int timeout);
+      bool downloadWaypointV2(std::vector<DJI::OSDK::WaypointV2> &mission, int timeout);
+      bool uploadWaypointV2Actions(std::vector<DJIWaypointV2Action> &actions, int timeout);
+      bool startWaypointV2Mission(int timeout);
+      bool stopWaypointV2Mission(int timeout);
+      bool pauseWaypointV2Mission(int timeout);
+      bool resumeWaypointV2Mission(int timeout);
+      bool setGlobalCruiseSpeed(const float32_t &cruiseSpeed, int timeout);
+      bool getGlobalCruiseSpeed(float32_t &cruiseSpeed, int timeout);
+      bool RegisterMissionEventCallback(void *userData, PushCallback cb);
+      bool RegisterMissionStateCallback(void *userData, PushCallback cb);
+
+      /*! Parts of advanced_sendsing */
 #ifdef ADVANCED_SENSING
-      bool startStream(bool is_h264, uint8_t request_view);
-      bool stopStream(bool is_h264, uint8_t request_view);
-
-      CameraRGBImage& getCameraImage();
-      std::vector<uint8_t>& getCameraRawData();
-      void setCameraRawData(uint8_t* rawData, int bufLen);
-      void setCameraImage(const CameraRGBImage& img);
+      /*! CameraStream */
+      bool startFPVCameraStream(CameraImageCallback cb = NULL, void * cbParam = NULL);
+      bool startMainCameraStream(CameraImageCallback cb = NULL, void * cbParam = NULL);
+      bool stopFPVCameraStream();
+      bool stopMainCameraStream();
+      /*! H264 */
+      bool startH264Stream(LiveView::LiveViewCameraPosition pos, H264Callback cb, void *userData);
+      bool stopH264Stream(LiveView::LiveViewCameraPosition pos);
       void setAcmDevicePath(const std::string& acm_path);
-#endif
 
+      /*! @brief subscribe to QVGA (240x320) stereo images at 20 fps
+       *
+       *  @param images to subscribe
+       *  @param callback callback function
+       *  @param userData user data (void ptr)
+      */
+      void subscribeStereoImages(const dji_osdk_ros::ImageSelection *select, VehicleCallBack callback = 0, UserData userData = 0);
+ 
+       /*! @brief subscribe to VGA (480x640) front stereo images at 10 or 20 fps
+        *
+        *  @param frequency of images using enum from AdvancedSensingProtocol::FREQ
+        *  @param callback callback function
+        *  @param userData user data (void ptr)
+        */
+      void subscribeFrontStereoVGA(const uint8_t freq, VehicleCallBack callback = 0, UserData userData = 0);
+  
+       /*! @brief subscribe to QVGA (240x320) stereo depth map at 10 fps
+        *
+        *  @param callback callback function
+        *  @param userData user data (void ptr)
+        */
+      void subscribeFrontStereoDisparity(VehicleCallBack callback = 0, UserData userData = 0);
+
+       /*! 
+        * @brief unsubscribe to QVGA (240x320) stereo depth map or images
+        */
+      void unsubscribeStereoImages();
+
+       /*!
+        * @brief unsubscribe to VGA (480x640) stereo images
+        */
+      void unsubscribeVGAImages();
+#endif
+      bool isM100();
+      bool isM200V2();
+      bool isM300();
+      bool isM600();
+      void setUpM100DefaultFreq(uint8_t freq[16]);
+      void setUpA3N3DefaultFreq(uint8_t freq[16]);
+      ACK::ErrorCode setBroadcastFreq(uint8_t* dataLenIs16, int timeout);
+      uint16_t getPassFlag();
+      Telemetry::RC getRC();
+      Telemetry::Quaternion getQuaternion();
+      Telemetry::Vector3f getAcceleration();
+      Telemetry::Vector3f getAngularRate();
+      Telemetry::GlobalPosition getGlobalPosition();
+      Telemetry::Vector3f getVelocity();
+      Telemetry::Battery getBatteryInfo();
+      Telemetry::Status getStatus();
+      Telemetry::Gimbal getGimbal();
+      void setUserBroadcastCallback(VehicleCallBack callback, UserData userData);
+      void setFromMSDKCallback(VehicleCallBack callback, UserData userData);
+      void setFromPSDKCallback(VehicleCallBack callback, UserData userData);
+      void subscribeNMEAMsgs(VehicleCallBack cb, void *userData);
+      void subscribeUTCTime(VehicleCallBack cb, void *userData);
+      void subscribeFCTimeInUTCRef(VehicleCallBack cb, void *userData);
+      void subscribePPSSource(VehicleCallBack cb, void *userData);
+      void unsubscribeNMEAMsgs();
+      void unsubscribeUTCTime();
+      void unsubscribeFCTimeInUTCRef();
+      void unsubscribePPSSource();
+
+      /*! Parts of data subscription*/
+      bool setUpSubscription(int pkgIndex, int freq,TopicName* topicList,
+                           uint8_t topicSize, int timeout);
+      bool teardownSubscription(const int pkgIndex, int timeout);
+      ACK::ErrorCode verify(int timeout);
+      bool initPackageFromTopicList(int packageID, int numberOfTopics,TopicName* topicList,
+                                    bool sendTimeStamp, uint16_t freq);
+      ACK::ErrorCode startPackage(int packageID, int timeout);
+      ACK::ErrorCode removePackage(int packageID, int timeout);
+      void registerUserPackageUnpackCallback(int packageID, VehicleCallBack userFunctionAfterPackageExtraction,
+                                             UserData userData);
+      Version::FirmWare getFwVersion() const;
+      char* getHwVersion() const;
   protected:
       bool startGlobalPositionBroadcast();
       Telemetry::Vector3f toEulerAngle(void* quaternionData);
@@ -147,12 +246,6 @@ namespace dji_osdk_ros
       unsigned int baudrate_;
       std::string  sample_case_;
       const static unsigned int default_acm_baudrate = 230400;
-
-#ifdef ADVANCED_SENSING
-      CameraRGBImage image_from_camera_;
-      std::vector<uint8_t> raw_data_from_camera_;
-      std::mutex camera_data_mutex_;
-#endif
 };
 }
 

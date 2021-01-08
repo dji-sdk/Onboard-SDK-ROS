@@ -60,6 +60,20 @@ namespace dji_osdk_ros
     DJI::OSDK::float32_t yaw;
   };
 
+  enum class Dronetype
+  {
+      M100 = 0,
+      M210V2 = 1,
+      M300 = 2,
+      M600 = 3,
+      INVALID_TYPE = 0xFF,
+  };
+
+  enum class TelemetryType
+  {
+      USE_ROS_BROADCAST = 0,
+      USE_ROS_SUBSCRIBE = 1,
+  };
 
   enum class PayloadIndex {
       PAYLOAD_INDEX_0 = 0x00,
@@ -67,6 +81,13 @@ namespace dji_osdk_ros
       PAYLOAD_INDEX_2 = 0x02,
       PAYLOAD_INDEX_CNT = 0x03,
       PAYLOAD_INDEX_INVALID = 0x03,
+  };
+
+  enum class AlignStatus
+  {
+      UNALIGNED,
+      ALIGNING,
+      ALIGNED
   };
 
   typedef struct GimbalSingleData
@@ -80,10 +101,12 @@ namespace dji_osdk_ros
 
   enum class SubscribePackgeIndex
   {
-      GIMBA_SUB_PACKAGE_INDEX                       = 0,
-      FLIGHT_CONTROL_DATA                           = 1,
-      FLIGHT_CONTROL_SET_GO_HOME_DATA               = 2,
-      FLIGHT_CONTROL_GO_HOME_AND_FORCE_LANDING_DATA = 3,
+      TEMP_SUB_PACKAGE_INDEX                        = 0,
+      BROADCAST_BUT_NEED_SUBSCRIBE                  = 1,
+      PACKAGE_ID_5HZ   = 1,
+      PACKAGE_ID_50HZ  = 2,
+      PACKAGE_ID_100HZ = 3,
+      PACKAGE_ID_400HZ = 4,
   };
 
   /*! for gimbal */
@@ -483,6 +506,36 @@ enum class PhotoBurstCount {
     zoom_param digital_zoom_param;
   } CameraZoomDataType;
 #pragma pack()
+
+  //for advanced sensing
+  #pragma pack(1)
+  /*!
+   * @brief This struct provides an interface for user to determine
+   * what images to subscribe to
+   */
+  typedef struct ImageSelection {
+    uint16_t front_left       : 1;
+    uint16_t front_right      : 1;
+    uint16_t down_front       : 1;
+    uint16_t down_back        : 1;
+    uint16_t back_left        : 1;
+    uint16_t back_right       : 1;
+    uint16_t reserved         : 10;
+  } ImageSelection;
+  #pragma pack()
+
+  /*!
+   * @brief This struct is used to pair img data with camera
+   */
+  enum class ReceivedImgDesc
+  {
+    RECV_FRONT_LEFT   = 10,
+    RECV_FRONT_RIGHT  = 11,
+    RECV_DOWN_BACK    = 0,
+    RECV_DOWN_FRONT   = 1,
+    RECV_FRONT_DEPTH  = 15,
+  };
+
 }
 
 #endif // __COMMON_TYPE_HH__

@@ -104,10 +104,10 @@ DJISDKNode::initVehicle(ros::NodeHandle& nh_private, int argc, char** argv)
   }
 
 #ifdef ADVANCED_SENSING
-  if (advanced_sensing)
-  {
-    vehicle->advancedSensing->setAcmDevicePath(acm_device.c_str());
-  }
+if (vehicle->advancedSensing)
+{
+  vehicle->advancedSensing->setAcmDevicePath(acm_device.c_str());
+}
 #endif
 
   return true;
