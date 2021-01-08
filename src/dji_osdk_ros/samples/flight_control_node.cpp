@@ -47,7 +47,7 @@ bool moveByPosOffset(FlightTaskControl& task,const JoystickCommand &offsetDesire
                      float posThresholdInM = 0.8,
                      float yawThresholdInDeg = 1.0);
 
-void velocityAndYawRateCtrl(FlightTaskControl& task,const JoystickCommand &offsetDesired,
+bool velocityAndYawRateCtrl(FlightTaskControl& task,const JoystickCommand &offsetDesired,
                             uint32_t timeMs);
 
 
@@ -59,7 +59,7 @@ int main(int argc, char** argv)
   auto set_go_home_altitude_client = nh.serviceClient<SetGoHomeAltitude>("/set_go_home_altitude");
   auto get_go_home_altitude_client = nh.serviceClient<GetGoHomeAltitude>("get_go_home_altitude");
   auto set_current_point_as_home_client = nh.serviceClient<SetCurrentAircraftLocAsHomePoint>("/set_current_aircraft_point_as_home");
-  auto enable_avoid_client = nh.serviceClient<SetAvoidEnable>("/set_horizon_avoid_enable");
+  auto enable_horizon_avoid_client = nh.serviceClient<SetAvoidEnable>("/set_horizon_avoid_enable");
   auto enable_upward_avoid_client = nh.serviceClient<SetAvoidEnable>("/set_upwards_avoid_enable");
   auto obtain_ctrl_authority_client = nh.serviceClient<dji_osdk_ros::ObtainControlAuthority>("obtain_release_control_authority");
   auto emergency_brake_client = nh.serviceClient<dji_osdk_ros::EmergencyBrake>("emergency_brake");
@@ -167,13 +167,13 @@ int main(int argc, char** argv)
           ROS_INFO_STREAM("Takeoff task successful");
           ros::Duration(2.0).sleep();
 
-          ROS_INFO_STREAM("turn on Collision-Avoidance-Enabled");
-          SetAvoidEnable avoid_req;
-          avoid_req.request.enable = true;
-          enable_avoid_client.call(avoid_req);
-          if(avoid_req.response.result == false)
+          ROS_INFO_STREAM("turn on Horizon_Collision-Avoidance-Enabled");
+          SetAvoidEnable horizon_avoid_req;
+          horizon_avoid_req.request.enable = true;
+          enable_horizon_avoid_client.call(horizon_avoid_req);
+          if(horizon_avoid_req.response.result == false)
           {
-            ROS_ERROR_STREAM("Enable Avoid FAILED");
+            ROS_ERROR_STREAM("Enable Horizon Avoid FAILED");
           }
 
           ROS_INFO_STREAM("turn on Upwards-Collision-Avoidance-Enabled");
@@ -232,12 +232,20 @@ int main(int argc, char** argv)
           ROS_INFO_STREAM("Move to another position");
           moveByPosOffset(control_task, {50.0, 0.0, 0.0, 0.0} , 0.8, 1);
 
-          ROS_INFO_STREAM("Shut down Collision-Avoidance-Enabled");
-          avoid_req.request.enable = false;
-          enable_avoid_client.call(avoid_req);
-          if(avoid_req.response.result == false)
+          ROS_INFO_STREAM("Shut down Horizon_Collision-Avoidance-Enabled");
+          horizon_avoid_req.request.enable = false;
+          enable_horizon_avoid_client.call(horizon_avoid_req);
+          if(horizon_avoid_req.response.result == false)
           {
-            ROS_ERROR_STREAM("Disable Avoid FAILED");
+            ROS_ERROR_STREAM("Disable Horizon Avoid FAILED");
+          }
+
+          ROS_INFO_STREAM("Shut down Upwards-Collision-Avoidance-Enabled");
+          upward_avoid_req.request.enable = false;
+          enable_upward_avoid_client.call(upward_avoid_req);
+          if(upward_avoid_req.response.result == false)
+          {
+            ROS_ERROR_STREAM("Enable Upward Avoid FAILED");
           }
 
           ROS_INFO_STREAM("Go home...");
@@ -265,6 +273,7 @@ int main(int argc, char** argv)
         if(control_task.response.result == true)
         {
           ROS_INFO_STREAM("Takeoff task successful");
+          ros::Duration(2).sleep();
           
           velocityAndYawRateCtrl(control_task, {0, 0, 5.0, 0}, 2000);
           ROS_INFO_STREAM("Step 1 over!EmergencyBrake for 2s\n");
@@ -318,9 +327,12 @@ bool moveByPosOffset(FlightTaskControl& task,const JoystickCommand &offsetDesire
   task.request.joystickCommand.yaw = offsetDesired.yaw;
   task.request.posThresholdInM   = posThresholdInM;
   task.request.yawThresholdInDeg = yawThresholdInDeg;
+
+  task_control_client.call(task);
+  return task.response.result;
 }
 
-void velocityAndYawRateCtrl(FlightTaskControl& task,const JoystickCommand &offsetDesired,
+bool velocityAndYawRateCtrl(FlightTaskControl& task,const JoystickCommand &offsetDesired,
                             uint32_t timeMs)
 {
   task.request.task = FlightTaskControl::Request::TASK_VELOCITY_AND_YAWRATE_CONTROL;
@@ -329,4 +341,7 @@ void velocityAndYawRateCtrl(FlightTaskControl& task,const JoystickCommand &offse
   task.request.joystickCommand.z = offsetDesired.z;
   task.request.joystickCommand.yaw = offsetDesired.yaw;
   task.request.velocityControlTimeMs = timeMs;
+
+  task_control_client.call(task);
+  return task.response.result;
 }

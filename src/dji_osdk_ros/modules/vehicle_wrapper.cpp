@@ -953,12 +953,6 @@ static T_OsdkOsalHandler osalHandler = {
 
   bool VehicleWrapper::monitoredTakeoff(int timeout)
   {
-    int pkgIndex = 0;
-    int freq = 10;
-    TopicName topicList10Hz[] = {TOPIC_STATUS_FLIGHT, TOPIC_STATUS_DISPLAYMODE};
-    int topicSize = sizeof(topicList10Hz) / sizeof(topicList10Hz[0]);
-    setUpSubscription(pkgIndex, freq, topicList10Hz, topicSize, timeout);
-
     //! Start takeoff
     //ErrorCode::ErrorCodeType takeoffStatus =
         vehicle->flightController->startTakeoffSync(timeout);
@@ -966,7 +960,6 @@ static T_OsdkOsalHandler osalHandler = {
     //! Motors start check
     if (!motorStartedCheck()) {
       std::cout << "Takeoff failed. Motors are not spinning." << std::endl;
-      teardownSubscription(pkgIndex, timeout);
       return false;
     } else {
       std::cout << "Motors spinning...\n";
@@ -976,7 +969,6 @@ static T_OsdkOsalHandler osalHandler = {
       std::cout << "Takeoff failed. Aircraft is still on the ground, but the "
                   "motors are spinning."
                 << std::endl;
-      teardownSubscription(pkgIndex, timeout);
       return false;
     } else {
       std::cout << "Ascending...\n";
@@ -988,10 +980,8 @@ static T_OsdkOsalHandler osalHandler = {
     } else {
       std::cout << "Takeoff finished, but the aircraft is in an unexpected mode. "
                   "Please connect DJI GO.\n";
-      teardownSubscription(pkgIndex, timeout);
       return false;
     }
-    teardownSubscription(pkgIndex, timeout);
     return true;
   }
 
@@ -1004,14 +994,7 @@ static T_OsdkOsalHandler osalHandler = {
       return false;
     }
 
-    /*! Step 1: Verify and setup the subscription */
-    const int pkgIndex = 0;
-    int freq = 10;
-    TopicName topicList[] = {TOPIC_STATUS_FLIGHT, TOPIC_STATUS_DISPLAYMODE};
-    int topicSize = sizeof(topicList) / sizeof(topicList[0]);
-    setUpSubscription(pkgIndex, freq, topicList, topicSize, timeout);
-
-    /*! Step 2: Start landing */
+    /*! Step 1: Start landing */
     DSTATUS("Start landing action");
     ErrorCode::ErrorCodeType landingErrCode = vehicle->flightController->startLandingSync(timeout);
     if (landingErrCode != ErrorCode::SysCommonErr::Success)
@@ -1021,7 +1004,7 @@ static T_OsdkOsalHandler osalHandler = {
       return false;
     }
 
-    /*! Step 3: check Landing start*/
+    /*! Step 2: check Landing start*/
     if (!checkActionStarted(VehicleStatus::DisplayMode::MODE_AUTO_LANDING))
     {
       DERROR("Fail to execute Landing action!");
@@ -1029,7 +1012,7 @@ static T_OsdkOsalHandler osalHandler = {
     } 
     else
     {
-      /*! Step 4: check Landing finished*/
+      /*! Step 3: check Landing finished*/
       if (this->landFinishedCheck())
       {
         DSTATUS("Successful landing!");
@@ -1038,13 +1021,10 @@ static T_OsdkOsalHandler osalHandler = {
       {
         DERROR("Landing finished, but the aircraft is in an unexpected mode. "
               "Please connect DJI Assistant.");
-        teardownSubscription(pkgIndex, timeout);
         return false;
       }
     }
 
-    /*! Step 5: Cleanup */
-    teardownSubscription(pkgIndex, timeout);
     return true;
   }
 
@@ -1500,8 +1480,7 @@ static T_OsdkOsalHandler osalHandler = {
       std::cout << "Vehicle is a null value!" << std::endl;
       return false;
     }
-    auto enum_enable = enable ? FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_DISABLE : 
-                       FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_ENABLE;
+    auto enum_enable = enable ? FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_ENABLE : FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_DISABLE;
     ErrorCode::ErrorCodeType ack = vehicle->flightController->setUpwardsAvoidanceEnabledSync(enum_enable, 1);
     if (ack == ErrorCode::SysCommonErr::Success)
     {
@@ -1646,14 +1625,6 @@ static T_OsdkOsalHandler osalHandler = {
     int brakeCounter = 0;
     int speedFactor = 2;
 
-    int pkgIndex = 0;
-    TopicName topicList[] = {TOPIC_QUATERNION, TOPIC_GPS_FUSED};
-    int numTopic = sizeof(topicList) / sizeof(topicList[0]);
-    if (!setUpSubscription(pkgIndex, controlFreqInHz, topicList, numTopic,
-                          responseTimeout)) {
-      return false;
-    }
-
     /* now we need position-height broadcast to obtain the real-time altitude of the aircraft, 
     * which is consistent with the altitude closed-loop data of flight control internal position control
     * TO DO:the data will be replaced by new data subscription.
@@ -1735,10 +1706,8 @@ static T_OsdkOsalHandler osalHandler = {
 
     if (elapsedTimeInMs >= timeoutInMilSec) {
       std::cout << "Task timeout!\n";
-      teardownSubscription(pkgIndex);
       return false;
     }
-    teardownSubscription(pkgIndex);
     return true;
   }
 
