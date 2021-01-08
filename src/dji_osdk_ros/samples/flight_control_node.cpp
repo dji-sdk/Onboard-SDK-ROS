@@ -37,19 +37,23 @@
 #include <dji_osdk_ros/SetAvoidEnable.h>
 #include <dji_osdk_ros/ObtainControlAuthority.h>
 #include <dji_osdk_ros/EmergencyBrake.h>
+#include <dji_osdk_ros/GetAvoidEnable.h>
+
+#include<dji_osdk_ros/SetJoystickMode.h>
+#include<dji_osdk_ros/JoystickAction.h>
 
 //CODE
 using namespace dji_osdk_ros;
 
 ros::ServiceClient task_control_client;
+ros::ServiceClient set_joystick_mode_client;
+ros::ServiceClient joystick_action_client;
 
 bool moveByPosOffset(FlightTaskControl& task,const JoystickCommand &offsetDesired,
                      float posThresholdInM = 0.8,
                      float yawThresholdInDeg = 1.0);
 
-bool velocityAndYawRateCtrl(FlightTaskControl& task,const JoystickCommand &offsetDesired,
-                            uint32_t timeMs);
-
+void velocityAndYawRateCtrl(const JoystickCommand &offsetDesired, uint32_t timeMs);
 
 int main(int argc, char** argv)
 {
@@ -59,10 +63,14 @@ int main(int argc, char** argv)
   auto set_go_home_altitude_client = nh.serviceClient<SetGoHomeAltitude>("/set_go_home_altitude");
   auto get_go_home_altitude_client = nh.serviceClient<GetGoHomeAltitude>("get_go_home_altitude");
   auto set_current_point_as_home_client = nh.serviceClient<SetCurrentAircraftLocAsHomePoint>("/set_current_aircraft_point_as_home");
-  auto enable_horizon_avoid_client = nh.serviceClient<SetAvoidEnable>("/set_horizon_avoid_enable");
-  auto enable_upward_avoid_client = nh.serviceClient<SetAvoidEnable>("/set_upwards_avoid_enable");
+  auto enable_horizon_avoid_client  = nh.serviceClient<SetAvoidEnable>("/set_horizon_avoid_enable");
+  auto enable_upward_avoid_client   = nh.serviceClient<SetAvoidEnable>("/set_upwards_avoid_enable");
+  auto get_avoid_enable_client      = nh.serviceClient<GetAvoidEnable>("get_avoid_enable_status");
   auto obtain_ctrl_authority_client = nh.serviceClient<dji_osdk_ros::ObtainControlAuthority>("obtain_release_control_authority");
-  auto emergency_brake_client = nh.serviceClient<dji_osdk_ros::EmergencyBrake>("emergency_brake");
+  auto emergency_brake_client       = nh.serviceClient<dji_osdk_ros::EmergencyBrake>("emergency_brake");
+
+  set_joystick_mode_client = nh.serviceClient<SetJoystickMode>("set_joystick_mode");
+  joystick_action_client   = nh.serviceClient<JoystickAction>("joystick_action");
   std::cout
       << "| Available commands:                                            |"
       << std::endl;
@@ -185,6 +193,15 @@ int main(int argc, char** argv)
             ROS_ERROR_STREAM("Enable Upward Avoid FAILED");
           }
 
+          GetAvoidEnable getAvoidEnable;
+          get_avoid_enable_client.call(getAvoidEnable);
+          if (getAvoidEnable.response.result)
+          {
+            ROS_INFO("get horizon avoid enable status:%d, get upwards avoid enable status:%d",
+                     getAvoidEnable.response.horizon_avoid_enable_status,
+                     getAvoidEnable.response.upwards_avoid_enable_status);
+          }
+
           ROS_INFO_STREAM("Move by position offset request sending ...");
           ROS_INFO_STREAM("Move to higher altitude");
           moveByPosOffset(control_task, {0.0, 0.0, 30.0, 0.0}, 0.8, 1);
@@ -248,6 +265,14 @@ int main(int argc, char** argv)
             ROS_ERROR_STREAM("Enable Upward Avoid FAILED");
           }
 
+          get_avoid_enable_client.call(getAvoidEnable);
+          if (getAvoidEnable.response.result)
+          {
+            ROS_INFO("get horizon avoid enable status:%d, get upwards avoid enable status:%d",
+                     getAvoidEnable.response.horizon_avoid_enable_status,
+                     getAvoidEnable.response.upwards_avoid_enable_status);
+          }
+
           ROS_INFO_STREAM("Go home...");
 
           control_task.request.task = FlightTaskControl::Request::TASK_GOHOME_AND_CONFIRM_LANDING;
@@ -274,20 +299,20 @@ int main(int argc, char** argv)
         {
           ROS_INFO_STREAM("Takeoff task successful");
           ros::Duration(2).sleep();
-          
-          velocityAndYawRateCtrl(control_task, {0, 0, 5.0, 0}, 2000);
+
+          velocityAndYawRateCtrl( {0, 0, 5.0, 0}, 2000);
           ROS_INFO_STREAM("Step 1 over!EmergencyBrake for 2s\n");
           emergency_brake_client.call(emergency_brake);
           ros::Duration(2).sleep();
-          velocityAndYawRateCtrl(control_task, {-1.5, 2, 0, 0}, 2000);
+          velocityAndYawRateCtrl({-1.5, 2, 0, 0}, 2000);
           ROS_INFO_STREAM("Step 2 over!EmergencyBrake for 2s\n");
           emergency_brake_client.call(emergency_brake);
           ros::Duration(2).sleep();
-          velocityAndYawRateCtrl(control_task,{3, 0, 0, 0}, 2500);
+          velocityAndYawRateCtrl({3, 0, 0, 0}, 2500);
           ROS_INFO_STREAM("Step 3 over!EmergencyBrake for 2s\n");
           emergency_brake_client.call(emergency_brake);
           ros::Duration(2).sleep();
-          velocityAndYawRateCtrl(control_task,{-1.6, -2, 0, 0}, 2200);
+          velocityAndYawRateCtrl({-1.6, -2, 0, 0}, 2200);
           ROS_INFO_STREAM("Step 4 over!EmergencyBrake for 2s\n");
           emergency_brake_client.call(emergency_brake);
           ros::Duration(2).sleep();
@@ -332,16 +357,35 @@ bool moveByPosOffset(FlightTaskControl& task,const JoystickCommand &offsetDesire
   return task.response.result;
 }
 
-bool velocityAndYawRateCtrl(FlightTaskControl& task,const JoystickCommand &offsetDesired,
-                            uint32_t timeMs)
+void velocityAndYawRateCtrl(const JoystickCommand &offsetDesired, uint32_t timeMs)
 {
-  task.request.task = FlightTaskControl::Request::TASK_VELOCITY_AND_YAWRATE_CONTROL;
-  task.request.joystickCommand.x = offsetDesired.x;
-  task.request.joystickCommand.y = offsetDesired.y;
-  task.request.joystickCommand.z = offsetDesired.z;
-  task.request.joystickCommand.yaw = offsetDesired.yaw;
-  task.request.velocityControlTimeMs = timeMs;
+  double originTime  = 0;
+  double currentTime = 0;
+  uint64_t elapsedTimeInMs = 0;
+  
+  SetJoystickMode joystickMode;
+  JoystickAction joystickAction;
 
-  task_control_client.call(task);
-  return task.response.result;
+  joystickMode.request.horizontal_mode = joystickMode.request.HORIZONTAL_VELOCITY;
+  joystickMode.request.vertical_mode = joystickMode.request.VERTICAL_VELOCITY;
+  joystickMode.request.yaw_mode = joystickMode.request.YAW_RATE;
+  joystickMode.request.horizontal_coordinate = joystickMode.request.HORIZONTAL_GROUND;
+  joystickMode.request.stable_mode = joystickMode.request.STABLE_ENABLE;
+  set_joystick_mode_client.call(joystickMode);
+
+  joystickAction.request.joystickCommand.x = offsetDesired.x;
+  joystickAction.request.joystickCommand.y = offsetDesired.y;
+  joystickAction.request.joystickCommand.z = offsetDesired.z;
+  joystickAction.request.joystickCommand.yaw = offsetDesired.yaw;
+
+  originTime  = ros::Time::now().toSec();
+  currentTime = originTime;
+  elapsedTimeInMs = (currentTime - originTime)*1000;
+
+  while(elapsedTimeInMs <= timeMs)
+  {
+    currentTime = ros::Time::now().toSec();
+    elapsedTimeInMs = (currentTime - originTime) * 1000;
+    joystick_action_client.call(joystickAction);
+  }
 }

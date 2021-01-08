@@ -1516,7 +1516,12 @@ static T_OsdkOsalHandler osalHandler = {
       return false;
     }
     DJI::OSDK::FlightController::JoystickMode interJoystickMode;
-    memcpy(&interJoystickMode, &joystickMode, sizeof(interJoystickMode));
+    interJoystickMode.horizontalLogic = static_cast<DJI::OSDK::FlightController::HorizontalLogic>(joystickMode.horizontalLogic);
+    interJoystickMode.verticalLogic   = static_cast<DJI::OSDK::FlightController::VerticalLogic>(joystickMode.verticalLogic);
+    interJoystickMode.yawLogic = static_cast<DJI::OSDK::FlightController::YawLogic>(joystickMode.yawLogic);
+    interJoystickMode.horizontalCoordinate = static_cast<DJI::OSDK::FlightController::HorizontalCoordinate>(joystickMode.horizontalCoordinate);
+    interJoystickMode.stableMode = static_cast<DJI::OSDK::FlightController::StableMode>(joystickMode.stableMode);
+
     vehicle->flightController->setJoystickMode(interJoystickMode);
 
     return true;
