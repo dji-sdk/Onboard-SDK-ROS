@@ -110,6 +110,7 @@ add_message_files(
   BatteryWholeInfo.msg
   SmartBatteryState.msg
   SmartBatteryDynamicInfo.msg
+  HMSPushInfo.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -162,6 +163,7 @@ add_service_files(
   GetGlobalCruisespeed.srv
   SubscribeWaypointV2Event.srv
   SubscribeWaypointV2State.srv
+  SubscribeHMSInf.srv
 
   Activation.srv
   CameraAction.srv

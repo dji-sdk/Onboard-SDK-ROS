@@ -1,0 +1,7 @@
+#request
+bool enable
+---
+#response
+bool result
+uint32 timeStamp
+HMSPushInfo[] errList     #/*! error code list in each pushing*/

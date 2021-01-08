@@ -237,6 +237,12 @@ void VehicleNode::initService()
    */
   get_whole_battery_info_server_ = nh_.advertiseService("get_whole_battery_info", &VehicleNode::getWholeBatteryInfoCallback, this);
   get_single_battery_dynamic_info_server_ = nh_.advertiseService("get_single_battery_dynamic_info", &VehicleNode::getSingleBatteryDynamicInfoCallback, this);
+  
+  /*! @brief
+   *  mfio control server
+   *  @platforms M300
+   */
+  subscribe_hms_info_server_ = nh_.advertiseService("subscribe_hms_info", &VehicleNode::subscribeHMSInfoCallback, this);
   /*! @brief
    *  mfio control server
    *  @platforms null
@@ -1480,6 +1486,32 @@ bool VehicleNode::getSingleBatteryDynamicInfoCallback(GetSingleBatteryDynamicInf
   }
 
   return true;
+}
+
+bool VehicleNode::subscribeHMSInfoCallback(SubscribeHMSInf::Request& request,
+                                           SubscribeHMSInf::Response& response)
+{
+  ROS_INFO_STREAM("Subscribe HMS Info callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  dji_osdk_ros::HMSPushPacket hmsPushPacket;
+  
+  response.result &= ptr_wrapper_->enableSubscribeHMSInfo(request.enable);
+  response.result &= ptr_wrapper_->getHMSListInfo(hmsPushPacket);
+  response.timeStamp = hmsPushPacket.timeStamp;
+
+  for (int i = 0; hmsPushPacket.hmsPushData.errList.size(); i++)
+  {
+    response.errList[i].alarmID     = hmsPushPacket.hmsPushData.errList[i].alarmID;
+    response.errList[i].sensorIndex = hmsPushPacket.hmsPushData.errList[i].sensorIndex;
+    response.errList[i].reportLevel = hmsPushPacket.hmsPushData.errList[i].reportLevel;
+  }
+
+  return response.result;
 }
 
 bool VehicleNode::mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response)

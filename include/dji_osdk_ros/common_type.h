@@ -30,6 +30,7 @@
 
 // Header include
 #include <dji_type.hpp>
+#include <vector>
 
 // Declaration
 namespace dji_osdk_ros
@@ -71,6 +72,31 @@ namespace dji_osdk_ros
     DJI::OSDK::float32_t z;   /*!< Control with respect to the z axis, up is positive. */
     DJI::OSDK::float32_t yaw; /*!< Yaw position/velocity control w.r.t. the ground frame.*/
   };
+
+#pragma pack(1)
+  /*! the type of error code list in HMS's raw pushing data*/
+  typedef  struct ErrList{
+      uint32_t alarmID;     /*! error code*/
+      uint8_t  sensorIndex; /*! fault sensor's index*/
+      uint8_t  reportLevel; /*! fault level ,0-4,0 is no error,4 is highest*/
+  } ErrList;
+
+  /*! the type of HMS's raw pushing data*/
+  typedef struct HMSPushData {
+      uint8_t msgVersion;           /*! version of message.default:0*/
+      uint8_t globalIndex;          /*! cycle message sequence number*/
+      uint8_t msgEnd : 1;           /*! end flag bit of message subcontract push. last package of subcontracting push is 1.*/
+      uint8_t msgIndex : 7;         /*! Message serial number*/
+      std::vector<ErrList> errList; /*! error code list in each pushing*/
+  } HMSPushData;
+#pragma pack()
+
+  /*! the type of HMS's pushing data with a time stamp*/
+  typedef struct HMSPushPacket
+  {
+    HMSPushData  hmsPushData; /*! HMS's raw pushing data*/
+    uint32_t     timeStamp;   /*! timestamp of the packet*/
+  } HMSPushPacket;
 
   struct RotationAngle
   {

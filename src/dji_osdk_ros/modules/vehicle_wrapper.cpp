@@ -2319,6 +2319,31 @@ bool VehicleWrapper::RegisterMissionStateCallback(void *userData, PushCallback c
   return true;
 }
 
+bool VehicleWrapper::enableSubscribeHMSInfo(bool enable, uint32_t timeOutMs)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  return vehicle->djiHms->subscribeHMSInf(enable, timeOutMs);
+}
+
+bool VehicleWrapper::getHMSListInfo(HMSPushPacket& hmsPushPacket)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  DJI::OSDK::HMSPushPacket tempHMSPushPacket;
+  tempHMSPushPacket = vehicle->djiHms->getHMSPushPacket();
+  memcpy(&hmsPushPacket, &tempHMSPushPacket, sizeof(hmsPushPacket));
+  return true;
+}
+
 #ifdef ADVANCED_SENSING
   bool VehicleWrapper::startFPVCameraStream(CameraImageCallback cb, void * cbParam)
   {
