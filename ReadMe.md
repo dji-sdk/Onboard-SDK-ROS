@@ -5,12 +5,12 @@
 OSDK-ROS 4.0.0 was released on 8 May 2020.You need to read newest update below to get update information. Please see the [release notes](https://developer.dji.com/onboard-sdk/documentation/appendix/releaseNotes.html) and [ROS sample setup](https://developer.dji.com/onboard-sdk/documentation/development-workflow/sample-setup.html#ros-onboard-computer) for more information.And We will update [ROS Wiki](http://wiki.ros.org/dji_sdk/) later.
 
 ### 1. feature  
-This 4.0 version releases a feature package: dji_sdk. The package contains two different framework's interface. OSDK-ROS-obsoleted kept ros3.8.1's interface.  
+This 4.0 version releases a feature package: dji_osdk_ros. The package contains two different framework's interface. OSDK-ROS-obsoleted kept ros3.8.1's interface.  
 (__note:We will cancel support for the OSDK-ROS-obsoleted's interface in the next version.__)
 
 | **OSDK-ROS4.0 interface**            | **OSDK-ROS-obsoleted interface**            |
 |--------------------------------------|---------------------------------------------|
-|files below in dji_sdk folder    | files below in dji_sdk_obsoleted folder|
+|files below in dji_osdk_ros folder    | files below in dji_osdk_ros_obsoleted folder|
 
 This update mainly includes:  
 1. Redesigned the 4.0 version of the framework and interface (ROS side interacts with the OSDK side through the wrapper layer, business-related interfaces are fully encapsulated into the wrapper layer, and the ROS side provides all services and topics);  
@@ -90,7 +90,7 @@ Then add these content into DJIDevice.rules.
 
 At last,you need to reboot your computer to make sure it works.
 
-### 4. Building dji_sdk pkg
+### 4. Building dji_osdk_ros pkg
 #### create workspace
 If you don't have a catkin workspace, create one as follows:
 >$mkdir catkin_ws  
@@ -100,7 +100,7 @@ If you don't have a catkin workspace, create one as follows:
 >$catkin_init_workspace
 #### add osdk-ros 4.0 
 Download osdk-ros 4.0 and put it into src.
-#### Build the dji_sdk ROS package
+#### Build the dji_osdk_ros ROS package
 >$cd ..  
 >$catkin_make
 #### Configuration
@@ -111,23 +111,23 @@ Download osdk-ros 4.0 and put it into src.
 (__note:there are two launch file.  
 dji_sdk_node.launch is for dji_sdk_node.(3.8.1's interface)  
 dji_vehicle_node is for dji_vehicle_node(4.0.0's interface)__)
-> $rosed dji_sdk dji_sdk_node.launch  
-> $rosed dji_sdk dji_vehicle_node.launch  
+> $rosed dji_osdk_ros dji_sdk_node.launch  
+> $rosed dji_osdk_ros dji_vehicle_node.launch  
 
 3.Remember to add UserConfig.txt to correct path.(in the current work directory)  
 >If you want to run dji_sdk_node.launch, you need to put UserConfig.txt into /home/{user}/.ros.
 >dji_vehicle_node.launch does not need UserConfig.txt.
 #### Running the Samples
-1.Start up the dji_sdk ROS node.  
+1.Start up the dji_osdk_ros ROS node.  
 if you want to use OSDK ROS 4.0.0's services and topics:
->$roslaunch dji_sdk dji_vehicle_node.launch  
+>$roslaunch dji_osdk_ros dji_vehicle_node.launch  
 
 if you want to adapt to OSDK ROS 3.8.1's services and topics:
->$roslaunch dji_sdk dji_sdk_node.launch    
+>$roslaunch dji_osdk_ros dji_sdk_node.launch    
 >
 2.Open up another terminal and cd to your catkin_ws location, and start up a sample (e.g. flight control sample).
 >$source devel/setup.bash  
->$rosrun dji_sdk flight_control_node  
+>$rosrun dji_osdk_ros flight_control_node  
 >
 __note:if you want to rosrun dji_sdk_node,you need to put UserConfig.txt into current work directory.__  
 3.Follow the prompt on screen to choose an action for the drone to do.

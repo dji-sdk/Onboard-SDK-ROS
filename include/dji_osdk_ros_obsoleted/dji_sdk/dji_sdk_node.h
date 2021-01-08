@@ -32,51 +32,51 @@
 #include <nmea_msgs/Sentence.h>
 
 //! msgs
-#include <dji_sdk/Gimbal.h>
-#include <dji_sdk/MobileData.h>
-#include <dji_sdk/PayloadData.h>
-#include <dji_sdk/FlightAnomaly.h>
-#include <dji_sdk/VOPosition.h>
-#include <dji_sdk/RelPosition.h>
-#include <dji_sdk/FCTimeInUTC.h>
-#include <dji_sdk/GPSUTC.h>
+#include <dji_osdk_ros/Gimbal.h>
+#include <dji_osdk_ros/MobileData.h>
+#include <dji_osdk_ros/PayloadData.h>
+#include <dji_osdk_ros/FlightAnomaly.h>
+#include <dji_osdk_ros/VOPosition.h>
+#include <dji_osdk_ros/RelPosition.h>
+#include <dji_osdk_ros/FCTimeInUTC.h>
+#include <dji_osdk_ros/GPSUTC.h>
 
 //! mission service
 // missionManager
-#include <dji_sdk/MissionStatus.h>
+#include <dji_osdk_ros/MissionStatus.h>
 // waypoint
-#include <dji_sdk/MissionWpAction.h>
-#include <dji_sdk/MissionWpGetInfo.h>
-#include <dji_sdk/MissionWpGetSpeed.h>
-#include <dji_sdk/MissionWpSetSpeed.h>
-#include <dji_sdk/MissionWpUpload.h>
+#include <dji_osdk_ros/MissionWpAction.h>
+#include <dji_osdk_ros/MissionWpGetInfo.h>
+#include <dji_osdk_ros/MissionWpGetSpeed.h>
+#include <dji_osdk_ros/MissionWpSetSpeed.h>
+#include <dji_osdk_ros/MissionWpUpload.h>
 // hotpoint
-#include <dji_sdk/MissionHpAction.h>
-#include <dji_sdk/MissionHpGetInfo.h>
-#include <dji_sdk/MissionHpResetYaw.h>
-#include <dji_sdk/MissionHpUpdateRadius.h>
-#include <dji_sdk/MissionHpUpdateYawRate.h>
-#include <dji_sdk/MissionHpUpload.h>
+#include <dji_osdk_ros/MissionHpAction.h>
+#include <dji_osdk_ros/MissionHpGetInfo.h>
+#include <dji_osdk_ros/MissionHpResetYaw.h>
+#include <dji_osdk_ros/MissionHpUpdateRadius.h>
+#include <dji_osdk_ros/MissionHpUpdateYawRate.h>
+#include <dji_osdk_ros/MissionHpUpload.h>
 // hardsync
-#include <dji_sdk/SetHardSync.h>
+#include <dji_osdk_ros/SetHardSync.h>
 
 //! service headers
-#include <dji_sdk/Activation.h>
-#include <dji_sdk/CameraAction.h>
-#include <dji_sdk/DroneArmControl.h>
-#include <dji_sdk/DroneTaskControl.h>
-#include <dji_sdk/MFIOConfig.h>
-#include <dji_sdk/MFIOSetValue.h>
-#include <dji_sdk/SDKControlAuthority.h>
-#include <dji_sdk/SetLocalPosRef.h>
-#include <dji_sdk/SendMobileData.h>
-#include <dji_sdk/SendPayloadData.h>
-#include <dji_sdk/QueryDroneVersion.h>
+#include <dji_osdk_ros/Activation.h>
+#include <dji_osdk_ros/CameraAction.h>
+#include <dji_osdk_ros/DroneArmControl.h>
+#include <dji_osdk_ros/DroneTaskControl.h>
+#include <dji_osdk_ros/MFIOConfig.h>
+#include <dji_osdk_ros/MFIOSetValue.h>
+#include <dji_osdk_ros/SDKControlAuthority.h>
+#include <dji_osdk_ros/SetLocalPosRef.h>
+#include <dji_osdk_ros/SendMobileData.h>
+#include <dji_osdk_ros/SendPayloadData.h>
+#include <dji_osdk_ros/QueryDroneVersion.h>
 #ifdef ADVANCED_SENSING
-#include <dji_sdk/Stereo240pSubscription.h>
-#include <dji_sdk/StereoDepthSubscription.h>
-#include <dji_sdk/StereoVGASubscription.h>
-#include <dji_sdk/SetupCameraStream.h>
+#include <dji_osdk_ros/Stereo240pSubscription.h>
+#include <dji_osdk_ros/StereoDepthSubscription.h>
+#include <dji_osdk_ros/StereoVGASubscription.h>
+#include <dji_osdk_ros/SetupCameraStream.h>
 #endif
 
 //! SDK library
@@ -145,90 +145,90 @@ private:
     const sensor_msgs::Joy::ConstPtr& pMsg);
 
   //! general subscriber callbacks
-  void gimbalAngleCtrlCallback(const dji_sdk::Gimbal::ConstPtr& msg);
+  void gimbalAngleCtrlCallback(const dji_osdk_ros::Gimbal::ConstPtr& msg);
   void gimbalSpeedCtrlCallback(
     const geometry_msgs::Vector3Stamped::ConstPtr& msg);
 
   //! general service callbacks
-  bool droneActivationCallback(dji_sdk::Activation::Request&  request,
-                               dji_sdk::Activation::Response& response);
+  bool droneActivationCallback(dji_osdk_ros::Activation::Request&  request,
+                               dji_osdk_ros::Activation::Response& response);
   bool sdkCtrlAuthorityCallback(
-    dji_sdk::SDKControlAuthority::Request&  request,
-    dji_sdk::SDKControlAuthority::Response& response);
+    dji_osdk_ros::SDKControlAuthority::Request&  request,
+    dji_osdk_ros::SDKControlAuthority::Response& response);
 
   bool setLocalPosRefCallback(
-      dji_sdk::SetLocalPosRef::Request&  request,
-      dji_sdk::SetLocalPosRef::Response& response);
+      dji_osdk_ros::SetLocalPosRef::Request&  request,
+      dji_osdk_ros::SetLocalPosRef::Response& response);
   //! control service callbacks
-  bool droneArmCallback(dji_sdk::DroneArmControl::Request&  request,
-                        dji_sdk::DroneArmControl::Response& response);
-  bool droneTaskCallback(dji_sdk::DroneTaskControl::Request&  request,
-                         dji_sdk::DroneTaskControl::Response& response);
+  bool droneArmCallback(dji_osdk_ros::DroneArmControl::Request&  request,
+                        dji_osdk_ros::DroneArmControl::Response& response);
+  bool droneTaskCallback(dji_osdk_ros::DroneTaskControl::Request&  request,
+                         dji_osdk_ros::DroneTaskControl::Response& response);
 
   //! Mobile Data Service
-  bool sendToMobileCallback(dji_sdk::SendMobileData::Request&  request,
-                            dji_sdk::SendMobileData::Response& response);
+  bool sendToMobileCallback(dji_osdk_ros::SendMobileData::Request&  request,
+                            dji_osdk_ros::SendMobileData::Response& response);
   //! Payload Data Service
-  bool sendToPayloadCallback(dji_sdk::SendPayloadData::Request& request,
-                             dji_sdk::SendPayloadData::Response& response);
+  bool sendToPayloadCallback(dji_osdk_ros::SendPayloadData::Request& request,
+                             dji_osdk_ros::SendPayloadData::Response& response);
   //! Query Drone FW version
-  bool queryVersionCallback(dji_sdk::QueryDroneVersion::Request& request,
-                            dji_sdk::QueryDroneVersion::Response& response);
+  bool queryVersionCallback(dji_osdk_ros::QueryDroneVersion::Request& request,
+                            dji_osdk_ros::QueryDroneVersion::Response& response);
 
-  bool cameraActionCallback(dji_sdk::CameraAction::Request&  request,
-                            dji_sdk::CameraAction::Response& response);
+  bool cameraActionCallback(dji_osdk_ros::CameraAction::Request&  request,
+                            dji_osdk_ros::CameraAction::Response& response);
   //! mfio service callbacks
-  bool MFIOConfigCallback(dji_sdk::MFIOConfig::Request&  request,
-                          dji_sdk::MFIOConfig::Response& response);
-  bool MFIOSetValueCallback(dji_sdk::MFIOSetValue::Request&  request,
-                            dji_sdk::MFIOSetValue::Response& response);
+  bool MFIOConfigCallback(dji_osdk_ros::MFIOConfig::Request&  request,
+                          dji_osdk_ros::MFIOConfig::Response& response);
+  bool MFIOSetValueCallback(dji_osdk_ros::MFIOSetValue::Request&  request,
+                            dji_osdk_ros::MFIOSetValue::Response& response);
   //! mission service callbacks
   // mission manager
-  bool missionStatusCallback(dji_sdk::MissionStatus::Request&  request,
-                             dji_sdk::MissionStatus::Response& response);
+  bool missionStatusCallback(dji_osdk_ros::MissionStatus::Request&  request,
+                             dji_osdk_ros::MissionStatus::Response& response);
   // waypoint mission
-  bool missionWpUploadCallback(dji_sdk::MissionWpUpload::Request&  request,
-                               dji_sdk::MissionWpUpload::Response& response);
-  bool missionWpActionCallback(dji_sdk::MissionWpAction::Request&  request,
-                               dji_sdk::MissionWpAction::Response& response);
-  bool missionWpGetInfoCallback(dji_sdk::MissionWpGetInfo::Request&  request,
-                                dji_sdk::MissionWpGetInfo::Response& response);
+  bool missionWpUploadCallback(dji_osdk_ros::MissionWpUpload::Request&  request,
+                               dji_osdk_ros::MissionWpUpload::Response& response);
+  bool missionWpActionCallback(dji_osdk_ros::MissionWpAction::Request&  request,
+                               dji_osdk_ros::MissionWpAction::Response& response);
+  bool missionWpGetInfoCallback(dji_osdk_ros::MissionWpGetInfo::Request&  request,
+                                dji_osdk_ros::MissionWpGetInfo::Response& response);
   bool missionWpGetSpeedCallback(
-    dji_sdk::MissionWpGetSpeed::Request&  request,
-    dji_sdk::MissionWpGetSpeed::Response& response);
+    dji_osdk_ros::MissionWpGetSpeed::Request&  request,
+    dji_osdk_ros::MissionWpGetSpeed::Response& response);
   bool missionWpSetSpeedCallback(
-    dji_sdk::MissionWpSetSpeed::Request&  request,
-    dji_sdk::MissionWpSetSpeed::Response& response);
+    dji_osdk_ros::MissionWpSetSpeed::Request&  request,
+    dji_osdk_ros::MissionWpSetSpeed::Response& response);
   // hotpoint mission
-  bool missionHpUploadCallback(dji_sdk::MissionHpUpload::Request&  request,
-                               dji_sdk::MissionHpUpload::Response& response);
-  bool missionHpActionCallback(dji_sdk::MissionHpAction::Request&  request,
-                               dji_sdk::MissionHpAction::Response& response);
-  bool missionHpGetInfoCallback(dji_sdk::MissionHpGetInfo::Request&  request,
-                                dji_sdk::MissionHpGetInfo::Response& response);
+  bool missionHpUploadCallback(dji_osdk_ros::MissionHpUpload::Request&  request,
+                               dji_osdk_ros::MissionHpUpload::Response& response);
+  bool missionHpActionCallback(dji_osdk_ros::MissionHpAction::Request&  request,
+                               dji_osdk_ros::MissionHpAction::Response& response);
+  bool missionHpGetInfoCallback(dji_osdk_ros::MissionHpGetInfo::Request&  request,
+                                dji_osdk_ros::MissionHpGetInfo::Response& response);
   bool missionHpUpdateYawRateCallback(
-    dji_sdk::MissionHpUpdateYawRate::Request&  request,
-    dji_sdk::MissionHpUpdateYawRate::Response& response);
+    dji_osdk_ros::MissionHpUpdateYawRate::Request&  request,
+    dji_osdk_ros::MissionHpUpdateYawRate::Response& response);
   bool missionHpResetYawCallback(
-    dji_sdk::MissionHpResetYaw::Request&  request,
-    dji_sdk::MissionHpResetYaw::Response& response);
+    dji_osdk_ros::MissionHpResetYaw::Request&  request,
+    dji_osdk_ros::MissionHpResetYaw::Response& response);
   bool missionHpUpdateRadiusCallback(
-    dji_sdk::MissionHpUpdateRadius::Request&  request,
-    dji_sdk::MissionHpUpdateRadius::Response& response);
+    dji_osdk_ros::MissionHpUpdateRadius::Request&  request,
+    dji_osdk_ros::MissionHpUpdateRadius::Response& response);
   //! hard sync service callback
-  bool setHardsyncCallback(dji_sdk::SetHardSync::Request&  request,
-                           dji_sdk::SetHardSync::Response& response);
+  bool setHardsyncCallback(dji_osdk_ros::SetHardSync::Request&  request,
+                           dji_osdk_ros::SetHardSync::Response& response);
 
 #ifdef ADVANCED_SENSING
   //! stereo image service callback
-  bool stereo240pSubscriptionCallback(dji_sdk::Stereo240pSubscription::Request&  request,
-                                      dji_sdk::Stereo240pSubscription::Response& response);
-  bool stereoDepthSubscriptionCallback(dji_sdk::StereoDepthSubscription::Request&  request,
-                                       dji_sdk::StereoDepthSubscription::Response& response);
-  bool stereoVGASubscriptionCallback(dji_sdk::StereoVGASubscription::Request&  request,
-                                     dji_sdk::StereoVGASubscription::Response& response);
-  bool setupCameraStreamCallback(dji_sdk::SetupCameraStream::Request&  request,
-                                 dji_sdk::SetupCameraStream::Response& response);
+  bool stereo240pSubscriptionCallback(dji_osdk_ros::Stereo240pSubscription::Request&  request,
+                                      dji_osdk_ros::Stereo240pSubscription::Response& response);
+  bool stereoDepthSubscriptionCallback(dji_osdk_ros::StereoDepthSubscription::Request&  request,
+                                       dji_osdk_ros::StereoDepthSubscription::Response& response);
+  bool stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscription::Request&  request,
+                                     dji_osdk_ros::StereoVGASubscription::Response& response);
+  bool setupCameraStreamCallback(dji_osdk_ros::SetupCameraStream::Request&  request,
+                                 dji_osdk_ros::SetupCameraStream::Response& response);
 #endif
 
   //! data broadcast callback

@@ -27,11 +27,11 @@
  */
 
 //INCLUDE
-#include <dji_sdk/dji_vehicle_node.h>
-#include <dji_sdk/vehicle_wrapper.h>
+#include <dji_osdk_ros/dji_vehicle_node.h>
+#include <dji_osdk_ros/vehicle_wrapper.h>
 #include <vector>
 //CODE
-using namespace dji_sdk;
+using namespace dji_osdk_ros;
 const int WAIT_TIMEOUT = 10;
 
 VehicleNode::VehicleNode(int test)
@@ -92,7 +92,7 @@ bool VehicleNode::subscribeGimbalData()
 
   /*! Package 0: Subscribe to gimbal data at freq 50 Hz */
   ACK::ErrorCode subscribeStatus;
-  int       pkgIndex        = static_cast<int>(dji_sdk::SubscribePackgeIndex::GIMBA_SUB_PACKAGE_INDEX);
+  int       pkgIndex        = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::GIMBA_SUB_PACKAGE_INDEX);
   int       freq            = 50;
   TopicName topicList50Hz[]  = { vehicle->isM300() ? TOPIC_THREE_GIMBAL_DATA : TOPIC_DUAL_GIMBAL_DATA };
   int       numTopic        = sizeof(topicList50Hz) / sizeof(topicList50Hz[0]);
@@ -158,7 +158,7 @@ bool VehicleNode::unSubScribeGimbalData()
   }
   Vehicle* vehicle = ptr_wrapper_->getVehicle();
 
-  int pkgIndex = static_cast<int>(dji_sdk::SubscribePackgeIndex::GIMBA_SUB_PACKAGE_INDEX);
+  int pkgIndex = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::GIMBA_SUB_PACKAGE_INDEX);
   ACK::ErrorCode subscribeStatus =
       vehicle->subscribe->removePackage(pkgIndex, 1);
   if (ACK::getError(subscribeStatus) != ACK::SUCCESS)
@@ -243,7 +243,7 @@ void VehicleNode::initService()
 void VehicleNode::initTopic()
 {
 #ifdef ADVANCED_SENSING
-    advanced_sensing_pub_ = nh_.advertise<dji_sdk::CameraData>("cameradata", 1000);
+    advanced_sensing_pub_ = nh_.advertise<dji_osdk_ros::CameraData>("cameradata", 1000);
 #endif
     ROS_INFO_STREAM("Topic startup!");
 }
@@ -261,7 +261,7 @@ void VehicleNode::publishAdvancedSeningData()
     ros::AsyncSpinner spinner(4);
     spinner.start();
 
-    dji_sdk::CameraData cameraData;
+    dji_osdk_ros::CameraData cameraData;
     std::vector<uint8_t> lastCameraData = cameraData.raw_data;
 
     ros::Rate rate(40);
@@ -307,9 +307,9 @@ bool VehicleNode::advancedSensingCallback(AdvancedSensing::Request& request, Adv
     return response.result;
 }
 
-dji_sdk::CameraData VehicleNode::getCameraData()
+dji_osdk_ros::CameraData VehicleNode::getCameraData()
 {
-    dji_sdk::CameraData cameraData;
+    dji_osdk_ros::CameraData cameraData;
     if (is_h264_)
     {
         cameraData.raw_data = ptr_wrapper_->getCameraRawData();

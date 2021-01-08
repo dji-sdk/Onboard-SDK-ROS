@@ -374,7 +374,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   Telemetry::TypeMap<Telemetry::TOPIC_AVOID_DATA>::type relative_position =
     vehicle->subscribe->getValue<Telemetry::TOPIC_AVOID_DATA>();
 
-  dji_sdk::RelPosition rel_pos_msg;
+  dji_osdk_ros::RelPosition rel_pos_msg;
   rel_pos_msg.header.frame_id = "/rel_pos";
   rel_pos_msg.header.stamp = msg_time;
   rel_pos_msg.down  = relative_position.down;
@@ -457,7 +457,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     Telemetry::TypeMap<Telemetry::TOPIC_POSITION_VO>::type vo_position =
           vehicle->subscribe->getValue<Telemetry::TOPIC_POSITION_VO>();
 
-    dji_sdk::VOPosition vo_pos;
+    dji_osdk_ros::VOPosition vo_pos;
     // This name does not follow the convention because we are not sure it is real NED.
     vo_pos.header.frame_id = "/ground_nav";
     vo_pos.header.stamp = msg_time;
@@ -519,7 +519,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     Telemetry::TypeMap<Telemetry::TOPIC_FLIGHT_ANOMALY>::type flight_anomaly_data =
             vehicle->subscribe->getValue<Telemetry::TOPIC_FLIGHT_ANOMALY>();
 
-    dji_sdk::FlightAnomaly flight_anomaly_msg;
+    dji_osdk_ros::FlightAnomaly flight_anomaly_msg;
     flight_anomaly_msg.data = *(reinterpret_cast<uint32_t*>(&flight_anomaly_data));
     p->flight_anomaly_publisher.publish(flight_anomaly_msg);
   }
@@ -757,7 +757,7 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
   {
     base_time = now_time - _TICK2ROSTIME(tick);
     curr_align_state = ALIGNING;
-    ROS_INFO("[dji_sdk] Start time alignment ...");
+    ROS_INFO("[dji_osdk_ros] Start time alignment ...");
     return;
   }
 
@@ -765,7 +765,7 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
   {
     static int aligned_count = 0;
     static int retry_count = 0;
-    ROS_INFO_THROTTLE(1.0, "[dji_sdk] Aliging time...");
+    ROS_INFO_THROTTLE(1.0, "[dji_osdk_ros] Aliging time...");
 
     double dt = std::fabs((now_time - (base_time + _TICK2ROSTIME(tick))).toSec());
 
@@ -776,7 +776,7 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
     else if(aligned_count > 0)
     {
       base_time = now_time - _TICK2ROSTIME(tick);
-      ROS_INFO("[dji_sdk] ***** Time difference out of bound after %d samples, retried %d times, dt=%.3f... *****",
+      ROS_INFO("[dji_osdk_ros] ***** Time difference out of bound after %d samples, retried %d times, dt=%.3f... *****",
                aligned_count, retry_count, dt);
       aligned_count = 0;
       retry_count++;
@@ -784,7 +784,7 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
 
     if(aligned_count > STABLE_ALIGNMENT_COUNT)
     {
-      ROS_INFO("[dji_sdk] ***** Time alignment successful! *****");
+      ROS_INFO("[dji_osdk_ros] ***** Time alignment successful! *****");
       curr_align_state = ALIGNED;
     }
 

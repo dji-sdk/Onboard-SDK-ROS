@@ -28,24 +28,24 @@
 
 //INCLUDE
 #include <ros/ros.h>
-#include <dji_sdk/common_type.h>
-#include <dji_sdk/GimbalAction.h>
-#include <dji_sdk/CameraEV.h>
-#include <dji_sdk/CameraShutterSpeed.h>
-#include <dji_sdk/CameraAperture.h>
-#include <dji_sdk/CameraISO.h>
-#include <dji_sdk/CameraFocusPoint.h>
-#include <dji_sdk/CameraTapZoomPoint.h>
-#include <dji_sdk/CameraZoomCtrl.h>
-#include <dji_sdk/CameraStartShootBurstPhoto.h>
-#include <dji_sdk/CameraStartShootAEBPhoto.h>
-#include <dji_sdk/CameraStartShootSinglePhoto.h>
-#include <dji_sdk/CameraStartShootIntervalPhoto.h>
-#include <dji_sdk/CameraStopShootPhoto.h>
-#include <dji_sdk/CameraRecordVideoAction.h>
+#include <dji_osdk_ros/common_type.h>
+#include <dji_osdk_ros/GimbalAction.h>
+#include <dji_osdk_ros/CameraEV.h>
+#include <dji_osdk_ros/CameraShutterSpeed.h>
+#include <dji_osdk_ros/CameraAperture.h>
+#include <dji_osdk_ros/CameraISO.h>
+#include <dji_osdk_ros/CameraFocusPoint.h>
+#include <dji_osdk_ros/CameraTapZoomPoint.h>
+#include <dji_osdk_ros/CameraZoomCtrl.h>
+#include <dji_osdk_ros/CameraStartShootBurstPhoto.h>
+#include <dji_osdk_ros/CameraStartShootAEBPhoto.h>
+#include <dji_osdk_ros/CameraStartShootSinglePhoto.h>
+#include <dji_osdk_ros/CameraStartShootIntervalPhoto.h>
+#include <dji_osdk_ros/CameraStopShootPhoto.h>
+#include <dji_osdk_ros/CameraRecordVideoAction.h>
 
 //CODE
-using namespace dji_sdk;
+using namespace dji_osdk_ros;
 
 int main(int argc, char** argv) {
   ros::init(argc, argv, "gimbal_camera_control_node");
@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
     switch (inputChar) {
       case 'a': {
         CameraShutterSpeed cameraShutterSpeed;
-        cameraShutterSpeed.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
+        cameraShutterSpeed.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         cameraShutterSpeed.request.exposure_mode = static_cast<uint8_t>(ExposureMode::SHUTTER_PRIORITY);
         cameraShutterSpeed.request.shutter_speed = static_cast<uint8_t>(ShutterSpeed::SHUTTER_SPEED_1_50);
         camera_set_shutter_speed_client.call(cameraShutterSpeed);
@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 
       case 'b': {
         CameraAperture cameraAperture;
-        cameraAperture.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
+        cameraAperture.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         cameraAperture.request.exposure_mode = static_cast<uint8_t>(ExposureMode::APERTURE_PRIORITY);
         cameraAperture.request.aperture = static_cast<uint8_t>(Aperture::F_3_DOT_5);
         camera_set_aperture_client.call(cameraAperture);
@@ -130,7 +130,7 @@ int main(int argc, char** argv) {
       }
       case 'c': {
         CameraEV cameraEv;
-        cameraEv.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
+        cameraEv.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         cameraEv.request.exposure_mode = static_cast<uint8_t>(ExposureMode::PROGRAM_AUTO);
         cameraEv.request.exposure_compensation = static_cast<uint8_t>(ExposureCompensation::P_0_3);
         camera_set_EV_client.call(cameraEv);
@@ -140,7 +140,7 @@ int main(int argc, char** argv) {
 
       case 'd': {
         CameraISO cameraIso;
-        cameraIso.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
+        cameraIso.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         cameraIso.request.exposure_mode = static_cast<uint8_t>(ExposureMode::EXPOSURE_MANUAL);
         cameraIso.request.iso_data = static_cast<uint8_t>(ISO::ISO_200);
         camera_set_iso_client.call(cameraIso);
@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
 
       case 'e': {
         CameraFocusPoint cameraFocusPoint;
-        cameraFocusPoint.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
+        cameraFocusPoint.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         cameraFocusPoint.request.x = 0.8;
         cameraFocusPoint.request.y = 0.8;
         camera_set_focus_point_client.call(cameraFocusPoint);
@@ -159,7 +159,7 @@ int main(int argc, char** argv) {
 
       case 'f': {
         CameraTapZoomPoint cameraTapZoomPoint;
-        cameraTapZoomPoint.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_1);
+        cameraTapZoomPoint.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_1);
         cameraTapZoomPoint.request.multiplier = 5;
         cameraTapZoomPoint.request.x = 0.3;
         cameraTapZoomPoint.request.y = 0.3;
@@ -174,17 +174,17 @@ int main(int argc, char** argv) {
       case 'g': {
         CameraZoomCtrl cameraZoomCtrl;
         cameraZoomCtrl.request.start_stop = 1;
-        cameraZoomCtrl.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_1);
-        cameraZoomCtrl.request.direction = static_cast<uint8_t>(dji_sdk::ZoomDirection::ZOOM_IN);
-        cameraZoomCtrl.request.speed = static_cast<uint8_t>(dji_sdk::ZoomSpeed::NORMAL);
+        cameraZoomCtrl.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_1);
+        cameraZoomCtrl.request.direction = static_cast<uint8_t>(dji_osdk_ros::ZoomDirection::ZOOM_IN);
+        cameraZoomCtrl.request.speed = static_cast<uint8_t>(dji_osdk_ros::ZoomSpeed::NORMAL);
         camera_task_zoom_ctrl_client.call(cameraZoomCtrl);
         sleep(4);
         cameraZoomCtrl.request.start_stop = 0;
         camera_task_zoom_ctrl_client.call(cameraZoomCtrl);
         sleep(2);
         cameraZoomCtrl.request.start_stop = 1;
-        cameraZoomCtrl.request.direction = static_cast<uint8_t>(dji_sdk::ZoomDirection::ZOOM_OUT);
-        cameraZoomCtrl.request.speed = static_cast<uint8_t>(dji_sdk::ZoomSpeed::FASTEST);
+        cameraZoomCtrl.request.direction = static_cast<uint8_t>(dji_osdk_ros::ZoomDirection::ZOOM_OUT);
+        cameraZoomCtrl.request.speed = static_cast<uint8_t>(dji_osdk_ros::ZoomSpeed::FASTEST);
         sleep(8);
         cameraZoomCtrl.request.start_stop = 0;
         camera_task_zoom_ctrl_client.call(cameraZoomCtrl);
@@ -193,37 +193,37 @@ int main(int argc, char** argv) {
 
       case 'h': {
         CameraStartShootSinglePhoto cameraStartShootSinglePhoto;
-        cameraStartShootSinglePhoto.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
+        cameraStartShootSinglePhoto.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         camera_start_shoot_single_photo_client.call(cameraStartShootSinglePhoto);
         break;
       }
 
       case 'i': {
         CameraStartShootAEBPhoto cameraStartShootAebPhoto;
-        cameraStartShootAebPhoto.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
-        cameraStartShootAebPhoto.request.photo_aeb_count = static_cast<uint8_t>(dji_sdk::PhotoAEBCount::AEB_COUNT_5);
+        cameraStartShootAebPhoto.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
+        cameraStartShootAebPhoto.request.photo_aeb_count = static_cast<uint8_t>(dji_osdk_ros::PhotoAEBCount::AEB_COUNT_5);
         camera_start_shoot_aeb_photo_client.call(cameraStartShootAebPhoto);
         break;
       }
 
       case 'j': {
         CameraStartShootBurstPhoto cameraStartShootBurstPhoto;
-        cameraStartShootBurstPhoto.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
-        cameraStartShootBurstPhoto.request.photo_burst_count = static_cast<uint8_t>(dji_sdk::PhotoBurstCount::BURST_COUNT_7);
+        cameraStartShootBurstPhoto.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
+        cameraStartShootBurstPhoto.request.photo_burst_count = static_cast<uint8_t>(dji_osdk_ros::PhotoBurstCount::BURST_COUNT_7);
         camera_start_shoot_burst_photo_client.call(cameraStartShootBurstPhoto);
         break;
       }
 
       case 'k': {
         CameraStartShootIntervalPhoto cameraStartShootIntervalPhoto;
-        cameraStartShootIntervalPhoto.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
+        cameraStartShootIntervalPhoto.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         cameraStartShootIntervalPhoto.request.photo_num_conticap = 255;
         cameraStartShootIntervalPhoto.request.time_interval = 4;
         camera_start_shoot_interval_photo_client.call(cameraStartShootIntervalPhoto);
         std::cout << "Sleep 15 seconds" << std::endl;
         sleep(15);
         CameraStopShootPhoto cameraStopShootPhoto;
-        cameraStopShootPhoto.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
+        cameraStopShootPhoto.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         camera_stop_shoot_photo_client.call(cameraStopShootPhoto);
         break;
       }
@@ -231,7 +231,7 @@ int main(int argc, char** argv) {
       case 'l': {
         CameraRecordVideoAction cameraRecordVideoAction;
         cameraRecordVideoAction.request.start_stop = 1;
-        cameraRecordVideoAction.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
+        cameraRecordVideoAction.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         camera_record_video_action_client.call(cameraRecordVideoAction);
         sleep(10);
         cameraRecordVideoAction.request.start_stop = 0;
@@ -242,7 +242,7 @@ int main(int argc, char** argv) {
       case 'm': {
         GimbalAction gimbalAction;
         gimbalAction.request.is_reset = false;
-        gimbalAction.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
+        gimbalAction.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         gimbalAction.request.rotationMode = 0;
         gimbalAction.request.pitch = 25.0f;
         gimbalAction.request.roll = 0.0f;
@@ -255,7 +255,7 @@ int main(int argc, char** argv) {
       case 'n': {
         GimbalAction gimbalAction;
         gimbalAction.request.is_reset = true;
-        gimbalAction.request.payload_index = static_cast<uint8_t>(dji_sdk::PayloadIndex::PAYLOAD_INDEX_0);
+        gimbalAction.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         gimbal_control_client.call(gimbalAction);
         break;
       }

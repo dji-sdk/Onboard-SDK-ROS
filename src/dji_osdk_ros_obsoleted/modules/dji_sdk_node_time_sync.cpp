@@ -30,7 +30,7 @@ void DJISDKNode::GPSUTCTimeCallback(Vehicle *vehiclePtr,
                                     RecvContainer recvFrame,
                                     UserData userData)
 {
-  dji_sdk::GPSUTC GPSUTC;
+  dji_osdk_ros::GPSUTC GPSUTC;
   int length = recvFrame.recvInfo.len - OpenProtocol::PackageMin - 4;
   uint8_t rawBuf[length];
   memcpy(rawBuf, recvFrame.recvData.raw_ack_array, length);
@@ -44,7 +44,7 @@ void DJISDKNode::FCTimeInUTCCallback(Vehicle* vehiclePtr,
                                      RecvContainer recvFrame,
                                      UserData userData)
 {
-  dji_sdk::FCTimeInUTC fcTimeInUtc;
+  dji_osdk_ros::FCTimeInUTC fcTimeInUtc;
   fcTimeInUtc.stamp = ros::Time::now();
   fcTimeInUtc.fc_timestamp_us = recvFrame.recvData.fcTimeInUTC.fc_timestamp_us;
   fcTimeInUtc.fc_utc_hhmmss = recvFrame.recvData.fcTimeInUTC.utc_hhmmss;

@@ -65,7 +65,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## Your package locations should be listed before other locations
 # include_directories(include)
 include_directories(
-        ../../include/dji_sdk_obsoleted
+        ../../include/dji_osdk_ros_obsoleted
   ../../include
 #  ${DJIOSDK_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
@@ -88,15 +88,15 @@ add_executable(dji_sdk_node
   modules/dji_sdk_node_mobile_comm.cpp
   modules/dji_sdk_node_payload_comm.cpp
   modules/dji_sdk_node_time_sync.cpp
-  ../dji_sdk/osdkhal_linux.c
-  ../dji_sdk/osdkosal_linux.c
+  ../dji_osdk_ros/osdkhal_linux.c
+  ../dji_osdk_ros/osdkosal_linux.c
   dji_linux_environment.cpp
   dji_linux_helpers.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(dji_sdk_node
-  dji_sdk_generate_messages_cpp)
+  dji_osdk_ros_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(dji_sdk_node

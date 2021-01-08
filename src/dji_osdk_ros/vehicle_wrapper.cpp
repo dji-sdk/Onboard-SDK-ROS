@@ -30,14 +30,14 @@
 #include <dji_platform.hpp>
 #include <dji_vehicle_callback.hpp>
 
-#include <dji_sdk/vehicle_wrapper.h>
+#include <dji_osdk_ros/vehicle_wrapper.h>
 #include <osdkhal_linux.h>
 #include <osdkosal_linux.h>
 
 #include <iostream>
 
 //CODE
-namespace dji_sdk
+namespace dji_osdk_ros
 {
   static E_OsdkStat OsdkUser_Console(const uint8_t *data, uint16_t dataLen)
 {
@@ -1608,7 +1608,7 @@ static T_OsdkOsalHandler osalHandler = {
 
       // Telemetry: Subscribe to quaternion, fused lat/lon and altitude at freq 50
       // Hz
-      pkgIndex                  = static_cast<int>(dji_sdk::SubscribePackgeIndex::FLIGHT_CONTROL_DATA);
+      pkgIndex                  = static_cast<int>(dji_osdk_ros::SubscribePackgeIndex::FLIGHT_CONTROL_DATA);
       int       freq            = 50;
       TopicName topicList50Hz[] = { TOPIC_QUATERNION, TOPIC_GPS_FUSED };
       int       numTopic = sizeof(topicList50Hz) / sizeof(topicList50Hz[0]);

@@ -28,13 +28,13 @@
 
 //INCLUDE
 #include <ros/ros.h>
-#include <dji_sdk/common_type.h>
+#include <dji_osdk_ros/common_type.h>
 #include <string>
 #include <stdio.h>
 
-#include <dji_sdk/AdvancedSensing.h>
+#include <dji_osdk_ros/AdvancedSensing.h>
 #include <dji_camera_image.hpp>
-#include <dji_sdk/CameraData.h>
+#include <dji_osdk_ros/CameraData.h>
 
 #ifdef OPEN_CV_INSTALLED
 #include "opencv2/opencv.hpp"
@@ -42,7 +42,7 @@
 #endif
 
 //CODE
-using namespace dji_sdk;
+using namespace dji_osdk_ros;
 
 bool is_h264 = true;
 
@@ -80,7 +80,7 @@ void show_rgb(CameraRGBImage img, void *p)
 #endif
 }
 
-void cameraDataCallBack(const dji_sdk::CameraData& msg)
+void cameraDataCallBack(const dji_osdk_ros::CameraData& msg)
 {
     if (is_h264)
     {

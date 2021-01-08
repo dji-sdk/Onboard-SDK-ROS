@@ -12,7 +12,7 @@
 #include <dji_sdk/dji_sdk_node.h>
 
 void
-DJISDKNode::gimbalAngleCtrlCallback(const dji_sdk::Gimbal::ConstPtr& msg)
+DJISDKNode::gimbalAngleCtrlCallback(const dji_osdk_ros::Gimbal::ConstPtr& msg)
 {
   ROS_DEBUG("called gimbalAngleCtrlCallback");
 

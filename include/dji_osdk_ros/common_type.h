@@ -32,7 +32,7 @@
 #include <dji_type.hpp>
 
 // Declaration
-namespace dji_sdk
+namespace dji_osdk_ros
 {
   struct MoveOffset
   {

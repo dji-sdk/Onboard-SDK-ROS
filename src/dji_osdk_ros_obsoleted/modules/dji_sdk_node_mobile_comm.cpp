@@ -19,7 +19,7 @@ void DJISDKNode::fromMobileDataCallback(RecvContainer recvFrame) {
   int dataLength = recvFrame.recvInfo.len - OpenProtocol::PackageMin - 2;
   if (dataLength <= 100) {
     DSTATUS( "Received mobile Data of len %d\n", recvFrame.recvInfo.len);
-    dji_sdk::MobileData mobile_data;
+    dji_osdk_ros::MobileData mobile_data;
     mobile_data.data.resize(dataLength);
     for (int i=0; i<dataLength; i++)
     {
@@ -29,8 +29,8 @@ void DJISDKNode::fromMobileDataCallback(RecvContainer recvFrame) {
   }
 }
 
-bool DJISDKNode::sendToMobileCallback(dji_sdk::SendMobileData::Request& request,
-                                      dji_sdk::SendMobileData::Response& response){
+bool DJISDKNode::sendToMobileCallback(dji_osdk_ros::SendMobileData::Request& request,
+                                      dji_osdk_ros::SendMobileData::Response& response){
   vehicle->mobileDevice->sendDataToMSDK(&request.data[0], request.data.size());
   response.result = true;
   return true;

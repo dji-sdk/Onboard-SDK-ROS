@@ -28,15 +28,15 @@
 
 //INCLUDE
 #include <ros/ros.h>
-#include <dji_sdk/common_type.h>
+#include <dji_osdk_ros/common_type.h>
 
-#include <dji_sdk/FlightTaskControl.h>
-#include <dji_sdk/SetGoHomeAltitude.h>
-#include <dji_sdk/SetNewHomePoint.h>
-#include <dji_sdk/AvoidEnable.h>
+#include <dji_osdk_ros/FlightTaskControl.h>
+#include <dji_osdk_ros/SetGoHomeAltitude.h>
+#include <dji_osdk_ros/SetNewHomePoint.h>
+#include <dji_osdk_ros/AvoidEnable.h>
 
 //CODE
-using namespace dji_sdk;
+using namespace dji_osdk_ros;
 
 ros::ServiceClient task_control_client;
 
