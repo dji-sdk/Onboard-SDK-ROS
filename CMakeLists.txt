@@ -322,6 +322,9 @@ install(DIRECTORY include/${PROJECT_NAME}/
   PATTERN ".svn" EXCLUDE
 )
 
+install(DIRECTORY include/dji_osdk_ros_obsoleted
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
+
 ## Install launch files into share directory
 install(DIRECTORY launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
