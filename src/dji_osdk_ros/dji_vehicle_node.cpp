@@ -1499,18 +1499,33 @@ bool VehicleNode::subscribeHMSInfoCallback(SubscribeHMSInf::Request& request,
   }
 
   dji_osdk_ros::HMSPushPacket hmsPushPacket;
-  
-  response.result &= ptr_wrapper_->enableSubscribeHMSInfo(request.enable);
-  response.result &= ptr_wrapper_->getHMSListInfo(hmsPushPacket);
-  response.timeStamp = hmsPushPacket.timeStamp;
+  static uint8_t count = 0;
 
-  for (int i = 0; hmsPushPacket.hmsPushData.errList.size(); i++)
+  while(count < 1)
   {
-    response.errList[i].alarmID     = hmsPushPacket.hmsPushData.errList[i].alarmID;
-    response.errList[i].sensorIndex = hmsPushPacket.hmsPushData.errList[i].sensorIndex;
-    response.errList[i].reportLevel = hmsPushPacket.hmsPushData.errList[i].reportLevel;
+     response.result &= ptr_wrapper_->enableSubscribeHMSInfo(request.enable);
+     count++;
   }
 
+  response.result &= ptr_wrapper_->getHMSListInfo(hmsPushPacket);
+  response.result &= ptr_wrapper_->getHMSDeviceIndex(response.deviceIndex);
+  response.timeStamp = hmsPushPacket.timeStamp;
+
+  if (hmsPushPacket.hmsPushData.errList.size())
+  {
+    response.errList.clear();
+    response.errList.resize(hmsPushPacket.hmsPushData.errList.size());
+  }
+  
+  for (int i = 0; i < hmsPushPacket.hmsPushData.errList.size(); i++)
+  {
+    response.errList[i].alarmID     = hmsPushPacket.hmsPushData.errList[i].alarmID;
+    response.errList[i].reportLevel = hmsPushPacket.hmsPushData.errList[i].reportLevel;
+    response.errList[i].sensorIndex = hmsPushPacket.hmsPushData.errList[i].sensorIndex;
+    DSTATUS("response.errList.size():%d,0x%08x,%d,%d", response.errList.size(),response.errList[i].alarmID, response.errList[i].sensorIndex,
+    response.errList[i].reportLevel);
+  }
+ 
   return response.result;
 }
 

@@ -161,9 +161,9 @@ add_service_files(
   GenerateWaypointV2Action.srv
   SetGlobalCruisespeed.srv
   GetGlobalCruisespeed.srv
+  SubscribeHMSInf.srv
   SubscribeWaypointV2Event.srv
   SubscribeWaypointV2State.srv
-  SubscribeHMSInf.srv
 
   Activation.srv
   CameraAction.srv

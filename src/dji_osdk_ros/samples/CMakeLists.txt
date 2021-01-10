@@ -109,6 +109,12 @@ target_link_libraries(battery_node
         )
 add_dependencies(battery_node dji_osdk_ros_generate_messages_cpp)
 
+add_executable(hms_node hms_node.cpp)
+target_link_libraries(hms_node
+        ${PROJECT_NAME}
+        )
+add_dependencies(hms_node dji_osdk_ros_generate_messages_cpp)
+
 if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ)
 
     message(STATUS "Found OpenCV ${OpenCV_VERSION}, Viz3d, and advanced sensing module, stereo vision depth perception node will be compiled")
