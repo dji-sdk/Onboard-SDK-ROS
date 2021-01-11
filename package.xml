@@ -1,6 +1,6 @@
 <package format="2">
   <name>dji_osdk_ros</name>
-  <version>4.0.1001</version>
+  <version>4.0.1002</version>
   <description>A ROS package using DJI Onboard SDK</description>
 
   
