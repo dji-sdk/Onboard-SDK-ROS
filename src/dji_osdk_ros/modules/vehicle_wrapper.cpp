@@ -2319,6 +2319,62 @@ bool VehicleWrapper::RegisterMissionStateCallback(void *userData, PushCallback c
   return true;
 }
 
+bool VehicleWrapper::enableSubscribeHMSInfo(bool enable, uint32_t timeOutMs)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  return vehicle->djiHms->subscribeHMSInf(enable, timeOutMs);
+}
+
+bool VehicleWrapper::getHMSListInfo(HMSPushPacket& hmsPushPacket)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  DJI::OSDK::HMSPushPacket tempHMSPushPacket;
+  tempHMSPushPacket = vehicle->djiHms->getHMSPushPacket();
+
+  hmsPushPacket.timeStamp = tempHMSPushPacket.timeStamp;
+  hmsPushPacket.hmsPushData.msgVersion = tempHMSPushPacket.hmsPushData.msgVersion;
+  hmsPushPacket.hmsPushData.msgIndex = tempHMSPushPacket.hmsPushData.msgIndex;
+  hmsPushPacket.hmsPushData.msgEnd = tempHMSPushPacket.hmsPushData.msgEnd;
+  hmsPushPacket.hmsPushData.globalIndex = tempHMSPushPacket.hmsPushData.globalIndex;
+  if (tempHMSPushPacket.hmsPushData.errList.size())
+  {
+    hmsPushPacket.hmsPushData.errList.clear();
+    hmsPushPacket.hmsPushData.errList.resize(tempHMSPushPacket.hmsPushData.errList.size());
+
+    for (int i = 0; i < hmsPushPacket.hmsPushData.errList.size(); i++)
+    {
+      hmsPushPacket.hmsPushData.errList[i].alarmID     = tempHMSPushPacket.hmsPushData.errList[i].alarmID;
+      hmsPushPacket.hmsPushData.errList[i].reportLevel = tempHMSPushPacket.hmsPushData.errList[i].reportLevel;
+      hmsPushPacket.hmsPushData.errList[i].sensorIndex = tempHMSPushPacket.hmsPushData.errList[i].sensorIndex;
+      //DSTATUS("0x%08x,%d,%d", hmsPushPacket.hmsPushData.errList[i].alarmID, hmsPushPacket.hmsPushData.errList[i].sensorIndex,
+      //hmsPushPacket.hmsPushData.errList[i].reportLevel);
+    }
+  }
+  return true;
+}
+
+bool VehicleWrapper::getHMSDeviceIndex(uint8_t& deviceIndex)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  deviceIndex = vehicle->djiHms->getDeviceIndex();
+  return true;
+}
+
 #ifdef ADVANCED_SENSING
   bool VehicleWrapper::startFPVCameraStream(CameraImageCallback cb, void * cbParam)
   {

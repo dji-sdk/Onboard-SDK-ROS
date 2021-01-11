@@ -164,6 +164,10 @@ namespace dji_osdk_ros
       bool RegisterMissionEventCallback(void *userData, PushCallback cb);
       bool RegisterMissionStateCallback(void *userData, PushCallback cb);
 
+      /*! Parts of hms */
+      bool enableSubscribeHMSInfo(bool enable, uint32_t timeOutMs = 500);
+      bool getHMSListInfo(HMSPushPacket& hmsPushPacket);
+      bool getHMSDeviceIndex(uint8_t& deviceIndex);
       /*! Parts of advanced_sendsing */
 #ifdef ADVANCED_SENSING
       /*! CameraStream */

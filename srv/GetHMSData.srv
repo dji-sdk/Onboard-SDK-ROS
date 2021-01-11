@@ -1,0 +1,9 @@
+#request
+bool enable
+---
+#reponse
+bool result
+uint8 deviceIndex         # When the error code is related to camera or gimbal device,
+                          # it will tell you which device it is.
+HMSPushInfo[] errList     # error code list in each pushing
+uint32 timeStamp

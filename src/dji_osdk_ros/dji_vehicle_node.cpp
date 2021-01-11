@@ -237,6 +237,12 @@ void VehicleNode::initService()
    */
   get_whole_battery_info_server_ = nh_.advertiseService("get_whole_battery_info", &VehicleNode::getWholeBatteryInfoCallback, this);
   get_single_battery_dynamic_info_server_ = nh_.advertiseService("get_single_battery_dynamic_info", &VehicleNode::getSingleBatteryDynamicInfoCallback, this);
+  
+  /*! @brief
+   *  mfio control server
+   *  @platforms M300
+   */
+  get_hms_data_server_ = nh_.advertiseService("get_hms_data", &VehicleNode::getHMSDataCallback, this);
   /*! @brief
    *  mfio control server
    *  @platforms null
@@ -1480,6 +1486,50 @@ bool VehicleNode::getSingleBatteryDynamicInfoCallback(GetSingleBatteryDynamicInf
   }
 
   return true;
+}
+
+bool VehicleNode::getHMSDataCallback(GetHMSData::Request& request, GetHMSData::Response& response)
+{
+  //ROS_INFO_STREAM("Get HMS Data callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+  response.result = true;
+
+  static uint8_t count = 0;
+  while (count < 1)
+  {
+    response.result = ptr_wrapper_->enableSubscribeHMSInfo(request.enable);
+    count++;
+  }
+
+  if (request.enable == true)
+  {
+    dji_osdk_ros::HMSPushPacket hmsPushPacket;
+    ptr_wrapper_->getHMSListInfo(hmsPushPacket);
+    ptr_wrapper_->getHMSDeviceIndex(response.deviceIndex);
+    response.timeStamp = hmsPushPacket.timeStamp;
+
+    if (hmsPushPacket.hmsPushData.errList.size())
+    {
+      response.errList.clear();
+      response.errList.resize(hmsPushPacket.hmsPushData.errList.size());
+    }
+    
+    for (int i = 0; i < hmsPushPacket.hmsPushData.errList.size(); i++)
+    {
+      response.errList[i].alarmID     = hmsPushPacket.hmsPushData.errList[i].alarmID;
+      response.errList[i].reportLevel = hmsPushPacket.hmsPushData.errList[i].reportLevel;
+      response.errList[i].sensorIndex = hmsPushPacket.hmsPushData.errList[i].sensorIndex;
+      // DSTATUS("%ld, response.errList.size():%d,0x%08x,%d,%d",response.timeStamp,response.errList.size(),response.errList[i].alarmID,
+      // response.errList[i].sensorIndex,
+      // response.errList[i].reportLevel);
+    }
+  }
+
+  return response.result;
 }
 
 bool VehicleNode::mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response)
