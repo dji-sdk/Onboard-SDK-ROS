@@ -27,35 +27,37 @@
  */
 
 #include <ros/ros.h>
-#include <dji_osdk_ros/SubscribeHMSInf.h>
+#include <dji_osdk_ros/GetHMSData.h>
 
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "hms_node");
     ros::NodeHandle nh;
 
-    auto subscribe_hms_info_client = nh.serviceClient<dji_osdk_ros::SubscribeHMSInf>("/subscribe_hms_info");
-    dji_osdk_ros::SubscribeHMSInf subscribe_hms_info;
-    subscribe_hms_info.request.enable = true;
-
     ros::Duration(1).sleep();
     ros::AsyncSpinner spinner(1);
     spinner.start();
 
-    ros::Rate rate(10);
+    auto get_hms_data_client = nh.serviceClient<dji_osdk_ros::GetHMSData>("get_hms_data");
+    dji_osdk_ros::GetHMSData get_hms_data;
+    get_hms_data.request.enable = true;
+    ros::Rate rate(1);
+
     while(ros::ok())
     {
-        subscribe_hms_info_client.call(subscribe_hms_info);
+        get_hms_data_client.call(get_hms_data);
+        // ROS_INFO("%d", get_hms_data.response.result);
 
-        for (int i = 0; i < subscribe_hms_info.response.errList.size(); i++)
+        for (int i = 0; i < get_hms_data.response.errList.size(); i++)
         {
-            ROS_INFO("hmsErrListNum: %d, alarm_id: 0x%08x, sensorIndex: %d, level: %d",
-                      i, subscribe_hms_info.response.errList[i].alarmID,
-                         subscribe_hms_info.response.errList[i].sensorIndex,
-                         subscribe_hms_info.response.errList[i].reportLevel);
-            if (subscribe_hms_info.response.deviceIndex != 0xff)
+            ROS_INFO("hmsErrListNum: %d, timeStamp:%ld, alarm_id: 0x%08x, sensorIndex: %d, level: %d",
+                      i, get_hms_data.response.timeStamp,
+                         get_hms_data.response.errList[i].alarmID,
+                         get_hms_data.response.errList[i].sensorIndex,
+                         get_hms_data.response.errList[i].reportLevel);
+            if (get_hms_data.response.deviceIndex != 0xff)
             {
-                ROS_INFO("%d Camera/Gimbal has trouble!", subscribe_hms_info.response.deviceIndex);
+                ROS_INFO("%d Camera/Gimbal has trouble!", get_hms_data.response.deviceIndex);
             }
         }
 

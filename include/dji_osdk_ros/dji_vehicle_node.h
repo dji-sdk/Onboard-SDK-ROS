@@ -93,7 +93,7 @@
 #include <dji_osdk_ros/CameraRecordVideoAction.h>
 
 //HMS services
-#include <dji_osdk_ros/SubscribeHMSInf.h>
+#include <dji_osdk_ros/GetHMSData.h>
 //mfio services
 #include <dji_osdk_ros/MFIO.h>
 //MOP services
@@ -239,7 +239,7 @@ namespace dji_osdk_ros
       ros::ServiceServer get_single_battery_dynamic_info_server_;
       ros::ServiceServer get_whole_battery_info_server_;
       /*! for hms */
-      ros::ServiceServer subscribe_hms_info_server_;
+      ros::ServiceServer get_hms_data_server_;
       /*! for mfio */
       ros::ServiceServer mfio_control_server_;
       /*! for mobile device */
@@ -388,8 +388,7 @@ namespace dji_osdk_ros
       bool getSingleBatteryDynamicInfoCallback(GetSingleBatteryDynamicInfo::Request& request,
                                                GetSingleBatteryDynamicInfo::Response& response);
       /*! for hms info */
-      bool subscribeHMSInfoCallback(SubscribeHMSInf::Request& request,
-                                    SubscribeHMSInf::Response& response);
+      bool getHMSDataCallback(GetHMSData::Request& request, GetHMSData::Response& response);
       /*! for mfio conrol */
       bool mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response);
       /*! for mobile device */

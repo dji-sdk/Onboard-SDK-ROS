@@ -2356,8 +2356,8 @@ bool VehicleWrapper::getHMSListInfo(HMSPushPacket& hmsPushPacket)
       hmsPushPacket.hmsPushData.errList[i].alarmID     = tempHMSPushPacket.hmsPushData.errList[i].alarmID;
       hmsPushPacket.hmsPushData.errList[i].reportLevel = tempHMSPushPacket.hmsPushData.errList[i].reportLevel;
       hmsPushPacket.hmsPushData.errList[i].sensorIndex = tempHMSPushPacket.hmsPushData.errList[i].sensorIndex;
-      DSTATUS("0x%08x,%d,%d", hmsPushPacket.hmsPushData.errList[i].alarmID, hmsPushPacket.hmsPushData.errList[i].sensorIndex,
-      hmsPushPacket.hmsPushData.errList[i].reportLevel);
+      //DSTATUS("0x%08x,%d,%d", hmsPushPacket.hmsPushData.errList[i].alarmID, hmsPushPacket.hmsPushData.errList[i].sensorIndex,
+      //hmsPushPacket.hmsPushData.errList[i].reportLevel);
     }
   }
   return true;
