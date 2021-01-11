@@ -53,6 +53,25 @@ namespace dji_osdk_ros
     double yaw_threshold;
   };
 
+  struct JoystickMode
+  {
+    uint8_t horizontalLogic;
+    uint8_t verticalLogic;
+    uint8_t yawLogic;
+    uint8_t horizontalCoordinate;
+    uint8_t stableMode;
+  };
+
+  struct JoystickCommand
+  {
+    DJI::OSDK::float32_t x;   /*!< Control with respect to the x axis of the
+                        DJI::OSDK::Control::HorizontalCoordinate.*/
+    DJI::OSDK::float32_t y;   /*!< Control with respect to the y axis of the
+                        DJI::OSDK::Control::HorizontalCoordinate.*/
+    DJI::OSDK::float32_t z;   /*!< Control with respect to the z axis, up is positive. */
+    DJI::OSDK::float32_t yaw; /*!< Yaw position/velocity control w.r.t. the ground frame.*/
+  };
+
   struct RotationAngle
   {
     DJI::OSDK::float32_t roll;

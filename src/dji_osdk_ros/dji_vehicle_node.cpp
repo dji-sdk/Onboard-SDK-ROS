@@ -191,13 +191,21 @@ void VehicleNode::initService()
    *  @platforms M210V2, M300
    */
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
+  joystick_action_server_ = nh_.advertiseService("joystick_action", &VehicleNode::JoystickActionCallback, this);
+  set_joystick_mode_server_ = nh_.advertiseService("set_joystick_mode", &VehicleNode::setJoystickModeCallback, this);
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
-  set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
+  get_home_altitude_server_ = nh_.advertiseService("get_go_home_altitude", &VehicleNode::getGoHomeAltitudeCallback,this);
+  set_current_aircraft_point_as_home_server_ = nh_.advertiseService("set_current_aircraft_point_as_home",
+                                               &VehicleNode::setCurrentAircraftLocAsHomeCallback,this);
+  set_home_point_server_ = nh_.advertiseService("set_home_point", &VehicleNode::setHomePointCallback, this);
   set_local_pos_reference_server_ = nh_.advertiseService("set_local_pos_reference", &VehicleNode::setLocalPosRefCallback,this);
-  avoid_enable_server_ = nh_.advertiseService("enable_avoid", &VehicleNode::setAvoidCallback,this);
-  upwards_avoid_enable_server_ = nh_.advertiseService("enable_upwards_avoid", &VehicleNode::setUpwardsAvoidCallback, this);
-  obtain_releae_control_authority_server_ = nh_.advertiseService("obtain_release_control_authority", &VehicleNode::obtainReleaseControlAuthorityCallback, this);
-
+  set_horizon_avoid_enable_server_ = nh_.advertiseService("set_horizon_avoid_enable", &VehicleNode::setHorizonAvoidCallback,this);
+  set_upwards_avoid_enable_server_ = nh_.advertiseService("set_upwards_avoid_enable", &VehicleNode::setUpwardsAvoidCallback, this);
+  get_avoid_enable_status_server_ = nh_.advertiseService("get_avoid_enable_status", &VehicleNode::getAvoidEnableStatusCallback, this);
+  obtain_releae_control_authority_server_ = nh_.advertiseService("obtain_release_control_authority",
+                                            &VehicleNode::obtainReleaseControlAuthorityCallback, this);
+  kill_switch_server_ = nh_.advertiseService("kill_switch", &VehicleNode::killSwitchCallback, this);
+  emergency_brake_action_server_ = nh_.advertiseService("emergency_brake", &VehicleNode::emergencyBrakeCallback, this);
   /*! @brief
    *  gimbal control server
    *  @platforms M210V2, M300
@@ -987,7 +995,7 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
     case FlightTaskControl::Request::TASK_GOHOME:
      {
         ROS_INFO_STREAM("call go home service");
-        if (ptr_wrapper_->goHome(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        if (ptr_wrapper_->goHome(FLIGHT_CONTROL_WAIT_TIMEOUT))
         {
           response.result = true;
         }
@@ -1002,22 +1010,17 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
         }
         break;
       }
-    case FlightTaskControl::Request::TASK_GO_LOCAL_POS:
+    case FlightTaskControl::Request::TASK_POSITON_AND_YAW_CONTROL:
       {
-        ROS_INFO_STREAM("call move local position service");
-        if(request.pos_offset.size() < 3 && request.yaw_params.size() < 3)
-        {
-          ROS_INFO_STREAM("Local Position Service Params Error");
-          break;
-        }
-        MoveOffset tmp_offset{request.pos_offset[0],
-                             request.pos_offset[1],
-                             request.pos_offset[2],
-                             request.yaw_params[0],
-                             request.yaw_params[1],
-                             request.yaw_params[2]
-                            };
-        if (ptr_wrapper_->moveByPositionOffset(ack, FLIGHT_CONTROL_WAIT_TIMEOUT, tmp_offset))
+        ROS_INFO_STREAM("call move local position offset service");
+        dji_osdk_ros::JoystickCommand joystickCommand;
+        joystickCommand.x   = request.joystickCommand.x;
+        joystickCommand.y   = request.joystickCommand.y;
+        joystickCommand.z   = request.joystickCommand.z;
+        joystickCommand.yaw = request.joystickCommand.yaw;
+
+        if (ptr_wrapper_->moveByPositionOffset(joystickCommand, FLIGHT_CONTROL_WAIT_TIMEOUT,
+                                               request.posThresholdInM, request.yawThresholdInDeg))
         {
           response.result = true;
         }
@@ -1026,21 +1029,90 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
     case FlightTaskControl::Request::TASK_TAKEOFF:
       {
         ROS_INFO_STREAM("call takeoff service");
-        if (ptr_wrapper_->monitoredTakeoff(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        if (ptr_wrapper_->monitoredTakeoff(FLIGHT_CONTROL_WAIT_TIMEOUT))
         {
           response.result = true;
         }
+        break;
+      }
+    case FlightTaskControl::Request::TASK_VELOCITY_AND_YAWRATE_CONTROL:
+      {
+        ROS_INFO_STREAM("call velocity and yaw rate service");
+
+        dji_osdk_ros::JoystickCommand joystickCommand;
+        joystickCommand.x   = request.joystickCommand.x;
+        joystickCommand.y   = request.joystickCommand.y;
+        joystickCommand.z   = request.joystickCommand.z;
+        joystickCommand.yaw = request.joystickCommand.yaw;
+
+        ptr_wrapper_->velocityAndYawRateCtrl(joystickCommand, request.velocityControlTimeMs);
+        response.result = true;
+
         break;
       }
     case FlightTaskControl::Request::TASK_LAND:
       {
         ROS_INFO_STREAM("call land service");
-        if (ptr_wrapper_->monitoredLanding(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        if (ptr_wrapper_->monitoredLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
         {
           response.result = true;
         }
         break;
       }
+    case FlightTaskControl::Request::START_MOTOR:
+    {
+        ROS_INFO_STREAM("call start motor service");
+        if (ptr_wrapper_->turnOnOffMotors(true))
+        {
+          response.result = true;
+        }
+        break;
+    }
+    case FlightTaskControl::Request::STOP_MOTOR:
+    {
+        ROS_INFO_STREAM("call stop motor service");
+        if (ptr_wrapper_->turnOnOffMotors(false))
+        {
+          response.result = true;
+        }
+        break;
+    }
+    case FlightTaskControl::Request::TASK_EXIT_GO_HOME:
+      {
+        ROS_INFO_STREAM("call cancel go home service");
+        if (ptr_wrapper_->cancelGoHome(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+      }
+    case FlightTaskControl::Request::TASK_EXIT_LANDING:
+      {
+        ROS_INFO_STREAM("call cancel landing service");
+        if (ptr_wrapper_->cancelLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+      }
+    case FlightTaskControl::Request::TASK_FORCE_LANDING_AVOID_GROUND:
+    {
+        ROS_INFO_STREAM("call confirm landing service");
+        if (ptr_wrapper_->startConfirmLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+    }
+    case FlightTaskControl::Request::TASK_FORCE_LANDING:
+    {
+        ROS_INFO_STREAM("call force landing service");
+        if (ptr_wrapper_->startForceLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+    }
     default:
       {
         ROS_INFO_STREAM("No recognized task");
@@ -1048,12 +1120,6 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
         break;
       }
   }
-  ROS_DEBUG("ack.info: set=%i id=%i", ack.info.cmd_set, ack.info.cmd_id);
-  ROS_DEBUG("ack.data: %i", ack.data);
-
-  response.cmd_set  = (int)ack.info.cmd_set;
-  response.cmd_id   = (int)ack.info.cmd_id;
-  response.ack_data = (unsigned int)ack.data;
 
   if (response.result)
   {
@@ -1063,6 +1129,48 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
   {
     return false;
   }
+}
+
+bool VehicleNode::setJoystickModeCallback(SetJoystickMode::Request& request, SetJoystickMode::Response& response)
+{
+  ROS_DEBUG("called setJoystickModeCallback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  dji_osdk_ros::JoystickMode joystickMode;
+  joystickMode.horizontalLogic = request.horizontal_mode;
+  joystickMode.verticalLogic   = request.vertical_mode;
+  joystickMode.yawLogic        = request.yaw_mode;
+  joystickMode.horizontalCoordinate = request.horizontal_coordinate;
+  joystickMode.stableMode      = request.stable_mode;
+
+  ptr_wrapper_->setJoystickMode(joystickMode);
+
+  response.result = true;
+  return true;
+}
+
+bool VehicleNode::JoystickActionCallback(JoystickAction::Request& request, JoystickAction::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  dji_osdk_ros::JoystickCommand joystickCommand;
+  joystickCommand.x = request.joystickCommand.x;
+  joystickCommand.y = request.joystickCommand.y;
+  joystickCommand.z = request.joystickCommand.z;
+  joystickCommand.yaw = request.joystickCommand.yaw;
+
+  ptr_wrapper_->JoystickAction(joystickCommand);
+
+  response.result = true;
+  return true;
 }
 
 bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response)
@@ -1433,16 +1541,37 @@ bool VehicleNode::setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request,
   return true;
 }
 
-bool VehicleNode::setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response)
+bool VehicleNode::getGoHomeAltitudeCallback(GetGoHomeAltitude::Request& request, GetGoHomeAltitude::Response& response)
 {
-  ROS_INFO_STREAM("Set new home point callback");
+  ROS_INFO_STREAM("Get go home altitude callback");
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return false;
   }
 
-  if(ptr_wrapper_->setNewHomeLocation() == true)
+  uint16_t altitude = 0;
+  if (!(ptr_wrapper_->getHomeAltitude(altitude)))
+  {
+    response.result = false;
+    return false;
+  }
+  
+  response.altitude = altitude;
+  response.result = true;
+  return true;
+}
+
+bool VehicleNode::setCurrentAircraftLocAsHomeCallback(SetCurrentAircraftLocAsHomePoint::Request& request, SetCurrentAircraftLocAsHomePoint::Response& response)
+{
+  ROS_INFO_STREAM("Set current aircraft location as new home point callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  if(ptr_wrapper_->setCurrentAircraftLocAsHomePoint() == true)
   {
     response.result = true;
   }
@@ -1454,10 +1583,29 @@ bool VehicleNode::setHomeCallback(SetNewHomePoint::Request& request, SetNewHomeP
   return true;
 }
 
+bool VehicleNode::setHomePointCallback(SetHomePoint::Request& request, SetHomePoint::Response& response)
+{
+  ROS_INFO_STREAM("Set home point callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  if (ptr_wrapper_->setHomePoint(request.latitude, request.longitude))
+  {
+    response.result = true;
+    return true;
+  }
+
+  response.result = false;
+  return false;
+}
+
 bool VehicleNode::setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
                                          dji_osdk_ros::SetLocalPosRef::Response &response)
 {
-  printf("Currrent GPS health is %d \n",current_gps_health_ );
+  ROS_INFO("Currrent GPS health is %d",current_gps_health_ );
   if (current_gps_health_ > 3)
   {
     local_pos_ref_latitude_ = current_gps_latitude_;
@@ -1486,28 +1634,26 @@ bool VehicleNode::setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &
   return true;
 }
 
-bool VehicleNode::setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response)
+bool VehicleNode::setHorizonAvoidCallback(SetAvoidEnable::Request& request, SetAvoidEnable::Response& response)
 {
-  ROS_INFO_STREAM("Set avoid function callback");
+  ROS_INFO_STREAM("Set horizon avoid function callback");
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
     return false;
   }
 
-  if(ptr_wrapper_->setAvoid(request.enable) == true)
-  {
-    response.result = true;
-  }
-  else
+  if (!(ptr_wrapper_->setCollisionAvoidance(request.enable)))
   {
     response.result = false;
+    return false;
   }
 
+  response.result = true;
   return true;
 }
 
-bool VehicleNode::setUpwardsAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response)
+bool VehicleNode::setUpwardsAvoidCallback(SetAvoidEnable::Request& request, SetAvoidEnable::Response& response)
 {
   ROS_INFO_STREAM("Set upwards avoid function callback");
   if(ptr_wrapper_ == nullptr)
@@ -1516,21 +1662,50 @@ bool VehicleNode::setUpwardsAvoidCallback(AvoidEnable::Request& request, AvoidEn
     return false;
   }
 
-  if(ptr_wrapper_->setUpwardsAvoidance(request.enable) == true)
-  {
-    response.result = true;
-  }
-  else
+  if(!(ptr_wrapper_->setUpwardsAvoidance(request.enable)))
   {
     response.result = false;
+    return false;
   }
 
+
+  response.result = true;
+  return true;
+}
+
+bool VehicleNode::getAvoidEnableStatusCallback(GetAvoidEnable::Request& request, GetAvoidEnable::Response& response)
+{
+  ROS_INFO_STREAM("Set upwards avoid function callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  uint8_t get_horizon_avoid_enable_status = 0xF;
+  uint8_t get_upwards_avoid_enable_status = 0xF;
+
+  if (!(ptr_wrapper_->getCollisionAvoidance(get_horizon_avoid_enable_status)))
+  {
+    response.result = false;
+    return false;
+  }
+  response.horizon_avoid_enable_status = get_horizon_avoid_enable_status;
+
+  if(!(ptr_wrapper_->getUpwardsAvoidance(get_upwards_avoid_enable_status)))
+  {
+    response.result = false;
+    return false;
+  }
+
+  response.upwards_avoid_enable_status = get_horizon_avoid_enable_status;
+
+  response.result = true;
   return true;
 }
 
 bool VehicleNode::obtainReleaseControlAuthorityCallback(ObtainControlAuthority::Request& request, ObtainControlAuthority::Response& response)
 {
-  
   if(request.enable_obtain)
   {
     ROS_INFO_STREAM("Obtain Control Authority Callback");
@@ -1547,6 +1722,32 @@ bool VehicleNode::obtainReleaseControlAuthorityCallback(ObtainControlAuthority::
   }
 
   response.result = ptr_wrapper_->obtainReleaseCtrlAuthority(request.enable_obtain, FLIGHT_CONTROL_WAIT_TIMEOUT);
+
+  return response.result;
+}
+
+bool VehicleNode::killSwitchCallback(KillSwitch::Request& request, KillSwitch::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+  char msg[10] = "StopFLy";
+  response.result = ptr_wrapper_->killSwitch(request.enable, msg);
+
+  return response.result;
+}
+
+bool VehicleNode::emergencyBrakeCallback(EmergencyBrake::Request& request, EmergencyBrake::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->emergencyBrake();
 
   return response.result;
 }

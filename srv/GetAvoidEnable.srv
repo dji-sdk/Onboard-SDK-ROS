@@ -1,0 +1,6 @@
+#request
+---
+#response
+bool result
+uint8 horizon_avoid_enable_status #0:disable 1:enable 0xF:invalid
+uint8 upwards_avoid_enable_status

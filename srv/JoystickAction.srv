@@ -1,0 +1,5 @@
+#request
+JoystickParams joystickCommand
+---
+#response
+bool result

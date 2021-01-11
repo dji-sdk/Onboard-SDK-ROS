@@ -1,0 +1,6 @@
+#request
+float64 latitude  #/*!< unit: rad */
+float64 longitude #/*!< unit: rad */
+---
+#response
+bool result

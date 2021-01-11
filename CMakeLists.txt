@@ -73,6 +73,7 @@ add_message_files(
   FILES
 
   FCTimeInUTC.msg
+  JoystickParams.msg
   GPSUTC.msg
   Gimbal.msg
   Waypoint.msg
@@ -118,7 +119,11 @@ add_service_files(
   GetDroneType.srv
   GetM300StereoParams.srv
   FlightTaskControl.srv
+  SetJoystickMode.srv
+  JoystickAction.srv
   ObtainControlAuthority.srv
+  KillSwitch.srv
+  EmergencyBrake.srv
   GimbalAction.srv
   CameraEV.srv
   CameraShutterSpeed.srv
@@ -138,9 +143,12 @@ add_service_files(
   GetSingleBatteryDynamicInfo.srv
   MFIO.srv
   SetGoHomeAltitude.srv
-  SetNewHomePoint.srv
+  GetGoHomeAltitude.srv
+  SetCurrentAircraftLocAsHomePoint.srv
+  SetHomePoint.srv
   SetupCameraH264.srv
-  AvoidEnable.srv
+  SetAvoidEnable.srv
+  GetAvoidEnable.srv
   InitWaypointV2Setting.srv
   UploadWaypointV2Mission.srv
   UploadWaypointV2Action.srv
