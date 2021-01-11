@@ -1,5 +1,5 @@
 add_subdirectory(modules)
-add_subdirectory(samples)
+#add_subdirectory(samples)
 
 FILE(GLOB EXAMPLES *.cc *.c *.cpp)
 
