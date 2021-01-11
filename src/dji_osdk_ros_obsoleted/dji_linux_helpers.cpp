@@ -176,7 +176,7 @@ LinuxSetup::setupEnvironment(int argc, char** argv)
     //look in installation dir if not found in expected places
     if(config_file_path.empty()){
       //FIXME: find a better place to declare this without ros distro (melodic)
-      std::string installationDir = "/opt/ros/melodic/share/dji_sdk/launch";
+      std::string installationDir = "/opt/ros/melodic/share/dji_osdk_ros/launch";
       config_file_path = DJI_Environment::findFileInDir(config_filename,installationDir);
     }
     if (config_file_path.empty())
