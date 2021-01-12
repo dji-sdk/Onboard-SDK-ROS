@@ -1,0 +1,14 @@
+#constant for vga image frequency
+uint8 FPV_CAMERA  = 7
+uint8 MAIN_CAMERA = 0
+uint8 VICE_CAMERA = 1
+uint8 TOP_CAMERA  = 2
+
+# use above constants to config freq.
+uint8 request_view
+
+# 1 for start camera stream, 0 for stop
+uint8 start
+
+---
+bool result

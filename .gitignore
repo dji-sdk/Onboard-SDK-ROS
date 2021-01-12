@@ -15,3 +15,4 @@ catkin_ws
 .vscode
 
 debian/ros-*-dji-onboard-sdk-ros*
+debian/ros-*-dji-osdk-ros*
