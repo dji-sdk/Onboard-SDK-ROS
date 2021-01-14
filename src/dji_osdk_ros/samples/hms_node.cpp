@@ -41,7 +41,7 @@ int main(int argc, char** argv)
     auto get_hms_data_client = nh.serviceClient<dji_osdk_ros::GetHMSData>("get_hms_data");
     dji_osdk_ros::GetHMSData get_hms_data;
     get_hms_data.request.enable = true;
-    ros::Rate rate(1);
+    ros::Rate rate(5);
 
     while(ros::ok())
     {
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
         for (int i = 0; i < get_hms_data.response.errList.size(); i++)
         {
             ROS_INFO("hmsErrListNum: %d, timeStamp:%ld, alarm_id: 0x%08x, sensorIndex: %d, level: %d",
-                      i, get_hms_data.response.timeStamp,
+                      i+1, get_hms_data.response.timeStamp,
                          get_hms_data.response.errList[i].alarmID,
                          get_hms_data.response.errList[i].sensorIndex,
                          get_hms_data.response.errList[i].reportLevel);
