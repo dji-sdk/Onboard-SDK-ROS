@@ -797,8 +797,10 @@ bool VehicleNode::waypointV2GenerateActionsCallback(
             DJI::OSDK::DJIWaypointV2CameraFocusParam focusParam;
             focusParam.focusTarget.x = request.actions[i].waypointV2CameraActuator.focusParam.x;
             focusParam.focusTarget.y = request.actions[i].waypointV2CameraActuator.focusParam.y;
+            focusParam.regionType = request.actions[i].waypointV2CameraActuator.focusParam.regionType;
+            focusParam.width = request.actions[i].waypointV2CameraActuator.focusParam.width;
+            focusParam.height = request.actions[i].waypointV2CameraActuator.focusParam.height;
             focusParam.retryTimes = request.actions[i].waypointV2CameraActuator.focusParam.retryTimes;
-            focusParam.focusDelayTime = request.actions[i].waypointV2CameraActuator.focusParam.focusDelayTime;
             cameraActuatorParam = new DJI::OSDK::DJIWaypointV2CameraActuatorParam(DJI::OSDK::DJIWaypointV2ActionActuatorCameraOperationTypeFocus, &focusParam);
          }
          else if(request.actions[i].waypointV2CameraActuator.DJIWaypointV2ActionActuatorCameraOperationType ==  

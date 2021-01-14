@@ -1,5 +1,5 @@
-  int16 x             # gimbal roll angle,  unit: 0.1 deg,range:[-200, 200]*/
-  int16 y             # gimbal pitch angle, unit: 0.1 deg,range:[-1300, 1300]*/
+  int16 x             # gimbal roll angle,  unit: 0.1 deg,range:[-3600, 3600]*/
+  int16 y             # gimbal pitch angle, unit: 0.1 deg,range:[-3600, 3600]*/
   int16 z             # gimbal yaw angle,   unit: 0.1 deg,range:[-3600, 3600]*/
   uint8 ctrl_mode     # 0: absolute position control, 1:relative position control*/
   uint8 rollCmdIgnore # 0: roll command normal,  1: roll command ignore*/
