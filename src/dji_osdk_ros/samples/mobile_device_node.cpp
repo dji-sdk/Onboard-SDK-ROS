@@ -105,6 +105,11 @@ void fromMobileDataSubCallback(const dji_osdk_ros::MobileData::ConstPtr& fromMob
       ackReturnToMobile.ackResult = recordVideo();
       sendToMobile(ackReturnToMobile);
     }
+
+    case 256:
+    {
+      ackReturnToMobile.ackResult = obtainJoystickControlAuthority();
+    }
       break;
   }
   ros::Duration(1.0).sleep();
@@ -152,7 +157,7 @@ bool moveByPosOffset(const JoystickCommand &offsetDesired,
                      float yawThresholdInDeg)
 {
   FlightTaskControl flightTaskControl;
-  flightTaskControl.request.task = FlightTaskControl::Request::TASK_POSITON_AND_YAW_CONTROL;
+  flightTaskControl.request.task = FlightTaskControl::Request::TASK_POSITION_AND_YAW_CONTROL;
   flightTaskControl.request.joystickCommand.x = offsetDesired.x;
   flightTaskControl.request.joystickCommand.y = offsetDesired.y;
   flightTaskControl.request.joystickCommand.z = offsetDesired.z;
@@ -220,6 +225,15 @@ bool recordVideo()
   camera_record_video_action_client.call(cameraRecordVideoAction);
 }
 
+bool obtainJoystickControlAuthority()
+{
+  ObtainControlAuthority obtainJoystickControlAuthority;
+  obtainJoystickControlAuthority.request.enable_obtain = true;
+  obtain_ctrl_authority_client.call(obtainJoystickControlAuthority);
+
+  return obtainJoystickControlAuthority.response.result;
+}
+
 static void DisplayMainMenu(void)
 {
   printf("\r\n");
@@ -237,6 +251,7 @@ int main(int argc, char *argv[]) {
   ROS_INFO("mobile device node is running!");
   ros::NodeHandle nh;
 
+  obtain_ctrl_authority_client = nh.serviceClient<dji_osdk_ros::ObtainControlAuthority>("obtain_release_control_authority");
   send_to_mobile_data_client = nh.serviceClient<SendMobileData>("send_data_to_mobile_device");
   flight_control_client = nh.serviceClient<FlightTaskControl>("flight_task_control");
   gimbal_control_client = nh.serviceClient<GimbalAction>("gimbal_task_control");

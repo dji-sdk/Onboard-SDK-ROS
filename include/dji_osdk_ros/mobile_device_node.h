@@ -47,6 +47,7 @@ ros::ServiceClient flight_control_client;
 ros::ServiceClient gimbal_control_client;
 ros::ServiceClient camera_start_shoot_single_photo_client;
 ros::ServiceClient camera_record_video_action_client;
+ros::ServiceClient obtain_ctrl_authority_client;
 
 /*! Subscriber */
 ros::Subscriber fromMobileDataSub;
@@ -67,5 +68,6 @@ bool resetGimbal();
 bool Rotategimbal();
 bool takePicture();
 bool recordVideo();
+bool obtainJoystickControlAuthority();
 
 #endif //SRC_MOBILE_DEVICE_NODE_H

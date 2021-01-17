@@ -1016,7 +1016,7 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
         }
         break;
       }
-    case FlightTaskControl::Request::TASK_POSITON_AND_YAW_CONTROL:
+    case FlightTaskControl::Request::TASK_POSITION_AND_YAW_CONTROL:
       {
         ROS_INFO_STREAM("call move local position offset service");
         dji_osdk_ros::JoystickCommand joystickCommand;

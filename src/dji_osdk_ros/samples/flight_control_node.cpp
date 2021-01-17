@@ -345,7 +345,7 @@ bool moveByPosOffset(FlightTaskControl& task,const JoystickCommand &offsetDesire
                     float posThresholdInM,
                     float yawThresholdInDeg)
 {
-  task.request.task = FlightTaskControl::Request::TASK_POSITON_AND_YAW_CONTROL;
+  task.request.task = FlightTaskControl::Request::TASK_POSITION_AND_YAW_CONTROL;
   task.request.joystickCommand.x = offsetDesired.x;
   task.request.joystickCommand.y = offsetDesired.y;
   task.request.joystickCommand.z = offsetDesired.z;
