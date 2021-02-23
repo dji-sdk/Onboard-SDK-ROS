@@ -139,6 +139,7 @@ This update mainly includes:
 |battery_node                          |get_whole_battery_info                            |                                       |
 |                                      |get_single_battery_dynamic_info                   |                                       |
 |hms_node                              |get_hms_data                                      |                                       |
+### 2. Prerequisites
 The system environment we have tested is in the table below.
 
 |                            |                                             |
