@@ -726,20 +726,6 @@ bool VehicleNode::waypointV2GenerateActionsCallback(
   {
      switch(request.actions[i].waypointV2ActionTriggerType)
      {
-       case dji_osdk_ros::WaypointV2Action::DJIWaypointV2ActionTriggerTypeReachPoint:
-       { 
-         DJI::OSDK::DJIWaypointV2ReachPointTriggerParam param;
-         param.startIndex = request.actions[i].waypointV2ReachpointTrigger.startIndex;
-         param.endIndex = request.actions[i].waypointV2ReachpointTrigger.endIndex;
-         param.intervalWPNum = request.actions[i].waypointV2ReachpointTrigger.intervalWPNum;
-         param.waypointCountToTerminate = request.actions[i].waypointV2ReachpointTrigger.waypointCountToTerminate;
-         trigger = new DJI::OSDK::DJIWaypointV2Trigger(
-           DJI::OSDK::DJIWaypointV2ActionTriggerTypeReachPoint, &param);
-         response.result = true;
-
-         break;
-       }
-
        case dji_osdk_ros::WaypointV2Action::DJIWaypointV2ActionTriggerTypeActionAssociated:
        { 
          DJI::OSDK::DJIWaypointV2AssociateTriggerParam param;
@@ -811,8 +797,10 @@ bool VehicleNode::waypointV2GenerateActionsCallback(
             DJI::OSDK::DJIWaypointV2CameraFocusParam focusParam;
             focusParam.focusTarget.x = request.actions[i].waypointV2CameraActuator.focusParam.x;
             focusParam.focusTarget.y = request.actions[i].waypointV2CameraActuator.focusParam.y;
+            focusParam.regionType = request.actions[i].waypointV2CameraActuator.focusParam.regionType;
+            focusParam.width = request.actions[i].waypointV2CameraActuator.focusParam.width;
+            focusParam.height = request.actions[i].waypointV2CameraActuator.focusParam.height;
             focusParam.retryTimes = request.actions[i].waypointV2CameraActuator.focusParam.retryTimes;
-            focusParam.focusDelayTime = request.actions[i].waypointV2CameraActuator.focusParam.focusDelayTime;
             cameraActuatorParam = new DJI::OSDK::DJIWaypointV2CameraActuatorParam(DJI::OSDK::DJIWaypointV2ActionActuatorCameraOperationTypeFocus, &focusParam);
          }
          else if(request.actions[i].waypointV2CameraActuator.DJIWaypointV2ActionActuatorCameraOperationType ==  

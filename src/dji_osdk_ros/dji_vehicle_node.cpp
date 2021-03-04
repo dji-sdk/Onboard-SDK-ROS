@@ -104,7 +104,7 @@ bool VehicleNode::initGimbalModule()
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   /*! init gimbal modules for gimbalManager */
@@ -144,7 +144,7 @@ bool VehicleNode::initCameraModule()
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   /*! init camera modules for cameraManager */
@@ -191,12 +191,21 @@ void VehicleNode::initService()
    *  @platforms M210V2, M300
    */
   task_control_server_ = nh_.advertiseService("flight_task_control", &VehicleNode::taskCtrlCallback, this);
+  joystick_action_server_ = nh_.advertiseService("joystick_action", &VehicleNode::JoystickActionCallback, this);
+  set_joystick_mode_server_ = nh_.advertiseService("set_joystick_mode", &VehicleNode::setJoystickModeCallback, this);
   set_home_altitude_server_ = nh_.advertiseService("set_go_home_altitude", &VehicleNode::setGoHomeAltitudeCallback,this);
-  set_current_point_as_home_server_ = nh_.advertiseService("set_current_point_as_home", &VehicleNode::setHomeCallback,this);
+  get_home_altitude_server_ = nh_.advertiseService("get_go_home_altitude", &VehicleNode::getGoHomeAltitudeCallback,this);
+  set_current_aircraft_point_as_home_server_ = nh_.advertiseService("set_current_aircraft_point_as_home",
+                                               &VehicleNode::setCurrentAircraftLocAsHomeCallback,this);
+  set_home_point_server_ = nh_.advertiseService("set_home_point", &VehicleNode::setHomePointCallback, this);
   set_local_pos_reference_server_ = nh_.advertiseService("set_local_pos_reference", &VehicleNode::setLocalPosRefCallback,this);
-  avoid_enable_server_ = nh_.advertiseService("enable_avoid", &VehicleNode::setAvoidCallback,this);
-  upwards_avoid_enable_server_ = nh_.advertiseService("enable_upwards_avoid", &VehicleNode::setUpwardsAvoidCallback, this);
-
+  set_horizon_avoid_enable_server_ = nh_.advertiseService("set_horizon_avoid_enable", &VehicleNode::setHorizonAvoidCallback,this);
+  set_upwards_avoid_enable_server_ = nh_.advertiseService("set_upwards_avoid_enable", &VehicleNode::setUpwardsAvoidCallback, this);
+  get_avoid_enable_status_server_ = nh_.advertiseService("get_avoid_enable_status", &VehicleNode::getAvoidEnableStatusCallback, this);
+  obtain_releae_control_authority_server_ = nh_.advertiseService("obtain_release_control_authority",
+                                            &VehicleNode::obtainReleaseControlAuthorityCallback, this);
+  kill_switch_server_ = nh_.advertiseService("kill_switch", &VehicleNode::killSwitchCallback, this);
+  emergency_brake_action_server_ = nh_.advertiseService("emergency_brake", &VehicleNode::emergencyBrakeCallback, this);
   /*! @brief
    *  gimbal control server
    *  @platforms M210V2, M300
@@ -213,6 +222,7 @@ void VehicleNode::initService()
   camera_control_set_ISO_server_ = nh_.advertiseService("camera_task_set_ISO", &VehicleNode::cameraSetISOCallback, this);
   camera_control_set_focus_point_server_ = nh_.advertiseService("camera_task_set_focus_point", &VehicleNode::cameraSetFocusPointCallback, this);
   camera_control_set_tap_zoom_point_server_ = nh_.advertiseService("camera_task_tap_zoom_point", &VehicleNode::cameraSetTapZoomPointCallback, this);
+  camera_control_set_zoom_para_server_ = nh_.advertiseService("camera_task_set_zoom_para", &VehicleNode::cameraSetZoomParaCallback, this);
   camera_control_zoom_ctrl_server_ = nh_.advertiseService("camera_task_zoom_ctrl", &VehicleNode::cameraZoomCtrlCallback, this);
   camera_control_start_shoot_single_photo_server_ = nh_.advertiseService("camera_start_shoot_single_photo", &VehicleNode::cameraStartShootSinglePhotoCallback, this);
   camera_control_start_shoot_AEB_photo_server_ = nh_.advertiseService("camera_start_shoot_aeb_photo", &VehicleNode::cameraStartShootAEBPhotoCallback, this);
@@ -221,6 +231,18 @@ void VehicleNode::initService()
   camera_control_stop_shoot_photo_server_ = nh_.advertiseService("camera_stop_shoot_photo", &VehicleNode::cameraStopShootPhotoCallback, this);
   camera_control_record_video_action_server_ = nh_.advertiseService("camera_record_video_action", &VehicleNode::cameraRecordVideoActionCallback, this);
 
+  /* @brief
+   * get whole battery info server
+   * @platforms M210V2
+   */
+  get_whole_battery_info_server_ = nh_.advertiseService("get_whole_battery_info", &VehicleNode::getWholeBatteryInfoCallback, this);
+  get_single_battery_dynamic_info_server_ = nh_.advertiseService("get_single_battery_dynamic_info", &VehicleNode::getSingleBatteryDynamicInfoCallback, this);
+  
+  /*! @brief
+   *  mfio control server
+   *  @platforms M300
+   */
+  get_hms_data_server_ = nh_.advertiseService("get_hms_data", &VehicleNode::getHMSDataCallback, this);
   /*! @brief
    *  mfio control server
    *  @platforms null
@@ -319,7 +341,7 @@ bool VehicleNode::initTopic()
    * - Fused attitude (duplicated from attitude topic)
    * - Raw linear acceleration (body frame: FLU, m/s^2)
    *       Z value is +9.8 when placed on level ground statically
-   * - Raw angular velocity (body frame: FLU, rad/s^2)
+   * - Raw angular velocity (body frame: FLU, rad/s)
    */
   imu_publisher_ = nh_.advertise<sensor_msgs::Imu>("dji_osdk_ros/imu", 10);
   // Refer to dji_sdk.h for different enums for M100 and A3/N3
@@ -384,7 +406,7 @@ bool VehicleNode::initTopic()
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   Vehicle* vehicle = ptr_wrapper_->getVehicle();
@@ -478,7 +500,7 @@ bool VehicleNode::initDataSubscribeFromFC()
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   ACK::ErrorCode ack = ptr_wrapper_->verify(WAIT_TIMEOUT);
@@ -756,7 +778,7 @@ bool VehicleNode::stereo240pSubscriptionCallback(dji_osdk_ros::Stereo240pSubscri
   if(ptr_wrapper_ == nullptr)
   {
       ROS_ERROR_STREAM("Vehicle modules is nullptr");
-      return true;
+      return false;
   }
 
   if (request.unsubscribe_240p == 1)
@@ -809,7 +831,7 @@ VehicleNode::stereoDepthSubscriptionCallback(dji_osdk_ros::StereoDepthSubscripti
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   if (request.unsubscribe_240p == 1)
@@ -854,7 +876,7 @@ bool VehicleNode::stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscript
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   if (request.unsubscribe_vga == 1)
@@ -932,7 +954,7 @@ bool VehicleNode::getDroneTypeCallback(dji_osdk_ros::GetDroneType::Request &requ
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   if (ptr_wrapper_->isM100())
@@ -971,7 +993,7 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   switch (request.task)
@@ -979,7 +1001,7 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
     case FlightTaskControl::Request::TASK_GOHOME:
      {
         ROS_INFO_STREAM("call go home service");
-        if (ptr_wrapper_->goHome(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        if (ptr_wrapper_->goHome(FLIGHT_CONTROL_WAIT_TIMEOUT))
         {
           response.result = true;
         }
@@ -994,22 +1016,17 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
         }
         break;
       }
-    case FlightTaskControl::Request::TASK_GO_LOCAL_POS:
+    case FlightTaskControl::Request::TASK_POSITION_AND_YAW_CONTROL:
       {
-        ROS_INFO_STREAM("call move local position service");
-        if(request.pos_offset.size() < 3 && request.yaw_params.size() < 3)
-        {
-          ROS_INFO_STREAM("Local Position Service Params Error");
-          break;
-        }
-        MoveOffset tmp_offset{request.pos_offset[0],
-                             request.pos_offset[1],
-                             request.pos_offset[2],
-                             request.yaw_params[0],
-                             request.yaw_params[1],
-                             request.yaw_params[2]
-                            };
-        if (ptr_wrapper_->moveByPositionOffset(ack, FLIGHT_CONTROL_WAIT_TIMEOUT, tmp_offset))
+        ROS_INFO_STREAM("call move local position offset service");
+        dji_osdk_ros::JoystickCommand joystickCommand;
+        joystickCommand.x   = request.joystickCommand.x;
+        joystickCommand.y   = request.joystickCommand.y;
+        joystickCommand.z   = request.joystickCommand.z;
+        joystickCommand.yaw = request.joystickCommand.yaw;
+
+        if (ptr_wrapper_->moveByPositionOffset(joystickCommand, FLIGHT_CONTROL_WAIT_TIMEOUT,
+                                               request.posThresholdInM, request.yawThresholdInDeg))
         {
           response.result = true;
         }
@@ -1018,21 +1035,90 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
     case FlightTaskControl::Request::TASK_TAKEOFF:
       {
         ROS_INFO_STREAM("call takeoff service");
-        if (ptr_wrapper_->monitoredTakeoff(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        if (ptr_wrapper_->monitoredTakeoff(FLIGHT_CONTROL_WAIT_TIMEOUT))
         {
           response.result = true;
         }
+        break;
+      }
+    case FlightTaskControl::Request::TASK_VELOCITY_AND_YAWRATE_CONTROL:
+      {
+        ROS_INFO_STREAM("call velocity and yaw rate service");
+
+        dji_osdk_ros::JoystickCommand joystickCommand;
+        joystickCommand.x   = request.joystickCommand.x;
+        joystickCommand.y   = request.joystickCommand.y;
+        joystickCommand.z   = request.joystickCommand.z;
+        joystickCommand.yaw = request.joystickCommand.yaw;
+
+        ptr_wrapper_->velocityAndYawRateCtrl(joystickCommand, request.velocityControlTimeMs);
+        response.result = true;
+
         break;
       }
     case FlightTaskControl::Request::TASK_LAND:
       {
         ROS_INFO_STREAM("call land service");
-        if (ptr_wrapper_->monitoredLanding(ack, FLIGHT_CONTROL_WAIT_TIMEOUT))
+        if (ptr_wrapper_->monitoredLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
         {
           response.result = true;
         }
         break;
       }
+    case FlightTaskControl::Request::START_MOTOR:
+    {
+        ROS_INFO_STREAM("call start motor service");
+        if (ptr_wrapper_->turnOnOffMotors(true))
+        {
+          response.result = true;
+        }
+        break;
+    }
+    case FlightTaskControl::Request::STOP_MOTOR:
+    {
+        ROS_INFO_STREAM("call stop motor service");
+        if (ptr_wrapper_->turnOnOffMotors(false))
+        {
+          response.result = true;
+        }
+        break;
+    }
+    case FlightTaskControl::Request::TASK_EXIT_GO_HOME:
+      {
+        ROS_INFO_STREAM("call cancel go home service");
+        if (ptr_wrapper_->cancelGoHome(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+      }
+    case FlightTaskControl::Request::TASK_EXIT_LANDING:
+      {
+        ROS_INFO_STREAM("call cancel landing service");
+        if (ptr_wrapper_->cancelLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+      }
+    case FlightTaskControl::Request::TASK_FORCE_LANDING_AVOID_GROUND:
+    {
+        ROS_INFO_STREAM("call confirm landing service");
+        if (ptr_wrapper_->startConfirmLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+    }
+    case FlightTaskControl::Request::TASK_FORCE_LANDING:
+    {
+        ROS_INFO_STREAM("call force landing service");
+        if (ptr_wrapper_->startForceLanding(FLIGHT_CONTROL_WAIT_TIMEOUT))
+        {
+          response.result = true;
+        }
+        break;
+    }
     default:
       {
         ROS_INFO_STREAM("No recognized task");
@@ -1040,12 +1126,6 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
         break;
       }
   }
-  ROS_DEBUG("ack.info: set=%i id=%i", ack.info.cmd_set, ack.info.cmd_id);
-  ROS_DEBUG("ack.data: %i", ack.data);
-
-  response.cmd_set  = (int)ack.info.cmd_set;
-  response.cmd_id   = (int)ack.info.cmd_id;
-  response.ack_data = (unsigned int)ack.data;
 
   if (response.result)
   {
@@ -1057,12 +1137,54 @@ bool VehicleNode::taskCtrlCallback(FlightTaskControl::Request&  request, FlightT
   }
 }
 
+bool VehicleNode::setJoystickModeCallback(SetJoystickMode::Request& request, SetJoystickMode::Response& response)
+{
+  ROS_DEBUG("called setJoystickModeCallback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  dji_osdk_ros::JoystickMode joystickMode;
+  joystickMode.horizontalLogic = request.horizontal_mode;
+  joystickMode.verticalLogic   = request.vertical_mode;
+  joystickMode.yawLogic        = request.yaw_mode;
+  joystickMode.horizontalCoordinate = request.horizontal_coordinate;
+  joystickMode.stableMode      = request.stable_mode;
+
+  ptr_wrapper_->setJoystickMode(joystickMode);
+
+  response.result = true;
+  return true;
+}
+
+bool VehicleNode::JoystickActionCallback(JoystickAction::Request& request, JoystickAction::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  dji_osdk_ros::JoystickCommand joystickCommand;
+  joystickCommand.x = request.joystickCommand.x;
+  joystickCommand.y = request.joystickCommand.y;
+  joystickCommand.z = request.joystickCommand.z;
+  joystickCommand.yaw = request.joystickCommand.yaw;
+
+  ptr_wrapper_->JoystickAction(joystickCommand);
+
+  response.result = true;
+  return true;
+}
+
 bool VehicleNode::gimbalCtrlCallback(GimbalAction::Request& request, GimbalAction::Response& response)
 {
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = false;
   ROS_INFO("Current gimbal %d, angle (p,r,y) = (%0.2f, %0.2f, %0.2f)", static_cast<int>(request.payload_index),
@@ -1099,20 +1221,14 @@ bool VehicleNode::cameraSetEVCallback(CameraEV::Request& request, CameraEV::Resp
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
-  }
-  response.result = false;
-  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
-  {
-    return false;
-  }
-  if (ptr_wrapper_->setEV(static_cast<PayloadIndex>(request.payload_index),
-                          static_cast<ExposureCompensation>(request.exposure_compensation)))
-  {
     return false;
   }
   response.result = true;
-  return true;
+  response.result &= ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index),
+                                                   static_cast<ExposureMode>(request.exposure_mode));
+  response.result &= ptr_wrapper_->setEV(static_cast<PayloadIndex>(request.payload_index),
+                                         static_cast<ExposureCompensation>(request.exposure_compensation));
+  return response.result;
 }
 
 bool VehicleNode::cameraSetShutterSpeedCallback(CameraShutterSpeed::Request& request, CameraShutterSpeed::Response& response)
@@ -1120,19 +1236,14 @@ bool VehicleNode::cameraSetShutterSpeedCallback(CameraShutterSpeed::Request& req
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
-  }
-  response.result = false;
-  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
-  {
-    return false;
-  }
-  if (ptr_wrapper_->setShutterSpeed(static_cast<PayloadIndex>(request.payload_index), static_cast<ShutterSpeed>(request.shutter_speed)))
-  {
     return false;
   }
   response.result = true;
-  return true;
+  response.result &= ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index),
+                                                   static_cast<ExposureMode>(request.exposure_mode));
+  response.result &= ptr_wrapper_->setShutterSpeed(static_cast<PayloadIndex>(request.payload_index),
+                                                   static_cast<ShutterSpeed>(request.shutter_speed));
+  return response.result;
 }
 
 bool VehicleNode::cameraSetApertureCallback(CameraAperture::Request& request, CameraAperture::Response& response)
@@ -1140,19 +1251,14 @@ bool VehicleNode::cameraSetApertureCallback(CameraAperture::Request& request, Ca
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
-  }
-  response.result = false;
-  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
-  {
-    return false;
-  }
-  if (ptr_wrapper_->setAperture(static_cast<PayloadIndex>(request.payload_index), static_cast<Aperture>(request.aperture)))
-  {
     return false;
   }
   response.result = true;
-  return true;
+  response.result &= ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index),
+                                                   static_cast<ExposureMode>(request.exposure_mode));
+  response.result &= ptr_wrapper_->setAperture(static_cast<PayloadIndex>(request.payload_index),
+                                               static_cast<Aperture>(request.aperture));
+  return response.result;
 }
 
 bool VehicleNode::cameraSetISOCallback(CameraISO::Request& request, CameraISO::Response& response)
@@ -1160,19 +1266,14 @@ bool VehicleNode::cameraSetISOCallback(CameraISO::Request& request, CameraISO::R
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
-  }
-  response.result = false;
-  if (ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index), static_cast<ExposureMode>(request.exposure_mode)))
-  {
-    return false;
-  }
-  if (ptr_wrapper_->setISO(static_cast<PayloadIndex>(request.payload_index), static_cast<ISO>(request.iso_data)))
-  {
     return false;
   }
   response.result = true;
-  return true;
+  response.result &= ptr_wrapper_->setExposureMode(static_cast<PayloadIndex>(request.payload_index),
+                                                   static_cast<ExposureMode>(request.exposure_mode));
+  response.result &= ptr_wrapper_->setISO(static_cast<PayloadIndex>(request.payload_index),
+                                          static_cast<ISO>(request.iso_data));
+  return response.result;
 }
 
 bool VehicleNode::cameraSetFocusPointCallback(CameraFocusPoint::Request& request, CameraFocusPoint::Response& response)
@@ -1180,7 +1281,7 @@ bool VehicleNode::cameraSetFocusPointCallback(CameraFocusPoint::Request& request
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->setFocusPoint(static_cast<PayloadIndex>(request.payload_index), request.x, request.y);
   return response.result;
@@ -1191,9 +1292,21 @@ bool VehicleNode::cameraSetTapZoomPointCallback(CameraTapZoomPoint::Request& req
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->setTapZoomPoint(static_cast<PayloadIndex>(request.payload_index),request.multiplier, request.x, request.y);
+  return response.result;
+}
+
+bool VehicleNode::cameraSetZoomParaCallback(CameraSetZoomPara::Request& request, CameraSetZoomPara::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->setZoom(static_cast<PayloadIndex>(request.payload_index), request.factor);
   return response.result;
 }
 
@@ -1202,7 +1315,7 @@ bool VehicleNode::cameraZoomCtrlCallback(CameraZoomCtrl::Request& request, Camer
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   if (request.start_stop == 1)
   {
@@ -1220,7 +1333,7 @@ bool VehicleNode::cameraStartShootSinglePhotoCallback(CameraStartShootSinglePhot
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->startShootSinglePhoto(static_cast<PayloadIndex>(request.payload_index));
   return response.result;
@@ -1231,7 +1344,7 @@ bool VehicleNode::cameraStartShootAEBPhotoCallback(CameraStartShootAEBPhoto::Req
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->startShootAEBPhoto(static_cast<PayloadIndex>(request.payload_index), static_cast<PhotoAEBCount>(request.photo_aeb_count));
   return response.result;
@@ -1242,7 +1355,7 @@ bool VehicleNode::cameraStartShootBurstPhotoCallback(CameraStartShootBurstPhoto:
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->startShootBurstPhoto(static_cast<PayloadIndex>(request.payload_index),static_cast<PhotoBurstCount>(request.photo_burst_count));
   return response.result;
@@ -1253,7 +1366,7 @@ bool VehicleNode::cameraStartShootIntervalPhotoCallback(CameraStartShootInterval
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   PhotoIntervalData photoIntervalData;
   photoIntervalData.photoNumConticap = request.photo_num_conticap;
@@ -1267,7 +1380,7 @@ bool VehicleNode::cameraStopShootPhotoCallback(CameraStopShootPhoto::Request& re
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   response.result = ptr_wrapper_->shootPhotoStop(static_cast<PayloadIndex>(request.payload_index));
   return response.result;
@@ -1278,7 +1391,7 @@ bool VehicleNode::cameraRecordVideoActionCallback(CameraRecordVideoAction::Reque
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   if(request.start_stop == 1)
   {
@@ -1291,13 +1404,141 @@ bool VehicleNode::cameraRecordVideoActionCallback(CameraRecordVideoAction::Reque
   return response.result;
 }
 
+bool VehicleNode::getWholeBatteryInfoCallback(GetWholeBatteryInfo::Request& request,GetWholeBatteryInfo::Response& response)
+{
+  ROS_INFO_STREAM("get Whole Battery Info callback");
+  if (ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  DJI::OSDK::BatteryWholeInfo batteryWholeInfo;
+  if (ptr_wrapper_->getBatteryWholeInfo(batteryWholeInfo))
+  {
+    response.battery_whole_info.remainFlyTime  = batteryWholeInfo.remainFlyTime;
+    response.battery_whole_info.goHomeNeedTime = batteryWholeInfo.goHomeNeedTime ;
+    response.battery_whole_info.landNeedTime   = batteryWholeInfo.landNeedTime;
+    response.battery_whole_info.goHomeNeedCapacity = batteryWholeInfo.goHomeNeedCapacity;
+    response.battery_whole_info.landNeedCapacity = batteryWholeInfo.landNeedCapacity ;
+    response.battery_whole_info.safeFlyRadius = batteryWholeInfo.safeFlyRadius;
+    response.battery_whole_info.capacityConsumeSpeed = batteryWholeInfo.capacityConsumeSpeed;
+    response.battery_whole_info.goHomeCountDownState = batteryWholeInfo.goHomeCountDownState;
+    response.battery_whole_info.gohomeCountDownvalue = batteryWholeInfo.gohomeCountDownvalue;
+    response.battery_whole_info.voltage = batteryWholeInfo.voltage;
+    response.battery_whole_info.batteryCapacityPercentage = batteryWholeInfo.batteryCapacityPercentage;
+    response.battery_whole_info.lowBatteryAlarmThreshold = batteryWholeInfo.lowBatteryAlarmThreshold;
+    response.battery_whole_info.lowBatteryAlarmEnable = batteryWholeInfo.lowBatteryAlarmEnable;
+    response.battery_whole_info.seriousLowBatteryAlarmThreshold = batteryWholeInfo.seriousLowBatteryAlarmThreshold;
+    response.battery_whole_info.seriousLowBatteryAlarmEnable = batteryWholeInfo.seriousLowBatteryAlarmEnable;
+
+    response.battery_whole_info.batteryState.voltageNotSafety        = batteryWholeInfo.batteryState.voltageNotSafety;
+    response.battery_whole_info.batteryState.veryLowVoltageAlarm     = batteryWholeInfo.batteryState.veryLowVoltageAlarm;
+    response.battery_whole_info.batteryState.LowVoltageAlarm         = batteryWholeInfo.batteryState.LowVoltageAlarm;
+    response.battery_whole_info.batteryState.seriousLowCapacityAlarm = batteryWholeInfo.batteryState.seriousLowCapacityAlarm;
+    response.battery_whole_info.batteryState.LowCapacityAlarm        = batteryWholeInfo.batteryState.LowCapacityAlarm;
+  }
+  else
+  {
+    DSTATUS("get Battery Whole Info failed!");
+    return false;
+  }
+  return true;
+}
+
+bool VehicleNode::getSingleBatteryDynamicInfoCallback(GetSingleBatteryDynamicInfo::Request& request, 
+                                                      GetSingleBatteryDynamicInfo::Response& response)
+{
+  ROS_INFO_STREAM("get Single Battery Dynamic Info callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  DJI::OSDK::SmartBatteryDynamicInfo SmartBatteryDynamicInfo;
+  if (ptr_wrapper_->getSingleBatteryDynamicInfo(static_cast<DJI::OSDK::DJIBattery::RequestSmartBatteryIndex>(request.batteryIndex),
+                                                SmartBatteryDynamicInfo))
+  {
+    response.smartBatteryDynamicInfo.batteryIndex           = SmartBatteryDynamicInfo.batteryIndex;
+    response.smartBatteryDynamicInfo.currentVoltage         = SmartBatteryDynamicInfo.currentVoltage;
+    response.smartBatteryDynamicInfo.currentElectric        = SmartBatteryDynamicInfo.currentElectric;
+    response.smartBatteryDynamicInfo.fullCapacity           = SmartBatteryDynamicInfo.fullCapacity;
+    response.smartBatteryDynamicInfo.remainedCapacity       = SmartBatteryDynamicInfo.remainedCapacity;
+    response.smartBatteryDynamicInfo.batteryTemperature     = SmartBatteryDynamicInfo.batteryTemperature;
+    response.smartBatteryDynamicInfo.cellCount              = SmartBatteryDynamicInfo.cellCount;
+    response.smartBatteryDynamicInfo.batteryCapacityPercent = SmartBatteryDynamicInfo.batteryCapacityPercent;
+    response.smartBatteryDynamicInfo.SOP                    = SmartBatteryDynamicInfo.SOP;
+
+    response.smartBatteryDynamicInfo.batteryState.cellBreak                    = SmartBatteryDynamicInfo.batteryState.cellBreak;
+    response.smartBatteryDynamicInfo.batteryState.selfCheckError               = SmartBatteryDynamicInfo.batteryState.selfCheckError;
+    response.smartBatteryDynamicInfo.batteryState.batteryClosedReason          = SmartBatteryDynamicInfo.batteryState.batteryClosedReason;
+    response.smartBatteryDynamicInfo.batteryState.batSOHState                  = SmartBatteryDynamicInfo.batteryState.batSOHState;
+    response.smartBatteryDynamicInfo.batteryState.maxCycleLimit                = SmartBatteryDynamicInfo.batteryState.maxCycleLimit;
+    response.smartBatteryDynamicInfo.batteryState.batteryCommunicationAbnormal = SmartBatteryDynamicInfo.batteryState.batteryCommunicationAbnormal;
+    response.smartBatteryDynamicInfo.batteryState.hasCellBreak                 = SmartBatteryDynamicInfo.batteryState.hasCellBreak;
+    response.smartBatteryDynamicInfo.batteryState.heatState                    = SmartBatteryDynamicInfo.batteryState.heatState;
+  }
+  else
+  {
+    DSTATUS("get Single Battery Dynamic Info failed!");
+    return false;
+  }
+
+  return true;
+}
+
+bool VehicleNode::getHMSDataCallback(GetHMSData::Request& request, GetHMSData::Response& response)
+{
+  //ROS_INFO_STREAM("Get HMS Data callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+  response.result = true;
+
+  static uint8_t count = 0;
+  while (count < 1)
+  {
+    response.result = ptr_wrapper_->enableSubscribeHMSInfo(request.enable);
+    count++;
+  }
+
+  if (request.enable == true)
+  {
+    dji_osdk_ros::HMSPushPacket hmsPushPacket;
+    ptr_wrapper_->getHMSListInfo(hmsPushPacket);
+    ptr_wrapper_->getHMSDeviceIndex(response.deviceIndex);
+    response.timeStamp = hmsPushPacket.timeStamp;
+
+    if (hmsPushPacket.hmsPushData.errList.size())
+    {
+      response.errList.clear();
+      response.errList.resize(hmsPushPacket.hmsPushData.errList.size());
+    }
+    
+    for (int i = 0; i < hmsPushPacket.hmsPushData.errList.size(); i++)
+    {
+      response.errList[i].alarmID     = hmsPushPacket.hmsPushData.errList[i].alarmID;
+      response.errList[i].reportLevel = hmsPushPacket.hmsPushData.errList[i].reportLevel;
+      response.errList[i].sensorIndex = hmsPushPacket.hmsPushData.errList[i].sensorIndex;
+      // DSTATUS("%ld, response.errList.size():%d,0x%08x,%d,%d",response.timeStamp,response.errList.size(),response.errList[i].alarmID,
+      // response.errList[i].sensorIndex,
+      // response.errList[i].reportLevel);
+    }
+  }
+
+  return response.result;
+}
+
 bool VehicleNode::mfioCtrlCallback(MFIO::Request& request, MFIO::Response& response)
 {
   ROS_INFO_STREAM("MFIO Control callback");
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
   if(request.mode == MFIO::Request::MODE_PWM_OUT ||
@@ -1331,7 +1572,7 @@ bool VehicleNode::setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request,
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
   if(request.altitude < 5)
   {
@@ -1350,16 +1591,37 @@ bool VehicleNode::setGoHomeAltitudeCallback(SetGoHomeAltitude::Request& request,
   return true;
 }
 
-bool VehicleNode::setHomeCallback(SetNewHomePoint::Request& request, SetNewHomePoint::Response& response)
+bool VehicleNode::getGoHomeAltitudeCallback(GetGoHomeAltitude::Request& request, GetGoHomeAltitude::Response& response)
 {
-  ROS_INFO_STREAM("Set new home point callback");
+  ROS_INFO_STREAM("Get go home altitude callback");
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
-  if(ptr_wrapper_->setNewHomeLocation() == true)
+  uint16_t altitude = 0;
+  if (!(ptr_wrapper_->getHomeAltitude(altitude)))
+  {
+    response.result = false;
+    return false;
+  }
+  
+  response.altitude = altitude;
+  response.result = true;
+  return true;
+}
+
+bool VehicleNode::setCurrentAircraftLocAsHomeCallback(SetCurrentAircraftLocAsHomePoint::Request& request, SetCurrentAircraftLocAsHomePoint::Response& response)
+{
+  ROS_INFO_STREAM("Set current aircraft location as new home point callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  if(ptr_wrapper_->setCurrentAircraftLocAsHomePoint() == true)
   {
     response.result = true;
   }
@@ -1371,10 +1633,29 @@ bool VehicleNode::setHomeCallback(SetNewHomePoint::Request& request, SetNewHomeP
   return true;
 }
 
+bool VehicleNode::setHomePointCallback(SetHomePoint::Request& request, SetHomePoint::Response& response)
+{
+  ROS_INFO_STREAM("Set home point callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  if (ptr_wrapper_->setHomePoint(request.latitude, request.longitude))
+  {
+    response.result = true;
+    return true;
+  }
+
+  response.result = false;
+  return false;
+}
+
 bool VehicleNode::setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &request,
                                          dji_osdk_ros::SetLocalPosRef::Response &response)
 {
-  printf("Currrent GPS health is %d \n",current_gps_health_ );
+  ROS_INFO("Currrent GPS health is %d",current_gps_health_ );
   if (current_gps_health_ > 3)
   {
     local_pos_ref_latitude_ = current_gps_latitude_;
@@ -1403,46 +1684,122 @@ bool VehicleNode::setLocalPosRefCallback(dji_osdk_ros::SetLocalPosRef::Request &
   return true;
 }
 
-bool VehicleNode::setAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response)
+bool VehicleNode::setHorizonAvoidCallback(SetAvoidEnable::Request& request, SetAvoidEnable::Response& response)
 {
-  ROS_INFO_STREAM("Set avoid function callback");
+  ROS_INFO_STREAM("Set horizon avoid function callback");
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
-  if(ptr_wrapper_->setAvoid(request.enable) == true)
-  {
-    response.result = true;
-  }
-  else
+  if (!(ptr_wrapper_->setCollisionAvoidance(request.enable)))
   {
     response.result = false;
+    return false;
   }
 
+  response.result = true;
   return true;
 }
 
-bool VehicleNode::setUpwardsAvoidCallback(AvoidEnable::Request& request, AvoidEnable::Response& response)
+bool VehicleNode::setUpwardsAvoidCallback(SetAvoidEnable::Request& request, SetAvoidEnable::Response& response)
 {
   ROS_INFO_STREAM("Set upwards avoid function callback");
   if(ptr_wrapper_ == nullptr)
   {
     ROS_ERROR_STREAM("Vehicle modules is nullptr");
-    return true;
+    return false;
   }
 
-  if(ptr_wrapper_->setUpwardsAvoidance(request.enable) == true)
+  if(!(ptr_wrapper_->setUpwardsAvoidance(request.enable)))
   {
-    response.result = true;
+    response.result = false;
+    return false;
+  }
+
+
+  response.result = true;
+  return true;
+}
+
+bool VehicleNode::getAvoidEnableStatusCallback(GetAvoidEnable::Request& request, GetAvoidEnable::Response& response)
+{
+  ROS_INFO_STREAM("Set upwards avoid function callback");
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  uint8_t get_horizon_avoid_enable_status = 0xF;
+  uint8_t get_upwards_avoid_enable_status = 0xF;
+
+  if (!(ptr_wrapper_->getCollisionAvoidance(get_horizon_avoid_enable_status)))
+  {
+    response.result = false;
+    return false;
+  }
+  response.horizon_avoid_enable_status = get_horizon_avoid_enable_status;
+
+  if(!(ptr_wrapper_->getUpwardsAvoidance(get_upwards_avoid_enable_status)))
+  {
+    response.result = false;
+    return false;
+  }
+
+  response.upwards_avoid_enable_status = get_horizon_avoid_enable_status;
+
+  response.result = true;
+  return true;
+}
+
+bool VehicleNode::obtainReleaseControlAuthorityCallback(ObtainControlAuthority::Request& request, ObtainControlAuthority::Response& response)
+{
+  if(request.enable_obtain)
+  {
+    ROS_INFO_STREAM("Obtain Control Authority Callback");
   }
   else
   {
-    response.result = false;
+    ROS_INFO_STREAM("release Control Authority Callback");
   }
 
-  return true;
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->obtainReleaseCtrlAuthority(request.enable_obtain, FLIGHT_CONTROL_WAIT_TIMEOUT);
+
+  return response.result;
+}
+
+bool VehicleNode::killSwitchCallback(KillSwitch::Request& request, KillSwitch::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+  char msg[10] = "StopFLy";
+  response.result = ptr_wrapper_->killSwitch(request.enable, msg);
+
+  return response.result;
+}
+
+bool VehicleNode::emergencyBrakeCallback(EmergencyBrake::Request& request, EmergencyBrake::Response& response)
+{
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    return false;
+  }
+
+  response.result = ptr_wrapper_->emergencyBrake();
+
+  return response.result;
 }
 
 int main(int argc, char** argv)

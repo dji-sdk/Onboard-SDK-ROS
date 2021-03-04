@@ -29,7 +29,8 @@
 //INCLUDE
 #include <ros/ros.h>
 #include <iostream>
-
+#include <dji_camera_image.hpp>
+#include <dji_osdk_ros/SetupCameraStream.h>
 #include <dji_osdk_ros/SetupCameraH264.h>
 #include <sensor_msgs/Image.h>
 
@@ -43,7 +44,6 @@ extern "C"{
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #endif
-
 
 //CODE
 using namespace dji_osdk_ros;
@@ -96,13 +96,65 @@ bool ffmpeg_init()
     pCodecCtx->flags2 |= AV_CODEC_FLAG2_SHOW_ALL;
 }
 
-void show_rgb(uint8_t *rawData, int height, int width)
+#ifdef SDL2_INSTALLED
+#include <SDL2/SDL.h>
+void sdl_show_rgb(uint8_t *rgb24Buf, int width, int height) {
+  static SDL_Renderer* sdlRenderer = NULL;
+  static SDL_Texture* sdlTexture = NULL;
+  static SDL_Window *screen = NULL;
+  static int initFlag = 0;
+
+  if (initFlag == 0) {
+    initFlag = 1;
+    if(SDL_Init(SDL_INIT_VIDEO)) {
+      printf( "Could not initialize SDL - %s\n", SDL_GetError());
+      return;
+    }
+
+
+    //SDL 2.0 Support for multiple windows
+    screen = SDL_CreateWindow("camera_stream_node", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                              100, 100,SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE);
+    if(!screen) {
+      printf("SDL: could not create window - exiting:%s\n",SDL_GetError());
+      return;
+    }
+    sdlRenderer = SDL_CreateRenderer(screen, -1, 0);
+    uint32_t pixformat = SDL_PIXELFORMAT_RGB24;
+    sdlTexture = SDL_CreateTexture(sdlRenderer,pixformat, SDL_TEXTUREACCESS_STREAMING, width, height);
+  }
+
+  if (!sdlRenderer || !sdlTexture || !screen) return;
+  SDL_SetWindowSize(screen, width, height);
+
+  SDL_Event event;
+  event.type = (SDL_USEREVENT + 1);
+  SDL_PushEvent(&event);
+  if (SDL_WaitEventTimeout(&event, 5)) {
+    SDL_Rect sdlRect;
+    SDL_UpdateTexture(sdlTexture, NULL, rgb24Buf, width * 3);
+    sdlRect.x = 0;
+    sdlRect.y = 0;
+    sdlRect.w = width;
+    sdlRect.h = height;
+
+    SDL_RenderClear(sdlRenderer);
+    SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, &sdlRect);
+    SDL_RenderPresent(sdlRenderer);
+  }
+}
+#endif
+
+void show_rgb(CameraRGBImage img, char* name)
 {
-#ifdef OPEN_CV_INSTALLED
-    cv::Mat mat(height, width, CV_8UC3, rawData, width*3);
-    cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
-    cv::imshow("camera_stream_node", mat);
-    cv::waitKey(1);
+  std::cout << "#### Got image from:\t" << std::string(name) << std::endl;
+#ifdef SDL2_INSTALLED
+  sdl_show_rgb(img.rawData.data(), img.width, img.height);
+#elif defined(OPEN_CV_INSTALLED)
+  cv::Mat mat(img.height, img.width, CV_8UC3, img.rawData.data(), img.width*3);
+  cvtColor(mat, mat, cv::COLOR_RGB2BGR);
+  imshow(name,mat);
+  cv::waitKey(1);
 #endif
 }
 
@@ -161,8 +213,9 @@ void decodeToDisplay(uint8_t *buf, int bufLen)
 
                     pFrameRGB->height = h;
                     pFrameRGB->width = w;
-
-#ifdef OPEN_CV_INSTALLED
+#ifdef SDL2_INSTALLED
+                    sdl_show_rgb(pFrameRGB->data[0], pFrameRGB->width, pFrameRGB->height);
+#elif defined(OPEN_CV_INSTALLED)
                     cv::Mat mat(pFrameRGB->height, pFrameRGB->width, CV_8UC3, pFrameRGB->data[0], pFrameRGB->width * 3);
                     cv::cvtColor(mat, mat, cv::COLOR_RGB2BGR);
                     cv::imshow("camera_stream_node", mat);
@@ -175,6 +228,32 @@ void decodeToDisplay(uint8_t *buf, int bufLen)
     av_free_packet(&pkt);
 }
 
+
+void fpvCameraStreamCallBack(const sensor_msgs::Image& msg)
+{
+  CameraRGBImage img;
+  img.rawData = msg.data;
+  img.height  = msg.height;
+  img.width   = msg.width;
+  char Name[] = "FPV_CAM";
+  show_rgb(img, Name);
+  std::cout<<"height is"<<msg.height<<std::endl;
+  std::cout<<"width is"<<msg.width<<std::endl;
+}
+
+void mainCameraStreamCallBack(const sensor_msgs::Image& msg)
+{
+  CameraRGBImage img;
+  img.rawData = msg.data;
+  img.height  = msg.height;
+  img.width   = msg.width;
+  char Name[] = "MAIN_CAM";
+  show_rgb(img, Name);
+  std::cout<<"height is"<<msg.height<<std::endl;
+  std::cout<<"width is"<<msg.width<<std::endl;
+}
+
+
 void cameraH264CallBack(const sensor_msgs::Image& msg)
 {
   decodeToDisplay((uint8_t *)&msg.data[0], msg.data.size());
@@ -184,15 +263,49 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "camera_stream_node");
     ros::NodeHandle nh;
+
+    /*! H264 flow init and H264 decoder init */
     auto setup_camera_h264_client = nh.serviceClient<dji_osdk_ros::SetupCameraH264>("setup_camera_h264");
     auto fpv_camera_h264_sub = nh.subscribe("dji_osdk_ros/camera_h264_stream", 10, cameraH264CallBack);
     dji_osdk_ros::SetupCameraH264 setupCameraH264_;
     ffmpeg_init();
 
+    /*! RGB flow init */
+    auto setup_camera_stream_client = nh.serviceClient<dji_osdk_ros::SetupCameraStream>("setup_camera_stream");
+    auto fpv_camera_stream_sub = nh.subscribe("dji_osdk_ros/fpv_camera_images", 10, fpvCameraStreamCallBack);
+    auto main_camera_stream_sub = nh.subscribe("dji_osdk_ros/main_camera_images", 10, mainCameraStreamCallBack);
+    dji_osdk_ros::SetupCameraStream setupCameraStream_;
+
+#ifndef SDL2_INSTALLED
+  std::cout
+      << "--Recommandation : It is found that using \"cv::imshow\" will cause more CPU resources and more processing "
+         "time. Using SDL to display images can improve this situation. At present, SDL display is supported in this "
+         "node, which can be used by installing SDL2 library and recompiling. \n"
+      << "--Install SDL2 library in shell : \"sudo apt-get install libsdl2-dev\"."
+      << std::endl;
+#endif
+#ifdef SDL2_INSTALLED
+  std::cout << "Using SDL2 lib to display the images." << std::endl;
+#elif defined(OPEN_CV_INSTALLED)
+  std::cout << "Using Opencv to display the images." << std::endl;
+#endif
     char inputChar = 0;
     std::cout << std::endl;
     std::cout
-        << "| Available commands:                                          |"
+        << "| Input 'm' or 'f' to view the camera stream from the RGB flow |\n"
+           "| of the topic \"dji_osdk_ros/fpv_camera_images\" and            |\n"
+           "| \"dji_osdk_ros/main_camera_images\" :                          |"
+        << std::endl
+        << "| [m] Start to display main camera stream                      |"
+        << std::endl
+        << "| [f] Start to display fpv stream                              |"
+        << std::endl;
+    std::cout
+        << "|                                                              |"
+        << std::endl;
+    std::cout
+        << "| Input 'a' ~ 'b' to view the camera stream decoded by the h264|\n"
+           "| flow from the topic \"dji_osdk_ros/camera_h264_stream\" :      |"
         << std::endl
         << "| [a] Start to display FPV stream sample                       |"
         << std::endl
@@ -205,14 +318,24 @@ int main(int argc, char** argv)
 
     std::cin >> inputChar;
 
-    struct timeval tv;
-    struct tm tm;
-    gettimeofday(&tv, NULL);
-    localtime_r(&tv.tv_sec, &tm);
-
-
     switch (inputChar) 
     {
+      case 'f':
+      {
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.FPV_CAM;
+        setupCameraStream_.request.start = 1;
+        setup_camera_stream_client.call(setupCameraStream_);
+
+        break;
+      }
+      case 'm':
+      {
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.MAIN_CAM;
+        setupCameraStream_.request.start = 1;
+        setup_camera_stream_client.call(setupCameraStream_);
+
+        break;
+      }
       case 'a':
       {
         setupCameraH264_.request.request_view = setupCameraH264_.request.FPV_CAMERA;
@@ -249,11 +372,26 @@ int main(int argc, char** argv)
 
     ros::AsyncSpinner spinner(1);
     spinner.start();
-    ROS_INFO("Wait 10 second to record stream");
-    ros::Duration(10).sleep();
+    ros::Duration(20).sleep();
 
     switch (inputChar)
     {
+      case 'f':
+      {
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.FPV_CAM;
+        setupCameraStream_.request.start = 0;
+        setup_camera_stream_client.call(setupCameraStream_);
+
+        break;
+      }
+      case 'm':
+      {
+        setupCameraStream_.request.cameraType = setupCameraStream_.request.MAIN_CAM;
+        setupCameraStream_.request.start = 0;
+        setup_camera_stream_client.call(setupCameraStream_);
+
+        break;
+      }
       case 'a':
       {
         setupCameraH264_.request.request_view = setupCameraH264_.request.FPV_CAMERA;

@@ -1,11 +1,6 @@
 # This class represents an action for ``DJIWaypointV2Mission``. It
 # determines how action is performed when a waypoint mission is executed.
 
-#contant for waypointV2ActionTriggerType
-# The action will be trigger when the aircraft reach the waypoint point.
-# The parameters should be setting by ``DJIWaypointV2Action_DJIWaypointV2ReachPointTriggerParam``.
-uint8 DJIWaypointV2ActionTriggerTypeReachPoint = 1
-
 # The action will be triggered when action associated executes.
 # The parameters should be defined by ``DJIWaypointV2Action_DJIWaypointV2AssociateTriggerParam``.
 uint8 DJIWaypointV2ActionTriggerTypeActionAssociated = 2
@@ -33,7 +28,7 @@ uint8 DJIWaypointV2ActionActuatorTypeGimbal = 2
 
 # The action will executes by control aircraft.
 # The parameters should be setting by ``DJIWaypointV2Action_DJIWaypointV2CameraActuatorParam``.
-uint8 DJIWaypointV2ActionActuatorTypeAircraftControl = 3
+uint8 DJIWaypointV2ActionActuatorTypeAircraftControl = 4
 
 # Unknown actuator type.
 uint8 DJIWaypointV2ActionActuatorTypeUnknown = 255
@@ -44,7 +39,6 @@ uint8 waypointV2ActionTriggerType
 uint8 waypointV2ACtionActuatorType
 
 # The trigger of action.You can only choose one to config
-WaypointV2ReachpointTrigger waypointV2ReachpointTrigger
 WaypointV2AssociateTrigger waypointV2AssociateTrigger
 WaypointV2IntervalTrigger waypointV2IntervalTrigger
 WaypointV2TrajectoryTrigger waypointV2TrajectoryTrigger

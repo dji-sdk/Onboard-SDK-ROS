@@ -36,6 +36,7 @@
 #include <dji_osdk_ros/CameraISO.h>
 #include <dji_osdk_ros/CameraFocusPoint.h>
 #include <dji_osdk_ros/CameraTapZoomPoint.h>
+#include <dji_osdk_ros/CameraSetZoomPara.h>
 #include <dji_osdk_ros/CameraZoomCtrl.h>
 #include <dji_osdk_ros/CameraStartShootBurstPhoto.h>
 #include <dji_osdk_ros/CameraStartShootAEBPhoto.h>
@@ -58,6 +59,7 @@ int main(int argc, char** argv) {
   auto camera_set_iso_client = nh.serviceClient<CameraISO>("camera_task_set_ISO");
   auto camera_set_focus_point_client = nh.serviceClient<CameraFocusPoint>("camera_task_set_focus_point");
   auto camera_set_tap_zoom_point_client = nh.serviceClient<CameraTapZoomPoint>("camera_task_tap_zoom_point");
+  auto camera_set_zoom_para_client = nh.serviceClient<CameraSetZoomPara>("camera_task_set_zoom_para");
   auto camera_task_zoom_ctrl_client = nh.serviceClient<CameraZoomCtrl>("camera_task_zoom_ctrl");
   auto camera_start_shoot_single_photo_client = nh.serviceClient<CameraStartShootSinglePhoto>(
       "camera_start_shoot_single_photo");
@@ -74,46 +76,44 @@ int main(int argc, char** argv) {
   while (true) {
     std::cout << std::endl;
     std::cout
-        << "| Available commands:                                            |"
-        << std::endl
-        << "| [a] Set camera shutter speed                                   |"
-        << std::endl
-        << "| [b] Set camera aperture                                        |"
-        << std::endl
-        << "| [c] Set camera EV value                                        |"
-        << std::endl
-        << "| [d] Set camera ISO value                                       |"
-        << std::endl
-        << "| [e] Set camera focus point                                     |"
-        << std::endl
-        << "| [f] Set camera tap zoom point                                  |"
-        << std::endl
-        << "| [g] Set camera zoom parameter                                  |"
-        << std::endl
-        << "| [h] Shoot Single photo Sample                                  |"
-        << std::endl
-        << "| [i] Shoot AEB photo Sample                                     |"
-        << std::endl
-        << "| [j] Shoot Burst photo Sample                                   |"
-        << std::endl
-        << "| [k] Shoot Interval photo Sample                                |"
-        << std::endl
-        << "| [l] Record video Sample                                        |"
-        << std::endl
-        << "| [m] Rotate gimbal sample                                       |"
-        << std::endl
-        << "| [n] Reset gimbal sample                                        |"
-        << std::endl
-        << "| [q] Quit                                                       |"
-        << std::endl;
+        << "| Available commands:                                            |\n"
+        << "| [a] Set camera shutter speed                                   |\n"
+        << "|     Main camera : X5S, X7, Z30, H20/H20T(zoom mode) etc.       |\n"
+        << "| [b] Set camera aperture                                        |\n"
+        << "|     Main camera : X5S, X7, Z30, H20/H20T(zoom mode) etc.       |\n"
+        << "| [c] Set camera EV value                                        |\n"
+        << "|     Main camera : X5S, X7, Z30, H20/H20T(zoom mode) etc.       |\n"
+        << "| [d] Set camera ISO value                                       |\n"
+        << "|     Main camera : X5S, X7, Z30, H20/H20T(zoom mode) etc.       |\n"
+        << "| [e] Set camera focus point                                     |\n"
+        << "|     Main camera : X5S, X7, H20/H20T(zoom mode) etc.            |\n"
+        << "| [f] Set camera tap zoom point                                  |\n"
+        << "|     Vice camera : Z30, H20/H20T(zoom mode) etc.                |\n"
+        << "| [g] Set camera zoom parameter                                  |\n"
+        << "|     Vice camera : Z30, H20/H20T(zoom mode) etc.                |\n"
+        << "| [h] Shoot Single photo Sample                                  |\n"
+        << "|     Main camera : X5S, X7, XTS, Z30, H20/H20T etc.             |\n"
+        << "| [i] Shoot AEB photo Sample                                     |\n"
+        << "|     Main camera : X5S, X7 etc.                                 |\n"
+        << "| [j] Shoot Burst photo Sample                                   |\n"
+        << "|     Main camera : X5S, X7 etc.                                 |\n"
+        << "| [k] Shoot Interval photo Sample                                |\n"
+        << "|     Main camera : X5S, X7, XTS, Z30, H20/H20T etc.             |\n"
+        << "| [l] Record video Sample                                        |\n"
+        << "|     Main camera : X5S, X7, XTS, Z30, H20/H20T etc.             |\n"
+        << "| [m] Rotate gimbal sample                                       |\n"
+        << "|     Main camera : X5S, X7, XTS, Z30, H20/H20T etc.             |\n"
+        << "| [n] Reset gimbal sample                                        |\n"
+        << "|     Main camera : X5S, X7, XTS, Z30, H20/H20T etc.             |\n"
+        << "| [q] Quit                                                       |\n";
     std::cin >> inputChar;
 
     switch (inputChar) {
       case 'a': {
         CameraShutterSpeed cameraShutterSpeed;
         cameraShutterSpeed.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
-        cameraShutterSpeed.request.exposure_mode = static_cast<uint8_t>(ExposureMode::SHUTTER_PRIORITY);
-        cameraShutterSpeed.request.shutter_speed = static_cast<uint8_t>(ShutterSpeed::SHUTTER_SPEED_1_50);
+        cameraShutterSpeed.request.exposure_mode = static_cast<uint8_t>(ExposureMode::EXPOSURE_MANUAL);
+        cameraShutterSpeed.request.shutter_speed = static_cast<uint8_t>(ShutterSpeed::SHUTTER_SPEED_1_100);
         camera_set_shutter_speed_client.call(cameraShutterSpeed);
         sleep(2);
         break;
@@ -122,8 +122,8 @@ int main(int argc, char** argv) {
       case 'b': {
         CameraAperture cameraAperture;
         cameraAperture.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
-        cameraAperture.request.exposure_mode = static_cast<uint8_t>(ExposureMode::APERTURE_PRIORITY);
-        cameraAperture.request.aperture = static_cast<uint8_t>(Aperture::F_3_DOT_5);
+        cameraAperture.request.exposure_mode = static_cast<uint8_t>(ExposureMode::EXPOSURE_MANUAL);
+        cameraAperture.request.aperture = static_cast<uint16_t>(Aperture::F_4);
         camera_set_aperture_client.call(cameraAperture);
         sleep(2);
         break;
@@ -172,21 +172,23 @@ int main(int argc, char** argv) {
         break;
       }
       case 'g': {
+        CameraSetZoomPara cameraSetZoomPara;
+        cameraSetZoomPara.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_1);
+        cameraSetZoomPara.request.factor = 5;
+        camera_set_zoom_para_client.call(cameraSetZoomPara);
+        sleep(4);
+        cameraSetZoomPara.request.factor = 10;
+        camera_set_zoom_para_client.call(cameraSetZoomPara);
+        sleep(4);
         CameraZoomCtrl cameraZoomCtrl;
         cameraZoomCtrl.request.start_stop = 1;
         cameraZoomCtrl.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_1);
-        cameraZoomCtrl.request.direction = static_cast<uint8_t>(dji_osdk_ros::ZoomDirection::ZOOM_IN);
-        cameraZoomCtrl.request.speed = static_cast<uint8_t>(dji_osdk_ros::ZoomSpeed::NORMAL);
-        camera_task_zoom_ctrl_client.call(cameraZoomCtrl);
-        sleep(4);
-        cameraZoomCtrl.request.start_stop = 0;
-        camera_task_zoom_ctrl_client.call(cameraZoomCtrl);
-        sleep(2);
-        cameraZoomCtrl.request.start_stop = 1;
         cameraZoomCtrl.request.direction = static_cast<uint8_t>(dji_osdk_ros::ZoomDirection::ZOOM_OUT);
         cameraZoomCtrl.request.speed = static_cast<uint8_t>(dji_osdk_ros::ZoomSpeed::FASTEST);
+        camera_task_zoom_ctrl_client.call(cameraZoomCtrl);
         sleep(8);
         cameraZoomCtrl.request.start_stop = 0;
+        cameraZoomCtrl.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_1);
         camera_task_zoom_ctrl_client.call(cameraZoomCtrl);
         break;
       }
@@ -218,7 +220,7 @@ int main(int argc, char** argv) {
         CameraStartShootIntervalPhoto cameraStartShootIntervalPhoto;
         cameraStartShootIntervalPhoto.request.payload_index = static_cast<uint8_t>(dji_osdk_ros::PayloadIndex::PAYLOAD_INDEX_0);
         cameraStartShootIntervalPhoto.request.photo_num_conticap = 255;
-        cameraStartShootIntervalPhoto.request.time_interval = 4;
+        cameraStartShootIntervalPhoto.request.time_interval = 3;
         camera_start_shoot_interval_photo_client.call(cameraStartShootIntervalPhoto);
         std::cout << "Sleep 15 seconds" << std::endl;
         sleep(15);

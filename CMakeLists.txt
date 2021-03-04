@@ -73,6 +73,7 @@ add_message_files(
   FILES
 
   FCTimeInUTC.msg
+  JoystickParams.msg
   GPSUTC.msg
   Gimbal.msg
   Waypoint.msg
@@ -105,7 +106,11 @@ add_message_files(
   MissionHotpointTask.msg
   FlightAnomaly.msg
   VOPosition.msg
-  RelPosition.msg
+  BatteryState.msg
+  BatteryWholeInfo.msg
+  SmartBatteryState.msg
+  SmartBatteryDynamicInfo.msg
+  HMSPushInfo.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -115,6 +120,11 @@ add_service_files(
   GetDroneType.srv
   GetM300StereoParams.srv
   FlightTaskControl.srv
+  SetJoystickMode.srv
+  JoystickAction.srv
+  ObtainControlAuthority.srv
+  KillSwitch.srv
+  EmergencyBrake.srv
   GimbalAction.srv
   CameraEV.srv
   CameraShutterSpeed.srv
@@ -122,6 +132,7 @@ add_service_files(
   CameraISO.srv
   CameraFocusPoint.srv
   CameraTapZoomPoint.srv
+  CameraSetZoomPara.srv
   CameraZoomCtrl.srv
   CameraStartShootSinglePhoto.srv
   CameraStartShootBurstPhoto.srv
@@ -129,11 +140,16 @@ add_service_files(
   CameraStartShootIntervalPhoto.srv
   CameraStopShootPhoto.srv
   CameraRecordVideoAction.srv
+  GetWholeBatteryInfo.srv
+  GetSingleBatteryDynamicInfo.srv
   MFIO.srv
   SetGoHomeAltitude.srv
-  SetNewHomePoint.srv
+  GetGoHomeAltitude.srv
+  SetCurrentAircraftLocAsHomePoint.srv
+  SetHomePoint.srv
   SetupCameraH264.srv
-  AvoidEnable.srv
+  SetAvoidEnable.srv
+  GetAvoidEnable.srv
   InitWaypointV2Setting.srv
   UploadWaypointV2Mission.srv
   UploadWaypointV2Action.srv
@@ -145,6 +161,7 @@ add_service_files(
   GenerateWaypointV2Action.srv
   SetGlobalCruisespeed.srv
   GetGlobalCruisespeed.srv
+  GetHMSData.srv
   SubscribeWaypointV2Event.srv
   SubscribeWaypointV2State.srv
 

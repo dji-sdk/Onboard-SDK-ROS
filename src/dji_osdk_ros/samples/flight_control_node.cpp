@@ -32,16 +32,28 @@
 
 #include <dji_osdk_ros/FlightTaskControl.h>
 #include <dji_osdk_ros/SetGoHomeAltitude.h>
-#include <dji_osdk_ros/SetNewHomePoint.h>
-#include <dji_osdk_ros/AvoidEnable.h>
+#include <dji_osdk_ros/GetGoHomeAltitude.h>
+#include <dji_osdk_ros/SetCurrentAircraftLocAsHomePoint.h>
+#include <dji_osdk_ros/SetAvoidEnable.h>
+#include <dji_osdk_ros/ObtainControlAuthority.h>
+#include <dji_osdk_ros/EmergencyBrake.h>
+#include <dji_osdk_ros/GetAvoidEnable.h>
+
+#include<dji_osdk_ros/SetJoystickMode.h>
+#include<dji_osdk_ros/JoystickAction.h>
 
 //CODE
 using namespace dji_osdk_ros;
 
 ros::ServiceClient task_control_client;
+ros::ServiceClient set_joystick_mode_client;
+ros::ServiceClient joystick_action_client;
 
-bool moveByPosOffset(FlightTaskControl& task, MoveOffset&& move_offset);
+bool moveByPosOffset(FlightTaskControl& task,const JoystickCommand &offsetDesired,
+                     float posThresholdInM = 0.8,
+                     float yawThresholdInDeg = 1.0);
 
+void velocityAndYawRateCtrl(const JoystickCommand &offsetDesired, uint32_t timeMs);
 
 int main(int argc, char** argv)
 {
@@ -49,9 +61,16 @@ int main(int argc, char** argv)
   ros::NodeHandle nh;
   task_control_client = nh.serviceClient<FlightTaskControl>("/flight_task_control");
   auto set_go_home_altitude_client = nh.serviceClient<SetGoHomeAltitude>("/set_go_home_altitude");
-  auto set_current_point_as_home_client = nh.serviceClient<SetNewHomePoint>("/set_current_point_as_home");
-  auto enable_avoid_client = nh.serviceClient<AvoidEnable>("/enable_avoid");
-  auto enable_upward_avoid_client = nh.serviceClient<AvoidEnable>("/enable_upwards_avoid");
+  auto get_go_home_altitude_client = nh.serviceClient<GetGoHomeAltitude>("get_go_home_altitude");
+  auto set_current_point_as_home_client = nh.serviceClient<SetCurrentAircraftLocAsHomePoint>("/set_current_aircraft_point_as_home");
+  auto enable_horizon_avoid_client  = nh.serviceClient<SetAvoidEnable>("/set_horizon_avoid_enable");
+  auto enable_upward_avoid_client   = nh.serviceClient<SetAvoidEnable>("/set_upwards_avoid_enable");
+  auto get_avoid_enable_client      = nh.serviceClient<GetAvoidEnable>("get_avoid_enable_status");
+  auto obtain_ctrl_authority_client = nh.serviceClient<dji_osdk_ros::ObtainControlAuthority>("obtain_release_control_authority");
+  auto emergency_brake_client       = nh.serviceClient<dji_osdk_ros::EmergencyBrake>("emergency_brake");
+
+  set_joystick_mode_client = nh.serviceClient<SetJoystickMode>("set_joystick_mode");
+  joystick_action_client   = nh.serviceClient<JoystickAction>("joystick_action");
   std::cout
       << "| Available commands:                                            |"
       << std::endl;
@@ -64,12 +83,18 @@ int main(int argc, char** argv)
   std::cout << "| [c] Monitored Takeoff + Position Control + Force Landing "
                "Avoid Ground  |"
             << std::endl;
+  std::cout << "| [d] Monitored Takeoff + Velocity Control + Landing |"
+            << std::endl;
 
   std::cout << "Please select command: ";
   char inputChar;
   std::cin >> inputChar;
-
+  EmergencyBrake emergency_brake;
   FlightTaskControl control_task;
+  ObtainControlAuthority obtainCtrlAuthority;
+  
+  obtainCtrlAuthority.request.enable_obtain = true;
+  obtain_ctrl_authority_client.call(obtainCtrlAuthority);
 
   switch (inputChar)
   {
@@ -112,13 +137,13 @@ int main(int argc, char** argv)
         {
           ROS_INFO_STREAM("Takeoff task successful");
           ros::Duration(2.0).sleep();
-          
+
           ROS_INFO_STREAM("Move by position offset request sending ...");
-          moveByPosOffset(control_task, MoveOffset(0.0, 6.0, 6.0, 30.0));
+          moveByPosOffset(control_task, {0.0, 6.0, 6.0, 30.0}, 0.8, 1);
           ROS_INFO_STREAM("Step 1 over!");
-          moveByPosOffset(control_task, MoveOffset(6.0, 0.0, -3.0, -30.0));
+          moveByPosOffset(control_task, {6.0, 0.0, -3, -30.0}, 0.8, 1);
           ROS_INFO_STREAM("Step 2 over!");
-          moveByPosOffset(control_task, MoveOffset(-6.0, -6.0, 0.0, 0.0));
+          moveByPosOffset(control_task, {-6.0, -6.0, 0.0, 0.0}, 0.8, 1);
           ROS_INFO_STREAM("Step 3 over!");
 
           control_task.request.task = FlightTaskControl::Request::TASK_LAND;
@@ -150,17 +175,17 @@ int main(int argc, char** argv)
           ROS_INFO_STREAM("Takeoff task successful");
           ros::Duration(2.0).sleep();
 
-          ROS_INFO_STREAM("turn on Collision-Avoidance-Enabled");
-          AvoidEnable avoid_req;
-          avoid_req.request.enable = true;
-          enable_avoid_client.call(avoid_req);
-          if(avoid_req.response.result == false)
+          ROS_INFO_STREAM("turn on Horizon_Collision-Avoidance-Enabled");
+          SetAvoidEnable horizon_avoid_req;
+          horizon_avoid_req.request.enable = true;
+          enable_horizon_avoid_client.call(horizon_avoid_req);
+          if(horizon_avoid_req.response.result == false)
           {
-            ROS_ERROR_STREAM("Enable Avoid FAILED");
+            ROS_ERROR_STREAM("Enable Horizon Avoid FAILED");
           }
 
           ROS_INFO_STREAM("turn on Upwards-Collision-Avoidance-Enabled");
-          AvoidEnable upward_avoid_req;
+          SetAvoidEnable upward_avoid_req;
           upward_avoid_req.request.enable = true;
           enable_upward_avoid_client.call(upward_avoid_req);
           if(upward_avoid_req.response.result == false)
@@ -168,20 +193,40 @@ int main(int argc, char** argv)
             ROS_ERROR_STREAM("Enable Upward Avoid FAILED");
           }
 
+          GetAvoidEnable getAvoidEnable;
+          get_avoid_enable_client.call(getAvoidEnable);
+          if (getAvoidEnable.response.result)
+          {
+            ROS_INFO("get horizon avoid enable status:%d, get upwards avoid enable status:%d",
+                     getAvoidEnable.response.horizon_avoid_enable_status,
+                     getAvoidEnable.response.upwards_avoid_enable_status);
+          }
+
           ROS_INFO_STREAM("Move by position offset request sending ...");
           ROS_INFO_STREAM("Move to higher altitude");
-          moveByPosOffset(control_task, MoveOffset(0.0, 0.0, 30.0, 0.0));
+          moveByPosOffset(control_task, {0.0, 0.0, 30.0, 0.0}, 0.8, 1);
           ROS_INFO_STREAM("Move a short distance");
-          moveByPosOffset(control_task, MoveOffset(10.0, 0.0, 0.0, 0.0));
+          moveByPosOffset(control_task, {10.0, 0.0, 0.0, 0.0}, 0.8, 1);
 
           ROS_INFO_STREAM("Set aircraft current position as new home location");
-          SetNewHomePoint home_set_req;
+          SetCurrentAircraftLocAsHomePoint home_set_req;
           set_current_point_as_home_client.call(home_set_req);
           if(home_set_req.response.result == false)
           {
             ROS_ERROR_STREAM("Set current position as Home, FAILED");
             break;
           }
+
+
+          ROS_INFO_STREAM("Get current go home altitude");
+          GetGoHomeAltitude current_go_home_altitude;
+          get_go_home_altitude_client.call(current_go_home_altitude);
+          if(current_go_home_altitude.response.result == false)
+          {
+            ROS_ERROR_STREAM("Get altitude for go home FAILED");
+            break;
+          }
+          ROS_INFO("Current go home altitude is :%d m", current_go_home_altitude.response.altitude);
 
           ROS_INFO_STREAM("Set new go home altitude");
           SetGoHomeAltitude altitude_go_home;
@@ -193,15 +238,39 @@ int main(int argc, char** argv)
             break;
           }
 
-          ROS_INFO_STREAM("Move to another position");
-          moveByPosOffset(control_task, MoveOffset(50.0, 0.0, 0.0, 0.0));
-
-          ROS_INFO_STREAM("Shut down Collision-Avoidance-Enabled");
-          avoid_req.request.enable = false;
-          enable_avoid_client.call(avoid_req);
-          if(avoid_req.response.result == false)
+          get_go_home_altitude_client.call(current_go_home_altitude);
+          if(current_go_home_altitude.response.result == false)
           {
-            ROS_ERROR_STREAM("Disable Avoid FAILED");
+            ROS_ERROR_STREAM("Get altitude for go home FAILED");
+            break;
+          }
+          ROS_INFO("Current go home altitude is :%d m", current_go_home_altitude.response.altitude);
+
+          ROS_INFO_STREAM("Move to another position");
+          moveByPosOffset(control_task, {50.0, 0.0, 0.0, 0.0} , 0.8, 1);
+
+          ROS_INFO_STREAM("Shut down Horizon_Collision-Avoidance-Enabled");
+          horizon_avoid_req.request.enable = false;
+          enable_horizon_avoid_client.call(horizon_avoid_req);
+          if(horizon_avoid_req.response.result == false)
+          {
+            ROS_ERROR_STREAM("Disable Horizon Avoid FAILED");
+          }
+
+          ROS_INFO_STREAM("Shut down Upwards-Collision-Avoidance-Enabled");
+          upward_avoid_req.request.enable = false;
+          enable_upward_avoid_client.call(upward_avoid_req);
+          if(upward_avoid_req.response.result == false)
+          {
+            ROS_ERROR_STREAM("Enable Upward Avoid FAILED");
+          }
+
+          get_avoid_enable_client.call(getAvoidEnable);
+          if (getAvoidEnable.response.result)
+          {
+            ROS_INFO("get horizon avoid enable status:%d, get upwards avoid enable status:%d",
+                     getAvoidEnable.response.horizon_avoid_enable_status,
+                     getAvoidEnable.response.upwards_avoid_enable_status);
           }
 
           ROS_INFO_STREAM("Go home...");
@@ -215,6 +284,52 @@ int main(int argc, char** argv)
           break;
         }
       }
+    case 'd':
+      {
+        control_task.request.task = FlightTaskControl::Request::TASK_TAKEOFF;
+        ROS_INFO_STREAM("Takeoff request sending ...");
+        task_control_client.call(control_task);
+        if(control_task.response.result == false)
+        {
+          ROS_ERROR_STREAM("Takeoff task failed");
+          break;
+        }
+
+        if(control_task.response.result == true)
+        {
+          ROS_INFO_STREAM("Takeoff task successful");
+          ros::Duration(2).sleep();
+
+          velocityAndYawRateCtrl( {0, 0, 5.0, 0}, 2000);
+          ROS_INFO_STREAM("Step 1 over!EmergencyBrake for 2s\n");
+          emergency_brake_client.call(emergency_brake);
+          ros::Duration(2).sleep();
+          velocityAndYawRateCtrl({-1.5, 2, 0, 0}, 2000);
+          ROS_INFO_STREAM("Step 2 over!EmergencyBrake for 2s\n");
+          emergency_brake_client.call(emergency_brake);
+          ros::Duration(2).sleep();
+          velocityAndYawRateCtrl({3, 0, 0, 0}, 2500);
+          ROS_INFO_STREAM("Step 3 over!EmergencyBrake for 2s\n");
+          emergency_brake_client.call(emergency_brake);
+          ros::Duration(2).sleep();
+          velocityAndYawRateCtrl({-1.6, -2, 0, 0}, 2200);
+          ROS_INFO_STREAM("Step 4 over!EmergencyBrake for 2s\n");
+          emergency_brake_client.call(emergency_brake);
+          ros::Duration(2).sleep();
+
+          control_task.request.task = FlightTaskControl::Request::TASK_LAND;
+          ROS_INFO_STREAM("Landing request sending ...");
+          task_control_client.call(control_task);
+          if(control_task.response.result == true)
+          {
+            ROS_INFO_STREAM("Land task successful");
+            break;
+          }
+          ROS_INFO_STREAM("Land task failed.");
+          break;
+        }
+        break;
+      }
     default:
       break;
   }
@@ -226,19 +341,51 @@ int main(int argc, char** argv)
 }
 
 
-bool moveByPosOffset(FlightTaskControl& task, MoveOffset&& move_offset)
+bool moveByPosOffset(FlightTaskControl& task,const JoystickCommand &offsetDesired,
+                    float posThresholdInM,
+                    float yawThresholdInDeg)
 {
-  task.request.task = FlightTaskControl::Request::TASK_GO_LOCAL_POS;
-  // pos_offset: A vector contains that position_x_offset, position_y_offset, position_z_offset in order
-  task.request.pos_offset.clear();
-  task.request.pos_offset.push_back(move_offset.x);
-  task.request.pos_offset.push_back(move_offset.y);
-  task.request.pos_offset.push_back(move_offset.z);
-  // yaw_params: A vector contains that yaw_desired, position_threshold(Meter), yaw_threshold(Degree)
-  task.request.yaw_params.clear();
-  task.request.yaw_params.push_back(move_offset.yaw);
-  task.request.yaw_params.push_back(move_offset.pos_threshold);
-  task.request.yaw_params.push_back(move_offset.yaw_threshold);
+  task.request.task = FlightTaskControl::Request::TASK_POSITION_AND_YAW_CONTROL;
+  task.request.joystickCommand.x = offsetDesired.x;
+  task.request.joystickCommand.y = offsetDesired.y;
+  task.request.joystickCommand.z = offsetDesired.z;
+  task.request.joystickCommand.yaw = offsetDesired.yaw;
+  task.request.posThresholdInM   = posThresholdInM;
+  task.request.yawThresholdInDeg = yawThresholdInDeg;
+
   task_control_client.call(task);
   return task.response.result;
+}
+
+void velocityAndYawRateCtrl(const JoystickCommand &offsetDesired, uint32_t timeMs)
+{
+  double originTime  = 0;
+  double currentTime = 0;
+  uint64_t elapsedTimeInMs = 0;
+  
+  SetJoystickMode joystickMode;
+  JoystickAction joystickAction;
+
+  joystickMode.request.horizontal_mode = joystickMode.request.HORIZONTAL_VELOCITY;
+  joystickMode.request.vertical_mode = joystickMode.request.VERTICAL_VELOCITY;
+  joystickMode.request.yaw_mode = joystickMode.request.YAW_RATE;
+  joystickMode.request.horizontal_coordinate = joystickMode.request.HORIZONTAL_GROUND;
+  joystickMode.request.stable_mode = joystickMode.request.STABLE_ENABLE;
+  set_joystick_mode_client.call(joystickMode);
+
+  joystickAction.request.joystickCommand.x = offsetDesired.x;
+  joystickAction.request.joystickCommand.y = offsetDesired.y;
+  joystickAction.request.joystickCommand.z = offsetDesired.z;
+  joystickAction.request.joystickCommand.yaw = offsetDesired.yaw;
+
+  originTime  = ros::Time::now().toSec();
+  currentTime = originTime;
+  elapsedTimeInMs = (currentTime - originTime)*1000;
+
+  while(elapsedTimeInMs <= timeMs)
+  {
+    currentTime = ros::Time::now().toSec();
+    elapsedTimeInMs = (currentTime - originTime) * 1000;
+    joystick_action_client.call(joystickAction);
+  }
 }

@@ -105,6 +105,11 @@ void fromMobileDataSubCallback(const dji_osdk_ros::MobileData::ConstPtr& fromMob
       ackReturnToMobile.ackResult = recordVideo();
       sendToMobile(ackReturnToMobile);
     }
+
+    case 256:
+    {
+      ackReturnToMobile.ackResult = obtainJoystickControlAuthority();
+    }
       break;
   }
   ros::Duration(1.0).sleep();
@@ -146,33 +151,32 @@ bool gohomeAndConfirmLanding()
   return flightTaskControl.response.result;
 }
 
-bool moveByPosOffset(MoveOffset&& move_offset)
+
+bool moveByPosOffset(const JoystickCommand &offsetDesired,
+                     float posThresholdInM,
+                     float yawThresholdInDeg)
 {
   FlightTaskControl flightTaskControl;
-  flightTaskControl.request.task = FlightTaskControl::Request::TASK_GO_LOCAL_POS;
-  // pos_offset: A vector contains that position_x_offset, position_y_offset, position_z_offset in order
-  flightTaskControl.request.pos_offset.clear();
-  flightTaskControl.request.pos_offset.push_back(move_offset.x);
-  flightTaskControl.request.pos_offset.push_back(move_offset.y);
-  flightTaskControl.request.pos_offset.push_back(move_offset.z);
-  // yaw_params: A vector contains that yaw_desired, position_threshold(Meter), yaw_threshold(Degree)
-  flightTaskControl.request.yaw_params.clear();
-  flightTaskControl.request.yaw_params.push_back(move_offset.yaw);
-  flightTaskControl.request.yaw_params.push_back(move_offset.pos_threshold);
-  flightTaskControl.request.yaw_params.push_back(move_offset.yaw_threshold);
-  flight_control_client.call(flightTaskControl);
+  flightTaskControl.request.task = FlightTaskControl::Request::TASK_POSITION_AND_YAW_CONTROL;
+  flightTaskControl.request.joystickCommand.x = offsetDesired.x;
+  flightTaskControl.request.joystickCommand.y = offsetDesired.y;
+  flightTaskControl.request.joystickCommand.z = offsetDesired.z;
+  flightTaskControl.request.joystickCommand.yaw = offsetDesired.yaw;
+  flightTaskControl.request.posThresholdInM   = posThresholdInM;
+  flightTaskControl.request.yawThresholdInDeg = yawThresholdInDeg;
 
+  flight_control_client.call(flightTaskControl);
   return flightTaskControl.response.result;
 }
 
 bool localPositionCtrl()
 {
   ROS_INFO_STREAM("Move by position offset request sending ...");
-  moveByPosOffset(MoveOffset(0.0, 6.0, 6.0, 30.0));
+  moveByPosOffset({0.0, 6.0, 6.0, 30.0}, 0.8, 1);
   ROS_INFO_STREAM("Step 1 over!");
-  moveByPosOffset(MoveOffset(6.0, 0.0, -3.0, -30.0));
+  moveByPosOffset({6.0, 0.0, -3, -30.0}, 0.8, 1);
   ROS_INFO_STREAM("Step 2 over!");
-  moveByPosOffset(MoveOffset(-6.0, -6.0, 0.0, 0.0));
+  moveByPosOffset({-6.0, -6.0, 0.0, 0.0}, 0.8, 1);
   ROS_INFO_STREAM("Step 3 over!");
 
   return true;
@@ -221,6 +225,15 @@ bool recordVideo()
   camera_record_video_action_client.call(cameraRecordVideoAction);
 }
 
+bool obtainJoystickControlAuthority()
+{
+  ObtainControlAuthority obtainJoystickControlAuthority;
+  obtainJoystickControlAuthority.request.enable_obtain = true;
+  obtain_ctrl_authority_client.call(obtainJoystickControlAuthority);
+
+  return obtainJoystickControlAuthority.response.result;
+}
+
 static void DisplayMainMenu(void)
 {
   printf("\r\n");
@@ -238,6 +251,7 @@ int main(int argc, char *argv[]) {
   ROS_INFO("mobile device node is running!");
   ros::NodeHandle nh;
 
+  obtain_ctrl_authority_client = nh.serviceClient<dji_osdk_ros::ObtainControlAuthority>("obtain_release_control_authority");
   send_to_mobile_data_client = nh.serviceClient<SendMobileData>("send_data_to_mobile_device");
   flight_control_client = nh.serviceClient<FlightTaskControl>("flight_task_control");
   gimbal_control_client = nh.serviceClient<GimbalAction>("gimbal_task_control");

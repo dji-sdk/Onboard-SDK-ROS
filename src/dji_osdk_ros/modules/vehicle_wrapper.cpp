@@ -35,7 +35,6 @@
 #include <osdkosal_linux.h>
 
 #include <iostream>
-
 //CODE
 namespace dji_osdk_ros
 {
@@ -189,14 +188,7 @@ static T_OsdkOsalHandler osalHandler = {
       ACK::getErrorCodeMessage(ack, __func__);
       return false;
     }
-    ack = vehicle->control->obtainCtrlAuthority(timeout_);
-    if (ACK::getError(ack))
-    {
-        ACK::getErrorCodeMessage(ack, __func__);
-        return false;
-    }
-
-      return true;
+    return true;
   }
 
   bool VehicleWrapper::setEV(const PayloadIndex& payloadIndex, const ExposureCompensation& exposureCompensation)
@@ -213,26 +205,23 @@ static T_OsdkOsalHandler osalHandler = {
     retCode = pm->getExposureCompensationSync(index, evGet, 1);
     if (retCode == ErrorCode::SysCommonErr::Success) {
       DSTATUS("Get ev = %d", evGet);
-      if (dataTarget != evGet) {
-        DSTATUS("Set evTarget = %d", dataTarget);
-        retCode = pm->setExposureCompensationSync(index, dataTarget, 1);
-        if (retCode == ErrorCode::SysCommonErr::Success) {
-          DSTATUS("Set ev value successfully.");
-        } else {
-          DERROR("Set ev parameter error. Error code : 0x%lX", retCode);
-          ErrorCode::printErrorCodeMsg(retCode);
-          DERROR(
-              "In order to use this function, the camera exposure mode should be "
-              "set to be PROGRAM_AUTO, SHUTTER_PRIORITY or APERTURE_PRIORITY "
-              "first");
-          return false;
-        }
-      } else {
+      if (dataTarget == evGet) {
         DSTATUS("The ev value is already %d.", dataTarget);
+        return true;
       }
+    }
+
+    DSTATUS("Set evTarget = %d", dataTarget);
+    retCode = pm->setExposureCompensationSync(index, dataTarget, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Set ev value successfully.");
     } else {
-      DERROR("Get ev error. Error code : 0x%lX", retCode);
+      DERROR("Set ev parameter error. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
+      DERROR(
+        "In order to use this function, the camera exposure mode should be "
+        "set to be PROGRAM_AUTO, SHUTTER_PRIORITY or APERTURE_PRIORITY "
+        "first");
       return false;
     }
 
@@ -251,24 +240,22 @@ static T_OsdkOsalHandler osalHandler = {
 
     PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
     CameraModule::ExposureMode dataTarget = static_cast<CameraModule::ExposureMode>(exposureMode);
+
     retCode = pm->getExposureModeSync(index, exposureModeGet, 1);
     if (retCode == ErrorCode::SysCommonErr::Success) {
       DSTATUS("Get exposure mode = %d", exposureModeGet);
-      if (dataTarget != exposureModeGet) {
-        DSTATUS("Set exposure mode = %d", dataTarget);
-        retCode = pm->setExposureModeSync(index, dataTarget, 1);
-        if (retCode == ErrorCode::SysCommonErr::Success) {
-          DSTATUS("Set exposure mode successfully.");
-        } else {
-          DERROR("Set exposure mode error. Error code : 0x%lX", retCode);
-          ErrorCode::printErrorCodeMsg(retCode);
-          return false;
-        }
-      } else {
+      if (dataTarget == exposureModeGet)  {
         DSTATUS("The exposure mode is already %d.", dataTarget);
+        return true;
       }
+    }
+
+    DSTATUS("Set exposure mode = %d", dataTarget);
+    retCode = pm->setExposureModeSync(index, dataTarget, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Set exposure mode successfully.");
     } else {
-      DERROR("Get exposure mode error. Error code : 0x%lX", retCode);
+      DERROR("Set exposure mode error. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
       return false;
     }
@@ -292,26 +279,23 @@ static T_OsdkOsalHandler osalHandler = {
     retCode = pm->getISOSync(index, isoGet, 1);
     if (retCode == ErrorCode::SysCommonErr::Success) {
       DSTATUS("Get iso = %d", isoGet);
-      if (dataTarget != isoGet) {
-        DSTATUS("Set iso = %d", dataTarget);
-        retCode = pm->setISOSync(index, dataTarget, 1);
-        if (retCode == ErrorCode::SysCommonErr::Success) {
-          DSTATUS("Set iso successfully");
-        } else {
-          DERROR("Set ISO parameter error. Error code : 0x%lX", retCode);
-          ErrorCode::printErrorCodeMsg(retCode);
-          DERROR(
-              "For the X5, X5R, X4S and X5S, the ISO value can be set for all "
-              "modes. For the other cameras, the ISO value can only be set when "
-              "the camera exposure mode is in Manual mode.");
-          return false;
-        }
-      } else {
+      if (dataTarget == isoGet) {
         DSTATUS("The iso parameter is already %d.", dataTarget);
+        return true;
       }
+    }
+
+    DSTATUS("Set iso = %d", dataTarget);
+    retCode = pm->setISOSync(index, dataTarget, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Set iso successfully");
     } else {
-      DERROR("Get iso error. Error code : 0x%lX", retCode);
+      DERROR("Set ISO parameter error. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
+      DERROR(
+        "For the X5, X5R, X4S and X5S, the ISO value can be set for all "
+        "modes. For the other cameras, the ISO value can only be set when "
+        "the camera exposure mode is in Manual mode.");
       return false;
     }
 
@@ -334,27 +318,24 @@ static T_OsdkOsalHandler osalHandler = {
     retCode = pm->getShutterSpeedSync(index, shutterSpeedGet, 1);
     if (retCode == ErrorCode::SysCommonErr::Success) {
       DSTATUS("Get shutterSpeed = %d", shutterSpeedGet);
-      if (dataTarget != shutterSpeedGet) {
-        DSTATUS("Set shutterSpeed = %d", dataTarget);
-        retCode = pm->setShutterSpeedSync(index, dataTarget, 1);
-        if (retCode == ErrorCode::SysCommonErr::Success) {
-          DSTATUS("Set iso successfully");
-        } else {
-          DERROR("Set shutterSpeed parameter error. Error code : 0x%lX", retCode);
-          ErrorCode::printErrorCodeMsg(retCode);
-          DERROR(
-              "The shutter speed can be set only when the camera exposure mode "
-              "is Shutter mode or Manual mode. The shutter speed should not be "
-              "set slower than the video frame rate when the camera's mode is "
-              "RECORD_VIDEO.");
-          return false;
-        }
-      } else {
+      if (dataTarget == shutterSpeedGet) {
         DSTATUS("The shutterSpeed is already %d.", dataTarget);
+        return true;
       }
+    }
+
+    DSTATUS("Set shutterSpeed = %d", dataTarget);
+    retCode = pm->setShutterSpeedSync(index, dataTarget, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Set iso successfully");
     } else {
-      DERROR("Get shutterSpeed error. Error code : 0x%lX", retCode);
+      DERROR("Set shutterSpeed parameter error. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
+      DERROR(
+        "The shutter speed can be set only when the camera exposure mode "
+        "is Shutter mode or Manual mode. The shutter speed should not be "
+        "set slower than the video frame rate when the camera's mode is "
+        "RECORD_VIDEO.");
       return false;
     }
 
@@ -376,27 +357,24 @@ static T_OsdkOsalHandler osalHandler = {
     retCode = pm->getApertureSync(index, apertureGet, 1);
     if (retCode == ErrorCode::SysCommonErr::Success) {
       DSTATUS("Get aperture = %d", apertureGet);
-      if (dataTarget != apertureGet) {
-        DSTATUS("Set aperture = %d", dataTarget);
-        retCode = pm->setApertureSync(index, dataTarget, 1);
-        if (retCode == ErrorCode::SysCommonErr::Success) {
-          DSTATUS("Set aperture successfully");
-        } else {
-          DERROR("Set aperture parameter error. Error code : 0x%lX", retCode);
-          ErrorCode::printErrorCodeMsg(retCode);
-          DERROR(
-              "In order to use this function, the exposure mode ExposureMode "
-              "must be in MANUAL or APERTURE_PRIORITY. Supported only by the X5, "
-              "X5R, X4S, X5S camera.");
-          return false;
-        }
-      } else {
+      if (dataTarget == apertureGet) {
         DSTATUS("The aperture is already %d.", dataTarget);
+        return true;
       }
+    }
+
+    DSTATUS("Set aperture = %d", dataTarget);
+    retCode = pm->setApertureSync(index, dataTarget, 1);
+    if (retCode == ErrorCode::SysCommonErr::Success) {
+      DSTATUS("Set aperture successfully");
     } else {
-      DERROR("Get aperture error. Error code : 0x%lX", retCode);
+      DERROR("Set aperture parameter error. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
-      return false;
+      DERROR(
+        "In order to use this function, the exposure mode ExposureMode "
+        "must be in MANUAL or APERTURE_PRIORITY. Supported only by the X5, "
+        "X5R, X4S, X5S camera.");
+        return false;
     }
 
     return true;
@@ -434,6 +412,7 @@ static T_OsdkOsalHandler osalHandler = {
             "It's should be attention that X4S will keep focus point as (0.5,0.5) "
             "all the time, the setting of focus point to X4S will quickly replaced "
             "by (0.5, 0.5).");
+        return false;
       }
     } else {
       DERROR("Set focus mode parameter error. Error code : 0x%lX", retCode);
@@ -480,7 +459,7 @@ static T_OsdkOsalHandler osalHandler = {
     if (retCode != ErrorCode::SysCommonErr::Success) {
       DERROR("Set tap zoom multiplier fail. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
-      DERROR("It is only supported Z30 camera.");
+      DERROR("It is only supported Z30 camera or H20/H20T zoom mode.");
       return false;
     }
 
@@ -490,13 +469,55 @@ static T_OsdkOsalHandler osalHandler = {
     if (retCode != ErrorCode::SysCommonErr::Success) {
       DERROR("Set tap zoom target fail. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
-      DERROR("It is only supported Z30 camera.");
+      DERROR("It is only supported Z30 camera or H20/H20T zoom mode.");
       return false;
     } else {
       DSTATUS(
           "tap zoom at target (%0.2f, %0.2f) successfully, need several seconds "
           "to zoom.",
           x, y);
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::setZoom(const PayloadIndex& payloadIndex,  float factor)
+  {
+    if (!vehicle || !vehicle->cameraManager) {
+    DERROR("vehicle or cameraManager is a null value.");
+    return ErrorCode::SysCommonErr::InstInitParamInvalid;
+    }
+    ErrorCode::ErrorCodeType retCode;
+    CameraManager *pm = vehicle->cameraManager;
+
+    DSTATUS("Attention : It is only supported by X5, X5R and X5S camera on Osmo with"
+            "lens Olympus M.Zuiko ED 14-42mm f/3.5-5.6 EZ, Z3 camera, Z30 camera.");
+
+    float curFactor = 0;
+    PayloadIndexType index = static_cast<PayloadIndexType>(payloadIndex);
+    retCode = pm->getOpticalZoomFactorSync(index, curFactor, 1);
+    if (retCode != ErrorCode::SysCommonErr::Success) {
+      DERROR("Get zoom parameter fail. Error code : 0x%lX", retCode);
+      ErrorCode::printErrorCodeMsg(retCode);
+      DSTATUS(
+          "Attention : It is only supported by X5, X5R and X5S camera on Osmo with"
+          "lens Olympus M.Zuiko ED 14-42mm f/3.5-5.6 EZ, Z3 camera, Z30 camera.");
+      return false;
+    }
+    DSTATUS("Got the current optical zoom factor : %0.1f", curFactor);
+    if (curFactor != factor) {
+      DSTATUS("Set the current optical zoom factor as %0.1f", factor);
+      retCode = pm->setOpticalZoomFactorSync(index, factor, 1);
+
+      if (retCode != ErrorCode::SysCommonErr::Success) {
+        DERROR("Set zoom parameter fail. Error code : 0x%lX", retCode);
+        ErrorCode::printErrorCodeMsg(retCode);
+        return false;
+      }
+      return true;
+    } else {
+      DSTATUS("The current zoom factor is already : %0.2f", factor);
+      return true;
     }
 
     return true;
@@ -567,20 +588,18 @@ static T_OsdkOsalHandler osalHandler = {
       return false;
     }
 
-    /*! @TODO XT* and Z30 don't support set shoot-photo mode. To fix it in the
-     * future */
-    /*!< set shoot-photo mode
+  /*! @TODO XT* and Z30 don't support set shoot-photo mode. To fix it in the
+    * future */
+    /*!< set shoot-photo mode */
     DSTATUS("set shoot-photo mode as SINGLE");
-    retCode =
-        pm->setShootPhotoModeSync(index, CameraModule::ShootPhotoMode::SINGLE, 1);
+    retCode = pm->setShootPhotoModeSync(index, CameraModule::ShootPhotoMode::SINGLE, 1);
     if (retCode != ErrorCode::SysCommonErr::Success) {
       DERROR("Set shoot-photo mode as SINGLE fail. Error code : 0x%lX", retCode);
       ErrorCode::printErrorCodeMsg(retCode);
       DERROR("If the camera is XT, XT2, or XTS, set shoot-photo mode interface is"
-             "temporarily not supported.");
-      return retCode;
+            "temporarily not supported.");
+      return false;
     }
-    */
 
     /*! wait the APP change the shoot-photo mode display */
     Platform::instance().taskSleepMs(500);
@@ -843,335 +862,270 @@ static T_OsdkOsalHandler osalHandler = {
     return true;
   }
 
-  bool VehicleWrapper::monitoredTakeoff(ACK::ErrorCode& ack, int timeout)
+  bool VehicleWrapper::motorStartedCheck()
   {
-    //@todo: remove this once the getErrorCode function signature changes
-    char func[50];
-    // Start takeoff
-    ack = vehicle->control->takeoff(timeout);
-    if (ACK::getError(ack) != ACK::SUCCESS)
+    if (!vehicle)
     {
-      ACK::getErrorCodeMessage(ack, func);
+      std::cout << "Vehicle is a null value!" << std::endl;
       return false;
     }
 
-    // First check: Motors started
     int motorsNotStarted = 0;
-    int timeoutCycles    = 20;
-
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
-    {
-      while (vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() !=
-             VehicleStatus::FlightStatus::ON_GROUND &&
-             vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-             VehicleStatus::DisplayMode::MODE_ENGINE_START &&
-             motorsNotStarted < timeoutCycles)
-      {
-        motorsNotStarted++;
-        usleep(100000);
-      }
-
-      if (motorsNotStarted == timeoutCycles)
-      {
-        std::cout << "Takeoff failed. Motors are not spinning." << std::endl;
-        return false;
-      }
-      else
-      {
-        std::cout << "Motors spinning...\n";
-      }
+    int timeoutCycles = 20;
+    while (vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() !=
+              VehicleStatus::FlightStatus::ON_GROUND &&
+          vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
+              VehicleStatus::DisplayMode::MODE_ENGINE_START &&
+          motorsNotStarted < timeoutCycles) {
+      motorsNotStarted++;
+      usleep(100000);
     }
-    else if (vehicle->isLegacyM600())
-    {
-      while ((vehicle->broadcast->getStatus().flight <
-              DJI::OSDK::VehicleStatus::FlightStatus::ON_GROUND) &&
-             motorsNotStarted < timeoutCycles)
-      {
-        motorsNotStarted++;
-        usleep(100000);
-      }
+    return motorsNotStarted != timeoutCycles ? true : false;
+  }
 
-      if (motorsNotStarted < timeoutCycles)
-      {
-        std::cout << "Successful TakeOff!" << std::endl;
-      }
-    }
-    else // M100
+  bool VehicleWrapper::takeOffInAirCheck()
+  {
+    if (!vehicle)
     {
-      while ((vehicle->broadcast->getStatus().flight <
-              DJI::OSDK::VehicleStatus::M100FlightStatus::TAKEOFF) &&
-             motorsNotStarted < timeoutCycles)
-      {
-        motorsNotStarted++;
-        usleep(100000);
-      }
-
-      if (motorsNotStarted < timeoutCycles)
-      {
-        std::cout << "Successful TakeOff!" << std::endl;
-      }
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
     }
 
-    // Second check: In air
     int stillOnGround = 0;
-    timeoutCycles     = 110;
+    int timeoutCycles = 110;
+    while (vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() !=
+              VehicleStatus::FlightStatus::IN_AIR &&
+          (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
+                VehicleStatus::DisplayMode::MODE_ASSISTED_TAKEOFF ||
+            vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
+                VehicleStatus::DisplayMode::MODE_AUTO_TAKEOFF) &&
+          stillOnGround < timeoutCycles) {
+      stillOnGround++;
+      usleep(100000);
+    }
 
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
+    return stillOnGround != timeoutCycles ? true : false;
+  }
+
+  bool VehicleWrapper::takeoffFinishedCheck()
+  {
+    if (!vehicle)
     {
-      while (vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() !=
-             VehicleStatus::FlightStatus::IN_AIR &&
-             (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+
+    while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
               VehicleStatus::DisplayMode::MODE_ASSISTED_TAKEOFF ||
-              vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-              VehicleStatus::DisplayMode::MODE_AUTO_TAKEOFF) &&
-             stillOnGround < timeoutCycles)
-      {
-        stillOnGround++;
-        usleep(100000);
-      }
-
-      if (stillOnGround == timeoutCycles)
-      {
-        std::cout << "Takeoff failed. Aircraft is still on the ground, but the "
-                     "motors are spinning."
-                  << std::endl;
-        return false;
-      }
-      else
-      {
-        std::cout << "Ascending...\n";
-      }
+          vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
+              VehicleStatus::DisplayMode::MODE_AUTO_TAKEOFF) {
+      sleep(1);
     }
-    else if (vehicle->isLegacyM600())
-    {
-      while ((vehicle->broadcast->getStatus().flight <
-              DJI::OSDK::VehicleStatus::FlightStatus::IN_AIR) &&
-             stillOnGround < timeoutCycles)
-      {
-        stillOnGround++;
-        usleep(100000);
-      }
+    return ((vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
+            VehicleStatus::DisplayMode::MODE_P_GPS) ||
+            (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
+            VehicleStatus::DisplayMode::MODE_ATTITUDE))
+              ? true
+              : false;
+  }
 
-      if (stillOnGround < timeoutCycles)
-      {
-        std::cout << "Aircraft in air!" << std::endl;
-      }
-    }
-    else // M100
+  bool VehicleWrapper::landFinishedCheck()
+  {
+    if (!vehicle)
     {
-      while ((vehicle->broadcast->getStatus().flight !=
-              DJI::OSDK::VehicleStatus::M100FlightStatus::IN_AIR_STANDBY) &&
-             stillOnGround < timeoutCycles)
-      {
-        stillOnGround++;
-        usleep(100000);
-      }
-
-      if (stillOnGround < timeoutCycles)
-      {
-        std::cout << "Aircraft in air!" << std::endl;
-      }
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
     }
 
-    // Final check: Finished takeoff
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
+    while(vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
+                VehicleStatus::DisplayMode::MODE_AUTO_LANDING &&
+            vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() ==
+                VehicleStatus::FlightStatus::IN_AIR)
     {
-      while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
-             VehicleStatus::DisplayMode::MODE_ASSISTED_TAKEOFF ||
-             vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
-             VehicleStatus::DisplayMode::MODE_AUTO_TAKEOFF)
-      {
-        sleep(1);
-      }
+        Platform::instance().taskSleepMs(1000);
+    }
 
-      if (!vehicle->isM100() && !vehicle->isLegacyM600())
-      {
-        if (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
+    return ((vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
             VehicleStatus::DisplayMode::MODE_P_GPS ||
             vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-            VehicleStatus::DisplayMode::MODE_ATTITUDE)
-        {
-          std::cout << "Successful takeoff!\n";
-        }
-        else
-        {
-          std::cout
-              << "Takeoff finished, but the aircraft is in an unexpected mode. "
-                 "Please connect DJI GO.\n";
-          return false;
-        }
-      }
+            VehicleStatus::DisplayMode::MODE_ATTITUDE)) ? true:false;
+  }
+
+  bool VehicleWrapper::monitoredTakeoff(int timeout)
+  {
+    //! Start takeoff
+    //ErrorCode::ErrorCodeType takeoffStatus =
+        vehicle->flightController->startTakeoffSync(timeout);
+
+    //! Motors start check
+    if (!motorStartedCheck()) {
+      std::cout << "Takeoff failed. Motors are not spinning." << std::endl;
+      return false;
+    } else {
+      std::cout << "Motors spinning...\n";
     }
-    else
-    {
-      float32_t                 delta;
-      Telemetry::GlobalPosition currentHeight;
-      Telemetry::GlobalPosition deltaHeight =
-          vehicle->broadcast->getGlobalPosition();
-
-      do
-      {
-        sleep(4);
-        currentHeight = vehicle->broadcast->getGlobalPosition();
-        delta         = fabs(currentHeight.altitude - deltaHeight.altitude);
-        deltaHeight.altitude = currentHeight.altitude;
-      } while (delta >= 0.009);
-
-      std::cout << "Aircraft hovering at " << currentHeight.altitude << "m!\n";
+    //! In air check
+    if (!takeOffInAirCheck()) {
+      std::cout << "Takeoff failed. Aircraft is still on the ground, but the "
+                  "motors are spinning."
+                << std::endl;
+      return false;
+    } else {
+      std::cout << "Ascending...\n";
     }
 
+    //! Finished takeoff check
+    if (takeoffFinishedCheck()) {
+      std::cout << "Successful takeoff!\n";
+    } else {
+      std::cout << "Takeoff finished, but the aircraft is in an unexpected mode. "
+                  "Please connect DJI GO.\n";
+      return false;
+    }
     return true;
   }
 
-  bool VehicleWrapper::monitoredLanding(ACK::ErrorCode& ack, int timeout)
+
+  bool VehicleWrapper::monitoredLanding(int timeout)
   {
-    //@todo: remove this once the getErrorCode function signature changes
-    char func[50];
-
-    // Start landing
-    ack = vehicle->control->land(timeout);
-    if (ACK::getError(ack) != ACK::SUCCESS)
+    if (!vehicle)
     {
-      ACK::getErrorCodeMessage(ack, func);
+      std::cout << "Vehicle is a null value!" << std::endl;
       return false;
     }
 
-    // First check: Landing started
-    int landingNotStarted = 0;
-    int timeoutCycles     = 20;
-
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
+    /*! Step 1: Start landing */
+    DSTATUS("Start landing action");
+    ErrorCode::ErrorCodeType landingErrCode = vehicle->flightController->startLandingSync(timeout);
+    if (landingErrCode != ErrorCode::SysCommonErr::Success)
     {
-      while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-             VehicleStatus::DisplayMode::MODE_AUTO_LANDING &&
-             landingNotStarted < timeoutCycles)
-      {
-        landingNotStarted++;
-        usleep(100000);
-      }
-    }
-    else if (vehicle->isM100())
-    {
-      while (vehicle->broadcast->getStatus().flight !=
-             DJI::OSDK::VehicleStatus::M100FlightStatus::LANDING &&
-             landingNotStarted < timeoutCycles)
-      {
-        landingNotStarted++;
-        usleep(100000);
-      }
-    }
-
-    if (landingNotStarted == timeoutCycles)
-    {
-      std::cout << "Landing failed. Aircraft is still in the air." << std::endl;
+      DERROR( "Fail to execute landing action! Error code: "
+              "%llx\n ",landingErrCode);
       return false;
     }
+
+    /*! Step 2: check Landing start*/
+    if (!checkActionStarted(VehicleStatus::DisplayMode::MODE_AUTO_LANDING))
+    {
+      DERROR("Fail to execute Landing action!");
+      return false;
+    } 
     else
     {
-      std::cout << "Landing...\n";
-    }
-
-    // Second check: Finished landing
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
-    {
-      while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() ==
-             VehicleStatus::DisplayMode::MODE_AUTO_LANDING &&
-             vehicle->subscribe->getValue<TOPIC_STATUS_FLIGHT>() ==
-             VehicleStatus::FlightStatus::IN_AIR)
+      /*! Step 3: check Landing finished*/
+      if (this->landFinishedCheck())
       {
-        sleep(1);
-      }
-
-      if (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-          VehicleStatus::DisplayMode::MODE_P_GPS ||
-          vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() !=
-          VehicleStatus::DisplayMode::MODE_ATTITUDE)
-      {
-        std::cout << "Successful landing!\n";
+        DSTATUS("Successful landing!");
       }
       else
       {
-        std::cout
-            << "Landing finished, but the aircraft is in an unexpected mode. "
-               "Please connect DJI GO.\n";
+        DERROR("Landing finished, but the aircraft is in an unexpected mode. "
+              "Please connect DJI Assistant.");
         return false;
-      }
-    }
-    else if (vehicle->isLegacyM600())
-    {
-      while (vehicle->broadcast->getStatus().flight >
-             DJI::OSDK::VehicleStatus::FlightStatus::STOPED)
-      {
-        sleep(1);
-      }
-
-      Telemetry::GlobalPosition gp;
-      do
-      {
-        sleep(2);
-        gp = vehicle->broadcast->getGlobalPosition();
-      } while (gp.altitude != 0);
-
-      if (gp.altitude != 0)
-      {
-        std::cout
-            << "Landing finished, but the aircraft is in an unexpected mode. "
-               "Please connect DJI GO.\n";
-        return false;
-      }
-      else
-      {
-        std::cout << "Successful landing!\n";
-      }
-    }
-    else // M100
-    {
-      while (vehicle->broadcast->getStatus().flight ==
-             DJI::OSDK::VehicleStatus::M100FlightStatus::FINISHING_LANDING)
-      {
-        sleep(1);
-      }
-
-      Telemetry::GlobalPosition gp;
-      do
-      {
-        sleep(2);
-        gp = vehicle->broadcast->getGlobalPosition();
-      } while (gp.altitude != 0);
-
-      if (gp.altitude != 0)
-      {
-        std::cout
-            << "Landing finished, but the aircraft is in an unexpected mode. "
-               "Please connect DJI GO.\n";
-        return false;
-      }
-      else
-      {
-        std::cout << "Successful landing!\n";
       }
     }
 
     return true;
   }
 
-  bool VehicleWrapper::goHome(ACK::ErrorCode& ack, int timeout)
+  bool VehicleWrapper::startForceLanding(int timeout)
   {
-    ack = vehicle->control->goHome(timeout);
-    if (ACK::getError(ack))
+    if (!vehicle)
     {
-      ACK::getErrorCodeMessage(ack, __func__);
+      std::cout << "Vehicle is a null value!" << std::endl;
       return false;
     }
-    else
+    ErrorCode::ErrorCodeType errCode = vehicle->flightController->startForceLandingSync(timeout);
+    if (errCode != ErrorCode::SysCommonErr::Success)
     {
-      return true;
+      DERROR( "Fail to execute force landing action! Error code: "
+              "%llx\n ",errCode);
+      return false;
     }
+
+    return true;
+  }
+
+  bool VehicleWrapper::startConfirmLanding(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    ErrorCode::ErrorCodeType errCode = vehicle->flightController->startConfirmLandingSync(timeout);
+    if (errCode != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR( "Fail to execute confirm landing action! Error code: "
+              "%llx\n ",errCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::cancelLanding(int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    ErrorCode::ErrorCodeType errCode = vehicle->flightController->cancelLandingSync(timeout);
+    if (errCode != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR( "Fail to execute cancel landing action! Error code: "
+              "%llx\n ",errCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::goHome( int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    ErrorCode::ErrorCodeType goHomeErrCode = vehicle->flightController->startGoHomeSync(timeout);
+    if (goHomeErrCode != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR( "Fail to execute gohome action! Error code: "
+              "%llx\n ",goHomeErrCode);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::cancelGoHome( int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    ErrorCode::ErrorCodeType goHomeErrCode = vehicle->flightController->cancelGoHomeSync(timeout);
+    if (goHomeErrCode != ErrorCode::SysCommonErr::Success)
+    {
+      DERROR( "Fail to execute cancel go home action! Error code: "
+              "%llx\n ",goHomeErrCode);
+      return false;
+    }
+
+    return true;
   }
 
   bool VehicleWrapper::setUpSubscription(int pkgIndex, int freq, TopicName* topicList,
                                          uint8_t topicSize, int timeout)
   {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
     if (vehicle) {
       /*! Telemetry: Verify the subscription*/
       ACK::ErrorCode subscribeStatus;
@@ -1210,6 +1164,11 @@ static T_OsdkOsalHandler osalHandler = {
 
   bool VehicleWrapper::teardownSubscription(const int pkgIndex, int timeout)
   {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
     ACK::ErrorCode ack = vehicle->subscribe->removePackage(pkgIndex, timeout);
     if (ACK::getError(ack)) {
       DERROR(
@@ -1222,6 +1181,11 @@ static T_OsdkOsalHandler osalHandler = {
 
   bool VehicleWrapper::checkActionStarted(uint8_t mode)
   {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
     int actionNotStarted = 0;
     int timeoutCycles = 20;
     while (vehicle->subscribe->getValue<TOPIC_STATUS_DISPLAYMODE>() != mode &&
@@ -1241,6 +1205,11 @@ static T_OsdkOsalHandler osalHandler = {
 
   bool VehicleWrapper::goHomeAndConfirmLanding(int timeout)
   {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
     /*! Step 1: Verify and setup the subscription */
     const int pkgIndex = static_cast<int>(SubscribePackgeIndex::TEMP_SUB_PACKAGE_INDEX);
     int freq = 10;
@@ -1333,8 +1302,13 @@ static T_OsdkOsalHandler osalHandler = {
     return true;
   }
 
-  bool VehicleWrapper::setNewHomeLocation(int timeout)
+  bool VehicleWrapper::setCurrentAircraftLocAsHomePoint(int timeout)
   {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
     HomeLocationSetStatus homeLocationSetStatus;
     HomeLocationData originHomeLocation;
     ErrorCode::ErrorCodeType ret = ErrorCode::FlightControllerErr::SetHomeLocationErr::Fail;
@@ -1403,6 +1377,11 @@ static T_OsdkOsalHandler osalHandler = {
 
   bool VehicleWrapper::setHomeAltitude(uint16_t altitude, int timeout)
   {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
     ErrorCode::ErrorCodeType ret = vehicle->flightController->setGoHomeAltitudeSync(altitude, timeout);
     if (ret != ErrorCode::SysCommonErr::Success)
     {
@@ -1416,8 +1395,56 @@ static T_OsdkOsalHandler osalHandler = {
     }
   }
 
-  bool VehicleWrapper::setAvoid(bool enable)
+  bool VehicleWrapper::getHomeAltitude(uint16_t& altitude, int timeout)
   {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    ErrorCode::ErrorCodeType ret = vehicle->flightController->getGoHomeAltitudeSync(altitude, timeout);
+    if (ret != ErrorCode::SysCommonErr::Success)
+    {
+      DSTATUS("Get go home altitude failed, ErrorCode is:%8x", ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Get go home altitude successfully,altitude is: %d", altitude);
+      return true;
+    }
+  }
+
+  bool VehicleWrapper::setHomePoint(float64_t latitude, float64_t longitude, int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    DJI::OSDK::FlightController::HomeLocation homeLocation;
+    homeLocation.latitude = latitude;
+    homeLocation.longitude = longitude;
+    ErrorCode::ErrorCodeType ret = vehicle->flightController->setHomeLocationSync(homeLocation, timeout);
+    if (ret != ErrorCode::SysCommonErr::Success)
+    {
+      DSTATUS("Set home point failed, ErrorCode is:%8x", ret);
+      return false;
+    }
+    else
+    {
+      DSTATUS("Set home point successfully,latitude: %f rad, longitude:%f rad", latitude, longitude);
+      return true;
+    }
+  }
+
+  bool VehicleWrapper::setCollisionAvoidance(bool enable)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
     auto enum_enable = enable ? FlightController::AvoidEnable::AVOID_ENABLE : FlightController::AvoidEnable::AVOID_DISABLE;
     ErrorCode::ErrorCodeType ack = vehicle->flightController->setCollisionAvoidanceEnabledSync(enum_enable, 1);
     if (ack == ErrorCode::SysCommonErr::Success)
@@ -1427,9 +1454,33 @@ static T_OsdkOsalHandler osalHandler = {
     return false;
   }
 
+  bool VehicleWrapper::getCollisionAvoidance(uint8_t& enable)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    FlightController::AvoidEnable enum_enable;
+    ErrorCode::ErrorCodeType ack = vehicle->flightController->getCollisionAvoidanceEnabledSync(enum_enable, 1);
+    enable = static_cast<uint8_t>(enum_enable);
+    if (ack == ErrorCode::SysCommonErr::Success)
+    {
+      return true;
+    }
+
+    enable = 0xF;
+    return false;
+  }
+
   bool VehicleWrapper::setUpwardsAvoidance(bool enable)
   {
-    auto enum_enable = enable ? FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_DISABLE : FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_ENABLE;
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    auto enum_enable = enable ? FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_ENABLE : FlightController::UpwardsAvoidEnable::UPWARDS_AVOID_DISABLE;
     ErrorCode::ErrorCodeType ack = vehicle->flightController->setUpwardsAvoidanceEnabledSync(enum_enable, 1);
     if (ack == ErrorCode::SysCommonErr::Success)
     {
@@ -1438,230 +1489,365 @@ static T_OsdkOsalHandler osalHandler = {
     return false;
   }
 
-  bool VehicleWrapper::moveByPositionOffset(ACK::ErrorCode& ack, int timeout, MoveOffset& p_offset)
+  bool VehicleWrapper::getUpwardsAvoidance(uint8_t& enable)
   {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    FlightController::UpwardsAvoidEnable enum_enable;
+    ErrorCode::ErrorCodeType ack = vehicle->flightController->getUpwardsAvoidanceEnabledSync(enum_enable, 1);
+    enable = static_cast<uint8_t>(enum_enable);
+    if (ack == ErrorCode::SysCommonErr::Success)
+    {
+      return true;
+    }
+
+    enable = 0xF;
+    return false;
+  }
+
+  bool VehicleWrapper::setJoystickMode(const JoystickMode &joystickMode)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    DJI::OSDK::FlightController::JoystickMode interJoystickMode;
+    interJoystickMode.horizontalLogic = static_cast<DJI::OSDK::FlightController::HorizontalLogic>(joystickMode.horizontalLogic);
+    interJoystickMode.verticalLogic   = static_cast<DJI::OSDK::FlightController::VerticalLogic>(joystickMode.verticalLogic);
+    interJoystickMode.yawLogic = static_cast<DJI::OSDK::FlightController::YawLogic>(joystickMode.yawLogic);
+    interJoystickMode.horizontalCoordinate = static_cast<DJI::OSDK::FlightController::HorizontalCoordinate>(joystickMode.horizontalCoordinate);
+    interJoystickMode.stableMode = static_cast<DJI::OSDK::FlightController::StableMode>(joystickMode.stableMode);
+
+    vehicle->flightController->setJoystickMode(interJoystickMode);
+
+    return true;
+  }
+
+  bool VehicleWrapper::JoystickAction(const JoystickCommand &JoystickCommand)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+    DJI::OSDK::FlightController::JoystickCommand interJoystickCommand;
+    memcpy(&interJoystickCommand, &JoystickCommand, sizeof(interJoystickCommand));
+    vehicle->flightController->setJoystickCommand(interJoystickCommand);
+    vehicle->flightController->joystickAction();
+
+    return true;
+  }
+
+  Vector3f VehicleWrapper::quaternionToEulerAngle(const Telemetry::Quaternion& quat)
+  {
+    Telemetry::Vector3f eulerAngle;
+    double q2sqr = quat.q2 * quat.q2;
+    double t0 = -2.0 * (q2sqr + quat.q3 * quat.q3) + 1.0;
+    double t1 = 2.0 * (quat.q1 * quat.q2 + quat.q0 * quat.q3);
+    double t2 = -2.0 * (quat.q1 * quat.q3 - quat.q0 * quat.q2);
+    double t3 = 2.0 * (quat.q2 * quat.q3 + quat.q0 * quat.q1);
+    double t4 = -2.0 * (quat.q1 * quat.q1 + q2sqr) + 1.0;
+    t2 = (t2 > 1.0) ? 1.0 : t2;
+    t2 = (t2 < -1.0) ? -1.0 : t2;
+    eulerAngle.x = asin(t2);
+    eulerAngle.y = atan2(t3, t4);
+    eulerAngle.z = atan2(t1, t0);
+    return eulerAngle;
+  }
+
+  Vector3f VehicleWrapper::localOffsetFromGpsAndFusedHeightOffset(
+    const Telemetry::GPSFused& target, const Telemetry::GPSFused& origin,
+    const float32_t& targetHeight, const float32_t& originHeight)
+  {
+    Telemetry::Vector3f deltaNed;
+    double deltaLon = target.longitude - origin.longitude;
+    double deltaLat = target.latitude - origin.latitude;
+    deltaNed.x = deltaLat * C_EARTH;
+    deltaNed.y = deltaLon * C_EARTH * cos(target.latitude);
+    deltaNed.z = targetHeight - originHeight;
+    return deltaNed;
+  }
+
+  Vector3f VehicleWrapper::vector3FSub(const Vector3f& vectorA,
+                                     const Vector3f& vectorB)
+  {
+    Telemetry::Vector3f result;
+    result.x = vectorA.x - vectorB.x;
+    result.y = vectorA.y - vectorB.y;
+    result.z = vectorA.z - vectorB.z;
+    return result;
+  }
+
+  template <typename Type>
+  int VehicleWrapper::signOfData(Type type)
+  {
+    return type < 0 ? -1 : 1;
+  }
+
+  void VehicleWrapper::horizCommandLimit(float speedFactor, float& commandX,
+                                         float& commandY)
+  {
+    if (fabs(commandX) > speedFactor)
+      commandX = signOfData<float>(commandX) * speedFactor;
+    if (fabs(commandY) > speedFactor)
+      commandY = signOfData<float>(commandY) * speedFactor;
+  }
+
+  float32_t VehicleWrapper::vectorNorm(Vector3f v)
+  {
+    return sqrt(pow(v.x, 2) + pow(v.y, 2) + pow(v.z, 2));
+  }
+
+  bool VehicleWrapper::moveByPositionOffset(const JoystickCommand &JoystickCommand,int timeout,
+                                            float posThresholdInM,float yawThresholdInDeg)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+
     using namespace Telemetry;
-    auto xOffsetDesired = p_offset.x;
-    auto yOffsetDesired = p_offset.y;
-    auto zOffsetDesired = p_offset.z;
-    auto yawDesired = p_offset.yaw;
-    auto posThresholdInM = p_offset.pos_threshold;
-    auto yawThresholdInDeg = p_offset.yaw_threshold;
+    Vector3f offsetDesired;
+    offsetDesired.x = JoystickCommand.x;
+    offsetDesired.y = JoystickCommand.y;
+    offsetDesired.z = JoystickCommand.z;
+    float yawDesiredInDeg = JoystickCommand.yaw;
 
-    // Set timeout: this timeout is the time you allow the drone to take to finish
-    // the
-    // mission
-    int timeoutInMilSec              = 40000;
-    int controlFreqInHz              = 50; // Hz
-    int cycleTimeInMs                = 1000 / controlFreqInHz;
-    int outOfControlBoundsTimeLimit  = 10 * cycleTimeInMs; // 10 cycles
-    int withinControlBoundsTimeReqmt = 50 * cycleTimeInMs; // 50 cycles
+    int responseTimeout = 1;
+    int timeoutInMilSec = 40000;
+    int controlFreqInHz = 50;  // Hz
+    int cycleTimeInMs = 1000 / controlFreqInHz;
+    int outOfControlBoundsTimeLimit = 10 * cycleTimeInMs;    // 10 cycles
+    int withinControlBoundsTimeReqmt = 100 * cycleTimeInMs;  // 100 cycles
+    int elapsedTimeInMs = 0;
+    int withinBoundsCounter = 0;
+    int outOfBounds = 0;
+    int brakeCounter = 0;
+    int speedFactor = 2;
 
-    //@todo: remove this once the getErrorCode function signature changes
-    char func[50];
-
-    startGlobalPositionBroadcast();
-    // Wait for data to come in
+    /* now we need position-height broadcast to obtain the real-time altitude of the aircraft, 
+    * which is consistent with the altitude closed-loop data of flight control internal position control
+    * TO DO:the data will be replaced by new data subscription.
+    */
+    if (!startGlobalPositionBroadcast())
+    {
+      return false;
+    }
     sleep(1);
 
-    // Get data
+    //! get origin position and relative height(from home point)of aircraft.
+    Telemetry::TypeMap<TOPIC_GPS_FUSED>::type originGPSPosition =
+        vehicle->subscribe->getValue<TOPIC_GPS_FUSED>();
+    Telemetry::GlobalPosition currentBroadcastGP = vehicle->broadcast->getGlobalPosition();
+    float32_t originHeightBaseHomepoint = currentBroadcastGP.height;
+    FlightController::JoystickMode joystickMode = {
+      FlightController::HorizontalLogic::HORIZONTAL_POSITION,
+      FlightController::VerticalLogic::VERTICAL_POSITION,
+      FlightController::YawLogic::YAW_ANGLE,
+      FlightController::HorizontalCoordinate::HORIZONTAL_GROUND,
+      FlightController::StableMode::STABLE_ENABLE,
+    };
+    vehicle->flightController->setJoystickMode(joystickMode);
 
-    // Global position retrieved via subscription
-    Telemetry::TypeMap<TOPIC_GPS_FUSED>::type currentSubscriptionGPS;
-    Telemetry::TypeMap<TOPIC_GPS_FUSED>::type originSubscriptionGPS;
-    // Global position retrieved via broadcast
-    Telemetry::GlobalPosition currentBroadcastGP;
-    Telemetry::GlobalPosition originBroadcastGP;
-
-    // Convert position offset from first position to local coordinates
-    Telemetry::Vector3f localOffset;
-
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
-    {
-      currentSubscriptionGPS = vehicle->subscribe->getValue<TOPIC_GPS_FUSED>();
-      originSubscriptionGPS  = currentSubscriptionGPS;
-      localOffsetFromGpsOffset(localOffset,
-                               static_cast<void*>(&currentSubscriptionGPS),
-                               static_cast<void*>(&originSubscriptionGPS));
-
-      // Get the broadcast GP since we need the height for zCmd
+    while (elapsedTimeInMs < timeoutInMilSec) {
+      Telemetry::TypeMap<TOPIC_GPS_FUSED>::type currentGPSPosition =
+          vehicle->subscribe->getValue<TOPIC_GPS_FUSED>();
+      Telemetry::TypeMap<TOPIC_QUATERNION>::type currentQuaternion =
+          vehicle->subscribe->getValue<TOPIC_QUATERNION>();
       currentBroadcastGP = vehicle->broadcast->getGlobalPosition();
-    }
-    else
-    {
-      currentBroadcastGP = vehicle->broadcast->getGlobalPosition();
-      originBroadcastGP  = currentBroadcastGP;
-      localOffsetFromGpsOffset(localOffset,
-                               static_cast<void*>(&currentBroadcastGP),
-                               static_cast<void*>(&originBroadcastGP));
-    }
+      float yawInRad = quaternionToEulerAngle(currentQuaternion).z;
+      //! get the vector between aircraft and origin point.
 
-    // Get initial offset. We will update this in a loop later.
-    double xOffsetRemaining = xOffsetDesired - localOffset.x;
-    double yOffsetRemaining = yOffsetDesired - localOffset.y;
-    double zOffsetRemaining = zOffsetDesired - localOffset.z;
+      Vector3f localOffset = localOffsetFromGpsAndFusedHeightOffset(currentGPSPosition, originGPSPosition,
+                                                                    currentBroadcastGP.height, originHeightBaseHomepoint);
+      //! get the vector between aircraft and target point.
+      Vector3f offsetRemaining = vector3FSub(offsetDesired, localOffset);
 
-    // Conversions
-    double yawDesiredRad     = DEG2RAD * yawDesired;
-    double yawThresholdInRad = DEG2RAD * yawThresholdInDeg;
+      Vector3f positionCommand = offsetRemaining;
+      horizCommandLimit(speedFactor, positionCommand.x, positionCommand.y);
 
-    //! Get Euler angle
+      FlightController::JoystickCommand joystickCommand = {
+          positionCommand.x, positionCommand.y,
+          offsetDesired.z + originHeightBaseHomepoint, yawDesiredInDeg};
 
-    // Quaternion retrieved via subscription
-    Telemetry::TypeMap<TOPIC_QUATERNION>::type subscriptionQ;
-    // Quaternion retrieved via broadcast
-    Telemetry::Quaternion broadcastQ;
+      vehicle->flightController->setJoystickCommand(joystickCommand);
 
-    double yawInRad;
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
-    {
-      subscriptionQ = vehicle->subscribe->getValue<TOPIC_QUATERNION>();
-      yawInRad = toEulerAngle((static_cast<void*>(&subscriptionQ))).z / DEG2RAD;
-    }
-    else
-    {
-      broadcastQ = vehicle->broadcast->getQuaternion();
-      yawInRad   = toEulerAngle((static_cast<void*>(&broadcastQ))).z / DEG2RAD;
-    }
+      vehicle->flightController->joystickAction();
 
-    int   elapsedTimeInMs     = 0;
-    int   withinBoundsCounter = 0;
-    int   outOfBounds         = 0;
-    int   brakeCounter        = 0;
-    int   speedFactor         = 2;
-    float xCmd, yCmd, zCmd;
-
-    /*! Calculate the inputs to send the position controller. We implement basic
-     *  receding setpoint position control and the setpoint is always 1 m away
-     *  from the current position - until we get within a threshold of the goal.
-     *  From that point on, we send the remaining distance as the setpoint.
-     */
-    if (xOffsetDesired > 0)
-      xCmd = (xOffsetDesired < speedFactor) ? xOffsetDesired : speedFactor;
-    else if (xOffsetDesired < 0)
-      xCmd =
-          (xOffsetDesired > -1 * speedFactor) ? xOffsetDesired : -1 * speedFactor;
-    else
-      xCmd = 0;
-
-    if (yOffsetDesired > 0)
-      yCmd = (yOffsetDesired < speedFactor) ? yOffsetDesired : speedFactor;
-    else if (yOffsetDesired < 0)
-      yCmd =
-          (yOffsetDesired > -1 * speedFactor) ? yOffsetDesired : -1 * speedFactor;
-    else
-      yCmd = 0;
-
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
-    {
-      zCmd = currentBroadcastGP.height + zOffsetDesired; //Since subscription cannot give us a relative height, use broadcast.
-    }
-    else
-    {
-      zCmd = currentBroadcastGP.height + zOffsetDesired;
-    }
-
-    //! Main closed-loop receding setpoint position control
-    while (elapsedTimeInMs < timeoutInMilSec)
-    {
-      vehicle->control->positionAndYawCtrl(xCmd, yCmd, zCmd,
-                                           yawDesiredRad / DEG2RAD);
-
-      usleep(cycleTimeInMs * 1000);
-      elapsedTimeInMs += cycleTimeInMs;
-
-      //! Get current position in required coordinates and units
-      if (!vehicle->isM100() && !vehicle->isLegacyM600())
-      {
-        subscriptionQ = vehicle->subscribe->getValue<TOPIC_QUATERNION>();
-        yawInRad      = toEulerAngle((static_cast<void*>(&subscriptionQ))).z;
-        currentSubscriptionGPS = vehicle->subscribe->getValue<TOPIC_GPS_FUSED>();
-        localOffsetFromGpsOffset(localOffset,
-                                 static_cast<void*>(&currentSubscriptionGPS),
-                                 static_cast<void*>(&originSubscriptionGPS));
-
-        // Get the broadcast GP since we need the height for zCmd
-        currentBroadcastGP = vehicle->broadcast->getGlobalPosition();
-      }
-      else
-      {
-        broadcastQ         = vehicle->broadcast->getQuaternion();
-        yawInRad           = toEulerAngle((static_cast<void*>(&broadcastQ))).z;
-        currentBroadcastGP = vehicle->broadcast->getGlobalPosition();
-        localOffsetFromGpsOffset(localOffset,
-                                 static_cast<void*>(&currentBroadcastGP),
-                                 static_cast<void*>(&originBroadcastGP));
-      }
-
-      //! See how much farther we have to go
-      xOffsetRemaining = xOffsetDesired - localOffset.x;
-      yOffsetRemaining = yOffsetDesired - localOffset.y;
-      zOffsetRemaining = zOffsetDesired - localOffset.z;
-
-      //! See if we need to modify the setpoint
-      if (std::abs(xOffsetRemaining) < speedFactor)
-      {
-        xCmd = xOffsetRemaining;
-      }
-      if (std::abs(yOffsetRemaining) < speedFactor)
-      {
-        yCmd = yOffsetRemaining;
-      }
-
-      if (vehicle->isM100() && std::abs(xOffsetRemaining) < posThresholdInM &&
-          std::abs(yOffsetRemaining) < posThresholdInM &&
-          std::abs(yawInRad - yawDesiredRad) < yawThresholdInRad)
-      {
+      if (vectorNorm(offsetRemaining) < posThresholdInM &&
+          std::fabs(yawInRad / DEG2RAD - yawDesiredInDeg) < yawThresholdInDeg) {
         //! 1. We are within bounds; start incrementing our in-bound counter
         withinBoundsCounter += cycleTimeInMs;
-      }
-      else if (std::abs(xOffsetRemaining) < posThresholdInM &&
-               std::abs(yOffsetRemaining) < posThresholdInM &&
-               std::abs(zOffsetRemaining) < posThresholdInM &&
-               std::abs(yawInRad - yawDesiredRad) < yawThresholdInRad)
-      {
-        //! 1. We are within bounds; start incrementing our in-bound counter
-        withinBoundsCounter += cycleTimeInMs;
-      }
-      else
-      {
-        if (withinBoundsCounter != 0)
-        {
+      } else {
+        if (withinBoundsCounter != 0) {
           //! 2. Start incrementing an out-of-bounds counter
           outOfBounds += cycleTimeInMs;
         }
       }
       //! 3. Reset withinBoundsCounter if necessary
-      if (outOfBounds > outOfControlBoundsTimeLimit)
-      {
+      if (outOfBounds > outOfControlBoundsTimeLimit) {
         withinBoundsCounter = 0;
-        outOfBounds         = 0;
+        outOfBounds = 0;
       }
       //! 4. If within bounds, set flag and break
-      if (withinBoundsCounter >= withinControlBoundsTimeReqmt)
-      {
+      if (withinBoundsCounter >= withinControlBoundsTimeReqmt) {
         break;
       }
+      usleep(cycleTimeInMs * 1000);
+      elapsedTimeInMs += cycleTimeInMs;
     }
 
-    //! Set velocity to zero, to prevent any residual velocity from position
-    //! command
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
+    while (brakeCounter < withinControlBoundsTimeReqmt) {
+      //! TODO: remove emergencyBrake
+      vehicle->flightController->emergencyBrakeAction();
+      usleep(cycleTimeInMs * 1000);
+      brakeCounter += cycleTimeInMs;
+    }
+
+    if (elapsedTimeInMs >= timeoutInMilSec) {
+      std::cout << "Task timeout!\n";
+      return false;
+    }
+    return true;
+  }
+
+  void VehicleWrapper::velocityAndYawRateCtrl(const JoystickCommand &JoystickCommand, int timeMs)
+  {
+
+    Vector3f offsetDesired;
+    offsetDesired.x = JoystickCommand.x;
+    offsetDesired.y = JoystickCommand.y;
+    offsetDesired.z = JoystickCommand.z;
+    float yawRate = JoystickCommand.yaw;
+
+    uint32_t originTime  = 0;
+    uint32_t currentTime = 0;
+    uint32_t elapsedTimeInMs = 0;
+    OsdkOsal_GetTimeMs(&originTime);
+    OsdkOsal_GetTimeMs(&currentTime);
+    elapsedTimeInMs = currentTime - originTime;
+
+    FlightController::JoystickMode joystickMode = {
+      FlightController::HorizontalLogic::HORIZONTAL_VELOCITY,
+      FlightController::VerticalLogic::VERTICAL_VELOCITY,
+      FlightController::YawLogic::YAW_RATE,
+      FlightController::HorizontalCoordinate::HORIZONTAL_GROUND,
+      FlightController::StableMode::STABLE_ENABLE,
+    };
+
+    vehicle->flightController->setJoystickMode(joystickMode);
+    FlightController::JoystickCommand joystickCommand = {offsetDesired.x, offsetDesired.y, offsetDesired.z,yawRate};
+    vehicle->flightController->setJoystickCommand(joystickCommand);
+
+    while(elapsedTimeInMs <= timeMs)
     {
-      while (brakeCounter < withinControlBoundsTimeReqmt)
+      vehicle->flightController->joystickAction();
+      usleep(20000);
+      OsdkOsal_GetTimeMs(&currentTime);
+      elapsedTimeInMs = currentTime - originTime;
+    }
+  }
+
+  bool VehicleWrapper::obtainReleaseCtrlAuthority(bool enableObtain, int timeout)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+
+    ACK::ErrorCode initAck;
+
+    if (enableObtain)
+    {
+      initAck = vehicle->control->obtainCtrlAuthority(timeout);
+    }
+    else
+    {
+      initAck = vehicle->control->releaseCtrlAuthority(timeout);
+    }
+
+    if (ACK::getError(initAck))
+    {
+      ACK::getErrorCodeMessage(initAck, __func__);
+      return false;
+    }
+
+    return true;
+  }
+
+  bool VehicleWrapper::turnOnOffMotors(bool OnOff,int timeOut)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+
+    if (OnOff)
+    {
+      ErrorCode::ErrorCodeType ack = vehicle->flightController->turnOnMotorsSync(timeOut);
+      if (ack == ErrorCode::SysCommonErr::Success)
       {
-        vehicle->control->emergencyBrake();
-        usleep(cycleTimeInMs * 10);
-        brakeCounter += cycleTimeInMs;
+          return true;
       }
     }
-
-    if (elapsedTimeInMs >= timeoutInMilSec)
+    else
     {
-      std::cout << "Task timeout!\n";
-      return ACK::FAIL;
+      ErrorCode::ErrorCodeType ack = vehicle->flightController->turnOffMotorsSync(timeOut);
+      if (ack == ErrorCode::SysCommonErr::Success)
+      {
+          return true;
+      }
     }
-    return ACK::SUCCESS;
+    
+    return false;
+  }
+
+  bool VehicleWrapper::killSwitch(bool enable, char msg[10], int timeOut)
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+
+    ErrorCode::ErrorCodeType ack;
+    if (enable)
+    {
+      ack = vehicle->flightController->killSwitch(DJI::OSDK::FlightActions::KillSwitch::ENABLE,
+                                                  timeOut, msg);
+    }
+    else
+    {
+      ack = vehicle->flightController->killSwitch(DJI::OSDK::FlightActions::KillSwitch::DISABLE,
+                                                  timeOut, msg);
+    }
+
+    if (ack == ErrorCode::SysCommonErr::Success)
+    {
+      return true;
+    }
+
+    return false;
+  }
+
+  bool VehicleWrapper::emergencyBrake()
+  {
+    if (!vehicle)
+    {
+      std::cout << "Vehicle is a null value!" << std::endl;
+      return false;
+    }
+
+    vehicle->flightController->emergencyBrakeAction();
+
+    return true;
   }
 
   bool VehicleWrapper::startGlobalPositionBroadcast()
@@ -1708,62 +1894,6 @@ static T_OsdkOsalHandler osalHandler = {
     {
       return true;
     }
-  }
-
-  void VehicleWrapper::localOffsetFromGpsOffset(Telemetry::Vector3f& deltaNed, void* target, void* origin)
-  {
-    Telemetry::GPSFused*       subscriptionTarget;
-    Telemetry::GPSFused*       subscriptionOrigin;
-    Telemetry::GlobalPosition* broadcastTarget;
-    Telemetry::GlobalPosition* broadcastOrigin;
-    double                     deltaLon;
-    double                     deltaLat;
-
-    if (!vehicle->isM100() && !vehicle->isLegacyM600())
-    {
-      subscriptionTarget = (Telemetry::GPSFused*)target;
-      subscriptionOrigin = (Telemetry::GPSFused*)origin;
-      deltaLon   = subscriptionTarget->longitude - subscriptionOrigin->longitude;
-      deltaLat   = subscriptionTarget->latitude - subscriptionOrigin->latitude;
-      deltaNed.x = deltaLat * C_EARTH;
-      deltaNed.y = deltaLon * C_EARTH * cos(subscriptionTarget->latitude);
-      deltaNed.z = subscriptionTarget->altitude - subscriptionOrigin->altitude;
-    }
-    else
-    {
-      broadcastTarget = (Telemetry::GlobalPosition*)target;
-      broadcastOrigin = (Telemetry::GlobalPosition*)origin;
-      deltaLon        = broadcastTarget->longitude - broadcastOrigin->longitude;
-      deltaLat        = broadcastTarget->latitude - broadcastOrigin->latitude;
-      deltaNed.x      = deltaLat * C_EARTH;
-      deltaNed.y      = deltaLon * C_EARTH * cos(broadcastTarget->latitude);
-      deltaNed.z      = broadcastTarget->altitude - broadcastOrigin->altitude;
-    }
-  }
-
-  Telemetry::Vector3f VehicleWrapper::toEulerAngle(void* quaternionData)
-  {
-    Telemetry::Vector3f    ans;
-    Telemetry::Quaternion* quaternion = (Telemetry::Quaternion*)quaternionData;
-
-    double q2sqr = quaternion->q2 * quaternion->q2;
-    double t0    = -2.0 * (q2sqr + quaternion->q3 * quaternion->q3) + 1.0;
-    double t1 =
-      +2.0 * (quaternion->q1 * quaternion->q2 + quaternion->q0 * quaternion->q3);
-    double t2 =
-      -2.0 * (quaternion->q1 * quaternion->q3 - quaternion->q0 * quaternion->q2);
-    double t3 =
-      +2.0 * (quaternion->q2 * quaternion->q3 + quaternion->q0 * quaternion->q1);
-    double t4 = -2.0 * (quaternion->q1 * quaternion->q1 + q2sqr) + 1.0;
-
-    t2 = (t2 > 1.0) ? 1.0 : t2;
-    t2 = (t2 < -1.0) ? -1.0 : t2;
-
-    ans.x = asin(t2);
-    ans.y = atan2(t3, t4);
-    ans.z = atan2(t1, t0);
-
-    return ans;
   }
 
   GimbalSingleData VehicleWrapper::getGimbalData(const PayloadIndex& payloadIndex)
@@ -1846,6 +1976,32 @@ static T_OsdkOsalHandler osalHandler = {
     }
 
     return true;
+  }
+
+  bool VehicleWrapper::getBatteryWholeInfo(DJI::OSDK::BatteryWholeInfo& batteryWholeInfo)
+  {
+    if (!vehicle) {
+      DERROR("vehicle is a null value");
+      return false;
+    }
+    bool result = true;
+
+    result &= vehicle->djiBattery->subscribeBatteryWholeInfo(true);
+    OsdkOsal_TaskSleepMs(500);
+    result &= vehicle->djiBattery->getBatteryWholeInfo(batteryWholeInfo);
+
+    return result;
+  }
+
+  bool VehicleWrapper::getSingleBatteryDynamicInfo(const DJI::OSDK::DJIBattery::RequestSmartBatteryIndex batteryIndex,
+                                                   DJI::OSDK::SmartBatteryDynamicInfo& batteryDynamicInfo)
+  {
+    if (!vehicle) {
+      DERROR("vehicle is a null value");
+      return false;
+    }
+
+    return vehicle->djiBattery->getSingleBatteryDynamicInfo(batteryIndex, batteryDynamicInfo);
   }
 
   uint8_t VehicleWrapper::outputMFIO(uint8_t mode, uint8_t channel, uint32_t init_on_time_us, uint16_t freq, bool block, uint8_t gpio_set_value)
@@ -2160,6 +2316,62 @@ bool VehicleWrapper::RegisterMissionStateCallback(void *userData, PushCallback c
   }
   vehicle->waypointV2Mission->RegisterMissionStateCallback(userData, cb);
 
+  return true;
+}
+
+bool VehicleWrapper::enableSubscribeHMSInfo(bool enable, uint32_t timeOutMs)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  return vehicle->djiHms->subscribeHMSInf(enable, timeOutMs);
+}
+
+bool VehicleWrapper::getHMSListInfo(HMSPushPacket& hmsPushPacket)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  DJI::OSDK::HMSPushPacket tempHMSPushPacket;
+  tempHMSPushPacket = vehicle->djiHms->getHMSPushPacket();
+
+  hmsPushPacket.timeStamp = tempHMSPushPacket.timeStamp;
+  hmsPushPacket.hmsPushData.msgVersion = tempHMSPushPacket.hmsPushData.msgVersion;
+  hmsPushPacket.hmsPushData.msgIndex = tempHMSPushPacket.hmsPushData.msgIndex;
+  hmsPushPacket.hmsPushData.msgEnd = tempHMSPushPacket.hmsPushData.msgEnd;
+  hmsPushPacket.hmsPushData.globalIndex = tempHMSPushPacket.hmsPushData.globalIndex;
+  if (tempHMSPushPacket.hmsPushData.errList.size())
+  {
+    hmsPushPacket.hmsPushData.errList.clear();
+    hmsPushPacket.hmsPushData.errList.resize(tempHMSPushPacket.hmsPushData.errList.size());
+
+    for (int i = 0; i < hmsPushPacket.hmsPushData.errList.size(); i++)
+    {
+      hmsPushPacket.hmsPushData.errList[i].alarmID     = tempHMSPushPacket.hmsPushData.errList[i].alarmID;
+      hmsPushPacket.hmsPushData.errList[i].reportLevel = tempHMSPushPacket.hmsPushData.errList[i].reportLevel;
+      hmsPushPacket.hmsPushData.errList[i].sensorIndex = tempHMSPushPacket.hmsPushData.errList[i].sensorIndex;
+      //DSTATUS("0x%08x,%d,%d", hmsPushPacket.hmsPushData.errList[i].alarmID, hmsPushPacket.hmsPushData.errList[i].sensorIndex,
+      //hmsPushPacket.hmsPushData.errList[i].reportLevel);
+    }
+  }
+  return true;
+}
+
+bool VehicleWrapper::getHMSDeviceIndex(uint8_t& deviceIndex)
+{
+  if (!vehicle)
+  {
+    std::cout << "Vehicle is a null value!" << std::endl;
+    return false;
+  }
+
+  deviceIndex = vehicle->djiHms->getDeviceIndex();
   return true;
 }
 
