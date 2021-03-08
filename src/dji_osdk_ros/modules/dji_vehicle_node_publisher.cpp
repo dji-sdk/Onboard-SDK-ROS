@@ -815,7 +815,41 @@ void VehicleNode::publishVGAStereoImage(Vehicle*            vehicle,
   img.header.frame_id = "vga_right";
   memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[1], 480*640);
   node_ptr->stereo_vga_front_right_publisher_.publish(img);
+  node_ptr->publishCameraInfo(img.header);
+  
 }
+
+#ifdef ADVANCED_SENSING	
+void VehicleNode::publishCameraInfo(const std_msgs::Header &header)
+{	
+	static bool isFirstTime = true;
+	
+	static sensor_msgs::CameraInfo left_camera_info;
+	static sensor_msgs::CameraInfo right_camera_info;
+			
+	if(isFirstTime)
+	{
+		left_camera_info.distortion_model = right_camera_info.distortion_model = "plumb_bob";
+		left_camera_info.width = right_camera_info.width = 640;
+		left_camera_info.height = right_camera_info.height = 480;
+			
+
+		Vehicle* vehicle = ptr_wrapper_->getVehicle();
+		M300StereoParamTool *tool = new M300StereoParamTool(vehicle);
+		Perception::CamParamType stereoParam = tool->getM300stereoParams(Perception::DirectionType::RECTIFY_FRONT);
+	
+		tool->getM300stereoCameraInfo(stereoParam, left_camera_info, right_camera_info);
+		isFirstTime = false;
+	}
+		
+	left_camera_info.header = right_camera_info.header = header;
+	left_camera_info.header.frame_id = "left_camera";
+	right_camera_info.header.frame_id = "right_camera";
+	left_camera_info_pub_.publish(left_camera_info);
+	right_camera_info_pub_.publish(right_camera_info);
+
+}
+#endif
 
 void VehicleNode::publishMainCameraImage(CameraRGBImage rgbImg, void* userData)
 {

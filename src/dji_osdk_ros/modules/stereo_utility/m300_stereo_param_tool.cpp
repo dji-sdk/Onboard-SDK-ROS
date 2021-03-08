@@ -58,6 +58,71 @@ void M300StereoParamTool::PerceptionCamParamCB(
     }
 }
 
+void M300StereoParamTool::getM300stereoCameraInfo(Perception::CamParamType param, sensor_msgs::CameraInfo &left,
+  sensor_msgs::CameraInfo &right)
+{
+		DoubleCamParamType doubleCameraParams;
+  	doubleCameraParams.direction = param.direction;
+  
+  	/*! Convert float camera parameters matrix to be double matrix */
+		for (int i = 0; i < sizeof(param.leftIntrinsics); i++) 
+		{
+		  doubleCameraParams.leftIntrinsics[i] = (double)param.leftIntrinsics[i];
+		  doubleCameraParams.rightIntrinsics[i] = (double)param.rightIntrinsics[i];
+		  doubleCameraParams.rotaionLeftInRight[i] = (double)param.rotaionLeftInRight[i];
+		}
+  	  for (int i = 0; i < sizeof(param.translationLeftInRight); i++)
+    doubleCameraParams.translationLeftInRight[i] = (double)param.translationLeftInRight[i];
+
+		cv::Mat leftCameraIntrinsicMatrix(3, 3, CV_64F, doubleCameraParams.leftIntrinsics);
+		cv::Mat rightCameraIntrinsicMatrix(3, 3, CV_64F, doubleCameraParams.rightIntrinsics);
+		
+
+		//cv::Mat leftDistCoeffs = cv::Mat::zeros(5, 1, CV_64F);
+		//cv::Mat rightDistCoeffs = cv::Mat::zeros(5, 1, CV_64F);
+		//loading the distortion matrix
+		left.D = std::vector<double>(5,0.0);
+		right.D = std::vector<double>(5,0.0);
+		
+		cv::Mat leftRectificationMatrix = cv::Mat::eye(3, 3, CV_64F);
+		cv::Mat rightRectificationMatrix = cv::Mat::eye(3, 3, CV_64F);
+		cv::Mat translationLeftInRight(3, 1, CV_64F, doubleCameraParams.translationLeftInRight);
+		cv::Mat leftProjectionMatrix(leftCameraIntrinsicMatrix.rows, leftCameraIntrinsicMatrix.cols + translationLeftInRight.cols, CV_64F);
+		cv::hconcat(leftCameraIntrinsicMatrix, translationLeftInRight, leftProjectionMatrix);
+		cv::Mat rightProjectionMatrix(rightCameraIntrinsicMatrix.rows, rightCameraIntrinsicMatrix.cols + translationLeftInRight.cols, CV_64F);
+		cv::hconcat(rightCameraIntrinsicMatrix, translationLeftInRight, rightProjectionMatrix);
+		
+		//loading the rectification matrix
+		for(int r = 0; r < leftRectificationMatrix.rows; r++)
+		{
+			for(int c = 0; c < leftRectificationMatrix.cols; c++)
+			{
+				left.R[r*leftCameraIntrinsicMatrix.cols + c] = leftRectificationMatrix.at<double>(r,c);
+				right.R[r*rightRectificationMatrix.cols + c] = rightRectificationMatrix.at<double>(r,c);
+			}
+		}
+		
+		//loading the camera intrinsic matrix
+		for(int r = 0; r < leftCameraIntrinsicMatrix.rows; r++)
+		{
+			for(int c = 0; c < leftCameraIntrinsicMatrix.cols; c++)
+			{
+				left.K[r*leftCameraIntrinsicMatrix.cols + c] = leftCameraIntrinsicMatrix.at<double>(r,c);
+				right.K[r*rightCameraIntrinsicMatrix.cols + c] = rightCameraIntrinsicMatrix.at<double>(r,c);
+			}
+		}
+		
+		//loading the projection matrix
+		for(int r = 0; r < leftProjectionMatrix.rows; r++)
+		{
+			for(int c = 0; c < leftProjectionMatrix.cols; c++)
+			{
+				left.P[r*leftProjectionMatrix.cols + c] = leftProjectionMatrix.at<double>(r,c);
+				right.P[r*rightProjectionMatrix.cols + c] = rightProjectionMatrix.at<double>(r,c);
+			}
+		}
+}
+
 bool M300StereoParamTool::createStereoParamsYamlFile(std::string fileName,
                                                      Perception::CamParamType param) {
   DoubleCamParamType doubleCameraParams;

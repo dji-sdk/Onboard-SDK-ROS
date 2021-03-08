@@ -170,6 +170,10 @@
 #include <dji_osdk_ros/WaypointV2MissionEventPush.h>
 #include <dji_osdk_ros/WaypointV2MissionStatePush.h>
 
+#include <sensor_msgs/CameraInfo.h>
+
+#include <dji_osdk_ros/stereo_utility/m300_stereo_param_tool.hpp>
+
 #define C_EARTH (double)6378137.0
 #define C_PI (double)3.141592653589793
 #define DEG2RAD(DEG) ((DEG) * ((C_PI) / (180.0)))
@@ -197,6 +201,9 @@ namespace dji_osdk_ros
       bool initTopic();
       bool initDataSubscribeFromFC();
       bool cleanUpSubscribeFromFC();
+#ifdef ADVANCED_SENSING
+			void publishCameraInfo(const std_msgs::Header &header);
+#endif
     protected:
       /*! services */
       /*! for general */
@@ -332,6 +339,9 @@ namespace dji_osdk_ros
       ros::Publisher stereo_240p_front_depth_publisher_;
       ros::Publisher stereo_vga_front_left_publisher_;
       ros::Publisher stereo_vga_front_right_publisher_;
+      ros::Publisher left_camera_info_pub_;
+      ros::Publisher right_camera_info_pub_; 
+      ros::Timer info_timer_;
       #endif
 
       //waypointV2
@@ -339,6 +349,8 @@ namespace dji_osdk_ros
       ros::Publisher waypointV2_mission_event_publisher_;
 
     protected:
+    
+    	void initTimer();
       /*! for general */
       bool getDroneTypeCallback(dji_osdk_ros::GetDroneType::Request &request,
                                 dji_osdk_ros::GetDroneType::Response &response);
@@ -413,6 +425,10 @@ namespace dji_osdk_ros
       bool getM300StereoParamsCallback(dji_osdk_ros::GetM300StereoParams::Request& request,
                                        dji_osdk_ros::GetM300StereoParams::Response& response);
       void publishAdvancedSeningData();
+      
+      //void infoTimerCB(const ros::TimerEvent &even);
+      
+      
 #endif
       /*! for mission service callback*/
       // mission manager

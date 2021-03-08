@@ -241,7 +241,7 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
 
   //TODO: publish gps detail data if needed
   Telemetry::TypeMap<Telemetry::TOPIC_BATTERY_INFO>::type battery_info=
-    vehicle->subscribe->getValue<Telemetry::TOPIC_BATTERY_INFO>();
+    vehicle->subscribe->getValue<Tele/points2metry::TOPIC_BATTERY_INFO>();
   sensor_msgs::BatteryState msg_battery_state;
   msg_battery_state.header.stamp = msg_time;
   msg_battery_state.capacity = battery_info.capacity;
@@ -279,7 +279,7 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     sensor_msgs::NavSatFix rtk_position;
     rtk_position.header.stamp = msg_time;
     rtk_position.latitude = rtk_telemetry_position.latitude;
-    rtk_position.longitude = rtk_telemetry_position.longitude;
+    rtk_position.longitude = rtk_telem/points2etry_position.longitude;
     rtk_position.altitude = rtk_telemetry_position.HFSL;
     p->rtk_position_publisher.publish(rtk_position);
 
@@ -396,7 +396,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   std_msgs::Float32 height;
   height.data = fused_height;
   p->height_publisher.publish(height);
-
+/points2
   Telemetry::TypeMap<Telemetry::TOPIC_STATUS_FLIGHT>::type fs =
     vehicle->subscribe->getValue<Telemetry::TOPIC_STATUS_FLIGHT>();
 
@@ -433,7 +433,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
 
   geometry_msgs::Vector3Stamped gimbal_angle_vec3;
 
-  gimbal_angle_vec3.header.stamp = ros::Time::now();
+  gimbal_angle_vec3.header.stamp = ros::Time::now()/points2;
   gimbal_angle_vec3.vector.x     = gimbal_angle.x;
   gimbal_angle_vec3.vector.y     = gimbal_angle.y;
   gimbal_angle_vec3.vector.z     = gimbal_angle.z;
@@ -793,6 +793,47 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
 }
 
 #ifdef ADVANCED_SENSING
+void DJISDKNode::publishCameraInfo(const std_msgs::Header &header)
+{	
+	static bool isFirstTime = true;
+	
+	static sensor_msgs::CameraInfo left_camera_info;
+	static sensor_msgs::CameraInfo right_camera_info;
+			
+	if(isFirstTime)
+	{
+		left_camera_info.distortion_model = right_camera_info.distortion_model = "plumb_bob";
+		left_camera_info.width = right_camera_info.width = 640;
+		left_camera_info.height = right_camera_info.height = 480;
+			
+
+		//Vehicle* vehicle = ptr_wrapper_->getVehicle();
+		//M300StereoParamTool *tool = new M300StereoParamTool(vehicle);
+		//Perception::CamParamType stereoParam = tool->getM300stereoParams(Perception::DirectionType::RECTIFY_FRONT);
+	
+		//tool->getM300stereoCameraInfo(stereoParam, left_camera_info, right_camera_info);
+		
+		//TODO: replace the following with yaml file reader
+		left_camera_info.D = std::vector<double>(5,0.0);
+		right_camera_info.D = std::vector<double>(5,0.0);
+		
+		left_camera_info.K = right_camera_info.K = {488.5599365234375, 0.0, 319.80328369140625, 0.0, 488.5599365234375, 239.97528076171875, 0.0, 0.0, 1.0};
+		
+		left_camera_info.R = right_camera_info.R = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+		
+		left_camera_info.P = right_camera_info.P = {488.5599365234375, 0.0, 319.80328369140625, -99.43592071533203, 0.0, 488.5599365234375, 239.97528076171875, 0.0, 0.0, 0.0, 1.0, 0.0};
+		
+		isFirstTime = false;
+	}
+		
+	left_camera_info.header = right_camera_info.header = header;
+	left_camera_info.header.frame_id = "left_camera";
+	right_camera_info.header.frame_id = "right_camera";
+	left_camera_info_pub_.publish(left_camera_info);
+	right_camera_info_pub_.publish(right_camera_info);
+
+}
+
 void DJISDKNode::publish240pStereoImage(Vehicle*            vehicle,
                                         RecvContainer       recvFrame,
                                         DJI::OSDK::UserData userData)
@@ -860,6 +901,8 @@ void DJISDKNode::publishVGAStereoImage(Vehicle*            vehicle,
   img.header.frame_id = "vga_right";
   memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[1], 480*640);
   node_ptr->stereo_vga_front_right_publisher.publish(img);
+  
+  node_ptr->publishCameraInfo(img.header);
 }
 
 void DJISDKNode::publishFPVCameraImage(CameraRGBImage rgbImg, void* userData)

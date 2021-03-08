@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+	<remap from="/left/image_raw" to="/dji_osdk_ros/stereo_vga/left/image_raw"/>
+	<remap from="/left/camera_info" to="/dji_osdk_ros/stereo_vga/left/camera_info"/>
+	<remap from="/right/image_raw" to="/dji_osdk_ros/stereo_vga/right/image_raw"/>
+	<remap from="/right/camera_info" to="/dji_osdk_ros/stereo_vga/right/camera_info"/>
+	<node pkg="stereo_image_proc" type="stereo_image_proc" name="stereo_image_proc"/>
+</launch>

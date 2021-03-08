@@ -77,6 +77,7 @@
 #include <dji_osdk_ros/StereoDepthSubscription.h>
 #include <dji_osdk_ros/StereoVGASubscription.h>
 #include <dji_osdk_ros/SetupCameraStream.h>
+#include <sensor_msgs/CameraInfo.h>
 #endif
 
 //! SDK library
@@ -229,6 +230,7 @@ private:
                                      dji_osdk_ros::StereoVGASubscription::Response& response);
   bool setupCameraStreamCallback(dji_osdk_ros::SetupCameraStream::Request&  request,
                                  dji_osdk_ros::SetupCameraStream::Response& response);
+  void publishCameraInfo(const std_msgs::Header &header);
 #endif
 
   //! data broadcast callback
@@ -343,6 +345,8 @@ private:
   ros::ServiceServer subscribe_stereo_depth_server;
   ros::ServiceServer subscribe_stereo_vga_server;
   ros::ServiceServer camera_stream_server;
+  ros::Publisher left_camera_info_pub_;
+ 	ros::Publisher right_camera_info_pub_; 
 #endif
 
   //! flight control subscribers

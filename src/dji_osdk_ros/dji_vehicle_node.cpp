@@ -30,11 +30,16 @@
 #include <dji_osdk_ros/dji_vehicle_node.h>
 #include <dji_osdk_ros/vehicle_wrapper.h>
 
-#ifdef OPEN_CV_INSTALLED
+/*#ifdef OPEN_CV_INSTALLED
 #include <dji_osdk_ros/stereo_utility/m300_stereo_param_tool.hpp>
+#endif*/
+#include <dji_osdk_ros/stereo_utility/m300_stereo_param_tool.hpp>
+#include <vector>
+
+#ifdef ADVANCED_SENSING
+#include <sensor_msgs/CameraInfo.h>
 #endif
 
-#include <vector>
 //CODE
 using namespace dji_osdk_ros;
 #define M300_FRONT_STEREO_PARAM_YAML_NAME "m300_front_stereo_param.yaml"
@@ -83,6 +88,7 @@ VehicleNode::VehicleNode():telemetry_from_fc_(TelemetryType::USE_ROS_BROADCAST),
   initCameraModule();
   initService();
   initTopic();
+  initTimer();
 }
 
 VehicleNode::~VehicleNode()
@@ -271,6 +277,7 @@ void VehicleNode::initService()
   subscribe_stereo_240p_server_  = nh_.advertiseService("stereo_240p_subscription",   &VehicleNode::stereo240pSubscriptionCallback, this);
   subscribe_stereo_depth_server_ = nh_.advertiseService("stereo_depth_subscription",  &VehicleNode::stereoDepthSubscriptionCallback,this);
   subscribe_stereo_vga_server_   = nh_.advertiseService("stereo_vga_subscription",    &VehicleNode::stereoVGASubscriptionCallback,  this);
+  get_m300_stereo_params_server_ = nh_.advertiseService("get_m300_stereo_params", &VehicleNode::getM300StereoParamsCallback, this);
 #ifdef OPEN_CV_INSTALLED
   /*! @brief
    *  get m300 stereo params server
@@ -321,6 +328,14 @@ void VehicleNode::initService()
 
   ROS_INFO_STREAM("Services startup!");
 }
+
+void VehicleNode::initTimer()
+{
+#ifdef ADVANCED_SENSING
+	//info_timer_ = nh_.createTimer(ros::Duration(0.05), &VehicleNode::infoTimerCB, this);
+#endif
+}
+
 
 bool VehicleNode::initTopic()
 {
@@ -396,8 +411,11 @@ bool VehicleNode::initTopic()
   stereo_240p_down_front_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_down_front_images", 10);
   stereo_240p_down_back_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_down_back_images", 10);
   stereo_240p_front_depth_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_depth_images", 10);
-  stereo_vga_front_left_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front_left_images", 10);
-  stereo_vga_front_right_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front_right_images", 10);
+  stereo_vga_front_left_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front/left/image_raw", 10);
+  stereo_vga_front_right_publisher_ = nh_.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front/right/image_raw", 10);
+  left_camera_info_pub_ = nh_.advertise<sensor_msgs::CameraInfo>("/dji_osdk_ros/stereo_vga_front/left/camera_info",10);
+  right_camera_info_pub_ = nh_.advertise<sensor_msgs::CameraInfo>("/dji_osdk_ros/stereo_vga_front/right/camera_info",10);
+  
   #endif
 
   waypointV2_mission_state_publisher_ = nh_.advertise<dji_osdk_ros::WaypointV2MissionStatePush>("dji_osdk_ros/waypointV2_mission_state", 10);
@@ -914,8 +932,6 @@ bool VehicleNode::stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscript
 
   return true;
 }
-
-#ifdef OPEN_CV_INSTALLED
 bool VehicleNode::getM300StereoParamsCallback(dji_osdk_ros::GetM300StereoParams::Request& request, 
                                               dji_osdk_ros::GetM300StereoParams::Response& response)
 {
@@ -943,6 +959,34 @@ bool VehicleNode::getM300StereoParamsCallback(dji_osdk_ros::GetM300StereoParams:
 
   return response.result;
 }
+#ifdef OPEN_CV_INSTALLED
+/*bool VehicleNode::getM300StereoParamsCallback(dji_osdk_ros::GetM300StereoParams::Request& request, 
+                                              dji_osdk_ros::GetM300StereoParams::Response& response)
+{
+  ROS_INFO("called getM300StereoParamsCallback");
+
+  if(ptr_wrapper_ == nullptr)
+  {
+    ROS_ERROR_STREAM("Vehicle modules is nullptr");
+    response.result = false;
+  }
+
+  Vehicle* vehicle = ptr_wrapper_->getVehicle();
+  M300StereoParamTool *tool = new M300StereoParamTool(vehicle);
+  Perception::CamParamType stereoParam =
+      tool->getM300stereoParams(Perception::DirectionType::RECTIFY_FRONT);
+  if (tool->createStereoParamsYamlFile(M300_FRONT_STEREO_PARAM_YAML_NAME, stereoParam))
+  {
+    tool->setParamFileForM300(M300_FRONT_STEREO_PARAM_YAML_NAME);
+    response.result = true;
+  }
+  else
+  {
+    response.result = false;
+  }
+
+  return response.result;
+}*/
 #endif
 #endif
 
