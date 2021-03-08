@@ -241,7 +241,7 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
 
   //TODO: publish gps detail data if needed
   Telemetry::TypeMap<Telemetry::TOPIC_BATTERY_INFO>::type battery_info=
-    vehicle->subscribe->getValue<Tele/points2metry::TOPIC_BATTERY_INFO>();
+    vehicle->subscribe->getValue<Telemetry::TOPIC_BATTERY_INFO>();
   sensor_msgs::BatteryState msg_battery_state;
   msg_battery_state.header.stamp = msg_time;
   msg_battery_state.capacity = battery_info.capacity;
@@ -279,7 +279,7 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     sensor_msgs::NavSatFix rtk_position;
     rtk_position.header.stamp = msg_time;
     rtk_position.latitude = rtk_telemetry_position.latitude;
-    rtk_position.longitude = rtk_telem/points2etry_position.longitude;
+    rtk_position.longitude = rtk_telemetry_position.longitude;
     rtk_position.altitude = rtk_telemetry_position.HFSL;
     p->rtk_position_publisher.publish(rtk_position);
 
@@ -396,7 +396,6 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   std_msgs::Float32 height;
   height.data = fused_height;
   p->height_publisher.publish(height);
-/points2
   Telemetry::TypeMap<Telemetry::TOPIC_STATUS_FLIGHT>::type fs =
     vehicle->subscribe->getValue<Telemetry::TOPIC_STATUS_FLIGHT>();
 
@@ -433,7 +432,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
 
   geometry_msgs::Vector3Stamped gimbal_angle_vec3;
 
-  gimbal_angle_vec3.header.stamp = ros::Time::now()/points2;
+  gimbal_angle_vec3.header.stamp = ros::Time::now();
   gimbal_angle_vec3.vector.x     = gimbal_angle.x;
   gimbal_angle_vec3.vector.y     = gimbal_angle.y;
   gimbal_angle_vec3.vector.z     = gimbal_angle.z;

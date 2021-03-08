@@ -394,6 +394,8 @@ DJISDKNode::stereoDepthSubscriptionCallback(dji_osdk_ros::StereoDepthSubscriptio
   return true;
 }
 
+
+
 bool
 DJISDKNode::stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscription::Request&  request,
                                           dji_osdk_ros::StereoVGASubscription::Response& response)
@@ -402,9 +404,10 @@ DJISDKNode::stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscription::R
 
   if (request.unsubscribe_vga == 1)
   {
-    vehicle->advancedSensing->unsubscribeVGAImages();
+    vehicle->advancedSensing->unsubscribeVGAImages(request.front_vga);
     response.result = true;
     ROS_INFO("unsubscribe stereo vga images");
+    latest_camera_ = -1;
     return true;
   }
 
@@ -415,17 +418,37 @@ DJISDKNode::stereoVGASubscriptionCallback(dji_osdk_ros::StereoVGASubscription::R
     response.result = false;
     return true;
   }
-
-  if (request.front_vga == 1)
+	
+	
+	/* In this version of the function, request.front_vga represent the side of the camera according to the followings 	
+	 *	1 ---------------------> front
+   *	2 ---------------------> left
+   *	3 ---------------------> right
+   *	4 ---------------------> rear
+   *	5 ---------------------> down
+   *	6 ---------------------> top 
+   */
+  if (request.front_vga > 0 && request.front_vga <= 6)
   {
+  	//un-subscribe from the previous stream first
+  	if(request.front_vga != latest_camera_ && latest_camera_ > 0)
+  	{
+  		vehicle->advancedSensing->unsubscribeVGAImages(latest_camera_);
+		  ROS_INFO("unsubscribe stereo vga images");
+		  latest_camera_ = -1;
+		  ros::Duration(1).sleep();
+  	}
+  
     this->stereo_vga_subscription_success = false;
-    vehicle->advancedSensing->subscribeFrontStereoVGA(request.vga_freq, &publishVGAStereoImage, this);
+    vehicle->advancedSensing->subscribeFrontStereoVGA(request.vga_freq, request.front_vga, &publishVGAStereoImage, this);
     ros::Duration(1).sleep();
   }
 
   if (this->stereo_vga_subscription_success == true)
   {
     response.result = true;
+    //if the service call returns success, only then update the buffer
+    latest_camera_ = request.front_vga;
   }
   else
   {

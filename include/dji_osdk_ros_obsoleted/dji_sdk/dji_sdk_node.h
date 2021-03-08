@@ -299,6 +299,11 @@ private:
 #endif
 
 private:
+
+#ifdef ADVANCED_SENSING
+	int latest_camera_ = {-1};
+#endif	
+	
   //! OSDK core
   Vehicle* vehicle;
   LinuxSetup* linuxEnvironment;

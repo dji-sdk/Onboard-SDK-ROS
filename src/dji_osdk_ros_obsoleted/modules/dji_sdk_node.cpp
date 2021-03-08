@@ -77,6 +77,15 @@ DJISDKNode::~DJISDKNode()
   {
     cleanUpSubscribeFromFC();
   }
+
+#ifdef ADVANCED_SENSING
+	if(latest_camera_ > 0)
+	{
+		vehicle->advancedSensing->unsubscribeVGAImages(latest_camera_);
+		ROS_INFO("Unsubscribed from the VGA Stream");
+	}
+#endif
+
   if (vehicle)
   {
     delete vehicle;
