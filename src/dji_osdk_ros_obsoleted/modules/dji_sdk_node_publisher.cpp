@@ -792,6 +792,50 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
 }
 
 #ifdef ADVANCED_SENSING
+
+sensor_msgs::CameraInfo DJISDKNode::getCameraInfo(int camera_select)
+{
+	sensor_msgs::CameraInfo cam_info;
+	
+	cam_info.width = 640;
+	cam_info.height = 480;
+	
+	cam_info.distortion_model = "plumb_bob";
+	
+	cam_info.D = std::vector<double>(5,0.0);
+	
+	switch(camera_select)
+	{
+		//front camera
+		case 1:
+		{
+			cam_info.K = {407.1327819824219, 0, 321.8077392578125, 0.0, 407.1327819824219, 236.9904937744141, 0.0, 0.0, 1.0};
+			cam_info.R = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+			cam_info.P = {407.1327819824219, 0, 321.8077392578125, -116.0410842895508, 0.0, 407.1327819824219, 236.9904937744141, 0.0, 0.0, 0.0, 1.0, 0.0};
+			break;
+		}
+		//left camera
+		case 2:
+		{
+			cam_info.K = {488.5599365234375, 0.0, 319.80328369140625, 0.0, 488.5599365234375, 239.97528076171875, 0.0, 0.0, 1.0};
+			cam_info.R = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+			cam_info.P = {488.5599365234375, 0.0, 319.80328369140625, -99.43592071533203, 0.0, 488.5599365234375, 239.97528076171875, 0.0, 0.0, 0.0, 1.0, 0.0};
+			break;
+		}
+		//up camera
+		case 6:
+		{
+			cam_info.K = {405.4823913574219, 0.0, 322.5506896972656, 0.0, 405.4823913574219, 240.0494689941406, 0.0, 0.0, 1.0};
+			cam_info.R = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+			cam_info.P = {405.4823913574219, 0.0, 322.5506896972656, 0.0, 0.0, 405.4823913574219, 240.0494689941406, 96.79345703125, 0.0, 0.0, 1.0, 0.0};
+			break;
+		}
+	}
+	
+	
+	return cam_info;
+}
+
 void DJISDKNode::publishCameraInfo(const std_msgs::Header &header)
 {	
 	static bool isFirstTime = true;

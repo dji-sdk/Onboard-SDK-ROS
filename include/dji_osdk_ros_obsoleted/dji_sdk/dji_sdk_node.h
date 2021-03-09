@@ -231,6 +231,8 @@ private:
   bool setupCameraStreamCallback(dji_osdk_ros::SetupCameraStream::Request&  request,
                                  dji_osdk_ros::SetupCameraStream::Response& response);
   void publishCameraInfo(const std_msgs::Header &header);
+  
+  sensor_msgs::CameraInfo getCameraInfo(int camera_select);
 #endif
 
   //! data broadcast callback
