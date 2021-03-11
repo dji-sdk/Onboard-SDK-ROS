@@ -78,6 +78,7 @@
 #include <dji_osdk_ros/StereoVGASubscription.h>
 #include <dji_osdk_ros/SetupCameraStream.h>
 #include <sensor_msgs/CameraInfo.h>
+#include <cv_bridge/cv_bridge.h>
 #endif
 
 //! SDK library
@@ -232,7 +233,7 @@ private:
                                  dji_osdk_ros::SetupCameraStream::Response& response);
   void publishCameraInfo(const std_msgs::Header &header);
   
-  sensor_msgs::CameraInfo getCameraInfo(int camera_select);
+  sensor_msgs::CameraInfo getCameraInfo(int camera_select, bool isLeftRequired);
 #endif
 
   //! data broadcast callback
@@ -298,6 +299,8 @@ private:
   static void publishMainCameraImage(CameraRGBImage img, void* userData);
 
   static void publishFPVCameraImage(CameraRGBImage img, void* userData);
+  
+  static void processRosImage(sensor_msgs::Image &img, int camera_select);
 #endif
 
 private:

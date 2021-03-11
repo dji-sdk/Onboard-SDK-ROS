@@ -51,7 +51,7 @@ void M300StereoParamTool::PerceptionCamParamCB(
   if ((pack.directionNum > 0) && (pack.directionNum <= IMAGE_MAX_DIRECTION_NUM))
     for (int i = 0; i < pack.directionNum; i++) {
       if ((userData)
-          && (pack.cameraParam[i].direction == Perception::RECTIFY_LEFT)) {
+          && (pack.cameraParam[i].direction == Perception::RECTIFY_UP)) {
         auto camParam = (Perception::CamParamType *) userData;
         *camParam = pack.cameraParam[i];
       }

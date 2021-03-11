@@ -836,7 +836,7 @@ void VehicleNode::publishCameraInfo(const std_msgs::Header &header)
 
 		Vehicle* vehicle = ptr_wrapper_->getVehicle();
 		M300StereoParamTool *tool = new M300StereoParamTool(vehicle);
-		Perception::CamParamType stereoParam = tool->getM300stereoParams(Perception::DirectionType::RECTIFY_FRONT);
+		Perception::CamParamType stereoParam = tool->getM300stereoParams(Perception::DirectionType::RECTIFY_DOWN);
 	
 		tool->getM300stereoCameraInfo(stereoParam, left_camera_info, right_camera_info);
 		isFirstTime = false;

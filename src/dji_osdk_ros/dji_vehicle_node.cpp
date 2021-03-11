@@ -946,7 +946,7 @@ bool VehicleNode::getM300StereoParamsCallback(dji_osdk_ros::GetM300StereoParams:
   Vehicle* vehicle = ptr_wrapper_->getVehicle();
   M300StereoParamTool *tool = new M300StereoParamTool(vehicle);
   Perception::CamParamType stereoParam =
-      tool->getM300stereoParams(Perception::DirectionType::RECTIFY_LEFT);
+      tool->getM300stereoParams(Perception::DirectionType::RECTIFY_UP);
   if (tool->createStereoParamsYamlFile(M300_FRONT_STEREO_PARAM_YAML_NAME, stereoParam))
   {
     tool->setParamFileForM300(M300_FRONT_STEREO_PARAM_YAML_NAME);

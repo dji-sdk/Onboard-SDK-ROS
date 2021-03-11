@@ -60,7 +60,8 @@
   <build_depend>actionlib_msgs</build_depend>
   <build_depend>nmea_msgs</build_depend>
   <build_depend>message_filters</build_depend>
-
+	<build_depend>cv_bridge</build_depend>
+	
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>message_runtime</exec_depend>
@@ -71,7 +72,7 @@
   <exec_depend>actionlib</exec_depend>
   <exec_depend>actionlib_msgs</exec_depend>
   <exec_depend>message_filters</exec_depend>
-
+	<exec_depend>cv_bridge</exec_depend>
   
   <export>
     

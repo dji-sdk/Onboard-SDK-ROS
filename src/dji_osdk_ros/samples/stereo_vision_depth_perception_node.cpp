@@ -84,7 +84,7 @@ main(int argc, char** argv)
     }
     else
     {
-      M210_STEREO::Config::setParamFile(M300_FRONT_STEREO_PARAM_YAML_NAME);
+      M210_STEREO::Config::setParamFile("/home/alireza/catkin_ws/src/Onboard-SDK-4.0/sample/platform/linux/advanced-sensing/stereo_vision_depth_perception_sample/m300_front_stereo_param.yaml");
     }
   }
 
@@ -107,9 +107,9 @@ main(int argc, char** argv)
 
   //! Setup ros related stuff
   rect_img_left_publisher =
-    nh.advertise<sensor_msgs::Image>("/stereo_depth_perception/rectified_vga_front_left_image", 10);
+    nh.advertise<sensor_msgs::Image>("/dji_osdk_ros/stereo_vga_front/left/image_raw", 10);
   rect_img_right_publisher =
-    nh.advertise<sensor_msgs::Image>("/stereo_depth_perception/rectified_vga_front_right_image", 10);
+    nh.advertise<sensor_msgs::Image>("/dji_osdk_ros/stereo_vga_front/right/image_raw", 10);
   left_disparity_publisher =
     nh.advertise<sensor_msgs::Image>("/stereo_depth_perception/disparity_front_left_image", 10);
   point_cloud_publisher =
