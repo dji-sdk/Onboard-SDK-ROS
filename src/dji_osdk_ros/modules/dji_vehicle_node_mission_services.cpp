@@ -658,6 +658,8 @@ bool VehicleNode::waypointV2StartMissionCallback(
   }
 
   response.result = ptr_wrapper_->startWaypointV2Mission(WAIT_TIMEOUT);
+
+  return response.result;
 }
 
 bool VehicleNode::waypointV2StopMissionCallback(
@@ -673,6 +675,8 @@ bool VehicleNode::waypointV2StopMissionCallback(
   }
 
   response.result = ptr_wrapper_->stopWaypointV2Mission(WAIT_TIMEOUT);
+
+  return response.result;
 }
 
 bool VehicleNode::waypointV2PauseMissionCallback(
@@ -688,6 +692,8 @@ bool VehicleNode::waypointV2PauseMissionCallback(
   }
 
   response.result = ptr_wrapper_->pauseWaypointV2Mission(WAIT_TIMEOUT);
+
+  return response.result;
 }
 
 bool VehicleNode::waypointV2ResumeMissionCallback(
@@ -703,6 +709,8 @@ bool VehicleNode::waypointV2ResumeMissionCallback(
   }
 
   response.result = ptr_wrapper_->resumeWaypointV2Mission(WAIT_TIMEOUT);
+
+  return response.result;
 }
 
 bool VehicleNode::waypointV2GenerateActionsCallback(
@@ -911,6 +919,7 @@ bool VehicleNode::waypointV2GenerateActionsCallback(
       response.result = true;
     }
   }
+
   return response.result;
 }
 
@@ -948,6 +957,8 @@ bool VehicleNode::waypointV2GetGlobalCruisespeedCallback(
   }
 
   response.result = ptr_wrapper_->getGlobalCruiseSpeed(response.global_cruisespeed, WAIT_TIMEOUT);
+
+  return response.result;
 }
 
 //10HZ push
