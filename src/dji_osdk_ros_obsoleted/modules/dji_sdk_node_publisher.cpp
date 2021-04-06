@@ -14,7 +14,7 @@
 #include <sensor_msgs/Joy.h>
 #include <dji_telemetry.hpp>
 
-#include <opencv/opencv2/opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include <cv_bridge/cv_bridge.h>
 
 

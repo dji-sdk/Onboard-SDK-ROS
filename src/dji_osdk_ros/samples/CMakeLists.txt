@@ -14,9 +14,9 @@ if(ENABLE_GPU)
 add_definitions(-DUSE_GPU)
 endif()
 
-if(ENABLE_DARKNET_ROS)
-add_definitions(-DUSE_DARKNET_ROS)
-endif()
+#if(ENABLE_DARKNET_ROS)
+#add_definitions(-DUSE_DARKNET_ROS)
+#endif()
 
 add_executable(flight_control_node
                flight_control_node.cpp)
@@ -90,7 +90,7 @@ target_link_libraries(waypointV2_node
         )
 add_dependencies(waypointV2_node dji_osdk_ros_generate_messages_cpp)
 
-#if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ)
+if (OPEN_CV_3_3_0_INSTALLED AND FOUND_OPENCV_VIZ)
 
     message(STATUS "Found OpenCV ${OpenCV_VERSION}, Viz3d, and advanced sensing module, stereo vision depth perception node will be compiled")
     add_definitions(-DOPEN_CV_INSTALLED)
@@ -98,20 +98,20 @@ add_dependencies(waypointV2_node dji_osdk_ros_generate_messages_cpp)
                    stereo_vision_depth_perception_node.cpp)
     target_include_directories(${PROJECT_NAME} PRIVATE ${OpenCV_INCLUDE_DIRS})
 
-#    if (OPEN_CV_3_3_0_INSTALLED)
+    if (OPEN_CV_3_3_0_INSTALLED)
         target_link_libraries(stereo_vision_depth_perception_node
                 ${catkin_LIBRARIES}  
                 ${PROJECT_NAME}
                 ${OpenCV_LIBRARIES}
                 )
-#    else()
+    else()
     target_link_libraries(stereo_vision_depth_perception_node
             ${catkin_LIBRARIES}        
             ${PROJECT_NAME}
             )
-#    endif()
+    endif()
     add_dependencies(stereo_vision_depth_perception_node dji_osdk_ros_generate_messages_cpp)
-#else()
-#   message(STATUS "Did not find required libraries, stereo vision depth perception node will not be compiled.")
-#endif ()
+else()
+   message(STATUS "Did not find required libraries, stereo vision depth perception node will not be compiled.")
+endif ()
 
