@@ -5,11 +5,7 @@ on:
       - master
 jobs:
   package:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-18.04, [arm64,self-hosted,linux, build]]
-      fail-fast: false
+    runs-on: [x64,self-hosted,linux, build]
     steps:
       - uses: AutoModality/action-clean@v1.1.0
       - uses: actions/checkout@v2
@@ -35,6 +31,26 @@ jobs:
           distro: 'ubuntu'
           release: 'bionic'
           file: '${{ steps.package.outputs.artifact-path }}'
+  package-cuda:
+    runs-on: [arm64,self-hosted,linux, cuda]
+    steps:
+      - uses: AutoModality/action-clean@v1.1.0
+      - uses: actions/checkout@v2
+      - uses: rlespinasse/github-slug-action@3.1.0 # for GITHUB_REF_SLUG
+      - name: Package
+        run: ./build.sh ros-melodic-am-pcl "${{ github.run_number }}-${{ env.GITHUB_REF_SLUG }}"
+      - name: Deploy
+        id: deploy
+        uses: AutoModality/action-cloudsmith@0.2.0
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: 'push'
+          format: 'deb'
+          owner: 'automodality'
+          repo: 'dev'
+          distro: 'ubuntu'
+          release: 'bionic'
+          file: '${{ env.PACKAGE_FILE }}'
   draft-pr:
     runs-on: ubuntu-18.04
     needs: package
