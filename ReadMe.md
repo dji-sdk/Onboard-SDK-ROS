@@ -237,3 +237,4 @@ __note:if you want to rosrun dji_sdk_node,you need to put UserConfig.txt into cu
 You can get support from DJI and the community with the following methods:
 * Email to dev@dji.com
 * Report issue on github
+
