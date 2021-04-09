@@ -967,7 +967,7 @@ void DJISDKNode::publishVGAStereoImage(Vehicle*            vehicle,
   img.encoding = "mono8";
   img.data.resize(img.height*img.width);
 	memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[0], 480*640);
-	processRosImage(img, node_ptr->latest_camera_);
+	//processRosImage(img, node_ptr->latest_camera_);
   img.header.seq = recvFrame.recvData.stereoVGAImgData->frame_index;
   img.header.stamp = ros::Time::now(); // @todo
   img.header.frame_id = "vga_left";
@@ -981,7 +981,7 @@ void DJISDKNode::publishVGAStereoImage(Vehicle*            vehicle,
   img.encoding = "mono8";
   img.data.resize(img.height*img.width);
 	memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[1], 480*640);
-	processRosImage(img, node_ptr->latest_camera_);
+	//processRosImage(img, node_ptr->latest_camera_);
   img.header.frame_id = "vga_right";
 	node_ptr->stereo_vga_front_right_publisher.publish(img);
 	
