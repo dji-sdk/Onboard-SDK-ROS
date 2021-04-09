@@ -11,7 +11,9 @@ jobs:
       - uses: actions/checkout@v2
       - uses: rlespinasse/github-slug-action@3.1.0 # for GITHUB_REF_SLUG
       - name: Package
-        run: echo developer | sudo -S whoami && amros dev build deb --clean --version="0.0.${{ github.run_number }}"
+        run: |
+          AM_PLATFORM=dji_m300 amros packages install --password=${{ secrets.BUILD_PASSWORD }}
+          echo ${{ secrets.BUILD_PASSWORD }} | sudo -S whoami && amros dev build deb --clean --version="0.0.${{ github.run_number }}"
       - name: Deploy
         id: deploy
         uses: AutoModality/action-cloudsmith@0.2.0
