@@ -156,8 +156,9 @@ We compile with C + + 11 Standard.
 you need to download onboard-sdk4.1.0,and install it.
 >$mkdir build  
 >$cd build  
->$cmake..  
->$sudo make -j7 install
+>$cmake ..  
+>$make -j7  
+>$sudo make install
 #### nema-comms
 > $sudo apt install ros-{release}-nmea-comms  
 
@@ -236,3 +237,4 @@ __note:if you want to rosrun dji_sdk_node,you need to put UserConfig.txt into cu
 You can get support from DJI and the community with the following methods:
 * Email to dev@dji.com
 * Report issue on github
+

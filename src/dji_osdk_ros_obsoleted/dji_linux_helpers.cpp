@@ -170,8 +170,15 @@ LinuxSetup::setupEnvironment(int argc, char** argv)
   }
   else
   {
-    config_file_path = DJI_Environment::findFile("UserConfig.txt");
+    std::string config_filename = "UserConfig.txt";
+    config_file_path = DJI_Environment::findFile(config_filename);
 
+    //look in installation dir if not found in expected places
+    if(config_file_path.empty()){
+      //FIXME: find a better place to declare this without ros distro (melodic)
+      std::string installationDir = "/opt/ros/melodic/share/dji_osdk_ros/launch";
+      config_file_path = DJI_Environment::findFileInDir(config_filename,installationDir);
+    }
     if (config_file_path.empty())
       throw std::runtime_error("User configuration file not found");
   }

@@ -52,8 +52,17 @@ DJI_Environment::findFile(std::string file)
     throw std::runtime_error("Error getting current directory");
 
   std::string strCWD(cwd);
-  // configFile = strCWD + "/osdk-core/" + file;
-  configFile = strCWD + "/" + file; // just in the current working directory
+  return findFileInDir(file,strCWD);
+}
+
+
+/**
+ * @return a string of the path to a file, if found.  Empty otherwise.
+ */
+std::string
+DJI_Environment::findFileInDir(std::string file, std::string dir)
+{
+  std::string configFile = dir + "/" + file; 
 
   std::ifstream fStream(configFile.c_str());
 

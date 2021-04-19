@@ -37,6 +37,7 @@
 #include <dji_osdk_ros/PayloadData.h>
 #include <dji_osdk_ros/FlightAnomaly.h>
 #include <dji_osdk_ros/VOPosition.h>
+#include <dji_osdk_ros/RelPosition.h>
 #include <dji_osdk_ros/FCTimeInUTC.h>
 #include <dji_osdk_ros/GPSUTC.h>
 
@@ -76,6 +77,8 @@
 #include <dji_osdk_ros/StereoDepthSubscription.h>
 #include <dji_osdk_ros/StereoVGASubscription.h>
 #include <dji_osdk_ros/SetupCameraStream.h>
+#include <sensor_msgs/CameraInfo.h>
+#include <cv_bridge/cv_bridge.h>
 #endif
 
 //! SDK library
@@ -228,6 +231,9 @@ private:
                                      dji_osdk_ros::StereoVGASubscription::Response& response);
   bool setupCameraStreamCallback(dji_osdk_ros::SetupCameraStream::Request&  request,
                                  dji_osdk_ros::SetupCameraStream::Response& response);
+  void publishCameraInfo(const std_msgs::Header &header);
+  
+  sensor_msgs::CameraInfo getCameraInfo(int camera_select, bool isLeftRequired);
 #endif
 
   //! data broadcast callback
@@ -293,9 +299,16 @@ private:
   static void publishMainCameraImage(CameraRGBImage img, void* userData);
 
   static void publishFPVCameraImage(CameraRGBImage img, void* userData);
+  
+  static void processRosImage(sensor_msgs::Image &img, int camera_select);
 #endif
 
 private:
+
+#ifdef ADVANCED_SENSING
+	int latest_camera_ = {-1};
+#endif	
+	
   //! OSDK core
   Vehicle* vehicle;
   LinuxSetup* linuxEnvironment;
@@ -342,6 +355,8 @@ private:
   ros::ServiceServer subscribe_stereo_depth_server;
   ros::ServiceServer subscribe_stereo_vga_server;
   ros::ServiceServer camera_stream_server;
+  ros::Publisher left_camera_info_pub_;
+ 	ros::Publisher right_camera_info_pub_; 
 #endif
 
   //! flight control subscribers
@@ -372,6 +387,7 @@ private:
   ros::Publisher gimbal_angle_publisher;
   ros::Publisher displaymode_publisher;
   ros::Publisher rc_publisher;
+  ros::Publisher device_status_publisher;
   ros::Publisher rc_connection_status_publisher;
   ros::Publisher rtk_position_publisher;
   ros::Publisher rtk_velocity_publisher;
@@ -382,6 +398,7 @@ private:
   ros::Publisher flight_anomaly_publisher;
   //! Local Position Publisher (Publishes local position in ENU frame)
   ros::Publisher local_position_publisher;
+  ros::Publisher relative_position_publisher;
   ros::Publisher local_frame_ref_publisher;
   ros::Publisher time_sync_nmea_publisher;
   ros::Publisher time_sync_gps_utc_publisher;
@@ -415,6 +432,7 @@ private:
   std::string app_bundle_id; // reserved
   int         uart_or_usb;
   double      gravity_const;
+  bool        enable_advanced_sensing;
 
   //! use broadcast or subscription to get telemetry data
   TELEMETRY_TYPE telemetry_from_fc;

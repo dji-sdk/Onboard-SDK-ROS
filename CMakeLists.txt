@@ -97,7 +97,7 @@ add_message_files(
   WaypointV2.msg
   WaypointV2MissionEventPush.msg
   WaypointV2MissionStatePush.msg
-
+  RelPosition.msg
   MobileData.msg
   PayloadData.msg
   MissionWaypointAction.msg
@@ -333,11 +333,19 @@ add_subdirectory(src)
 # )
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h*"
+  PATTERN ".svn" EXCLUDE
+)
+
+install(DIRECTORY include/dji_osdk_ros_obsoleted
+  DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION})
+
+## Install launch files into share directory
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES

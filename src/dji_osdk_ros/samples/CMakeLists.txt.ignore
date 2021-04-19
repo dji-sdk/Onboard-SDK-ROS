@@ -14,9 +14,9 @@ if(ENABLE_GPU)
 add_definitions(-DUSE_GPU)
 endif()
 
-#if(ENABLE_DARKNET_ROS)
-#add_definitions(-DUSE_DARKNET_ROS)
-#endif()
+if(ENABLE_DARKNET_ROS)
+add_definitions(-DUSE_DARKNET_ROS)
+endif()
 
 add_executable(flight_control_node
                flight_control_node.cpp)

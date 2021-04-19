@@ -17,6 +17,9 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
 #catkin_python_setup()
 
+find_package(OpenCV REQUIRED)
+find_package(catkin REQUIRED COMPONENTS cv_bridge roscpp rospy std_msgs)
+
 ################################################
 ## Declare ROS messages, services and actions ##
 ################################################
@@ -63,12 +66,14 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+# include_directories(include
+
 include_directories(
         ../../include/dji_osdk_ros_obsoleted
   ../../include
 #  ${DJIOSDK_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -98,14 +103,21 @@ add_executable(dji_sdk_node
 add_dependencies(dji_sdk_node
   dji_osdk_ros_generate_messages_cpp)
 
-## Specify libraries to link a library or executable target against
-target_link_libraries(dji_sdk_node
+set(link_Libraries 
   ${catkin_LIBRARIES}
     djiosdk-core.a
     dji-linker.a
     advanced-sensing.a
     ${LIBUSB_1_LIBRARIES}
     ${FFMPEG_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+)
+
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(dji_sdk_node
+	${link_Libraries}
+
 #        waypointv2-interface.a
 #        waypointv2-core.a
 #        DJIProtobuf.a

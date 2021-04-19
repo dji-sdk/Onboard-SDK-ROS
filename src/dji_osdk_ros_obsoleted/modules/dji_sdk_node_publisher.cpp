@@ -14,6 +14,10 @@
 #include <sensor_msgs/Joy.h>
 #include <dji_telemetry.hpp>
 
+#include <opencv2/opencv.hpp>
+#include <cv_bridge/cv_bridge.h>
+
+
 #define _TICK2ROSTIME(tick) (ros::Duration((double)(tick) / 1000.0))
 
 
@@ -369,12 +373,33 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     p->local_position_publisher.publish(local_pos);
   }
 
+  // Telemetry::RelativePosition relative_position;
+  // relative_position = vehicle->broadcast->getRelativePosition();
+  Telemetry::TypeMap<Telemetry::TOPIC_AVOID_DATA>::type relative_position =
+    vehicle->subscribe->getValue<Telemetry::TOPIC_AVOID_DATA>();
+
+  dji_osdk_ros::RelPosition rel_pos_msg;
+  rel_pos_msg.header.frame_id = "/rel_pos";
+  rel_pos_msg.header.stamp = msg_time;
+  rel_pos_msg.down  = relative_position.down;
+  rel_pos_msg.front = relative_position.front;
+  rel_pos_msg.right = relative_position.right;
+  rel_pos_msg.back  = relative_position.back;
+  rel_pos_msg.left  = relative_position.left;
+  rel_pos_msg.up    = relative_position.up;
+  rel_pos_msg.downHealth  = relative_position.downHealth;
+  rel_pos_msg.frontHealth = relative_position.frontHealth;
+  rel_pos_msg.rightHealth = relative_position.rightHealth;
+  rel_pos_msg.backHealth  = relative_position.backHealth;
+  rel_pos_msg.leftHealth  = relative_position.leftHealth;
+  rel_pos_msg.upHealth    = relative_position.upHealth;
+  p->relative_position_publisher.publish(rel_pos_msg);
+
   Telemetry::TypeMap<Telemetry::TOPIC_HEIGHT_FUSION>::type fused_height =
     vehicle->subscribe->getValue<Telemetry::TOPIC_HEIGHT_FUSION>();
   std_msgs::Float32 height;
   height.data = fused_height;
   p->height_publisher.publish(height);
-
   Telemetry::TypeMap<Telemetry::TOPIC_STATUS_FLIGHT>::type fs =
     vehicle->subscribe->getValue<Telemetry::TOPIC_STATUS_FLIGHT>();
 
@@ -538,7 +563,29 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     rc_joy.axes.push_back(static_cast<float>(rc.gear*1.0));
     p->rc_publisher.publish(rc_joy);
   }
+
+  uint16_t data_enable_flag = vehicle->broadcast->getPassFlag();
+  
+  
+  //update device control info
+  // if (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_DEVICE)
+  // {
+    Telemetry::TypeMap<Telemetry::TOPIC_CONTROL_DEVICE>::type sdk_info =
+      vehicle->subscribe->getValue<Telemetry::TOPIC_CONTROL_DEVICE>();
+    std_msgs::UInt8 status_device;
+    // status_device.data = vehicle->broadcast->getSDKInfo().deviceStatus;
+    status_device.data = sdk_info.deviceStatus;
+    // TODO The underlying status changed, but we look for a value of 2. Fix this.
+    //https://github.com/dji-sdk/Onboard-SDK/issues/528
+    //Jeff's farewell Mary Poppins
+    if (status_device.data == 4){
+      status_device.data = 2;
+      ROS_INFO_THROTTLE(1,"**UNDER AM CONTROL**");
+    }
+    p->device_status_publisher.publish(status_device);
+  // }
 }
+
 
 void
 DJISDKNode::publish100HzData(Vehicle *vehicle, RecvContainer recvFrame,
@@ -749,6 +796,120 @@ void DJISDKNode::alignRosTimeWithFlightController(ros::Time now_time, uint32_t t
 }
 
 #ifdef ADVANCED_SENSING
+
+sensor_msgs::CameraInfo DJISDKNode::getCameraInfo(int camera_select, bool isLeftRequired)
+{
+	sensor_msgs::CameraInfo cam_info;
+	
+	cam_info.width = 320;
+	cam_info.height = 240;
+	
+	cam_info.distortion_model = "plumb_bob";
+	
+	cam_info.D = std::vector<double>(5,0.0);
+	
+	switch(camera_select)
+	{
+		//front camera
+		case 1:
+		{
+			cam_info.K = {407.1327819824219, 0, 321.8077392578125, 0.0, 407.1327819824219, 236.9904937744141, 0.0, 0.0, 1.0};
+			cam_info.R = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+			cam_info.P = {407.1327819824219, 0, 321.8077392578125, -116.0410842895508, 0.0, 407.1327819824219, 236.9904937744141, 0.0, 0.0, 0.0, 1.0, 0.0};
+			break;
+		}
+		//left camera
+		case 2:
+		{
+			if(isLeftRequired)
+			{
+				cam_info.K = {405.863209, 0.000000, 321.034642,0.000000, 406.405344, 234.984922,0.000000, 0.000000, 1.000000};
+				cam_info.D = {-0.004661, 0.003370, 0.000506, 0.000643, 0.000000};
+				cam_info.R = {0.999999, 0.000188, 0.001306,-0.000189, 1.000000, 0.000714,-0.001306, -0.000715, 0.999999};
+				cam_info.P = {406.427434, 0.000000, 320.900703, 0.000000,0.000000, 406.427434, 234.718628, 0.000000,0.000000, 0.000000, 1.000000, 0.000000};
+				break;
+			}
+			
+				cam_info.K = {405.958187, 0.000000, 322.083430,0.000000, 406.341539, 234.588475, 0.000000, 0.000000, 1.000000};
+				cam_info.D = {-0.005493, 0.003726, -0.000700, 0.000489, 0.000000};
+				cam_info.R = {0.999997, 0.000116, 0.002235,-0.000115, 1.000000, -0.000715,-0.002235, 0.000714, 0.999997};
+				cam_info.P = {406.427434, 0.000000, 320.900703, -48.321484,0.000000, 406.427434, 234.718628, 0.000000,0.000000, 0.000000, 1.000000, 0.000000};
+			break;
+		}
+		//right camera
+		case 3:
+		{
+			cam_info.K = {488.5599365234375, 0.0, 319.80328369140625, 0.0, 488.5599365234375, 239.97528076171875, 0.0, 0.0, 1.0};
+			cam_info.R = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+			cam_info.P = {488.5599365234375, 0.0, 319.80328369140625, -99.43592071533203, 0.0, 488.5599365234375, 239.97528076171875, 0.0, 0.0, 0.0, 1.0, 0.0};
+			break;
+		}
+		//rear camera
+		case 4:
+		{
+			cam_info.K = {486.2147216796875, 0.0, 318.2126159667969, 0.0, 486.2147216796875, 238.1256408691406, 0.0, 0.0, 1.0};
+			cam_info.R = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+			cam_info.P = {486.2147216796875, 0.0, 318.2126159667969, -99.34449005126953, 0.0, 486.2147216796875, 238.1256408691406, 0.0, 0.0, 0.0, 1.0, 0.0};
+			break;
+		}
+		//down camera
+		case 5:
+		{
+			cam_info.K = {480.2206726074219, 0.0, 318.1107177734375, 0.0, 480.2206726074219, 242.7613830566406, 0.0, 0.0, 1.0};
+			cam_info.R = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0};
+			cam_info.P = {480.2206726074219, 0.0, 318.1107177734375, 0.0,  0.0, 480.2206726074219, 242.7613830566406, 79.36713409423828, 0.0, 0.0, 1.0, 0.0};
+			break;
+		}
+		
+		//up camera
+		case 6:
+		{
+			cam_info.width = 240;
+			cam_info.height = 320;
+			if(isLeftRequired)
+			{
+				cam_info.K = {201.990533, 0.000000, 118.106840,0.000000, 202.493255, 158.157213, 0.000000, 0.000000, 1.000000};
+				cam_info.D = {0.001765, -0.002758, -0.000692, -0.001906, 0.000000};
+				cam_info.R = {0.999994, -0.001909, -0.002898,0.001904, 0.999997, -0.001712,0.002901, 0.001707, 0.999994};
+				cam_info.P = {204.589978, 0.000000, 118.121675, 0.000000,0.000000, 204.589978, 158.783770, 0.000000,0.000000, 0.000000, 1.000000, 0.000000};
+				break;
+			}
+			
+				cam_info.K = {202.192738, 0.000000, 118.737948,0.000000, 202.403765, 159.274456, 0.000000, 0.000000, 1.000000};
+				cam_info.D = {0.003813, 0.001792, 0.001038, -0.000216, 0.000000};
+				cam_info.R = {0.999995, -0.001825, 0.002471,0.001820, 0.999997, 0.001712,-0.002474, -0.001707, 0.999995};
+				cam_info.P = {204.589978, 0.000000, 118.121675, 20.188123,0.000000, 204.589978, 158.783770, 0.000000,0.000000, 0.000000, 1.000000, 0.000000};
+			break;
+		}
+		default:
+			break;
+	}
+	
+	
+	return cam_info;
+}
+
+void DJISDKNode::publishCameraInfo(const std_msgs::Header &header)
+{	
+	if(latest_camera_ < 1)
+	{
+		ROS_WARN_THROTTLE(5.0,"selected camera id is not correct");
+		return;
+	}
+	
+	sensor_msgs::CameraInfo left_camera_info = getCameraInfo(latest_camera_, true);
+	sensor_msgs::CameraInfo right_camera_info = getCameraInfo(latest_camera_, false);
+	
+	left_camera_info.distortion_model = right_camera_info.distortion_model = "plumb_bob";
+			
+	left_camera_info.header = right_camera_info.header = header;
+	left_camera_info.header.frame_id = "left_camera";
+	right_camera_info.header.frame_id = "right_camera";
+	left_camera_info_pub_.publish(left_camera_info);
+	right_camera_info_pub_.publish(right_camera_info);
+
+}
+
 void DJISDKNode::publish240pStereoImage(Vehicle*            vehicle,
                                         RecvContainer       recvFrame,
                                         DJI::OSDK::UserData userData)
@@ -799,23 +960,86 @@ void DJISDKNode::publishVGAStereoImage(Vehicle*            vehicle,
   DJISDKNode *node_ptr = (DJISDKNode *)userData;
 
   node_ptr->stereo_vga_subscription_success = true;
-
   sensor_msgs::Image img;
   img.height = 480;
   img.width = 640;
   img.step = 640;
   img.encoding = "mono8";
   img.data.resize(img.height*img.width);
-
+	memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[0], 480*640);
+	//processRosImage(img, node_ptr->latest_camera_);
   img.header.seq = recvFrame.recvData.stereoVGAImgData->frame_index;
   img.header.stamp = ros::Time::now(); // @todo
   img.header.frame_id = "vga_left";
-  memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[0], 480*640);
-  node_ptr->stereo_vga_front_left_publisher.publish(img);
-
+	node_ptr->stereo_vga_front_left_publisher.publish(img);
+	
+	
+	
+	img.height = 480;
+  img.width = 640;
+  img.step = 640;
+  img.encoding = "mono8";
+  img.data.resize(img.height*img.width);
+	memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[1], 480*640);
+	//processRosImage(img, node_ptr->latest_camera_);
   img.header.frame_id = "vga_right";
-  memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[1], 480*640);
-  node_ptr->stereo_vga_front_right_publisher.publish(img);
+	node_ptr->stereo_vga_front_right_publisher.publish(img);
+	
+ 
+  //img.header.frame_id = "vga_right";
+	//unsigned char * img_data_ptr2 = (unsigned char*) &recvFrame.recvData.stereoVGAImgData->img_vec[1];
+  //cv::Mat mat2(img.height, img.width, CV_8U, img_data_ptr, img.step);
+  //perform operations on the cv image
+ // cv::resize(mat2, mat2, cv::Size(240, 320),0,0,cv::INTER_LINEAR);
+  //memcpy((char*)(&img.data[0]), recvFrame.recvData.stereoVGAImgData->img_vec[1], 480*640);
+  //img_bridge = cv_bridge::CvImage(img.header, sensor_msgs::image_encodings::MONO8, mat2);
+	//img_bridge.toImageMsg(img);
+  //node_ptr->stereo_vga_front_right_publisher.publish(img);
+  
+  node_ptr->publishCameraInfo(img.header);
+}
+
+void DJISDKNode::processRosImage(sensor_msgs::Image &img, int camera_select)
+{
+	
+	//get cv image
+	cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(img, img.encoding);
+	cv::Mat mat = cv_ptr->image;
+  //perform operations on the cv image
+  cv::resize(mat, mat, cv::Size(img.width/2, img.height/2),0,0,cv::INTER_LINEAR);
+  
+  
+  //convert to ros image
+	img.height = 240;
+  img.width = 320;
+  img.step = 320;
+  img.encoding = "mono8";
+  img.data.resize(img.height*img.width);
+  
+  if(camera_select == 6)
+  {
+  	double angle = 90.0;
+  	// get rotation matrix for rotating the image around its center in pixel coordinates
+    cv::Point2f center((mat.cols-1)/2.0, (mat.rows-1)/2.0);
+    cv::Mat rot = cv::getRotationMatrix2D(center, angle, 1.0);
+    // determine bounding rectangle, center not relevant
+    cv::Rect2f bbox = cv::RotatedRect(cv::Point2f(), mat.size(), angle).boundingRect2f();
+    // adjust transformation matrix
+    rot.at<double>(0,2) += bbox.width/2.0 - mat.cols/2.0;
+    rot.at<double>(1,2) += bbox.height/2.0 - mat.rows/2.0;
+
+    cv::warpAffine(mat, mat, rot, bbox.size());
+    
+    img.height = 320;
+    img.width = 240;
+    img.step = 240;
+  }
+  
+  
+	
+	
+	cv_bridge::CvImage img_bridge = cv_bridge::CvImage(img.header, sensor_msgs::image_encodings::MONO8, mat);
+	img_bridge.toImageMsg(img);
 }
 
 void DJISDKNode::publishFPVCameraImage(CameraRGBImage rgbImg, void* userData)

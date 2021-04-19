@@ -29,6 +29,7 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private, int arg
   nh_private.param("gravity_const", gravity_const, 9.801);
   nh_private.param("align_time",    align_time_with_FC, false);
   nh_private.param("use_broadcast", user_select_broadcast, false);
+  nh_private.param("enable_advanced_sensing", enable_advanced_sensing, true);
 
   //! Default values for local Position
   local_pos_ref_latitude  = 0;
@@ -76,6 +77,15 @@ DJISDKNode::~DJISDKNode()
   {
     cleanUpSubscribeFromFC();
   }
+
+#ifdef ADVANCED_SENSING
+	if(latest_camera_ > 0)
+	{
+		vehicle->advancedSensing->unsubscribeVGAImages(latest_camera_);
+		ROS_INFO("Unsubscribed from the VGA Stream");
+	}
+#endif
+
   if (vehicle)
   {
     delete vehicle;
@@ -86,11 +96,11 @@ bool
 DJISDKNode::initVehicle(ros::NodeHandle& nh_private, int argc, char** argv)
 {
   bool threadSupport = true;
-  bool enable_advanced_sensing = false;
+  bool advanced_sensing = false;
 
 #ifdef ADVANCED_SENSING
-  enable_advanced_sensing = true;
-  ROS_INFO("Advanced Sensing is Enabled on M210.");
+  advanced_sensing = enable_advanced_sensing;
+  ROS_INFO("Advanced Sensing is %s on M210.", advanced_sensing ? "Enabled" : "Disabled");
 #endif
 
   //! @note currently does not work without thread support
@@ -214,6 +224,11 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
 {
   rc_publisher = nh.advertise<sensor_msgs::Joy>("dji_osdk_ros/rc", 10);
 
+  relative_position_publisher = nh.advertise<dji_osdk_ros::RelPosition>("dji_osdk_ros/relative_position", 10);
+
+  // device control status, 0=RC, 1=MSDK, 2=OSDK
+  device_status_publisher = nh.advertise<std_msgs::UInt8>("dji_osdk_ros/control_status", 10);
+
   attitude_publisher =
     nh.advertise<geometry_msgs::QuaternionStamped>("dji_osdk_ros/attitude", 10);
 
@@ -312,16 +327,26 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
     nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_240p_front_depth_images", 10);
 
   stereo_vga_front_left_publisher =
-    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front_left_images", 10);
+    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga/left/image_raw", 10);
+    
+  left_camera_info_pub_ = 
+  	nh.advertise<sensor_msgs::CameraInfo>("/dji_osdk_ros/stereo_vga/left/camera_info",10);
 
   stereo_vga_front_right_publisher =
-    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga_front_right_images", 10);
+    nh.advertise<sensor_msgs::Image>("dji_osdk_ros/stereo_vga/right/image_raw", 10);
+  
+  right_camera_info_pub_ = 
+  	nh.advertise<sensor_msgs::CameraInfo>("/dji_osdk_ros/stereo_vga/right/camera_info",10);
 
   main_camera_stream_publisher =
     nh.advertise<sensor_msgs::Image>("dji_osdk_ros/main_camera_images", 10);
 
   fpv_camera_stream_publisher =
     nh.advertise<sensor_msgs::Image>("dji_osdk_ros/fpv_camera_images", 10);
+    
+  
+  
+  
 #endif
 
 
@@ -451,6 +476,8 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
   if(vehicle->getFwVersion() > versionBase33)
   {
     topicList50Hz.push_back(Telemetry::TOPIC_POSITION_VO);
+    topicList50Hz.push_back(Telemetry::TOPIC_AVOID_DATA);
+    topicList50Hz.push_back(Telemetry::TOPIC_CONTROL_DEVICE);
     topicList50Hz.push_back(Telemetry::TOPIC_RC_WITH_FLAG_DATA);
     topicList50Hz.push_back(Telemetry::TOPIC_FLIGHT_ANOMALY);
 

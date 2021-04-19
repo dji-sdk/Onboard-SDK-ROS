@@ -1,0 +1,38 @@
+name: Release Candidate
+on: 
+  push:
+    branches-ignore:
+      - master
+jobs:
+  package-cuda:
+    runs-on: [arm64,self-hosted,linux, cuda]
+    steps:
+      - uses: AutoModality/action-clean@v1.1.0
+      - uses: actions/checkout@v2
+      - uses: rlespinasse/github-slug-action@3.1.0 # for GITHUB_REF_SLUG
+      - name: Package
+        run: |
+          AM_PLATFORM=dji_m300 amros packages install -y --password=${{ secrets.BUILD_PASSWORD }}
+          echo ${{ secrets.BUILD_PASSWORD }} | sudo -S whoami && source /opt/ros/melodic/setup.bash && amros dev build deb --clean --version="0.0.${{ github.run_number }}" 
+      - name: Deploy
+        id: deploy
+        uses: AutoModality/action-cloudsmith@0.2.0
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          command: 'push'
+          format: 'deb'
+          owner: 'automodality'
+          repo: 'dev'
+          distro: 'ubuntu'
+          release: 'bionic'
+          file: 'ros-melodic-dji-osdk-ros_0.0.${{ github.run_number }}-0bionic_arm64.deb' # version must match package phase
+  draft-pr:
+    runs-on: ubuntu-18.04
+    needs: package-cuda
+    steps:
+      - uses: actions/checkout@v2
+      - name: Draft a Pull Request
+        uses: repo-sync/pull-request@v2
+        with:
+          pr_draft: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
