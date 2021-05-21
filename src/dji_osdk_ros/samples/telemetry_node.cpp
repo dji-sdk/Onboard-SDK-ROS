@@ -416,11 +416,11 @@ int main(int argc ,char** argv)
         ROS_INFO("rcConnectionStatus:");
         ROS_INFO("rc_connection_status_: %d\n", rc_connection_status_.data);
         ROS_INFO("flightAnomaly:");
-        if (flight_anomaly_.data && dji_osdk_ros::FlightAnomaly::COMPASS_INSTALLATION_ERROR)
+        if (flight_anomaly_.data & dji_osdk_ros::FlightAnomaly::COMPASS_INSTALLATION_ERROR)
         {
            ROS_INFO("COMPASS_INSTALLATION_ERROR\n");
         }
-        if (flight_anomaly_.data && dji_osdk_ros::FlightAnomaly::IMU_INSTALLATION_ERROR)
+        if (flight_anomaly_.data & dji_osdk_ros::FlightAnomaly::IMU_INSTALLATION_ERROR)
         {
            ROS_INFO("IMU_INSTALLATION_ERROR\n");
         }

@@ -6,12 +6,12 @@
 #   if(flightAnomalyData)
 #   {
 #     ROS_INFO("Flight Anomaly Reported by Flight Controller. Here are details:");
-#     if(flightAnomalyData && dji_osdk_ros::FlightAnomaly::COMPASS_INSTALLATION_ERROR)
+#     if(flightAnomalyData & dji_osdk_ros::FlightAnomaly::COMPASS_INSTALLATION_ERROR)
 #     {
 #         ROS_INFO("COMPASS_INSTALLATION_ERROR");
 #     }
 #
-#     if(flightAnomalyData && dji_osdk_ros::FlightAnomaly::IMU_INSTALLATION_ERROR)
+#     if(flightAnomalyData & dji_osdk_ros::FlightAnomaly::IMU_INSTALLATION_ERROR)
 #     {
 #         ROS_INFO("IMU_INSTALLATION_ERROR");
 #     }
