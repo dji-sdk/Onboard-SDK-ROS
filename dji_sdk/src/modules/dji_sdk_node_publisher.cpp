@@ -340,6 +340,8 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     vehicle->subscribe->getValue<Telemetry::TOPIC_GPS_FUSED>();
   Telemetry::TypeMap<Telemetry::TOPIC_ALTITUDE_FUSIONED>::type fused_altitude =
     vehicle->subscribe->getValue<Telemetry::TOPIC_ALTITUDE_FUSIONED>();
+  Telemetry::TypeMap<Telemetry::TOPIC_QUATERNION>::type quat =
+          vehicle->subscribe->getValue<Telemetry::TOPIC_QUATERNION>();
 
 
   sensor_msgs::NavSatFix gps_pos;
@@ -367,6 +369,33 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
    *       in ENU Frame
    */
     p->local_position_publisher.publish(local_pos);
+
+    // Also publish the local position as a tf
+    static tf2_ros::TransformBroadcaster br;
+    geometry_msgs::TransformStamped local_pos_tf;
+    // Set local position
+    local_pos_tf.header.stamp = gps_pos.header.stamp;
+    local_pos_tf.header.frame_id = "world_ENU";
+    local_pos_tf.child_frame_id = "body_FLU";
+    local_pos_tf.transform.translation.x = local_pos.point.x;
+    local_pos_tf.transform.translation.y = local_pos.point.y;
+    local_pos_tf.transform.translation.z = local_pos.point.z;
+    // Set the quaternion
+    /*!
+    * note: We are now following REP 103 to use FLU for
+    *       body frame. The quaternion is the rotation from
+    *       body_FLU to ground_ENU
+    */
+    tf::Matrix3x3 R_FRD2NED(tf::Quaternion(quat.q1, quat.q2, quat.q3, quat.q0));
+    tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED.transpose() * R_FRD2NED * p->R_FLU2FRD;
+    tf::Quaternion q_FLU2ENU;
+    R_FLU2ENU.getRotation(q_FLU2ENU);
+    // @note this mapping is tested
+    local_pos_tf.transform.rotation.x = q_FLU2ENU.getX();
+    local_pos_tf.transform.rotation.y = q_FLU2ENU.getY();
+    local_pos_tf.transform.rotation.z = q_FLU2ENU.getZ();
+    local_pos_tf.transform.rotation.w = q_FLU2ENU.getW();
+    br.sendTransform(local_pos_tf);
   }
 
   Telemetry::TypeMap<Telemetry::TOPIC_HEIGHT_FUSION>::type fused_height =
