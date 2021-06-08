@@ -34,6 +34,11 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
   local_pos_ref_longitude = 0;
   local_pos_ref_altitude  = 0;
   local_pos_ref_set       = false;
+  //! Defualt values for local RTK position
+  local_rtk_pos_ref_latitude  = 0;
+  local_rtk_pos_ref_longitude = 0;
+  local_rtk_pos_ref_altitude  = 0;
+  local_rtk_pos_ref_set       = false;
 
   //! RTK support check
   rtkSupport = false;
@@ -296,6 +301,12 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
 
   local_frame_ref_publisher =
       nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/local_frame_ref", 10, true);
+
+  local_rtk_position_publisher =
+      nh.advertise<geometry_msgs::PointStamped>("dji_sdk/local_rtk_position", 10);
+
+  local_rtk_frame_ref_publisher =
+      nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/local_rtk_frame_ref", 10, true);
 
   time_sync_nmea_publisher =
       nh.advertise<nmea_msgs::Sentence>("dji_sdk/time_sync_nmea_msg", 10);

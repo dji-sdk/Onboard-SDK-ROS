@@ -150,6 +150,33 @@ DJISDKNode::setLocalPosRefCallback(dji_sdk::SetLocalPosRef::Request &request,
     local_pos_ref_set = false;
     response.result = false;
   }
+
+  printf("Currrent RTK health is %d \n",current_rtk_health );
+  if (current_rtk_health > 40) // TODO: Make parameter instead
+  {
+    local_rtk_pos_ref_latitude = current_rtk_latitude;
+    local_rtk_pos_ref_longitude = current_rtk_longitude;
+    local_rtk_pos_ref_altitude = current_rtk_altitude;
+    ROS_INFO("Local RTK Position reference has been set.");
+    ROS_INFO("MONITOR RTK HEALTH WHEN USING THIS TOPIC");
+    local_rtk_pos_ref_set = true;
+
+    // Create message to publish to a topic
+    sensor_msgs::NavSatFix localRTKFrameLLA;
+    localRTKFrameLLA.latitude = local_rtk_pos_ref_latitude;
+    localRTKFrameLLA.longitude = local_rtk_pos_ref_longitude;
+    localRTKFrameLLA.altitude = local_rtk_pos_ref_altitude;
+    local_rtk_frame_ref_publisher.publish(localRTKFrameLLA);
+    // Don't overwrite the response if it is already false due to bad GPS health
+    response.result &= true;
+  }
+  else
+  {
+    ROS_INFO("RTK health is not sufficient. ");
+    ROS_INFO("Cannot set Local RTK Position reference");
+    local_rtk_pos_ref_set = false;
+    response.result = false;
+  }
   return true;
 }
 

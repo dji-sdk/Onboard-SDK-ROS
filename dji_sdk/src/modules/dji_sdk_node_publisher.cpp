@@ -282,6 +282,10 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     rtk_position.longitude = rtk_telemetry_position.longitude;
     rtk_position.altitude = rtk_telemetry_position.HFSL;
     p->rtk_position_publisher.publish(rtk_position);
+    // Set the member variables for current RTK position
+    p->current_rtk_latitude = rtk_telemetry_position.latitude;
+    p->current_rtk_longitude = rtk_telemetry_position.longitude;
+    p->current_rtk_altitude = rtk_telemetry_position.HFSL;
 
     //! Velocity converted to m/s to conform to REP103.
     geometry_msgs::Vector3Stamped rtk_velocity;
@@ -302,10 +306,25 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     std_msgs::UInt8 rtk_position_info;
     rtk_position_info.data = (int)rtk_telemetry_position_info;
     p->rtk_position_info_publisher.publish(rtk_position_info);
+    p->current_rtk_health = (int)rtk_telemetry_position_info;
 
     //std_msgs::UInt8 rtk_connection_status;
     //rtk_connection_status.data = (rtk_telemetry_connect_status.rtkConnected == 1) ? 1 : 0;
     //p->rtk_connection_status_publisher.publish(rtk_connection_status);
+
+    if(p->local_rtk_pos_ref_set)
+    {
+      // Send local rtk position
+      geometry_msgs::PointStamped local_rtk_pos;
+      local_rtk_pos.header.frame_id = "/local";
+      local_rtk_pos.header.stamp = rtk_position.header.stamp;
+      p->gpsConvertENU(local_rtk_pos.point.x, local_rtk_pos.point.y, rtk_position.longitude,
+          rtk_position.latitude, p->local_rtk_pos_ref_longitude, p->local_rtk_pos_ref_latitude);
+      local_rtk_pos.point.z = rtk_position.altitude - p->local_rtk_pos_ref_altitude;
+      // Local position is published in ENU Frame
+      // This follows the REP 103 to use ENU for short-range Cartesian representations
+      p->local_rtk_position_publisher.publish(local_rtk_pos);
+    }
   }
 
   return;
