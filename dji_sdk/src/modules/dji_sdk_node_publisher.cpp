@@ -275,9 +275,15 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
 
     //Telemetry::TypeMap<Telemetry::TOPIC_RTK_CONNECT_STATUS>::type rtk_telemetry_connect_status=
     //        vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_CONNECT_STATUS>();
-
+    // Quaternion is used for ros tf2 transform
     Telemetry::TypeMap<Telemetry::TOPIC_QUATERNION>::type quat =
           vehicle->subscribe->getValue<Telemetry::TOPIC_QUATERNION>();
+    // GPS is used for finding the "bias" difference between RTK and GPS
+    Telemetry::TypeMap<Telemetry::TOPIC_GPS_FUSED>::type fused_gps =
+          vehicle->subscribe->getValue<Telemetry::TOPIC_GPS_FUSED>();
+    // Altitude is used for finding the "bias" difference between RTK and GPS
+    Telemetry::TypeMap<Telemetry::TOPIC_ALTITUDE_FUSIONED>::type fused_altitude =
+          vehicle->subscribe->getValue<Telemetry::TOPIC_ALTITUDE_FUSIONED>();
 
     sensor_msgs::NavSatFix rtk_position;
     rtk_position.header.stamp = msg_time;
@@ -319,7 +325,7 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     {
       // Send local rtk position
       geometry_msgs::PointStamped local_rtk_pos;
-      local_rtk_pos.header.frame_id = "/local";
+      local_rtk_pos.header.frame_id = "/local_rtk";
       local_rtk_pos.header.stamp = rtk_position.header.stamp;
       p->gpsConvertENU(local_rtk_pos.point.x, local_rtk_pos.point.y, rtk_position.longitude,
           rtk_position.latitude, p->local_rtk_pos_ref_longitude, p->local_rtk_pos_ref_latitude);
@@ -351,6 +357,12 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
       local_rtk_pos_tf.transform.rotation.z = q_FLU2ENU.getZ();
       local_rtk_pos_tf.transform.rotation.w = q_FLU2ENU.getW();
       br_rtk.sendTransform(local_rtk_pos_tf);
+
+      // Set the GPS bias (difference between RTK position and GPS position)
+      // The bias is calculated as "bias = GPS - RTK" and should be used as "GPS_corrected = GPS - bias"
+      p->bias_gps_latitude = (fused_gps.latitude * 180.0 / C_PI) - p->current_rtk_latitude;
+      p->bias_gps_longitude = (fused_gps.longitude * 180.0 / C_PI) - p->current_rtk_longitude;
+      p->bias_gps_altitude = fused_altitude - p->current_rtk_altitude;
     }
   }
 
@@ -439,6 +451,24 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     local_pos_tf.transform.rotation.z = q_FLU2ENU.getZ();
     local_pos_tf.transform.rotation.w = q_FLU2ENU.getW();
     br.sendTransform(local_pos_tf);
+
+    // Send out the local position based on the fused GPS and RTK coordinates
+    // This sends out a local position with the rate of the GPS and accuracy of RTK
+    // There will be jumps in the position everytime the bias is updated (when RTK position is received)
+    if(p->local_rtk_pos_ref_set)
+    {
+      geometry_msgs::PointStamped local_pos_fused;
+      local_pos_fused.header.frame_id = "/local_fused";
+      local_pos_fused.header.stamp = gps_pos.header.stamp;
+      p->gpsConvertENU(local_pos_fused.point.x, local_pos_fused.point.y, 
+          gps_pos.longitude - p->bias_gps_longitude, gps_pos.latitude - p->bias_gps_latitude, 
+          p->local_rtk_pos_ref_longitude, p->local_rtk_pos_ref_latitude);
+      local_pos_fused.point.z = (gps_pos.altitude - p->bias_gps_altitude) - p->local_rtk_pos_ref_altitude;
+      // Local position is published in ENU Frame
+      // This follows the REP 103 to use ENU for short-range Cartesian representations
+      p->local_rtk_fused_position_publisher.publish(local_pos_fused);
+
+    }
   }
 
   Telemetry::TypeMap<Telemetry::TOPIC_HEIGHT_FUSION>::type fused_height =

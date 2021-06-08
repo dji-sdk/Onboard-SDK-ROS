@@ -308,6 +308,9 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
   local_rtk_frame_ref_publisher =
       nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/local_rtk_frame_ref", 10, true);
 
+  local_rtk_fused_position_publisher =
+      nh.advertise<geometry_msgs::PointStamped>("dji_sdk/local_rtk_fused_position", 10);
+
   time_sync_nmea_publisher =
       nh.advertise<nmea_msgs::Sentence>("dji_sdk/time_sync_nmea_msg", 10);
 

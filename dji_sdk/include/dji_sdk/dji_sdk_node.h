@@ -386,6 +386,8 @@ private:
   //! Local RTK Position Publisher (Publishes local RTK position in ENU frame)
   ros::Publisher local_rtk_position_publisher;
   ros::Publisher local_rtk_frame_ref_publisher;
+  //! Local RTK/GPS fused position publisher (Publishes high rate local RTK position in ENU frame)
+  ros::Publisher local_rtk_fused_position_publisher;
   ros::Publisher time_sync_nmea_publisher;
   ros::Publisher time_sync_gps_utc_publisher;
   ros::Publisher time_sync_fc_utc_publisher;
@@ -460,6 +462,7 @@ private:
   int current_gps_health;
   double local_rtk_pos_ref_latitude, local_rtk_pos_ref_longitude, local_rtk_pos_ref_altitude;
   double current_rtk_latitude, current_rtk_longitude, current_rtk_altitude;
+  double bias_gps_latitude, bias_gps_longitude, bias_gps_altitude;
   int current_rtk_health;
   bool rtkSupport;
 };
