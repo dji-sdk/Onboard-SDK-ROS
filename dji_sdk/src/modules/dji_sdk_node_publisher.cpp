@@ -276,6 +276,9 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     //Telemetry::TypeMap<Telemetry::TOPIC_RTK_CONNECT_STATUS>::type rtk_telemetry_connect_status=
     //        vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_CONNECT_STATUS>();
 
+    Telemetry::TypeMap<Telemetry::TOPIC_QUATERNION>::type quat =
+          vehicle->subscribe->getValue<Telemetry::TOPIC_QUATERNION>();
+
     sensor_msgs::NavSatFix rtk_position;
     rtk_position.header.stamp = msg_time;
     rtk_position.latitude = rtk_telemetry_position.latitude;
@@ -324,6 +327,30 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
       // Local position is published in ENU Frame
       // This follows the REP 103 to use ENU for short-range Cartesian representations
       p->local_rtk_position_publisher.publish(local_rtk_pos);
+
+      // Also publish the local RTK position as a tf
+      static tf2_ros::TransformBroadcaster br_rtk;
+      geometry_msgs::TransformStamped local_rtk_pos_tf;
+      // Set local position
+      local_rtk_pos_tf.header.stamp = rtk_position.header.stamp;
+      local_rtk_pos_tf.header.frame_id = "world_ENU_RTK";
+      local_rtk_pos_tf.child_frame_id = "body_FLU_RTK";
+      local_rtk_pos_tf.transform.translation.x = local_rtk_pos.point.x;
+      local_rtk_pos_tf.transform.translation.y = local_rtk_pos.point.y;
+      local_rtk_pos_tf.transform.translation.z = local_rtk_pos.point.z;
+      // Set the quaternion
+      // This follows REP 103 to use FLU for body frame.
+      // The quaternion is the rotation from body_FLU to ground_ENU
+      tf::Matrix3x3 R_FRD2NED(tf::Quaternion(quat.q1, quat.q2, quat.q3, quat.q0));
+      tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED.transpose() * R_FRD2NED * p->R_FLU2FRD;
+      tf::Quaternion q_FLU2ENU;
+      R_FLU2ENU.getRotation(q_FLU2ENU);
+      // @note this mapping is tested
+      local_rtk_pos_tf.transform.rotation.x = q_FLU2ENU.getX();
+      local_rtk_pos_tf.transform.rotation.y = q_FLU2ENU.getY();
+      local_rtk_pos_tf.transform.rotation.z = q_FLU2ENU.getZ();
+      local_rtk_pos_tf.transform.rotation.w = q_FLU2ENU.getW();
+      br_rtk.sendTransform(local_rtk_pos_tf);
     }
   }
 
@@ -400,11 +427,8 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     local_pos_tf.transform.translation.y = local_pos.point.y;
     local_pos_tf.transform.translation.z = local_pos.point.z;
     // Set the quaternion
-    /*!
-    * note: We are now following REP 103 to use FLU for
-    *       body frame. The quaternion is the rotation from
-    *       body_FLU to ground_ENU
-    */
+    // This follows REP 103 to use FLU for body frame.
+    // The quaternion is the rotation from body_FLU to ground_ENU
     tf::Matrix3x3 R_FRD2NED(tf::Quaternion(quat.q1, quat.q2, quat.q3, quat.q0));
     tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED.transpose() * R_FRD2NED * p->R_FLU2FRD;
     tf::Quaternion q_FLU2ENU;
