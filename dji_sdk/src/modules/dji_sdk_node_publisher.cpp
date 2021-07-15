@@ -275,6 +275,15 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
 
     //Telemetry::TypeMap<Telemetry::TOPIC_RTK_CONNECT_STATUS>::type rtk_telemetry_connect_status=
     //        vehicle->subscribe->getValue<Telemetry::TOPIC_RTK_CONNECT_STATUS>();
+    // Quaternion is used for ros tf2 transform
+    Telemetry::TypeMap<Telemetry::TOPIC_QUATERNION>::type quat =
+          vehicle->subscribe->getValue<Telemetry::TOPIC_QUATERNION>();
+    // GPS is used for finding the "bias" difference between RTK and GPS
+    Telemetry::TypeMap<Telemetry::TOPIC_GPS_FUSED>::type fused_gps =
+          vehicle->subscribe->getValue<Telemetry::TOPIC_GPS_FUSED>();
+    // Altitude is used for finding the "bias" difference between RTK and GPS
+    Telemetry::TypeMap<Telemetry::TOPIC_ALTITUDE_FUSIONED>::type fused_altitude =
+          vehicle->subscribe->getValue<Telemetry::TOPIC_ALTITUDE_FUSIONED>();
 
     sensor_msgs::NavSatFix rtk_position;
     rtk_position.header.stamp = msg_time;
@@ -282,6 +291,10 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     rtk_position.longitude = rtk_telemetry_position.longitude;
     rtk_position.altitude = rtk_telemetry_position.HFSL;
     p->rtk_position_publisher.publish(rtk_position);
+    // Set the member variables for current RTK position
+    p->current_rtk_latitude = rtk_telemetry_position.latitude;
+    p->current_rtk_longitude = rtk_telemetry_position.longitude;
+    p->current_rtk_altitude = rtk_telemetry_position.HFSL;
 
     //! Velocity converted to m/s to conform to REP103.
     geometry_msgs::Vector3Stamped rtk_velocity;
@@ -302,10 +315,55 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     std_msgs::UInt8 rtk_position_info;
     rtk_position_info.data = (int)rtk_telemetry_position_info;
     p->rtk_position_info_publisher.publish(rtk_position_info);
+    p->current_rtk_health = (int)rtk_telemetry_position_info;
 
     //std_msgs::UInt8 rtk_connection_status;
     //rtk_connection_status.data = (rtk_telemetry_connect_status.rtkConnected == 1) ? 1 : 0;
     //p->rtk_connection_status_publisher.publish(rtk_connection_status);
+
+    if(p->local_rtk_pos_ref_set)
+    {
+      // Send local rtk position
+      geometry_msgs::PointStamped local_rtk_pos;
+      local_rtk_pos.header.frame_id = "/local_rtk";
+      local_rtk_pos.header.stamp = rtk_position.header.stamp;
+      p->gpsConvertENU(local_rtk_pos.point.x, local_rtk_pos.point.y, rtk_position.longitude,
+          rtk_position.latitude, p->local_rtk_pos_ref_longitude, p->local_rtk_pos_ref_latitude);
+      local_rtk_pos.point.z = rtk_position.altitude - p->local_rtk_pos_ref_altitude;
+      // Local position is published in ENU Frame
+      // This follows the REP 103 to use ENU for short-range Cartesian representations
+      p->local_rtk_position_publisher.publish(local_rtk_pos);
+
+      // Also publish the local RTK position as a tf
+      static tf2_ros::TransformBroadcaster br_rtk;
+      geometry_msgs::TransformStamped local_rtk_pos_tf;
+      // Set local position
+      local_rtk_pos_tf.header.stamp = rtk_position.header.stamp;
+      local_rtk_pos_tf.header.frame_id = "world_ENU_RTK";
+      local_rtk_pos_tf.child_frame_id = "body_FLU_RTK";
+      local_rtk_pos_tf.transform.translation.x = local_rtk_pos.point.x;
+      local_rtk_pos_tf.transform.translation.y = local_rtk_pos.point.y;
+      local_rtk_pos_tf.transform.translation.z = local_rtk_pos.point.z;
+      // Set the quaternion
+      // This follows REP 103 to use FLU for body frame.
+      // The quaternion is the rotation from body_FLU to ground_ENU
+      tf::Matrix3x3 R_FRD2NED(tf::Quaternion(quat.q1, quat.q2, quat.q3, quat.q0));
+      tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED.transpose() * R_FRD2NED * p->R_FLU2FRD;
+      tf::Quaternion q_FLU2ENU;
+      R_FLU2ENU.getRotation(q_FLU2ENU);
+      // @note this mapping is tested
+      local_rtk_pos_tf.transform.rotation.x = q_FLU2ENU.getX();
+      local_rtk_pos_tf.transform.rotation.y = q_FLU2ENU.getY();
+      local_rtk_pos_tf.transform.rotation.z = q_FLU2ENU.getZ();
+      local_rtk_pos_tf.transform.rotation.w = q_FLU2ENU.getW();
+      br_rtk.sendTransform(local_rtk_pos_tf);
+
+      // Set the GPS bias (difference between RTK position and GPS position)
+      // The bias is calculated as "bias = GPS - RTK" and should be used as "GPS_corrected = GPS - bias"
+      p->bias_gps_latitude = (fused_gps.latitude * 180.0 / C_PI) - p->current_rtk_latitude;
+      p->bias_gps_longitude = (fused_gps.longitude * 180.0 / C_PI) - p->current_rtk_longitude;
+      p->bias_gps_altitude = fused_altitude - p->current_rtk_altitude;
+    }
   }
 
   return;
@@ -340,6 +398,8 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     vehicle->subscribe->getValue<Telemetry::TOPIC_GPS_FUSED>();
   Telemetry::TypeMap<Telemetry::TOPIC_ALTITUDE_FUSIONED>::type fused_altitude =
     vehicle->subscribe->getValue<Telemetry::TOPIC_ALTITUDE_FUSIONED>();
+  Telemetry::TypeMap<Telemetry::TOPIC_QUATERNION>::type quat =
+          vehicle->subscribe->getValue<Telemetry::TOPIC_QUATERNION>();
 
 
   sensor_msgs::NavSatFix gps_pos;
@@ -367,6 +427,66 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
    *       in ENU Frame
    */
     p->local_position_publisher.publish(local_pos);
+
+    // Also publish the local position as a tf
+    static tf2_ros::TransformBroadcaster br;
+    geometry_msgs::TransformStamped local_pos_tf;
+    // Set local position
+    local_pos_tf.header.stamp = gps_pos.header.stamp;
+    local_pos_tf.header.frame_id = "world_ENU";
+    local_pos_tf.child_frame_id = "body_FLU";
+    local_pos_tf.transform.translation.x = local_pos.point.x;
+    local_pos_tf.transform.translation.y = local_pos.point.y;
+    local_pos_tf.transform.translation.z = local_pos.point.z;
+    // Set the quaternion
+    // This follows REP 103 to use FLU for body frame.
+    // The quaternion is the rotation from body_FLU to ground_ENU
+    tf::Matrix3x3 R_FRD2NED(tf::Quaternion(quat.q1, quat.q2, quat.q3, quat.q0));
+    tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED.transpose() * R_FRD2NED * p->R_FLU2FRD;
+    tf::Quaternion q_FLU2ENU;
+    R_FLU2ENU.getRotation(q_FLU2ENU);
+    // @note this mapping is tested
+    local_pos_tf.transform.rotation.x = q_FLU2ENU.getX();
+    local_pos_tf.transform.rotation.y = q_FLU2ENU.getY();
+    local_pos_tf.transform.rotation.z = q_FLU2ENU.getZ();
+    local_pos_tf.transform.rotation.w = q_FLU2ENU.getW();
+    br.sendTransform(local_pos_tf);
+
+    // Send out the local position based on the fused GPS and RTK coordinates
+    // This sends out a local position with the rate of the GPS and accuracy of RTK
+    // There will be jumps in the position everytime the bias is updated (when RTK position is received)
+    if(p->local_rtk_pos_ref_set)
+    {
+      geometry_msgs::PointStamped local_pos_fused;
+      local_pos_fused.header.frame_id = "/local_fused";
+      local_pos_fused.header.stamp = gps_pos.header.stamp;
+      p->gpsConvertENU(local_pos_fused.point.x, local_pos_fused.point.y, 
+          gps_pos.longitude - p->bias_gps_longitude, gps_pos.latitude - p->bias_gps_latitude, 
+          p->local_rtk_pos_ref_longitude, p->local_rtk_pos_ref_latitude);
+      local_pos_fused.point.z = (gps_pos.altitude - p->bias_gps_altitude) - p->local_rtk_pos_ref_altitude;
+      // Local position is published in ENU Frame
+      // This follows the REP 103 to use ENU for short-range Cartesian representations
+      p->local_rtk_fused_position_publisher.publish(local_pos_fused);
+
+      // Also publish the fused local position as a tf
+      static tf2_ros::TransformBroadcaster br;
+      geometry_msgs::TransformStamped local_pos_fused_tf;
+      // Set local position
+      local_pos_fused_tf.header.stamp = gps_pos.header.stamp;
+      local_pos_fused_tf.header.frame_id = "world_ENU_fused";
+      local_pos_fused_tf.child_frame_id = "body_FLU_fused";
+      local_pos_fused_tf.transform.translation.x = local_pos_fused.point.x;
+      local_pos_fused_tf.transform.translation.y = local_pos_fused.point.y;
+      local_pos_fused_tf.transform.translation.z = local_pos_fused.point.z;
+      // Set the quaternion (reused from above)
+      // This follows REP 103 to use FLU for body frame.
+      // The quaternion is the rotation from body_FLU to ground_ENU
+      local_pos_fused_tf.transform.rotation.x = q_FLU2ENU.getX();
+      local_pos_fused_tf.transform.rotation.y = q_FLU2ENU.getY();
+      local_pos_fused_tf.transform.rotation.z = q_FLU2ENU.getZ();
+      local_pos_fused_tf.transform.rotation.w = q_FLU2ENU.getW();
+      br.sendTransform(local_pos_fused_tf);
+    }
   }
 
   Telemetry::TypeMap<Telemetry::TOPIC_HEIGHT_FUSION>::type fused_height =

@@ -19,6 +19,7 @@
 //! ROS standard msgs
 #include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/Vector3Stamped.h>
+#include <geometry_msgs/TransformStamped.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <sensor_msgs/Joy.h>
@@ -30,6 +31,7 @@
 #include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 #include <nmea_msgs/Sentence.h>
+#include <tf2_ros/transform_broadcaster.h>
 
 //! msgs
 #include <dji_sdk/Gimbal.h>
@@ -381,6 +383,11 @@ private:
   //! Local Position Publisher (Publishes local position in ENU frame)
   ros::Publisher local_position_publisher;
   ros::Publisher local_frame_ref_publisher;
+  //! Local RTK Position Publisher (Publishes local RTK position in ENU frame)
+  ros::Publisher local_rtk_position_publisher;
+  ros::Publisher local_rtk_frame_ref_publisher;
+  //! Local RTK/GPS fused position publisher (Publishes high rate local RTK position in ENU frame)
+  ros::Publisher local_rtk_fused_position_publisher;
   ros::Publisher time_sync_nmea_publisher;
   ros::Publisher time_sync_gps_utc_publisher;
   ros::Publisher time_sync_fc_utc_publisher;
@@ -441,6 +448,7 @@ private:
   bool align_time_with_FC;
 
   bool local_pos_ref_set;
+  bool local_rtk_pos_ref_set;
 
   void alignRosTimeWithFlightController(ros::Time now_time, uint32_t tick);
   void setUpM100DefaultFreq(uint8_t freq[16]);
@@ -452,6 +460,10 @@ private:
   double local_pos_ref_latitude, local_pos_ref_longitude, local_pos_ref_altitude;
   double current_gps_latitude, current_gps_longitude, current_gps_altitude;
   int current_gps_health;
+  double local_rtk_pos_ref_latitude, local_rtk_pos_ref_longitude, local_rtk_pos_ref_altitude;
+  double current_rtk_latitude, current_rtk_longitude, current_rtk_altitude;
+  double bias_gps_latitude, bias_gps_longitude, bias_gps_altitude;
+  int current_rtk_health;
   bool rtkSupport;
 };
 
