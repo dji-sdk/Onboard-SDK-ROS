@@ -339,7 +339,7 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
       geometry_msgs::TransformStamped local_rtk_pos_tf;
       // Set local position
       local_rtk_pos_tf.header.stamp = rtk_position.header.stamp;
-      local_rtk_pos_tf.header.frame_id = "world_ENU_RTK";
+      local_rtk_pos_tf.header.frame_id = "world_ENU";
       local_rtk_pos_tf.child_frame_id = "body_FLU_RTK";
       local_rtk_pos_tf.transform.translation.x = local_rtk_pos.point.x;
       local_rtk_pos_tf.transform.translation.y = local_rtk_pos.point.y;
@@ -473,7 +473,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
       geometry_msgs::TransformStamped local_pos_fused_tf;
       // Set local position
       local_pos_fused_tf.header.stamp = gps_pos.header.stamp;
-      local_pos_fused_tf.header.frame_id = "world_ENU_fused";
+      local_pos_fused_tf.header.frame_id = "world_ENU";
       local_pos_fused_tf.child_frame_id = "body_FLU_fused";
       local_pos_fused_tf.transform.translation.x = local_pos_fused.point.x;
       local_pos_fused_tf.transform.translation.y = local_pos_fused.point.y;
