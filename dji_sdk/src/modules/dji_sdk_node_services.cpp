@@ -175,7 +175,6 @@ DJISDKNode::setLocalPosRefCallback(dji_sdk::SetLocalPosRef::Request &request,
     ROS_INFO("RTK health is not sufficient. ");
     ROS_INFO("Cannot set Local RTK Position reference");
     local_rtk_pos_ref_set = false;
-    response.result = false;
   }
   return true;
 }
