@@ -48,6 +48,7 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
   if (!initVehicle(nh_private))
   {
     ROS_ERROR("Vehicle initialization failed");
+    ros::shutdown();
   }
 
   else
@@ -55,21 +56,25 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
     if (!initServices(nh))
     {
       ROS_ERROR("initServices failed");
+      ros::shutdown();
     }
 
     if (!initFlightControl(nh))
     {
       ROS_ERROR("initFlightControl failed");
+      ros::shutdown();
     }
 
     if (!initSubscriber(nh))
     {
       ROS_ERROR("initSubscriber failed");
+      ros::shutdown();
     }
 
     if (!initPublisher(nh))
     {
       ROS_ERROR("initPublisher failed");
+      ros::shutdown();
     }
   }
 }
