@@ -304,7 +304,8 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     rtk_velocity.vector.z = (rtk_telemetry_velocity.z)/100;
     p->rtk_velocity_publisher.publish(rtk_velocity);
 
-    std_msgs::Int16 rtk_yaw;
+    dji_sdk::Int16Stamped rtk_yaw;
+    rtk_yaw.header.stamp = msg_time;
     rtk_yaw.data = rtk_telemetry_yaw;
     p->rtk_yaw_publisher.publish(rtk_yaw);
 

@@ -567,7 +567,7 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
             nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/rtk_velocity", 5);
 
     rtk_yaw_publisher =
-            nh.advertise<std_msgs::Int16>("dji_sdk/rtk_yaw", 5);
+            nh.advertise<dji_sdk::Int16Stamped>("dji_sdk/rtk_yaw", 5);
 
     rtk_position_info_publisher =
             nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_info_position", 5);

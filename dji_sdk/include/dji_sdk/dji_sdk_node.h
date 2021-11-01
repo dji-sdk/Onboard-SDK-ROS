@@ -41,6 +41,7 @@
 #include <dji_sdk/VOPosition.h>
 #include <dji_sdk/FCTimeInUTC.h>
 #include <dji_sdk/GPSUTC.h>
+#include <dji_sdk/Int16Stamped.h>
 
 //! mission service
 // missionManager
