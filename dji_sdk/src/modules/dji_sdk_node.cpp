@@ -569,6 +569,9 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
     rtk_yaw_publisher =
             nh.advertise<dji_sdk::Int16Stamped>("dji_sdk/rtk_yaw", 5);
 
+    rtk_yaw_quaternion_publisher =
+            nh.advertise<geometry_msgs::QuaternionStamped>("dji_sdk/rtk_yaw_quaternion", 5);
+
     rtk_position_info_publisher =
             nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_info_position", 5);
 

@@ -377,6 +377,7 @@ private:
   ros::Publisher rtk_position_publisher;
   ros::Publisher rtk_velocity_publisher;
   ros::Publisher rtk_yaw_publisher;
+  ros::Publisher rtk_yaw_quaternion_publisher;
   ros::Publisher rtk_position_info_publisher;
   ros::Publisher rtk_yaw_info_publisher;
   ros::Publisher rtk_connection_status_publisher;
