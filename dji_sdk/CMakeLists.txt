@@ -32,7 +32,7 @@ endif()
 find_package(DJIOSDK REQUIRED)
 
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Boost REQUIRED COMPONENTS system)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -162,6 +162,10 @@ include_directories(
 #   src/${PROJECT_NAME}/dji_sdk.cpp
 # )
 
+add_library(dji_sdk_node_geometry
+  src/modules/dji_sdk_node_geometry.cpp
+)
+
 ## Declare a cpp executable
 add_executable(dji_sdk_node
   src/main.cpp
@@ -184,7 +188,21 @@ add_dependencies(dji_sdk_node
 target_link_libraries(dji_sdk_node
   ${catkin_LIBRARIES}
   ${DJIOSDK_LIBRARIES}
+  dji_sdk_node_geometry
 )
+
+#############
+## Tests ##
+#############
+
+if(CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(testDJISDKGeometry test/test_dji_sdk_geometry.cpp)
+  target_link_libraries(testDJISDKGeometry
+    dji_sdk_node_geometry
+    ${DJIOSDK_LIBRARIES}
+    ${Boost_LIBRARIES}
+  )
+endif()
 
 #############
 ## Install ##

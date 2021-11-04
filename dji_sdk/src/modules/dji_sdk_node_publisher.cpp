@@ -10,6 +10,7 @@
  */
 
 #include <dji_sdk/dji_sdk_node.h>
+#include <dji_sdk/dji_sdk_geometry.h>
 #include <tf/tf.h>
 #include <sensor_msgs/Joy.h>
 #include <dji_telemetry.hpp>
@@ -312,21 +313,7 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     geometry_msgs::QuaternionStamped rtk_yaw_quaternion;
     rtk_yaw_quaternion.header.frame_id = "body_FLU_RTK";
     rtk_yaw_quaternion.header.stamp = msg_time;
-
-    tf::Matrix3x3 R_RTK2FRD;
-    tf::Matrix3x3 R_NED2RTK;
-    tf::Matrix3x3 R_FLU2ENU;
-
-    R_RTK2FRD.setRPY(0.0, 0.0, DEG2RAD(90.0));
-    R_NED2RTK.setRPY(0.0, 0.0, DEG2RAD(static_cast<double>(rtk_telemetry_yaw)));
-    R_FLU2ENU = R_ENU2NED.transpose() * R_NED2RTK * R_RTK2FRD * R_FLU2FRD.transpose();
-
-    tf::Quaternion q_FLU2ENU;
-    R_FLU2ENU.getRotation(q_FLU2ENU);
-    rtk_yaw_quaternion.quaternion.w = q_FLU2ENU.getW();
-    rtk_yaw_quaternion.quaternion.x = q_FLU2ENU.getX();
-    rtk_yaw_quaternion.quaternion.y = q_FLU2ENU.getY();
-    rtk_yaw_quaternion.quaternion.z = q_FLU2ENU.getZ();
+    rtk_yaw_quaternion.quaternion = DJISDKGeometry::RTKYawQuaternion(DEG2RAD(static_cast<double>(rtk_telemetry_yaw)));
     p->rtk_yaw_quaternion_publisher.publish(rtk_yaw_quaternion);
 
     std_msgs::UInt8 rtk_yaw_info;
