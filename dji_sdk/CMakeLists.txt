@@ -162,8 +162,8 @@ include_directories(
 #   src/${PROJECT_NAME}/dji_sdk.cpp
 # )
 
-add_library(dji_sdk_node_geometry
-  src/modules/dji_sdk_node_geometry.cpp
+add_library(dji_sdk_geometry
+  src/dji_sdk_geometry.cpp
 )
 
 ## Declare a cpp executable
@@ -188,7 +188,7 @@ add_dependencies(dji_sdk_node
 target_link_libraries(dji_sdk_node
   ${catkin_LIBRARIES}
   ${DJIOSDK_LIBRARIES}
-  dji_sdk_node_geometry
+  dji_sdk_geometry
 )
 
 #############
@@ -198,7 +198,7 @@ target_link_libraries(dji_sdk_node
 if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(testDJISDKGeometry test/test_dji_sdk_geometry.cpp)
   target_link_libraries(testDJISDKGeometry
-    dji_sdk_node_geometry
+    dji_sdk_geometry
     ${DJIOSDK_LIBRARIES}
     ${Boost_LIBRARIES}
   )
