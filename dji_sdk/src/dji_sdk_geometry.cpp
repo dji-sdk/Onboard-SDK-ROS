@@ -1,5 +1,5 @@
 #include <dji_sdk/dji_sdk_node.h>
-#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf/tf.h>
 #include <dji_sdk/dji_sdk_geometry.h>
 
 double DJISDKGeometry::wrapTo2Pi(double angle)
@@ -17,9 +17,9 @@ double DJISDKGeometry::wrapToPi(double angle)
 
 double DJISDKGeometry::transformRtkYaw(double raw_rtk_yaw_radians)
 {
-  tf2::Matrix3x3 R_RTK2FRD;
-  tf2::Matrix3x3 R_NED2RTK;
-  tf2::Matrix3x3 R_FLU2ENU;
+  tf::Matrix3x3 R_RTK2FRD;
+  tf::Matrix3x3 R_NED2RTK;
+  tf::Matrix3x3 R_FLU2ENU;
 
   R_RTK2FRD.setRPY(0.0, 0.0, DEG2RAD(90.0));
   R_NED2RTK.setRPY(0.0, 0.0, raw_rtk_yaw_radians);

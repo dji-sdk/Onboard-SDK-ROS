@@ -1,3 +1,3 @@
 Header header
-Point position
+geometry_msgs/Point point
 uint8 solution_status
