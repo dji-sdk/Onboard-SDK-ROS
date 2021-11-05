@@ -81,6 +81,8 @@ add_message_files(
   FlightAnomaly.msg
   VOPosition.msg
   Int16Stamped.msg
+  RTKYaw.msg
+  RTKPosition.msg
 )
 
 ## Generate services in the 'srv' folder

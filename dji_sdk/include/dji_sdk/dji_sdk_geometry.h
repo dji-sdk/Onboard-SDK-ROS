@@ -14,7 +14,7 @@ namespace DJISDKGeometry
   double wrapTo2Pi(double angle);
   double wrapToPi(double angle);
   
-  geometry_msgs::Quaternion RTKYawQuaternion(double rtk_yaw_radians);
+  double transformRtkYaw(double raw_rtk_yaw_radians);
 
   void gpsConvertENU(double &ENU_x, double &ENU_y,
                      double gps_t_lon, double gps_t_lat,

@@ -1,5 +1,5 @@
 #include <dji_sdk/dji_sdk_node.h>
-#include <tf/tf.h>
+#include <tf2/LinearMath/Matrix3x3.h>
 #include <dji_sdk/dji_sdk_geometry.h>
 
 double DJISDKGeometry::wrapTo2Pi(double angle)
@@ -15,26 +15,19 @@ double DJISDKGeometry::wrapToPi(double angle)
   return wrapTo2Pi(angle + M_PI) - M_PI;
 }
 
-geometry_msgs::Quaternion DJISDKGeometry::RTKYawQuaternion(double rtk_yaw_radians)
+double DJISDKGeometry::transformRtkYaw(double raw_rtk_yaw_radians)
 {
-  tf::Matrix3x3 R_RTK2FRD;
-  tf::Matrix3x3 R_NED2RTK;
-  tf::Matrix3x3 R_FLU2ENU;
+  tf2::Matrix3x3 R_RTK2FRD;
+  tf2::Matrix3x3 R_NED2RTK;
+  tf2::Matrix3x3 R_FLU2ENU;
 
   R_RTK2FRD.setRPY(0.0, 0.0, DEG2RAD(90.0));
-  R_NED2RTK.setRPY(0.0, 0.0, rtk_yaw_radians);
+  R_NED2RTK.setRPY(0.0, 0.0, raw_rtk_yaw_radians);
   R_FLU2ENU = R_ENU2NED.transpose() * R_NED2RTK * R_RTK2FRD * R_FLU2FRD.transpose();
 
-  tf::Quaternion q_FLU2ENU;
-  R_FLU2ENU.getRotation(q_FLU2ENU);
-
-  geometry_msgs::Quaternion rtk_yaw_quaternion;
-  rtk_yaw_quaternion.w = q_FLU2ENU.getW();
-  rtk_yaw_quaternion.x = q_FLU2ENU.getX();
-  rtk_yaw_quaternion.y = q_FLU2ENU.getY();
-  rtk_yaw_quaternion.z = q_FLU2ENU.getZ();
-
-  return rtk_yaw_quaternion;
+  double roll, pitch, yaw;
+  R_FLU2ENU.getRPY(roll, pitch, yaw);
+  return yaw;
 }
 
 void DJISDKGeometry::gpsConvertENU(double &ENU_x, double &ENU_y,
