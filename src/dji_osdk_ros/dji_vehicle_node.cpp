@@ -1748,7 +1748,7 @@ bool VehicleNode::getAvoidEnableStatusCallback(GetAvoidEnable::Request& request,
     return false;
   }
 
-  response.upwards_avoid_enable_status = get_horizon_avoid_enable_status;
+  response.upwards_avoid_enable_status = get_upwards_avoid_enable_status;
 
   response.result = true;
   return true;
