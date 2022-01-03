@@ -641,7 +641,8 @@ bool VehicleNode::waypointV2UploadActionCallback(
     return false;
   }
   response.result = ptr_wrapper_->uploadWaypointV2Actions(this->actions, WAIT_TIMEOUT);
-
+  if (response.result) this->actions.clear();
+  
   return response.result;
 }
 
