@@ -149,7 +149,7 @@ DJISDKNode::dataBroadcastCallback()
   {
     geometry_msgs::Vector3Stamped velocity;
     velocity.header.stamp    = now_time;
-    velocity.header.frame_id = "ground_ENU";
+    velocity.header.frame_id = "world_ENU";
 
     velocity.vector.x = vehicle->broadcast->getVelocity().y;
     velocity.vector.y = vehicle->broadcast->getVelocity().x;
@@ -192,20 +192,20 @@ DJISDKNode::dataBroadcastCallback()
     flight_status_publisher.publish(flight_status);
   }
 
-  uint16_t flag_has_gimbal = 
+  uint16_t flag_has_gimbal =
           isM100() ? (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::HAS_GIMBAL) :
           (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_GIMBAL);
   if (flag_has_gimbal)
   {
     Telemetry::Gimbal gimbal_reading;
 
-    
+
     Telemetry::Gimbal gimbal_angle = vehicle->broadcast->getGimbal();
 
     geometry_msgs::Vector3Stamped gimbal_angle_vec3;
 
     gimbal_angle_vec3.header.stamp = now_time;
-    gimbal_angle_vec3.header.frame_id = "ground_ENU";
+    gimbal_angle_vec3.header.frame_id = "world_ENU";
     gimbal_angle_vec3.vector.x     = gimbal_angle.roll;
     gimbal_angle_vec3.vector.y     = gimbal_angle.pitch;
     gimbal_angle_vec3.vector.z     = gimbal_angle.yaw;
@@ -346,7 +346,7 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
       local_rtk_pos_tf.transform.translation.z = local_rtk_pos.point.z;
       // Set the quaternion
       // This follows REP 103 to use FLU for body frame.
-      // The quaternion is the rotation from body_FLU to ground_ENU
+      // The quaternion is the rotation from body_FLU to world_ENU
       tf::Matrix3x3 R_FRD2NED(tf::Quaternion(quat.q1, quat.q2, quat.q3, quat.q0));
       tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED.transpose() * R_FRD2NED * p->R_FLU2FRD;
       tf::Quaternion q_FLU2ENU;
@@ -440,7 +440,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     local_pos_tf.transform.translation.z = local_pos.point.z;
     // Set the quaternion
     // This follows REP 103 to use FLU for body frame.
-    // The quaternion is the rotation from body_FLU to ground_ENU
+    // The quaternion is the rotation from body_FLU to world_ENU
     tf::Matrix3x3 R_FRD2NED(tf::Quaternion(quat.q1, quat.q2, quat.q3, quat.q0));
     tf::Matrix3x3 R_FLU2ENU = p->R_ENU2NED.transpose() * R_FRD2NED * p->R_FLU2FRD;
     tf::Quaternion q_FLU2ENU;
@@ -460,8 +460,8 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
       geometry_msgs::PointStamped local_pos_fused;
       local_pos_fused.header.frame_id = "/local_fused";
       local_pos_fused.header.stamp = gps_pos.header.stamp;
-      p->gpsConvertENU(local_pos_fused.point.x, local_pos_fused.point.y, 
-          gps_pos.longitude - p->bias_gps_longitude, gps_pos.latitude - p->bias_gps_latitude, 
+      p->gpsConvertENU(local_pos_fused.point.x, local_pos_fused.point.y,
+          gps_pos.longitude - p->bias_gps_longitude, gps_pos.latitude - p->bias_gps_latitude,
           p->local_rtk_pos_ref_longitude, p->local_rtk_pos_ref_latitude);
       local_pos_fused.point.z = (gps_pos.altitude - p->bias_gps_altitude) - p->local_rtk_pos_ref_altitude;
       // Local position is published in ENU Frame
@@ -480,7 +480,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
       local_pos_fused_tf.transform.translation.z = local_pos_fused.point.z;
       // Set the quaternion (reused from above)
       // This follows REP 103 to use FLU for body frame.
-      // The quaternion is the rotation from body_FLU to ground_ENU
+      // The quaternion is the rotation from body_FLU to world_ENU
       local_pos_fused_tf.transform.rotation.x = q_FLU2ENU.getX();
       local_pos_fused_tf.transform.rotation.y = q_FLU2ENU.getY();
       local_pos_fused_tf.transform.rotation.z = q_FLU2ENU.getZ();
@@ -512,7 +512,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
    * note: We are now following REP 103 to use ENU for
    *       short-range Cartesian representations
    */
-  v.header.frame_id = "ground_ENU";
+  v.header.frame_id = "world_ENU";
   v.header.stamp = msg_time;
   v.vector.x = v_FC.data.y;  //x, y are swapped from NE to EN
   v.vector.y = v_FC.data.x;
@@ -566,7 +566,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     vo_pos.yHealth = vo_position.yHealth;
     vo_pos.zHealth = vo_position.zHealth;
     p->vo_position_publisher.publish(vo_pos);
-  
+
     Telemetry::TypeMap<Telemetry::TOPIC_RC_WITH_FLAG_DATA>::type rc_with_flag =
             vehicle->subscribe->getValue<Telemetry::TOPIC_RC_WITH_FLAG_DATA>();
 
@@ -692,7 +692,7 @@ DJISDKNode::publish100HzData(Vehicle *vehicle, RecvContainer recvFrame,
   /*!
    * note: We are now following REP 103 to use FLU for
    *       body frame. The quaternion is the rotation from
-   *       body_FLU to ground_ENU
+   *       body_FLU to world_ENU
    */
   q.header.frame_id = "body_FLU";
   q.header.stamp    = msg_time;
@@ -737,7 +737,7 @@ DJISDKNode::publish100HzData(Vehicle *vehicle, RecvContainer recvFrame,
    *       cause confusion with the body-frame accel in imu message
    */
 
-  acceleration.header.frame_id = "ground_ENU";
+  acceleration.header.frame_id = "world_ENU";
   acceleration.header.stamp    = msg_time;
 
   acceleration.vector.x        = a_FC.y;  //x, y are swapped from NE to EN
@@ -792,7 +792,7 @@ DJISDKNode::publish400HzData(Vehicle *vehicle, RecvContainer recvFrame,
   synced_imu.linear_acceleration.z =  -hardSync_FC.a.z * p->gravity_const;
 
   /*!
-   * The quaternion is the rotation from body_FLU to ground_ENU.
+   * The quaternion is the rotation from body_FLU to world_ENU.
    * Refer to:
    *   https://github.com/mavlink/mavros/blob/master/mavros/src/plugins/imu_pub.cpp
    */
