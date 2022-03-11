@@ -80,7 +80,6 @@ add_message_files(
   MissionHotpointTask.msg
   FlightAnomaly.msg
   VOPosition.msg
-  Int16Stamped.msg
   RTKYaw.msg
   RTKPosition.msg
 )

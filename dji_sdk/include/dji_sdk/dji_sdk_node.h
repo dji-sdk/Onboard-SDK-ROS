@@ -41,7 +41,6 @@
 #include <dji_sdk/VOPosition.h>
 #include <dji_sdk/FCTimeInUTC.h>
 #include <dji_sdk/GPSUTC.h>
-#include <dji_sdk/Int16Stamped.h>
 #include <dji_sdk/RTKYaw.h>
 #include <dji_sdk/RTKPosition.h>
 
