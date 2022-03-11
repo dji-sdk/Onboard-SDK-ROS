@@ -1,3 +1,4 @@
+#include <tuple>
 #include <dji_sdk/dji_sdk_geometry.h>
 #include <dji_sdk/dji_sdk_node.h>
 #include <gtest/gtest.h>
@@ -7,7 +8,7 @@ using namespace DJISDKGeometry;
 TEST(TestRTKTransform, testRTKTransform)
 {
   constexpr double tolerance = 1e-12;
-  
+
   auto simple_but_non_readable_rtk_transform = [](double rtk_yaw) { return -rtk_yaw; };
   std::vector<double> rtk_yaw_input_vec = {
     0.0, 45.0, 90.0, 135.0, 180.0, 270.0, 360.0, -45.0, -90.0, -135.0, -180.0, -270.0, -360.0
@@ -18,7 +19,7 @@ TEST(TestRTKTransform, testRTKTransform)
     rtk_yaw = DEG2RAD(rtk_yaw);
     double desired_yaw = simple_but_non_readable_rtk_transform(rtk_yaw);
     double yaw = transformRtkYaw(rtk_yaw);
-    
+
     EXPECT_TRUE(std::abs(wrapToPi(yaw - desired_yaw)) < tolerance);
   }
 }
@@ -33,7 +34,7 @@ TEST(TestGPS2ENU_WGS84, compareToSphericalConversion)
 
   double x_ENU_spherical, y_ENU_spherical, x_ENU_WGS84, y_ENU_WGS84;
   gpsConvertENU(x_ENU_spherical, y_ENU_spherical, lon_GPS, lat_GPS, ref_lon_GPS, ref_lat_GPS);
-  GPS2ENU_WGS84(x_ENU_WGS84, y_ENU_WGS84, lon_GPS, lat_GPS, ref_lon_GPS, ref_lat_GPS);
+  std::tie(x_ENU_WGS84, y_ENU_WGS84) = GPS2ENU_WGS84(lon_GPS, lat_GPS, ref_lon_GPS, ref_lat_GPS);
 
   std::cout << "Using spherical earth (x, y) = " << x_ENU_spherical << ", " << y_ENU_spherical << std::endl;
   std::cout << "Using WGS 84 ellipsoid (x, y) = " << x_ENU_WGS84 << ", " << y_ENU_WGS84 << std::endl;
@@ -47,3 +48,4 @@ int main(int argc, char **argv)
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
+

@@ -2,7 +2,7 @@
 #include <tf/tf.h>
 #include <dji_sdk/dji_sdk_geometry.h>
 
-double DJISDKGeometry::wrapTo2Pi(double angle)
+static double wrapTo2Pi(double angle)
 {
   bool was_neg = angle < 0;
   angle = fmod(angle, 2.0 * M_PI);
@@ -52,9 +52,7 @@ static double radiusOfCurvatureMeridian(double radius_of_curvature_prime_vertica
   return radius_of_curvature_prime_vertical * (1 - std::pow(DJISDKGeometry::earth_eccentricity, 2)) / std::sqrt(1 - squared_term);
 }
 
-void DJISDKGeometry::GPS2ENU_WGS84(
-  double& x_ENU,
-  double& y_ENU,
+std::pair<double, double> DJISDKGeometry::GPS2ENU_WGS84(
   double lon_GPS,
   double lat_GPS,
   double ref_lon_GPS,
@@ -72,6 +70,8 @@ void DJISDKGeometry::GPS2ENU_WGS84(
   double delta_lon = wrapToPi(lon_GPS - ref_lon_GPS);
   double delta_lat = wrapToPi(lat_GPS - ref_lat_GPS);
 
-  x_ENU = delta_lon / std::atan2(1, r_n * std::cos(ref_lat_GPS));
-  y_ENU = delta_lat / std::atan2(1, r_m);
+  double x_ENU{delta_lon / std::atan2(1, r_n * std::cos(ref_lat_GPS))};
+  double y_ENU{delta_lat / std::atan2(1, r_m)};
+
+  return std::make_pair(x_ENU, y_ENU);
 }
