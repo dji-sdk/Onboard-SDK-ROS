@@ -310,8 +310,7 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     p->raw_rtk_yaw_publisher.publish(raw_rtk_yaw);
 
     dji_sdk::RTKYaw rtk_yaw;
-    rtk_yaw.header.frame_id = "body_FLU_RTK";
-    rtk_yaw.header.stamp = msg_time;
+    rtk_yaw.stamp = msg_time;
     rtk_yaw.angle = DJISDKGeometry::RTKYawMeasurement2ENUYaw(DEG2RAD(static_cast<double>(rtk_telemetry_yaw)));
     rtk_yaw.solution_status = rtk_telemetry_yaw_info;
     p->rtk_yaw_publisher.publish(rtk_yaw);
