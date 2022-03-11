@@ -193,14 +193,14 @@ DJISDKNode::dataBroadcastCallback()
     flight_status_publisher.publish(flight_status);
   }
 
-  uint16_t flag_has_gimbal = 
+  uint16_t flag_has_gimbal =
           isM100() ? (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::HAS_GIMBAL) :
           (data_enable_flag & DataBroadcast::DATA_ENABLE_FLAG::A3_HAS_GIMBAL);
   if (flag_has_gimbal)
   {
     Telemetry::Gimbal gimbal_reading;
 
-    
+
     Telemetry::Gimbal gimbal_angle = vehicle->broadcast->getGimbal();
 
     geometry_msgs::Vector3Stamped gimbal_angle_vec3;
@@ -312,7 +312,7 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     dji_sdk::RTKYaw rtk_yaw;
     rtk_yaw.header.frame_id = "body_FLU_RTK";
     rtk_yaw.header.stamp = msg_time;
-    rtk_yaw.angle = DJISDKGeometry::transformRtkYaw(DEG2RAD(static_cast<double>(rtk_telemetry_yaw)));
+    rtk_yaw.angle = DJISDKGeometry::RTKYawMeasurement2ENUYaw(DEG2RAD(static_cast<double>(rtk_telemetry_yaw)));
     rtk_yaw.solution_status = rtk_telemetry_yaw_info;
     p->rtk_yaw_publisher.publish(rtk_yaw);
 
@@ -469,8 +469,8 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
       geometry_msgs::PointStamped local_pos_fused;
       local_pos_fused.header.frame_id = "/local_fused";
       local_pos_fused.header.stamp = gps_pos.header.stamp;
-      p->gpsConvertENU(local_pos_fused.point.x, local_pos_fused.point.y, 
-          gps_pos.longitude - p->bias_gps_longitude, gps_pos.latitude - p->bias_gps_latitude, 
+      p->gpsConvertENU(local_pos_fused.point.x, local_pos_fused.point.y,
+          gps_pos.longitude - p->bias_gps_longitude, gps_pos.latitude - p->bias_gps_latitude,
           p->local_rtk_pos_ref_longitude, p->local_rtk_pos_ref_latitude);
       local_pos_fused.point.z = (gps_pos.altitude - p->bias_gps_altitude) - p->local_rtk_pos_ref_altitude;
       // Local position is published in ENU Frame
@@ -575,7 +575,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
     vo_pos.yHealth = vo_position.yHealth;
     vo_pos.zHealth = vo_position.zHealth;
     p->vo_position_publisher.publish(vo_pos);
-  
+
     Telemetry::TypeMap<Telemetry::TOPIC_RC_WITH_FLAG_DATA>::type rc_with_flag =
             vehicle->subscribe->getValue<Telemetry::TOPIC_RC_WITH_FLAG_DATA>();
 

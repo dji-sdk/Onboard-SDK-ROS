@@ -1,5 +1,5 @@
+#include <cmath>
 #include <dji_sdk/dji_sdk_node.h>
-#include <tf/tf.h>
 #include <dji_sdk/dji_sdk_geometry.h>
 
 static double wrapTo2Pi(double angle)
@@ -15,19 +15,10 @@ double DJISDKGeometry::wrapToPi(double angle)
   return wrapTo2Pi(angle + M_PI) - M_PI;
 }
 
-double DJISDKGeometry::transformRtkYaw(double raw_rtk_yaw_radians)
+// Docs: https://heimdallbrain.atlassian.net/wiki/spaces/DRONE/pages/1716617237/Coordinate+frames+and+rotations#Convert-RTK-yaw-to-ENU-frame
+double DJISDKGeometry::RTKYawMeasurement2ENUYaw(double raw_rtk_yaw_radians)
 {
-  tf::Matrix3x3 R_RTK2FRD;
-  tf::Matrix3x3 R_NED2RTK;
-  tf::Matrix3x3 R_FLU2ENU;
-
-  R_RTK2FRD.setRPY(0.0, 0.0, DEG2RAD(90.0));
-  R_NED2RTK.setRPY(0.0, 0.0, raw_rtk_yaw_radians);
-  R_FLU2ENU = R_ENU2NED.transpose() * R_NED2RTK * R_RTK2FRD * R_FLU2FRD.transpose();
-
-  double roll, pitch, yaw;
-  R_FLU2ENU.getRPY(roll, pitch, yaw);
-  return yaw;
+  return wrapToPi(-raw_rtk_yaw_radians);
 }
 
 void DJISDKGeometry::gpsConvertENU(double &ENU_x, double &ENU_y,

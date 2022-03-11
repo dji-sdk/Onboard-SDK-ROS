@@ -5,25 +5,6 @@
 
 using namespace DJISDKGeometry;
 
-TEST(TestRTKTransform, testRTKTransform)
-{
-  constexpr double tolerance = 1e-12;
-
-  auto simple_but_non_readable_rtk_transform = [](double rtk_yaw) { return -rtk_yaw; };
-  std::vector<double> rtk_yaw_input_vec = {
-    0.0, 45.0, 90.0, 135.0, 180.0, 270.0, 360.0, -45.0, -90.0, -135.0, -180.0, -270.0, -360.0
-  };
-
-  for (auto rtk_yaw : rtk_yaw_input_vec)
-  {
-    rtk_yaw = DEG2RAD(rtk_yaw);
-    double desired_yaw = simple_but_non_readable_rtk_transform(rtk_yaw);
-    double yaw = transformRtkYaw(rtk_yaw);
-
-    EXPECT_TRUE(std::abs(wrapToPi(yaw - desired_yaw)) < tolerance);
-  }
-}
-
 TEST(TestGPS2ENU_WGS84, compareToSphericalConversion)
 {
   double ref_lon_GPS = 59.9;
