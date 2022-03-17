@@ -15,7 +15,11 @@ double DJISDKGeometry::wrapToPi(double angle)
   return wrapTo2Pi(angle + M_PI) - M_PI;
 }
 
-// Docs: https://heimdallbrain.atlassian.net/wiki/spaces/DRONE/pages/1716617237/Coordinate+frames+and+rotations#Convert-RTK-yaw-to-ENU-frame
+/* Raw RTK measurement is the angle from the North axis to the axis pointing from RTK antenna 1 to antenna 2,
+ * which is parallel to the Left axis of the drone, with positive sign in the clockwise direction with respect
+ * to the Up axis. To convert this to ENU yaw (angle from East to Forward axis, positive counter-clockwise),
+ * it is sufficient to flip the sign. The proof is left as an exercise to the reader.
+ */
 double DJISDKGeometry::RTKYawMeasurement2ENUYaw(double raw_rtk_yaw_radians)
 {
   return wrapToPi(-raw_rtk_yaw_radians);
@@ -43,6 +47,9 @@ static double radiusOfCurvatureMeridian(double radius_of_curvature_prime_vertica
   return radius_of_curvature_prime_vertical * (1 - std::pow(DJISDKGeometry::earth_eccentricity, 2)) / std::sqrt(1 - squared_term);
 }
 
+/* Textbook reference:
+ * Handbook of Marine Craft Hydrodynamics and Motion Control, by Thor I. Fossen
+ */
 std::pair<double, double> DJISDKGeometry::GPS2ENU_WGS84(
   double lon_GPS,
   double lat_GPS,
