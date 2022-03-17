@@ -41,6 +41,8 @@
 #include <dji_sdk/VOPosition.h>
 #include <dji_sdk/FCTimeInUTC.h>
 #include <dji_sdk/GPSUTC.h>
+#include <dji_sdk/RTKYaw.h>
+#include <dji_sdk/RTKPosition.h>
 
 //! mission service
 // missionManager
@@ -375,6 +377,7 @@ private:
   ros::Publisher rc_connection_status_publisher;
   ros::Publisher rtk_position_publisher;
   ros::Publisher rtk_velocity_publisher;
+  ros::Publisher raw_rtk_yaw_publisher;
   ros::Publisher rtk_yaw_publisher;
   ros::Publisher rtk_position_info_publisher;
   ros::Publisher rtk_yaw_info_publisher;

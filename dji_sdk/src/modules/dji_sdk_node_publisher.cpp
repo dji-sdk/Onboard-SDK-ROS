@@ -10,6 +10,7 @@
  */
 
 #include <dji_sdk/dji_sdk_node.h>
+#include <dji_sdk/dji_sdk_geometry.h>
 #include <tf/tf.h>
 #include <sensor_msgs/Joy.h>
 #include <dji_telemetry.hpp>
@@ -304,8 +305,14 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     rtk_velocity.vector.z = (rtk_telemetry_velocity.z)/100;
     p->rtk_velocity_publisher.publish(rtk_velocity);
 
-    std_msgs::Int16 rtk_yaw;
-    rtk_yaw.data = rtk_telemetry_yaw;
+    std_msgs::Int16 raw_rtk_yaw;
+    raw_rtk_yaw.data = rtk_telemetry_yaw;
+    p->raw_rtk_yaw_publisher.publish(raw_rtk_yaw);
+
+    dji_sdk::RTKYaw rtk_yaw;
+    rtk_yaw.stamp = msg_time;
+    rtk_yaw.angle = DJISDKGeometry::RTKYawMeasurement2ENUYaw(DEG2RAD(static_cast<double>(rtk_telemetry_yaw)));
+    rtk_yaw.solution_status = rtk_telemetry_yaw_info;
     p->rtk_yaw_publisher.publish(rtk_yaw);
 
     std_msgs::UInt8 rtk_yaw_info;
@@ -324,12 +331,13 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     if(p->local_rtk_pos_ref_set)
     {
       // Send local rtk position
-      geometry_msgs::PointStamped local_rtk_pos;
+      dji_sdk::RTKPosition local_rtk_pos;
       local_rtk_pos.header.frame_id = "/local_rtk";
       local_rtk_pos.header.stamp = rtk_position.header.stamp;
       p->gpsConvertENU(local_rtk_pos.point.x, local_rtk_pos.point.y, rtk_position.longitude,
           rtk_position.latitude, p->local_rtk_pos_ref_longitude, p->local_rtk_pos_ref_latitude);
       local_rtk_pos.point.z = rtk_position.altitude - p->local_rtk_pos_ref_altitude;
+      local_rtk_pos.solution_status = rtk_telemetry_position_info;
       // Local position is published in ENU Frame
       // This follows the REP 103 to use ENU for short-range Cartesian representations
       p->local_rtk_position_publisher.publish(local_rtk_pos);

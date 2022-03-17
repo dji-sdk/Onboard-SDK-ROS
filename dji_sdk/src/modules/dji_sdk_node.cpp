@@ -308,7 +308,7 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
       nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/local_frame_ref", 10, true);
 
   local_rtk_position_publisher =
-      nh.advertise<geometry_msgs::PointStamped>("dji_sdk/local_rtk_position", 10);
+      nh.advertise<dji_sdk::RTKPosition>("dji_sdk/local_rtk_position", 10);
 
   local_rtk_frame_ref_publisher =
       nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/local_rtk_frame_ref", 10, true);
@@ -566,8 +566,11 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
     rtk_velocity_publisher =
             nh.advertise<geometry_msgs::Vector3Stamped>("dji_sdk/rtk_velocity", 5);
 
+    raw_rtk_yaw_publisher =
+            nh.advertise<std_msgs::Int16>("dji_sdk/raw_rtk_yaw", 5);
+
     rtk_yaw_publisher =
-            nh.advertise<std_msgs::Int16>("dji_sdk/rtk_yaw", 5);
+            nh.advertise<dji_sdk::RTKYaw>("dji_sdk/rtk_yaw", 5);
 
     rtk_position_info_publisher =
             nh.advertise<std_msgs::UInt8>("dji_sdk/rtk_info_position", 5);
