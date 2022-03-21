@@ -182,6 +182,9 @@ add_executable(dji_sdk_node
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
+add_dependencies(dji_sdk_geometry
+  dji_sdk_generate_messages_cpp)
+
 add_dependencies(dji_sdk_node
   dji_sdk_generate_messages_cpp)
 
