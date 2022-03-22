@@ -366,11 +366,15 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
       local_rtk_pos_tf.transform.rotation.w = q_FLU2ENU.getW();
       br_rtk.sendTransform(local_rtk_pos_tf);
 
-      // Set the GPS bias (difference between RTK position and GPS position)
+      // Update the GPS bias (difference between RTK position and GPS position),
+      // if the RTK solution is healthy.
       // The bias is calculated as "bias = GPS - RTK" and should be used as "GPS_corrected = GPS - bias"
-      p->bias_gps_latitude = (fused_gps.latitude * 180.0 / C_PI) - p->current_rtk_latitude;
-      p->bias_gps_longitude = (fused_gps.longitude * 180.0 / C_PI) - p->current_rtk_longitude;
-      p->bias_gps_altitude = fused_altitude - p->current_rtk_altitude;
+      if (local_rtk_pos.solution_status > RTK_FIX_THRESHOLD)
+      {
+        p->bias_gps_latitude = (fused_gps.latitude * 180.0 / C_PI) - p->current_rtk_latitude;
+        p->bias_gps_longitude = (fused_gps.longitude * 180.0 / C_PI) - p->current_rtk_longitude;
+        p->bias_gps_altitude = fused_altitude - p->current_rtk_altitude;
+      }
     }
   }
 
