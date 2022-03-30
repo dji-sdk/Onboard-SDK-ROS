@@ -152,7 +152,7 @@ DJISDKNode::setLocalPosRefCallback(dji_sdk::SetLocalPosRef::Request &request,
   }
 
   printf("Currrent RTK health is %d \n",current_rtk_health );
-  if (current_rtk_health > 40) // TODO: Make parameter instead
+  if (current_rtk_health > RTK_FIX_THRESHOLD)
   {
     local_rtk_pos_ref_latitude = current_rtk_latitude;
     local_rtk_pos_ref_longitude = current_rtk_longitude;

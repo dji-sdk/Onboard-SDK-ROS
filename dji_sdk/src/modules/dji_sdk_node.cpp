@@ -40,6 +40,11 @@ DJISDKNode::DJISDKNode(ros::NodeHandle& nh, ros::NodeHandle& nh_private)
   local_rtk_pos_ref_altitude  = 0;
   local_rtk_pos_ref_set       = false;
 
+  //! Initial values for GPS biases
+  bias_gps_latitude   = 0;
+  bias_gps_longitude  = 0;
+  bias_gps_altitude   = 0;
+
   //! RTK support check
   rtkSupport = false;
 
@@ -182,7 +187,7 @@ bool
 DJISDKNode::initFlightControl(ros::NodeHandle& nh)
 {
   flight_control_sub = nh.subscribe<sensor_msgs::Joy>(
-    "dji_sdk/flight_control_setpoint_generic", 10, 
+    "dji_sdk/flight_control_setpoint_generic", 10,
     &DJISDKNode::flightControlSetpointCallback,   this);
 
   flight_control_position_yaw_sub =
@@ -491,7 +496,7 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
     std::string hardwareVersion(vehicle->getHwVersion());
     if( (hardwareVersion == std::string(Version::N3)) || hardwareVersion == std::string(Version::A3))
     {
-      topicList50Hz.push_back(Telemetry::TOPIC_RC_FULL_RAW_DATA);      
+      topicList50Hz.push_back(Telemetry::TOPIC_RC_FULL_RAW_DATA);
     }
 
     // Advertise rc connection status only if this topic is supported by FW

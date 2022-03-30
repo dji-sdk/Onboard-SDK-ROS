@@ -445,6 +445,7 @@ private:
   static int constexpr STABLE_ALIGNMENT_COUNT = 400;
   static double constexpr TIME_DIFF_CHECK = 0.008;
   static double constexpr TIME_DIFF_ALERT = 0.020;
+  static uint8_t constexpr RTK_FIX_THRESHOLD = 40;
 
   ros::Time base_time;
 
