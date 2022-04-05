@@ -43,6 +43,7 @@
 #include <dji_sdk/GPSUTC.h>
 #include <dji_sdk/RTKYaw.h>
 #include <dji_sdk/RTKPosition.h>
+#include <dji_sdk/GPSPosition.h>
 
 //! mission service
 // missionManager
@@ -383,9 +384,10 @@ private:
   ros::Publisher rtk_yaw_info_publisher;
   ros::Publisher rtk_connection_status_publisher;
   ros::Publisher flight_anomaly_publisher;
-  //! Local Position Publisher (Publishes local position in ENU frame)
+  //! Local (GPS) Position Publisher (Publishes local position in ENU frame)
   ros::Publisher local_position_publisher;
   ros::Publisher local_frame_ref_publisher;
+  ros::Publisher local_gps_position_publisher;
   //! Local RTK Position Publisher (Publishes local RTK position in ENU frame)
   ros::Publisher local_rtk_position_publisher;
   ros::Publisher local_rtk_frame_ref_publisher;

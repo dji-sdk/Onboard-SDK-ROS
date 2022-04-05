@@ -309,6 +309,9 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
   local_position_publisher =
       nh.advertise<geometry_msgs::PointStamped>("dji_sdk/local_position", 10);
 
+  local_gps_position_publisher =
+      nh.advertise<dji_sdk::GPSPosition>("dji_sdk/local_gps_position", 10);
+
   local_frame_ref_publisher =
       nh.advertise<sensor_msgs::NavSatFix>("dji_sdk/local_frame_ref", 10, true);
 

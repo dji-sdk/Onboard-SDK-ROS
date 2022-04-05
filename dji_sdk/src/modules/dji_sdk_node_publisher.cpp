@@ -425,6 +425,13 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   p->current_gps_altitude = fused_altitude;
   p->gps_position_publisher.publish(gps_pos);
 
+  Telemetry::TypeMap<Telemetry::TOPIC_GPS_CONTROL_LEVEL>::type gps_ctrl_level=
+    vehicle->subscribe->getValue<Telemetry::TOPIC_GPS_CONTROL_LEVEL>();
+  std_msgs::UInt8 msg_gps_ctrl_level;
+  msg_gps_ctrl_level.data = gps_ctrl_level;
+  p->current_gps_health = gps_ctrl_level;
+  p->gps_health_publisher.publish(msg_gps_ctrl_level);
+
   if(p->local_pos_ref_set)
   {
     geometry_msgs::PointStamped local_pos;
@@ -439,6 +446,12 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
    *       in ENU Frame
    */
     p->local_position_publisher.publish(local_pos);
+
+    dji_sdk::GPSPosition local_gps_pos;
+    local_gps_pos.header = local_pos.header;
+    local_gps_pos.point = local_pos.point;
+    local_gps_pos.health = gps_ctrl_level;
+    p->local_gps_position_publisher.publish(local_gps_pos);
 
     // Also publish the local position as a tf
     static tf2_ros::TransformBroadcaster br;
@@ -530,13 +543,6 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
   v.vector.y = v_FC.data.x;
   v.vector.z = v_FC.data.z; //z sign is already U
   p->velocity_publisher.publish(v);
-
-  Telemetry::TypeMap<Telemetry::TOPIC_GPS_CONTROL_LEVEL>::type gps_ctrl_level=
-    vehicle->subscribe->getValue<Telemetry::TOPIC_GPS_CONTROL_LEVEL>();
-  std_msgs::UInt8 msg_gps_ctrl_level;
-  msg_gps_ctrl_level.data = gps_ctrl_level;
-  p->current_gps_health = gps_ctrl_level;
-  p->gps_health_publisher.publish(msg_gps_ctrl_level);
 
   Telemetry::TypeMap<Telemetry::TOPIC_GIMBAL_ANGLES>::type gimbal_angle =
     vehicle->subscribe->getValue<Telemetry::TOPIC_GIMBAL_ANGLES>();

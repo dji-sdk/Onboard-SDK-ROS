@@ -82,6 +82,7 @@ add_message_files(
   VOPosition.msg
   RTKYaw.msg
   RTKPosition.msg
+  GPSPosition.msg
 )
 
 ## Generate services in the 'srv' folder
