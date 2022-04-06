@@ -332,7 +332,7 @@ DJISDKNode::publish5HzData(Vehicle *vehicle, RecvContainer recvFrame,
     {
       // Send local rtk position
       dji_sdk::RTKPosition local_rtk_pos;
-      local_rtk_pos.header.frame_id = "/local_rtk";
+      local_rtk_pos.header.frame_id = "world_ENU";
       local_rtk_pos.header.stamp = rtk_position.header.stamp;
       p->gpsConvertENU(local_rtk_pos.point.x, local_rtk_pos.point.y, rtk_position.longitude,
           rtk_position.latitude, p->local_rtk_pos_ref_longitude, p->local_rtk_pos_ref_latitude);
@@ -449,6 +449,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
 
     dji_sdk::GPSPosition local_gps_pos;
     local_gps_pos.header = local_pos.header;
+    local_gps_pos.header.frame_id = "world_ENU";
     local_gps_pos.point = local_pos.point;
     local_gps_pos.health = gps_ctrl_level;
     p->local_gps_position_publisher.publish(local_gps_pos);
