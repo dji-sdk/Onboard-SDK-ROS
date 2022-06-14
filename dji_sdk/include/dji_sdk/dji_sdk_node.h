@@ -364,6 +364,7 @@ private:
   ros::Publisher battery_state_publisher;
   ros::Publisher trigger_publisher;
   ros::Publisher imu_publisher;
+  ros::Publisher compass_publisher;
   ros::Publisher flight_status_publisher;
   ros::Publisher gps_health_publisher;
   ros::Publisher gps_position_publisher;

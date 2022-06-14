@@ -257,6 +257,8 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
    */
   imu_publisher = nh.advertise<sensor_msgs::Imu>("dji_sdk/imu", 10);
 
+  compass_publisher = nh.advertise<geometry_msgs::Vector3>("dji_sdk/compass", 10);
+
   // Refer to dji_sdk.h for different enums for M100 and A3/N3
   flight_status_publisher =
     nh.advertise<std_msgs::UInt8>("dji_sdk/flight_status", 10);
