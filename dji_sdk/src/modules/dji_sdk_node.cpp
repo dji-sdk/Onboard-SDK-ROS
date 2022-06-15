@@ -459,6 +459,7 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
   topicList100Hz.push_back(Telemetry::TOPIC_QUATERNION);
   topicList100Hz.push_back(Telemetry::TOPIC_ACCELERATION_GROUND);
   topicList100Hz.push_back(Telemetry::TOPIC_ANGULAR_RATE_FUSIONED);
+  topicList100Hz.push_back(Telemetry::TOPIC_COMPASS);
 
   int nTopic100Hz    = topicList100Hz.size();
   if (vehicle->subscribe->initPackageFromTopicList(PACKAGE_ID_100HZ, nTopic100Hz,

@@ -764,13 +764,13 @@ DJISDKNode::publish100HzData(Vehicle *vehicle, RecvContainer recvFrame,
   acceleration.vector.z        = a_FC.z;  //z sign is already U
   p->acceleration_publisher.publish(acceleration);
 
-  Telemetry::TypeMap<Telemetry::TOPIC_COMPASS>::type c_FC =
+  Telemetry::TypeMap<Telemetry::TOPIC_COMPASS>::type compass_FC =
     vehicle->subscribe->getValue<Telemetry::TOPIC_COMPASS>();
 
   geometry_msgs::Vector3 compass;
-  compass.x = c_FC.x;
-  compass.y = c_FC.y;
-  compass.z = c_FC.z;
+  compass.x = compass_FC.x;
+  compass.y = compass_FC.y;
+  compass.z = compass_FC.z;
   p->compass_publisher.publish(compass);
 }
 
