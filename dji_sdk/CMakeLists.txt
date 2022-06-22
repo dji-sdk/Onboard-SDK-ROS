@@ -83,6 +83,7 @@ add_message_files(
   RTKYaw.msg
   RTKPosition.msg
   GPSPosition.msg
+  GPSHealth.msg
 )
 
 ## Generate services in the 'srv' folder

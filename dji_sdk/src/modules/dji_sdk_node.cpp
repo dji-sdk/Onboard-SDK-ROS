@@ -257,8 +257,6 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
    */
   imu_publisher = nh.advertise<sensor_msgs::Imu>("dji_sdk/imu", 10);
 
-  compass_publisher = nh.advertise<geometry_msgs::Vector3>("dji_sdk/compass", 10);
-
   // Refer to dji_sdk.h for different enums for M100 and A3/N3
   flight_status_publisher =
     nh.advertise<std_msgs::UInt8>("dji_sdk/flight_status", 10);
@@ -268,7 +266,7 @@ DJISDKNode::initPublisher(ros::NodeHandle& nh)
    * to be trusted
    */
   gps_health_publisher =
-    nh.advertise<std_msgs::UInt8>("dji_sdk/gps_health", 10);
+    nh.advertise<dji_sdk::GPSHealth>("dji_sdk/gps_health", 10);
 
   /*!
    * NavSatFix specs:
@@ -459,7 +457,6 @@ DJISDKNode::initDataSubscribeFromFC(ros::NodeHandle& nh)
   topicList100Hz.push_back(Telemetry::TOPIC_QUATERNION);
   topicList100Hz.push_back(Telemetry::TOPIC_ACCELERATION_GROUND);
   topicList100Hz.push_back(Telemetry::TOPIC_ANGULAR_RATE_FUSIONED);
-  topicList100Hz.push_back(Telemetry::TOPIC_COMPASS);
 
   int nTopic100Hz    = topicList100Hz.size();
   if (vehicle->subscribe->initPackageFromTopicList(PACKAGE_ID_100HZ, nTopic100Hz,
