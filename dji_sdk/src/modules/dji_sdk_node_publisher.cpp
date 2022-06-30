@@ -505,7 +505,7 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
       // Set local position
       local_pos_fused_tf.header.stamp = gps_pos.header.stamp;
       local_pos_fused_tf.header.frame_id = "world_ENU";
-      local_pos_fused_tf.child_frame_id = "body_FLU_fused";
+      local_pos_fused_tf.child_frame_id = "dji_sdk_body_FLU_fused";
       local_pos_fused_tf.transform.translation.x = local_pos_fused.point.x;
       local_pos_fused_tf.transform.translation.y = local_pos_fused.point.y;
       local_pos_fused_tf.transform.translation.z = local_pos_fused.point.z;
