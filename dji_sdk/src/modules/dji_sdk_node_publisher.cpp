@@ -498,25 +498,6 @@ DJISDKNode::publish50HzData(Vehicle* vehicle, RecvContainer recvFrame,
       // Local position is published in ENU Frame
       // This follows the REP 103 to use ENU for short-range Cartesian representations
       p->local_rtk_fused_position_publisher.publish(local_pos_fused);
-
-      // Also publish the fused local position as a tf
-      static tf2_ros::TransformBroadcaster br;
-      geometry_msgs::TransformStamped local_pos_fused_tf;
-      // Set local position
-      local_pos_fused_tf.header.stamp = gps_pos.header.stamp;
-      local_pos_fused_tf.header.frame_id = "world_ENU";
-      local_pos_fused_tf.child_frame_id = "dji_sdk_body_FLU_fused";
-      local_pos_fused_tf.transform.translation.x = local_pos_fused.point.x;
-      local_pos_fused_tf.transform.translation.y = local_pos_fused.point.y;
-      local_pos_fused_tf.transform.translation.z = local_pos_fused.point.z;
-      // Set the quaternion (reused from above)
-      // This follows REP 103 to use FLU for body frame.
-      // The quaternion is the rotation from body_FLU to world_ENU
-      local_pos_fused_tf.transform.rotation.x = q_FLU2ENU.getX();
-      local_pos_fused_tf.transform.rotation.y = q_FLU2ENU.getY();
-      local_pos_fused_tf.transform.rotation.z = q_FLU2ENU.getZ();
-      local_pos_fused_tf.transform.rotation.w = q_FLU2ENU.getW();
-      br.sendTransform(local_pos_fused_tf);
     }
   }
 
