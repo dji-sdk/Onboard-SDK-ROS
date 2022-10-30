@@ -8,7 +8,7 @@ Currently working on a front-hand programming, to create an application which ca
 to edit or run the GUI, used the controller.py file 
 
 To get more knowledge about tkinktermap-view and customtkinkter, following link can be used.
-https://github.com/TomSchimansky/TkinterMapView 
+https://github.com/TomSchimansky/TkinterMapView  & 
 https://github.com/TomSchimansky/CustomTkinter
 
 
