@@ -1,7 +1,7 @@
 # DJI Onboard SDK ROS 4.1.0
 
 ## GUI
-Currently working on a front-hand programming, to create an application which can be useful to create several missons. Since SDK doesnt allow us to generte waypoint, tkinkter and tkinkermap-view, make things helpful for us. To make it  more use full, serveral other option are also added, i-e land, takeoff, return to home. Availability of camera is also available, but to check the functionality of front-hand of the GUI, Webcam is used. 
+Currently working on a front-hand programming, to create an application which can be useful to create several missons. Since SDK doesnt allow us to generte waypoint, tkinkter and tkinkermap-view, make things helpful for us. To make it  more use full, serveral other option are also added in the gui to make it user friendly, i-e land, takeoff, return to home. Availability of camera is also available, but to check the functionality of front-hand of the GUI, Webcam is used. 
 
 
 ## Latest Update
