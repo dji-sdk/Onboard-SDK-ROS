@@ -1,7 +1,19 @@
 # DJI Onboard SDK ROS 4.1.0
 
-## Latest Update
+## GUI
+Currently working on a front-hand programming, to create an application which can be useful to create several missons. Since SDK doesnt allow us to generte waypoint, tkinkter and tkinkermap-view, make things helpful for us. To make it  more use full, serveral other option are also added in the gui to make it user friendly, i-e land, takeoff, return to home. Availability of camera is also available, but to check the functionality of front-hand of the GUI, Webcam is used. 
 
+![image](https://user-images.githubusercontent.com/92997791/198862226-5b2f2291-ebd7-41d2-9df7-6c72138f5d94.png)
+
+to edit or run the GUI, used the controller.py file 
+
+To get more knowledge about tkinktermap-view and customtkinkter, following link can be used.
+https://github.com/TomSchimansky/TkinterMapView  & 
+https://github.com/TomSchimansky/CustomTkinter
+
+
+
+## Latest Update
 OSDK-ROS 4.1.0 was released on 20 January 2021.You need to read newest update below to get update information. Please see the [release notes](https://developer.dji.com/onboard-sdk/downloads/) and [ROS sample setup](https://developer.dji.com/cn/onboard-sdk/documentation/development-workflow/environment-setup.html#linux-with-ros) for more information.And We will update [ROS Wiki](http://wiki.ros.org/dji_sdk/) later.
 
 ### 1. feature  
