@@ -53,6 +53,9 @@ bool moveByPosOffset(FlightTaskControl& task,const JoystickCommand &offsetDesire
                      float posThresholdInM = 0.8,
                      float yawThresholdInDeg = 1.0);
 
+// TODO: getTime gets the GPS time, which is used by filterTime to decide to move to waypoints
+// void getTime(void);
+
 // TODO: filterTime receives time and filters waypoints coming from Path Planning
 // void filterTime(void);
 
@@ -75,10 +78,13 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "flight_control_node");
   ros::NodeHandle nh;
   task_control_client = nh.serviceClient<FlightTaskControl>("/flight_task_control");
+
   auto set_go_home_altitude_client = nh.serviceClient<SetGoHomeAltitude>("/set_go_home_altitude");
   auto get_go_home_altitude_client = nh.serviceClient<GetGoHomeAltitude>("get_go_home_altitude");
   auto set_current_point_as_home_client = nh.serviceClient<SetCurrentAircraftLocAsHomePoint>("/set_current_aircraft_point_as_home");
+  // Enables collision avoidance for horizontal obstacles? We should test and verify.
   auto enable_horizon_avoid_client  = nh.serviceClient<SetAvoidEnable>("/set_horizon_avoid_enable");
+  // Enables collision avoidance for vertical obastacles? We should test and verify.
   auto enable_upward_avoid_client   = nh.serviceClient<SetAvoidEnable>("/set_upwards_avoid_enable");
   auto get_avoid_enable_client      = nh.serviceClient<GetAvoidEnable>("get_avoid_enable_status");
   auto obtain_ctrl_authority_client = nh.serviceClient<dji_osdk_ros::ObtainControlAuthority>("obtain_release_control_authority");
@@ -86,20 +92,15 @@ int main(int argc, char** argv)
 
   set_joystick_mode_client = nh.serviceClient<SetJoystickMode>("set_joystick_mode");
   joystick_action_client   = nh.serviceClient<JoystickAction>("joystick_action");
-  std::cout
-      << "| Available commands:                                            |"
-      << std::endl;
-  std::cout
-      << "| [a] Monitored Takeoff + Landing                                |"
-      << std::endl;
-  std::cout
-      << "| [b] Monitored Takeoff + Position Control + Landing             |"
-      << std::endl;
-  std::cout << "| [c] Monitored Takeoff + Position Control + Force Landing "
-               "Avoid Ground  |"
-            << std::endl;
-  std::cout << "| [d] Monitored Takeoff + Velocity Control + Landing |"
-            << std::endl;
+  std::cout << "| Available commands:                                                      |" << std::endl;
+  std::cout << "| [a] Monitored Takeoff + Landing                                          |" << std::endl;
+  std::cout << "| [b] Monitored Takeoff + Position Control + Landing                       |" << std::endl;
+  std::cout << "| [c] Monitored Takeoff + Position Control + Force Landing Avoid Ground    |" << std::endl;
+  std::cout << "| [d] Monitored Takeoff + Velocity Control + Landing                       |" << std::endl;
+  // TODO: Write command for take-off + input position control by offset + landing
+  // std::cout << "| [e] Monitored Takeoff + Input Position Control By Offset + Landing       |" << std::endl;
+  // TODO: Write command for take-off + input position control by local coordinates + landing
+  // std::cout << "| [f] Monitored Takeoff + Input Position Control By Local Coord + Landing  |" << std::endl;
 
   std::cout << "Please select command: ";
   char inputChar;
@@ -345,6 +346,16 @@ int main(int argc, char** argv)
         }
         break;
       }
+    // TODO: Write command for take-off + input position control by offset + landing
+    // case 'e':
+    //   {
+
+    //   }
+    // TODO: Write command for take-off + input position control by local coordinates + landing
+    // case 'f':
+    //   {
+
+    //   }
     default:
       break;
   }
