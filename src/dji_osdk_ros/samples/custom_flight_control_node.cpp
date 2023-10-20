@@ -62,6 +62,7 @@ bool moveToPos(FlightTaskControl& task,const JoystickCommand &localPosDesired,
                      float posThresholdInM = 0.8,
                      float yawThresholdInDeg = 1.0);
 
+
 // TODO: getTime gets the GPS time, which is used by filterTime to decide to move to waypoints
 // void getTime(void);
 
@@ -107,9 +108,9 @@ int main(int argc, char** argv)
   std::cout << "| [c] Monitored Takeoff + Position Control + Force Landing Avoid Ground    |" << std::endl;
   std::cout << "| [d] Monitored Takeoff + Velocity Control + Landing                       |" << std::endl;
   // TODO: Write command for take-off + input position control by offset + landing
-  // std::cout << "| [e] Monitored Takeoff + Input Position Control By Offset + Landing       |" << std::endl;
+  std::cout << "| [e] Monitored Takeoff + Input Position Control By Offset + Landing       |" << std::endl;
   // TODO: Write command for take-off + input position control by local coordinates + landing
-  // std::cout << "| [f] Monitored Takeoff + Input Position Control By Local Coord + Landing  |" << std::endl;
+  std::cout << "| [f] Monitored Takeoff + Input Position Control By Local Coord + Landing  |" << std::endl;
 
   std::cout << "Please select command: ";
   char inputChar;
@@ -458,8 +459,8 @@ int main(int argc, char** argv)
 
             /* MOVE TO NEW LOCAL POSITION */
             ROS_INFO_STREAM("Using moveToPose to move to x = " << xRequested << ", y = " << yRequested << ", z = " << zRequested << ", yaw = " << yawRequested << " ...");
-            moveToPose(control_task, {xRequested, yRequested, zRequested, yawRequested}, posThreshInM, yawThreshInDeg);
-            ROS_INFO_STREAM("moveToPose complete!");
+            moveToPos(control_task, {xRequested, yRequested, zRequested, yawRequested}, posThreshInM, yawThreshInDeg);
+	    ROS_INFO_STREAM("moveToPose complete!");
 
             /* Ask if we should keep flying. */
             std::cout << "Keep flying? (y/n) ";
@@ -506,14 +507,25 @@ bool moveByPosOffset(FlightTaskControl& task,const JoystickCommand &offsetDesire
 }
 
 bool moveToPos(FlightTaskControl& task,const JoystickCommand &localPosDesired,
-                     float posThresholdInM = 0.8,
-                     float yawThresholdInDeg = 1.0)
+                     float posThresholdInM,
+                     float yawThresholdInDeg)
 {
   /* Call moveByOffset, using the difference between current pose and desired pose. */
-  moveByPosOffset(task,
-                  {x - localPosDesired.x, y - localPosDesired.y, z - localPosDesired.z, yaw - localPosDesired.yaw},
-                  posThresholdInM,
-                  yawThresholdInDeg);
+  DJI::OSDK::float32_t x_delta = x - localPosDesired.x;
+  DJI::OSDK::float32_t y_delta = y - localPosDesired.y;
+  DJI::OSDK::float32_t z_delta = z - localPosDesired.z;
+  DJI::OSDK::float32_t yaw_delta = yaw - localPosDesired.yaw;
+
+  bool result = moveByPosOffset(task,
+                                {x_delta, y_delta, z_delta, yaw_delta},
+                                posThresholdInM,
+                                yawThresholdInDeg);
+
+  // bool result  = moveByPosOffset(task,
+  //                 		 {x - localPosDesired.x, y - localPosDesired.y, z - localPosDesired.z, yaw - localPosDesired.yaw},
+  //                 		 posThresholdInM,
+  //                 		 yawThresholdInDeg);
+  return result;
 }
 
 void velocityAndYawRateCtrl(const JoystickCommand &offsetDesired, uint32_t timeMs)

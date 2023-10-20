@@ -25,6 +25,14 @@ target_link_libraries(flight_control_node
         )
 add_dependencies(flight_control_node dji_osdk_ros_generate_messages_cpp)
 
+add_executable(custom_flight_control_node
+               custom_flight_control_node.cpp)
+target_link_libraries(custom_flight_control_node
+        ${PROJECT_NAME}
+        )
+add_dependencies(custom_flight_control_node dji_osdk_ros_generate_messages_cpp)
+
+
 add_executable(gimbal_camera_control_node
                gimbal_camera_control_node.cpp )
 target_link_libraries(gimbal_camera_control_node
