@@ -174,11 +174,11 @@ int main(int argc, char** argv)
           ros::Duration(2.0).sleep();
 
           ROS_INFO_STREAM("Move by position offset request sending ...");
-          moveByPosOffset(control_task, {0.0, 6.0, 6.0, 30.0}, 0.8, 1);
+          moveByPosOffset(control_task, {0.0, 2.0, 2.0, 30.0}, 0.8, 10);
           ROS_INFO_STREAM("Step 1 over!");
-          moveByPosOffset(control_task, {6.0, 0.0, -3, -30.0}, 0.8, 1);
+          moveByPosOffset(control_task, {2.0, 0.0, -1.0, -30.0}, 0.8, 10);
           ROS_INFO_STREAM("Step 2 over!");
-          moveByPosOffset(control_task, {-6.0, -6.0, 0.0, 0.0}, 0.8, 1);
+          moveByPosOffset(control_task, {-2.0, -2.0, 0.0, 0.0}, 0.8, 10);
           ROS_INFO_STREAM("Step 3 over!");
 
           control_task.request.task = FlightTaskControl::Request::TASK_LAND;
@@ -239,9 +239,9 @@ int main(int argc, char** argv)
 
           ROS_INFO_STREAM("Move by position offset request sending ...");
           ROS_INFO_STREAM("Move to higher altitude");
-          moveByPosOffset(control_task, {0.0, 0.0, 30.0, 0.0}, 0.8, 1);
+          moveByPosOffset(control_task, {0.0, 0.0, 3.0, 0.0}, 0.8, 1);
           ROS_INFO_STREAM("Move a short distance");
-          moveByPosOffset(control_task, {10.0, 0.0, 0.0, 0.0}, 0.8, 1);
+          moveByPosOffset(control_task, {3.0, 0.0, 0.0, 0.0}, 0.8, 1);
 
           ROS_INFO_STREAM("Set aircraft current position as new home location");
           SetCurrentAircraftLocAsHomePoint home_set_req;
@@ -265,7 +265,7 @@ int main(int argc, char** argv)
 
           ROS_INFO_STREAM("Set new go home altitude");
           SetGoHomeAltitude altitude_go_home;
-          altitude_go_home.request.altitude = 50;
+          altitude_go_home.request.altitude = 20;
           set_go_home_altitude_client.call(altitude_go_home);
           if(altitude_go_home.response.result == false)
           {
@@ -282,7 +282,7 @@ int main(int argc, char** argv)
           ROS_INFO("Current go home altitude is :%d m", current_go_home_altitude.response.altitude);
 
           ROS_INFO_STREAM("Move to another position");
-          moveByPosOffset(control_task, {50.0, 0.0, 0.0, 0.0} , 0.8, 1);
+          moveByPosOffset(control_task, {2.0, 0.0, 0.0, 0.0} , 0.8, 1);
 
           ROS_INFO_STREAM("Shut down Horizon_Collision-Avoidance-Enabled");
           horizon_avoid_req.request.enable = false;
@@ -520,7 +520,13 @@ bool moveToPos(FlightTaskControl& task,const JoystickCommand &localPosDesired,
                                 {x_delta, y_delta, z_delta, yaw_delta},
                                 posThresholdInM,
                                 yawThresholdInDeg);
-
+  if (result)
+  {
+     x = localPosDesired.x;
+     y = localPosDesired.y;
+     z = localPosDesired.z;
+     yaw = localPosDesired.yaw;
+  }
   // bool result  = moveByPosOffset(task,
   //                 		 {x - localPosDesired.x, y - localPosDesired.y, z - localPosDesired.z, yaw - localPosDesired.yaw},
   //                 		 posThresholdInM,
